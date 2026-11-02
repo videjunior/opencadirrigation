@@ -21,7 +21,9 @@ class TinTriangle {
 }
 
 /// Delaunay triangulation of a point set (x, y, z). Duplicate positions are
-/// merged (last value wins) before triangulating.
+/// merged before triangulating (a breakline vertex wins over the other
+/// points there, points of equal standing take their mean elevation), and
+/// the result depends only on the set of points, never on their order.
 class Tin {
   Tin._(this.xs, this.ys, this.zs, this.triangles) {
     _index();
@@ -46,29 +48,19 @@ class Tin {
   /// triangulation): the surface folds along a ridge, a channel or the edge
   /// of a terrace instead of being interpolated across it.
   static Tin build(Iterable<(double, double, double)> points, {List<List<(double, double, double)>> breaklines = const []}) {
-    // merge duplicates (grid-snapped to 1 mm)
-    final seen = <String, int>{};
-    final xs = <double>[], ys = <double>[], zs = <double>[];
-    int add(double x, double y, double z) {
-      final k = '${(x * 1000).round()}|${(y * 1000).round()}';
-      final i = seen[k];
-      if (i != null) {
-        zs[i] = z;
-        return i;
-      }
-      seen[k] = xs.length;
-      xs.add(x);
-      ys.add(y);
-      zs.add(z);
-      return xs.length - 1;
-    }
-
+    // every finite point as given, the breakline vertices after them
+    // (flagged); the segments of a breakline between its vertices are the
+    // constraints
+    final rx = <double>[], ry = <double>[], rz = <double>[];
+    final onLine = <bool>[];
     for (final (x, y, z) in points) {
       if (!x.isFinite || !y.isFinite || !z.isFinite) continue;
-      add(x, y, z);
+      rx.add(x);
+      ry.add(y);
+      rz.add(z);
+      onLine.add(false);
     }
-    // breakline vertices are points too; their segments are constraints
-    final constraints = <(int, int)>[];
+    final rawConstraints = <(int, int)>[];
     for (final line in breaklines) {
       int? prev;
       for (final (x, y, z) in line) {
@@ -76,11 +68,85 @@ class Tin {
           prev = null;
           continue;
         }
-        final i = add(x, y, z);
-        if (prev != null && prev != i) constraints.add((prev, i));
-        prev = i;
+        if (prev != null) rawConstraints.add((prev, rx.length));
+        prev = rx.length;
+        rx.add(x);
+        ry.add(y);
+        rz.add(z);
+        onLine.add(true);
       }
     }
+    // Duplicate positions (grid-snapped to 1 mm) merge into one vertex and
+    // the vertices are numbered in (x, y) order, so the triangulation is a
+    // function of the point set, not of the order the points come in: four
+    // co-circular points (a cell of a regular grid, spot heights at the
+    // corners of a rectangle) take the diagonal that order gives, whatever
+    // the order of the items they come from. A breakline vertex wins over
+    // the other points at its position, points of equal standing take
+    // their mean elevation (summed in sorted order), and the vertex lies at
+    // the least (x, y) of its group.
+    final groupOf = List<int>.filled(rx.length, 0);
+    final keyed = <String, int>{};
+    // the first point of each group, and the others of a group with duplicates
+    final first = <int>[];
+    final more = <int, List<int>>{};
+    for (var r = 0; r < rx.length; r++) {
+      final k = '${(rx[r] * 1000).round()}|${(ry[r] * 1000).round()}';
+      final g = keyed[k];
+      if (g == null) {
+        keyed[k] = first.length;
+        groupOf[r] = first.length;
+        first.add(r);
+      } else {
+        groupOf[r] = g;
+        (more[g] ??= <int>[]).add(r);
+      }
+    }
+    final count = first.length;
+    final groupX = List<double>.filled(count, 0), groupY = List<double>.filled(count, 0), groupZ = List<double>.filled(count, 0);
+    for (var g = 0; g < count; g++) {
+      final r0 = first[g];
+      final rest = more[g];
+      if (rest == null) {
+        groupX[g] = rx[r0];
+        groupY[g] = ry[r0];
+        groupZ[g] = rz[r0];
+        continue;
+      }
+      final group = [r0, ...rest];
+      var x = rx[r0], y = ry[r0];
+      final line = group.any((r) => onLine[r]);
+      final heights = <double>[];
+      for (final r in group) {
+        if (rx[r] < x || (rx[r] == x && ry[r] < y)) {
+          x = rx[r];
+          y = ry[r];
+        }
+        if (onLine[r] == line) heights.add(rz[r]);
+      }
+      heights.sort();
+      groupX[g] = x;
+      groupY[g] = y;
+      groupZ[g] = heights.fold(0.0, (s, v) => s + v) / heights.length;
+    }
+    final byPosition = List<int>.generate(count, (g) => g)
+      ..sort((a, b) {
+        final c = groupX[a].compareTo(groupX[b]);
+        return c != 0 ? c : groupY[a].compareTo(groupY[b]);
+      });
+    final rank = List<int>.filled(count, 0);
+    for (var i = 0; i < byPosition.length; i++) {
+      rank[byPosition[i]] = i;
+    }
+    final xs = [for (final g in byPosition) groupX[g]], ys = [for (final g in byPosition) groupY[g]], zs = [for (final g in byPosition) groupZ[g]];
+    // each constraint once, between its vertices in that numbering, in a
+    // fixed order
+    final constraintSet = <(int, int)>{};
+    for (final (a, b) in rawConstraints) {
+      final u = rank[groupOf[a]], v = rank[groupOf[b]];
+      if (u != v) constraintSet.add(u < v ? (u, v) : (v, u));
+    }
+    final constraints = constraintSet.toList()..sort((p, q) => p.$1 != q.$1 ? p.$1.compareTo(q.$1) : p.$2.compareTo(q.$2));
     final n = xs.length;
     if (n < 3) return Tin._(xs, ys, zs, []);
     var minX = xs.reduce(math.min), maxX = xs.reduce(math.max);
@@ -91,7 +157,8 @@ class Tin {
     // in-circle tests round the same wherever the drawing lies (moving or
     // georeferencing a project must not change its terrain), and four
     // co-circular points (a cell of a regular grid, spot heights at the
-    // corners of a rectangle) keep the diagonal their insertion order gives.
+    // corners of a rectangle) keep the diagonal their insertion order gives
+    // (a fixed order: the cells below, then the numbering above).
     final mx = (maxX - minX) / 2, my = (maxY - minY) / 2;
     final px = [for (final x in xs) x - minX, mx - 20 * span, mx, mx + 20 * span];
     final py = [for (final y in ys) y - minY, my - span * 20, my + 20 * span, my - 20 * span];
@@ -125,7 +192,11 @@ class Tin {
       return gy.isEven ? gy * cells + gx : gy * cells + (cells - 1 - gx);
     }
 
-    order.sort((a, b) => cellOf(a).compareTo(cellOf(b)));
+    // (a total order: within a cell, the numbering of the vertices)
+    order.sort((a, b) {
+      final c = cellOf(a).compareTo(cellOf(b));
+      return c != 0 ? c : a.compareTo(b);
+    });
     // Every triangle in the order it was made (null once destroyed: the
     // order the triangulation keeps) and the directed edges of the live
     // ones (u → v of triangle k, key u·m + v): the neighbour across an edge

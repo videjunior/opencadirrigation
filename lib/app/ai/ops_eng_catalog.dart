@@ -37,7 +37,7 @@ dynamic _item(Catalog cat, String kind, String id) {
 }
 
 String _packLine(CatalogPack p, Catalog cat) =>
-    '${p.id} | ${p.brand} | ${p.itemCount} items | ${p.hasPrices ? 'priced (${p.meta.currency.isEmpty ? '?' : p.meta.currency})' : 'unpriced'} | ${p.meta.updated.isEmpty ? '-' : p.meta.updated} | ${p.isMergedInto(cat) ? 'in the project' : 'not added'}${p.origin.isEmpty ? '' : ' | from ${p.origin}'}${p.description.isEmpty ? '' : ' | ${AgentToolbox.short(p.description, 120)}'}${p.meta.sources.isEmpty ? '' : ' | sources: ${p.meta.sources.take(3).join(' · ')}'}';
+    '${p.id} | ${p.brand} | ${p.itemCount} items | ${p.hasPrices ? 'priced (${p.meta.currency.isEmpty ? '?' : p.meta.currency}${p.meta.pricesDate.isEmpty ? '' : ', reference prices of ${p.meta.pricesDate}'})' : 'unpriced'} | ${p.meta.updated.isEmpty ? '-' : p.meta.updated} | ${p.isMergedInto(cat) ? 'in the project' : 'not added'}${p.origin.isEmpty ? '' : ' | from ${p.origin}'}${p.description.isEmpty ? '' : ' | ${AgentToolbox.short(p.description, 120)}'}${p.meta.sources.isEmpty ? '' : ' | sources: ${p.meta.sources.take(3).join(' · ')}'}';
 
 List<AgentTool> catalogOperations(AgentToolbox b) {
   final c = b.c;
@@ -471,8 +471,9 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
           case 'csv':
             final g = CatalogGroup.values.byName(a.str('group') ?? 'pipes');
             final file = 'catalog_${g.name}.csv';
-            await engFileSink(c, file, 'text/csv', CatalogIo.exportCsv(cat, g));
-            return ToolOutput('Saved $file.');
+            // 1.6.0 MOD (MOD-20): in the units of the project, as the editor writes it
+            await engFileSink(c, file, 'text/csv', CatalogIo.exportCsv(cat, g, units: b.p.params.units));
+            return ToolOutput('Saved $file (in the units of the project; each column names its unit).');
           case 'xlsx':
             await engFileSink(c, 'catalog.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', CatalogIo.exportXlsx(cat));
             return const ToolOutput('Saved catalog.xlsx.');

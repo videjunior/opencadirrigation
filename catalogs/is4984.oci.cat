@@ -1,0 +1,2837 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "is4984",
+  "brand": "Generic (IS)",
+  "name": "PE pipes by IS 4984",
+  "description": "Polyethylene pipes for water supply of IS 4984:2016, PE 100 PN 4 / 6 / 8 / 10 / 12.5 / 16 (SDR 33 / 21 / 17 / 13.6 / 11 / 9) and PE 80 PN 4 / 6 / 8 / 10 (SDR 26 / 17 / 13.6 / 11) at 27 °C, dn 20 to 315 mm: minimum walls of its Table 4 (Amendment 2, 2022); supply reference prices in INR",
+  "source": "https://archive.org/details/gov.in.is.4984.2016",
+  "license": "CC0-1.0",
+  "updated": "2026-11-02",
+  "author": "OpenCADIrrigation",
+  "currency": "INR",
+  "pricesSource": "Maharashtra Jeevan Pradhikaran, State Schedule of Rates 2023-24 (in force from 20 June 2023), section I(IX) item 1: PE 100 pipes to IS 4984, 6 / 8 / 10 / 12.5 / 16 kg/cm², 63 to 315 mm, supplied to the departmental stores without couplers, INR per metre without GST. Published rows used as printed; the other sizes and classes from a least-squares fit to the published rows: price = 201.24 INR/kg × mass per metre (PE 960 kg/m³); the PE 80 pipes priced by the same line; the PE 100 PN 4 rows of Corrigendum 1 (4 September 2023) are stated with GST included and are not used.",
+  "pricesDate": "2023-06-20",
+  "sources": [
+    "IS 4984:2016 - Polyethylene pipes for water supply - Specification (fifth revision), with Amendment 1 (2018) and Amendment 2 (2022)",
+    "Maharashtra Jeevan Pradhikaran, State Schedule of Rates 2023-24 (in force from 20 June 2023): https://mjp.maharashtra.gov.in/wp-content/uploads/2023/01/MJP-SSR-2023-24_Final.pdf"
+  ],
+  "items": 161,
+  "catalog": {
+    "pipes": [
+      {
+        "id": "is4984_pe100_pn4_75",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 75 × 2.3 mm",
+        "nominalMm": 75.0,
+        "idMm": 70.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 2.3,
+        "cost": 101.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_90",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 90 × 2.8 mm",
+        "nominalMm": 90.0,
+        "idMm": 84.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 2.8,
+        "cost": 148.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_110",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 110 × 3.4 mm",
+        "nominalMm": 110.0,
+        "idMm": 103.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 3.4,
+        "cost": 220.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_125",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 125 × 3.8 mm",
+        "nominalMm": 125.0,
+        "idMm": 117.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 3.8,
+        "cost": 280.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_140",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 140 × 4.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 131.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 4.3,
+        "cost": 354.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_160",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 160 × 4.9 mm",
+        "nominalMm": 160.0,
+        "idMm": 150.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 4.9,
+        "cost": 461.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_180",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 180 × 5.5 mm",
+        "nominalMm": 180.0,
+        "idMm": 169.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 5.5,
+        "cost": 582.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_200",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 200 × 6.1 mm",
+        "nominalMm": 200.0,
+        "idMm": 187.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 6.1,
+        "cost": 718.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_225",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 225 × 6.9 mm",
+        "nominalMm": 225.0,
+        "idMm": 211.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 6.9,
+        "cost": 913.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_250",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 250 × 7.6 mm",
+        "nominalMm": 250.0,
+        "idMm": 234.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 7.6,
+        "cost": 1118.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_280",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 280 × 8.5 mm",
+        "nominalMm": 280.0,
+        "idMm": 263.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 8.5,
+        "cost": 1401.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn4_315",
+        "name": "PE 100 IS 4984 PN 4 (SDR 33) 315 × 9.6 mm",
+        "nominalMm": 315.0,
+        "idMm": 295.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 9.6,
+        "cost": 1779.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_40",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 40 × 2.0 mm",
+        "nominalMm": 40.0,
+        "idMm": 36.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 61.18,
+        "wallMm": 2.0,
+        "cost": 46.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_50",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 50 × 2.4 mm",
+        "nominalMm": 50.0,
+        "idMm": 45.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 61.18,
+        "wallMm": 2.4,
+        "cost": 69.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_63",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 63 × 3.0 mm",
+        "nominalMm": 63.0,
+        "idMm": 57.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 3.0,
+        "cost": 112.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_75",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 75 × 3.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 67.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 3.6,
+        "cost": 155.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_90",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 90 × 4.3 mm",
+        "nominalMm": 90.0,
+        "idMm": 81.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 4.3,
+        "cost": 220.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_110",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 110 × 5.3 mm",
+        "nominalMm": 110.0,
+        "idMm": 99.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 5.3,
+        "cost": 319.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_125",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 125 × 6.0 mm",
+        "nominalMm": 125.0,
+        "idMm": 113.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 6.0,
+        "cost": 437.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_140",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 140 × 6.7 mm",
+        "nominalMm": 140.0,
+        "idMm": 126.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 6.7,
+        "cost": 549.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_160",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 160 × 7.7 mm",
+        "nominalMm": 160.0,
+        "idMm": 144.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 7.7,
+        "cost": 711.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_180",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 180 × 8.6 mm",
+        "nominalMm": 180.0,
+        "idMm": 162.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 8.6,
+        "cost": 895.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_200",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 200 × 9.6 mm",
+        "nominalMm": 200.0,
+        "idMm": 180.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 9.6,
+        "cost": 1049.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_225",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 225 × 10.8 mm",
+        "nominalMm": 225.0,
+        "idMm": 203.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 10.8,
+        "cost": 1351.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_250",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 250 × 12.0 mm",
+        "nominalMm": 250.0,
+        "idMm": 226.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 12.0,
+        "cost": 1662.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_280",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 280 × 13.4 mm",
+        "nominalMm": 280.0,
+        "idMm": 253.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 13.4,
+        "cost": 2081.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn6_315",
+        "name": "PE 100 IS 4984 PN 6 (SDR 21) 315 × 15.0 mm",
+        "nominalMm": 315.0,
+        "idMm": 285.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 15.0,
+        "cost": 2636.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_32",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 32 × 2.0 mm",
+        "nominalMm": 32.0,
+        "idMm": 28.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 2.0,
+        "cost": 36.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_40",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 40 × 2.4 mm",
+        "nominalMm": 40.0,
+        "idMm": 35.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 2.4,
+        "cost": 55.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_50",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 50 × 3.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 44.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 3.0,
+        "cost": 86.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_63",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 63 × 3.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 55.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 3.8,
+        "cost": 140.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_75",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 75 × 4.5 mm",
+        "nominalMm": 75.0,
+        "idMm": 66.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 4.5,
+        "cost": 187.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_90",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 90 × 5.3 mm",
+        "nominalMm": 90.0,
+        "idMm": 79.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 5.3,
+        "cost": 266.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_110",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 110 × 6.5 mm",
+        "nominalMm": 110.0,
+        "idMm": 97.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 6.5,
+        "cost": 391.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_125",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 125 × 7.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 110.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 7.4,
+        "cost": 507.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_140",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 140 × 8.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 123.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 8.3,
+        "cost": 693.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_160",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 160 × 9.5 mm",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 9.5,
+        "cost": 897.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_180",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 180 × 10.6 mm",
+        "nominalMm": 180.0,
+        "idMm": 158.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 10.6,
+        "cost": 1133.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_200",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 200 × 11.8 mm",
+        "nominalMm": 200.0,
+        "idMm": 176.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 11.8,
+        "cost": 1333.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_225",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 225 × 13.3 mm",
+        "nominalMm": 225.0,
+        "idMm": 198.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 13.3,
+        "cost": 1712.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_250",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 250 × 14.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 220.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 14.8,
+        "cost": 2110.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_280",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 280 × 16.5 mm",
+        "nominalMm": 280.0,
+        "idMm": 247.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 16.5,
+        "cost": 2644.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn8_315",
+        "name": "PE 100 IS 4984 PN 8 (SDR 17) 315 × 18.6 mm",
+        "nominalMm": 315.0,
+        "idMm": 277.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 18.6,
+        "cost": 3350.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_25",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 25 × 2.0 mm",
+        "nominalMm": 25.0,
+        "idMm": 21.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 2.0,
+        "cost": 28.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_32",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 32 × 2.4 mm",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 2.4,
+        "cost": 43.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_40",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 40 × 3.0 mm",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 3.0,
+        "cost": 67.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_50",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 50 × 3.7 mm",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 3.7,
+        "cost": 104.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_63",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 63 × 4.7 mm",
+        "nominalMm": 63.0,
+        "idMm": 53.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 4.7,
+        "cost": 172.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_75",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 75 × 5.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 63.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 5.6,
+        "cost": 243.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_90",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 90 × 6.7 mm",
+        "nominalMm": 90.0,
+        "idMm": 76.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 6.7,
+        "cost": 350.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_110",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 110 × 8.1 mm",
+        "nominalMm": 110.0,
+        "idMm": 93.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 8.1,
+        "cost": 515.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_125",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 125 × 9.2 mm",
+        "nominalMm": 125.0,
+        "idMm": 106.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 9.2,
+        "cost": 661.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_140",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 140 × 10.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 119.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 10.3,
+        "cost": 826.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_160",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 160 × 11.8 mm",
+        "nominalMm": 160.0,
+        "idMm": 136.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 11.8,
+        "cost": 1075.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_180",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 180 × 13.3 mm",
+        "nominalMm": 180.0,
+        "idMm": 153.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 13.3,
+        "cost": 1360.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_200",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 200 × 14.8 mm",
+        "nominalMm": 200.0,
+        "idMm": 170.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 14.8,
+        "cost": 1597.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_225",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 225 × 16.6 mm",
+        "nominalMm": 225.0,
+        "idMm": 191.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 16.6,
+        "cost": 2043.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_250",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 250 × 18.4 mm",
+        "nominalMm": 250.0,
+        "idMm": 213.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 18.4,
+        "cost": 2549.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_280",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 280 × 20.6 mm",
+        "nominalMm": 280.0,
+        "idMm": 238.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 20.6,
+        "cost": 3149.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn10_315",
+        "name": "PE 100 IS 4984 PN 10 (SDR 13.6) 315 × 23.2 mm",
+        "nominalMm": 315.0,
+        "idMm": 268.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 23.2,
+        "cost": 4043.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_20",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 20 × 2.0 mm",
+        "nominalMm": 20.0,
+        "idMm": 16.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 2.0,
+        "cost": 22.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_25",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 25 × 2.3 mm",
+        "nominalMm": 25.0,
+        "idMm": 20.4,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 2.3,
+        "cost": 32.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_32",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 32 × 3.0 mm",
+        "nominalMm": 32.0,
+        "idMm": 26.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 3.0,
+        "cost": 53.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_40",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 40 × 3.7 mm",
+        "nominalMm": 40.0,
+        "idMm": 32.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 3.7,
+        "cost": 82.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_50",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 50 × 4.6 mm",
+        "nominalMm": 50.0,
+        "idMm": 40.8,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 127.46,
+        "wallMm": 4.6,
+        "cost": 127.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_63",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 63 × 5.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 51.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 5.8,
+        "cost": 204.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_75",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 75 × 6.9 mm",
+        "nominalMm": 75.0,
+        "idMm": 61.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 6.9,
+        "cost": 287.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_90",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 90 × 8.2 mm",
+        "nominalMm": 90.0,
+        "idMm": 73.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 8.2,
+        "cost": 414.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_110",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 110 × 10.0 mm",
+        "nominalMm": 110.0,
+        "idMm": 90.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 10.0,
+        "cost": 609.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_125",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 125 × 11.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 102.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 11.4,
+        "cost": 787.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_140",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 140 × 12.8 mm",
+        "nominalMm": 140.0,
+        "idMm": 114.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 12.8,
+        "cost": 987.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_160",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 160 × 14.6 mm",
+        "nominalMm": 160.0,
+        "idMm": 130.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 14.6,
+        "cost": 1283.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_180",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 180 × 16.4 mm",
+        "nominalMm": 180.0,
+        "idMm": 147.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 16.4,
+        "cost": 1621.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_200",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 200 × 18.2 mm",
+        "nominalMm": 200.0,
+        "idMm": 163.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 18.2,
+        "cost": 1905.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_225",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 225 × 20.5 mm",
+        "nominalMm": 225.0,
+        "idMm": 184.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 20.5,
+        "cost": 2458.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_250",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 250 × 22.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 204.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 22.8,
+        "cost": 3023.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_280",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 280 × 25.5 mm",
+        "nominalMm": 280.0,
+        "idMm": 229.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 25.5,
+        "cost": 3792.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn12_5_315",
+        "name": "PE 100 IS 4984 PN 12.5 (SDR 11) 315 × 28.7 mm",
+        "nominalMm": 315.0,
+        "idMm": 257.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 127.46,
+        "wallMm": 28.7,
+        "cost": 4801.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_20",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 20 × 2.3 mm",
+        "nominalMm": 20.0,
+        "idMm": 15.4,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 2.3,
+        "cost": 25.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_25",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 25 × 2.8 mm",
+        "nominalMm": 25.0,
+        "idMm": 19.4,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 2.8,
+        "cost": 38.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_32",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 32 × 3.6 mm",
+        "nominalMm": 32.0,
+        "idMm": 24.8,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 3.6,
+        "cost": 62.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_40",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 40 × 4.5 mm",
+        "nominalMm": 40.0,
+        "idMm": 31.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 4.5,
+        "cost": 97.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_50",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 50 × 5.6 mm",
+        "nominalMm": 50.0,
+        "idMm": 38.8,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 163.15,
+        "wallMm": 5.6,
+        "cost": 151.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_63",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 63 × 7.0 mm",
+        "nominalMm": 63.0,
+        "idMm": 49.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 7.0,
+        "cost": 232.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_75",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 75 × 8.4 mm",
+        "nominalMm": 75.0,
+        "idMm": 58.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 8.4,
+        "cost": 330.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_90",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 90 × 10.0 mm",
+        "nominalMm": 90.0,
+        "idMm": 70.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 10.0,
+        "cost": 473.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_110",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 110 × 12.3 mm",
+        "nominalMm": 110.0,
+        "idMm": 85.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 12.3,
+        "cost": 698.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_125",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 125 × 13.9 mm",
+        "nominalMm": 125.0,
+        "idMm": 97.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 13.9,
+        "cost": 904.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_140",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 140 × 15.6 mm",
+        "nominalMm": 140.0,
+        "idMm": 108.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 15.6,
+        "cost": 1127.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_160",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 160 × 17.8 mm",
+        "nominalMm": 160.0,
+        "idMm": 124.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 17.8,
+        "cost": 1479.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_180",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 180 × 20.0 mm",
+        "nominalMm": 180.0,
+        "idMm": 140.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 20.0,
+        "cost": 1859.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_200",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 200 × 22.3 mm",
+        "nominalMm": 200.0,
+        "idMm": 155.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 22.3,
+        "cost": 2921.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_225",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 225 × 25.0 mm",
+        "nominalMm": 225.0,
+        "idMm": 175.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 25.0,
+        "cost": 3690.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_250",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 250 × 27.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 194.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 27.8,
+        "cost": 4552.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_280",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 280 × 31.2 mm",
+        "nominalMm": 280.0,
+        "idMm": 217.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 31.2,
+        "cost": 5709.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe100_pn16_315",
+        "name": "PE 100 IS 4984 PN 16 (SDR 9) 315 × 35.0 mm",
+        "nominalMm": 315.0,
+        "idMm": 245.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 163.15,
+        "wallMm": 35.0,
+        "cost": 7216.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_50",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 50 × 2.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 46.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 40.79,
+        "wallMm": 2.0,
+        "cost": 58.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_63",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 63 × 2.5 mm",
+        "nominalMm": 63.0,
+        "idMm": 58.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 2.5,
+        "cost": 92.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_75",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 75 × 2.9 mm",
+        "nominalMm": 75.0,
+        "idMm": 69.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 2.9,
+        "cost": 127.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_90",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 90 × 3.5 mm",
+        "nominalMm": 90.0,
+        "idMm": 83.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 3.5,
+        "cost": 184.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_110",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 110 × 4.3 mm",
+        "nominalMm": 110.0,
+        "idMm": 101.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 4.3,
+        "cost": 276.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_125",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 125 × 4.9 mm",
+        "nominalMm": 125.0,
+        "idMm": 115.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 4.9,
+        "cost": 357.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_140",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 140 × 5.4 mm",
+        "nominalMm": 140.0,
+        "idMm": 129.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 5.4,
+        "cost": 441.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_160",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 160 × 6.2 mm",
+        "nominalMm": 160.0,
+        "idMm": 147.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 6.2,
+        "cost": 579.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_180",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 180 × 7.0 mm",
+        "nominalMm": 180.0,
+        "idMm": 166.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 7.0,
+        "cost": 735.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_200",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 200 × 7.7 mm",
+        "nominalMm": 200.0,
+        "idMm": 184.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 7.7,
+        "cost": 899.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_225",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 225 × 8.7 mm",
+        "nominalMm": 225.0,
+        "idMm": 207.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 8.7,
+        "cost": 1142.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_250",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 250 × 9.7 mm",
+        "nominalMm": 250.0,
+        "idMm": 230.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 9.7,
+        "cost": 1415.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_280",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 280 × 10.8 mm",
+        "nominalMm": 280.0,
+        "idMm": 258.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 10.8,
+        "cost": 1765.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn4_315",
+        "name": "PE 80 IS 4984 PN 4 (SDR 26) 315 × 12.2 mm",
+        "nominalMm": 315.0,
+        "idMm": 290.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 40.79,
+        "wallMm": 12.2,
+        "cost": 2242.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_32",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 32 × 2.0 mm",
+        "nominalMm": 32.0,
+        "idMm": 28.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 61.18,
+        "wallMm": 2.0,
+        "cost": 36.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_40",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 40 × 2.4 mm",
+        "nominalMm": 40.0,
+        "idMm": 35.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 61.18,
+        "wallMm": 2.4,
+        "cost": 55.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_50",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 50 × 3.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 44.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 61.18,
+        "wallMm": 3.0,
+        "cost": 86.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_63",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 63 × 3.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 55.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 3.8,
+        "cost": 137.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_75",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 75 × 4.5 mm",
+        "nominalMm": 75.0,
+        "idMm": 66.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 4.5,
+        "cost": 193.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_90",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 90 × 5.3 mm",
+        "nominalMm": 90.0,
+        "idMm": 79.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 5.3,
+        "cost": 272.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_110",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 110 × 6.5 mm",
+        "nominalMm": 110.0,
+        "idMm": 97.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 6.5,
+        "cost": 408.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_125",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 125 × 7.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 110.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 7.4,
+        "cost": 528.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_140",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 140 × 8.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 123.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 8.3,
+        "cost": 663.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_160",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 160 × 9.5 mm",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 9.5,
+        "cost": 868.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_180",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 180 × 10.6 mm",
+        "nominalMm": 180.0,
+        "idMm": 158.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 10.6,
+        "cost": 1090.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_200",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 200 × 11.8 mm",
+        "nominalMm": 200.0,
+        "idMm": 176.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 11.8,
+        "cost": 1348.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_225",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 225 × 13.3 mm",
+        "nominalMm": 225.0,
+        "idMm": 198.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 13.3,
+        "cost": 1709.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_250",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 250 × 14.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 220.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 14.8,
+        "cost": 2113.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_280",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 280 × 16.5 mm",
+        "nominalMm": 280.0,
+        "idMm": 247.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 16.5,
+        "cost": 2639.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn6_315",
+        "name": "PE 80 IS 4984 PN 6 (SDR 17) 315 × 18.6 mm",
+        "nominalMm": 315.0,
+        "idMm": 277.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 61.18,
+        "wallMm": 18.6,
+        "cost": 3346.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_25",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 25 × 2.0 mm",
+        "nominalMm": 25.0,
+        "idMm": 21.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 2.0,
+        "cost": 28.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_32",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 32 × 2.4 mm",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 2.4,
+        "cost": 43.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_40",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 40 × 3.0 mm",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 3.0,
+        "cost": 67.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_50",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 50 × 3.7 mm",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 81.58,
+        "wallMm": 3.7,
+        "cost": 104.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_63",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 63 × 4.7 mm",
+        "nominalMm": 63.0,
+        "idMm": 53.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 4.7,
+        "cost": 166.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_75",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 75 × 5.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 63.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 5.6,
+        "cost": 236.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_90",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 90 × 6.7 mm",
+        "nominalMm": 90.0,
+        "idMm": 76.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 6.7,
+        "cost": 339.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_110",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 110 × 8.1 mm",
+        "nominalMm": 110.0,
+        "idMm": 93.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 8.1,
+        "cost": 501.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_125",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 125 × 9.2 mm",
+        "nominalMm": 125.0,
+        "idMm": 106.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 9.2,
+        "cost": 647.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_140",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 140 × 10.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 119.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 10.3,
+        "cost": 811.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_160",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 160 × 11.8 mm",
+        "nominalMm": 160.0,
+        "idMm": 136.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 11.8,
+        "cost": 1061.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_180",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 180 × 13.3 mm",
+        "nominalMm": 180.0,
+        "idMm": 153.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 13.3,
+        "cost": 1346.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_200",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 200 × 14.8 mm",
+        "nominalMm": 200.0,
+        "idMm": 170.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 14.8,
+        "cost": 1664.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_225",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 225 × 16.6 mm",
+        "nominalMm": 225.0,
+        "idMm": 191.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 16.6,
+        "cost": 2100.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_250",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 250 × 18.4 mm",
+        "nominalMm": 250.0,
+        "idMm": 213.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 18.4,
+        "cost": 2586.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_280",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 280 × 20.6 mm",
+        "nominalMm": 280.0,
+        "idMm": 238.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 20.6,
+        "cost": 3243.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn8_315",
+        "name": "PE 80 IS 4984 PN 8 (SDR 13.6) 315 × 23.2 mm",
+        "nominalMm": 315.0,
+        "idMm": 268.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 81.58,
+        "wallMm": 23.2,
+        "cost": 4109.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_20",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 20 × 2.0 mm",
+        "nominalMm": 20.0,
+        "idMm": 16.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 2.0,
+        "cost": 22.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_25",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 25 × 2.3 mm",
+        "nominalMm": 25.0,
+        "idMm": 20.4,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 2.3,
+        "cost": 32.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_32",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 32 × 3.0 mm",
+        "nominalMm": 32.0,
+        "idMm": 26.0,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 3.0,
+        "cost": 53.0,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_40",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 40 × 3.7 mm",
+        "nominalMm": 40.0,
+        "idMm": 32.6,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 3.7,
+        "cost": 82.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_50",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 50 × 4.6 mm",
+        "nominalMm": 50.0,
+        "idMm": 40.8,
+        "material": "pehd",
+        "c": 145.0,
+        "roughMm": 0.003,
+        "ratingM": 101.97,
+        "wallMm": 4.6,
+        "cost": 127.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_63",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 63 × 5.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 51.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 5.8,
+        "cost": 201.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_75",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 75 × 6.9 mm",
+        "nominalMm": 75.0,
+        "idMm": 61.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 6.9,
+        "cost": 285.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_90",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 90 × 8.2 mm",
+        "nominalMm": 90.0,
+        "idMm": 73.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 8.2,
+        "cost": 407.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_110",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 110 × 10.0 mm",
+        "nominalMm": 110.0,
+        "idMm": 90.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 10.0,
+        "cost": 607.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_125",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 125 × 11.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 102.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 11.4,
+        "cost": 786.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_140",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 140 × 12.8 mm",
+        "nominalMm": 140.0,
+        "idMm": 114.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 12.8,
+        "cost": 988.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_160",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 160 × 14.6 mm",
+        "nominalMm": 160.0,
+        "idMm": 130.8,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 14.6,
+        "cost": 1288.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_180",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 180 × 16.4 mm",
+        "nominalMm": 180.0,
+        "idMm": 147.2,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 16.4,
+        "cost": 1628.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_200",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 200 × 18.2 mm",
+        "nominalMm": 200.0,
+        "idMm": 163.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 18.2,
+        "cost": 2008.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_225",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 225 × 20.5 mm",
+        "nominalMm": 225.0,
+        "idMm": 184.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 20.5,
+        "cost": 2544.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_250",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 250 × 22.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 204.4,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 22.8,
+        "cost": 3144.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_280",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 280 × 25.5 mm",
+        "nominalMm": 280.0,
+        "idMm": 229.0,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 25.5,
+        "cost": 3939.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      },
+      {
+        "id": "is4984_pe80_pn10_315",
+        "name": "PE 80 IS 4984 PN 10 (SDR 11) 315 × 28.7 mm",
+        "nominalMm": 315.0,
+        "idMm": 257.6,
+        "material": "pehd",
+        "c": 150.0,
+        "roughMm": 0.002,
+        "ratingM": 101.97,
+        "wallMm": 28.7,
+        "cost": 4987.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "IS 4984"
+      }
+    ],
+    "outlets": [],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

@@ -7,6 +7,9 @@
 ///   dart run bin/oci.dart check project.oci.json && echo ok
 ///   dart run bin/oci.dart validate project.oci.json
 ///   dart run bin/oci.dart export project.oci.json --format dxf --out project.dxf
+///   dart run bin/oci.dart import survey.dxf field.kml --out farm.oci.json
+///   dart run bin/oci.dart new --out lawn.oci.json --boundary lawn.kml --layout --currency USD --hz 60
+///   dart run bin/oci.dart design projects/ --out-dir designed/
 ///
 /// Besides lib/core it reads two plain-Dart files of lib/app that the design
 /// worker also compiles without Flutter: the string table (i18n.dart) and the
@@ -25,12 +28,21 @@ import 'package:opencadirrigation/core/design/design_check.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/report_tables.dart';
 import 'package:opencadirrigation/core/design/results.dart';
+import 'package:opencadirrigation/core/design/auto_layout.dart' show layoutLandscape;
+import 'package:opencadirrigation/core/io/drawing_import.dart';
 import 'package:opencadirrigation/core/io/fonts/pdf_fonts.dart';
 import 'package:opencadirrigation/core/io/geo.dart';
 import 'package:opencadirrigation/core/io/pdf_sheet.dart';
 import 'package:opencadirrigation/core/io/project_export.dart';
 import 'package:opencadirrigation/core/io/xlsx.dart';
+import 'package:opencadirrigation/core/model/area_holes.dart' show fitsAsHole, holesOf;
+import 'package:opencadirrigation/core/model/catalog.dart';
+import 'package:opencadirrigation/core/model/catalog_packs.dart';
+import 'package:opencadirrigation/core/io/catalog_io.dart' show catalogPackExtension;
+import 'package:opencadirrigation/core/model/currency.dart' show catalogPriceCurrency, currencyByCode, exchangeRate;
+import 'package:opencadirrigation/core/model/edit_ops.dart' show areaOutline;
 import 'package:opencadirrigation/core/model/entities.dart';
+import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/model/read_report.dart';
 import 'package:opencadirrigation/core/model/schema.dart';
@@ -57,13 +69,17 @@ abstract final class OciExit {
   static const failed = 4;
 }
 
-const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom', 'schema'];
-const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper'};
-const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version', 'no-results'};
+const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom', 'schema', 'import', 'new', 'set', 'pack'];
+const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper', 'out-dir', 'into', 'units', 'currency', 'hz', 'name', 'boundary', 'outlet'};
+const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version', 'no-results', 'layout'};
+
+/// The commands that run on projects and take several of them (files or
+/// folders of `.oci.json`) in one go.
+const _batchCommands = {'design', 'analyze', 'check', 'validate', 'export', 'bom'};
 
 const usageText =
     '''
-Usage: dart run bin/oci.dart <command> <project.oci.json> [options]
+Usage: dart run bin/oci.dart <command> <project.oci.json>… [options]
 
 Commands:
   design    Size the pipes and analyse the design (F5 in the app) and print a summary.
@@ -76,6 +92,20 @@ Commands:
   export    Write the drawing in another format (--format, --out).
   bom       Size the design and print the bill of materials.
   schema    Print the JSON Schema of the project file (built from the model; no file).
+  import    Make a project of drawings, maps and surveys: import <file>… --out <project>
+            (DXF, DWG, DGN, KML/KMZ, shapefile or zip, GeoJSON, GPX, LandXML, EPANET .inp,
+            LAS, GeoTIFF elevations, CSV points); --into <project> adds them to one.
+  new       A new project: new --out <project> [--name] [--units] [--currency] [--hz]
+            [--georef]; --boundary <file> makes the largest closed outline of a drawing an
+            irrigated area, --layout lays sprinklers over it (--outlet <catalogue id>).
+  set       Change a project: set <project> [--units] [--currency] [--hz] [--name]
+            [--georef] [--out <file>] (the prices follow the currency at the reference rates;
+            without --out the file is rewritten; the results are left out).
+  pack add  Add catalogue packs: pack add <project> <pack.oci.cat or bundled id>… [--out]
+            (ids kept, prices converted to the project's currency).
+
+design, analyze, check, validate, export and bom take several projects (or folders of
+.oci.json files) in one run; --out-dir tells where their files go.
 
 Options:
   --out <file>        design: the designed project (.oci.json) with its results, as the app
@@ -89,13 +119,24 @@ Options:
   --format <name>     export: dxf, dwg, pdf, svg, kml, kmz, geojson, shp (zip), gpx,
                       landxml, ifc or inp (EPANET).
   --georef <lat,lon>  export: WGS84 position of the drawing origin (0, 0) for a project
-                      without a georeference (kml, kmz, geojson and gpx need one).
+                      without a georeference (kml, kmz, geojson and gpx need one); import,
+                      new, set: the georeference of the project.
   --design            export, check: size and analyse first (sized pipes, results, all
                       the messages); bom sizes by default.
   --analyze           export, check, bom: analyse first, keeping the pipe sizes as drawn.
   --paper <size>      export pdf, svg: a4, a3 (default), a2, a1, a0, letter or tabloid.
   --portrait          export pdf, svg: portrait sheet (default landscape).
   --json              check, validate: the messages as JSON.
+  --out-dir <dir>     several projects: where the designed projects, exports, reports
+                      and bills go, named after each project (default: next to it).
+  --into <project>    import: add the drawings to this project (default: a new one).
+  --units <system>    new, set: metric or us.
+  --currency <code>   new, set: ISO 4217 code of the prices (BRL, USD, EUR…).
+  --hz <50|60>        new, set: mains frequency of the pumps.
+  --name <text>       new, set: name of the project.
+  --boundary <file>   new: the drawing whose largest closed outline is the area.
+  --layout            new: lay sprinkler heads over the area.
+  --outlet <id>       new --layout: the sprinkler family (default the first enabled one).
   -h, --help          This help.
   --version           The version of the engine.
 
@@ -114,6 +155,13 @@ class _Args {
   final positional = <String>[];
   final values = <String, String>{};
   final flags = <String>{};
+
+  /// A copy to change for one project of a batch.
+  _Args copy() => _Args()
+    ..command = command
+    ..positional.addAll(positional)
+    ..values.addAll(values)
+    ..flags.addAll(flags);
 }
 
 _Args _parse(List<String> args) {
@@ -179,8 +227,8 @@ Future<int> runOci(List<String> args, {StringSink? out, StringSink? err, String?
     o.writeln(const JsonEncoder.withIndent('  ').convert(projectJsonSchema()));
     return OciExit.ok;
   }
-  if (a.positional.length != 1) {
-    e.writeln('oci: $command needs one project file (.oci.json)');
+  if (_batchCommands.contains(command) && a.positional.isEmpty) {
+    e.writeln('oci: $command needs a project file (.oci.json), several, or a folder of them');
     return OciExit.usage;
   }
   final lang = a.values['lang'] ?? 'en';
@@ -192,16 +240,19 @@ Future<int> runOci(List<String> args, {StringSink? out, StringSink? err, String?
   final session = _Session(o, e, root, lang);
   try {
     await session.loadLanguage();
-    final project = session.readProject(a.positional.single);
-    return await switch (command) {
-      'design' => session.design(project, a, size: true),
-      'analyze' => session.design(project, a, size: false),
-      'check' => session.check(project, a),
-      'validate' => session.validate(project, a),
-      'export' => session.export(project, a, a.positional.single),
-      'bom' => session.bom(project, a),
-      _ => OciExit.usage,
-    };
+    switch (command) {
+      case 'import':
+        return await session.importDrawings(a);
+      case 'new':
+        return await session.newProject(a);
+      case 'set':
+        return await session.setProject(a);
+      case 'pack':
+        return await session.pack(a);
+    }
+    final inputs = session.projectFiles(a.positional);
+    if (inputs.length == 1 && !a.values.containsKey('out-dir')) return await session.runOn(command, inputs.single, a);
+    return await session.batch(command, inputs, a);
   } on _UsageError catch (x) {
     e.writeln('oci: ${x.message}');
     return OciExit.usage;
@@ -280,6 +331,297 @@ class _Session {
   }
 
   String _note(ReadNote n) => t.has('read.${n.code}') ? t('read.${n.code}', n.args) : '$n';
+
+  // ------------------------------------------------------------------ several projects (1.6.0 MOD)
+
+  /// The project files of [paths]: the files as given, and every `.oci.json`
+  /// inside a folder (and its folders), in order.
+  List<String> projectFiles(List<String> paths) {
+    final out = <String>[];
+    for (final path in paths) {
+      if (FileSystemEntity.isDirectorySync(path)) {
+        final found = [
+          for (final f in Directory(path).listSync(recursive: true).whereType<File>())
+            if (f.path.toLowerCase().endsWith('.oci.json')) f.path,
+        ]..sort();
+        if (found.isEmpty) throw _UsageError('$path: no project file (.oci.json) in it');
+        out.addAll(found);
+      } else {
+        out.add(path);
+      }
+    }
+    return out;
+  }
+
+  /// Runs [command] on the project file [path].
+  Future<int> runOn(String command, String path, _Args a) async {
+    final project = readProject(path);
+    return switch (command) {
+      'design' => await design(project, a, size: true),
+      'analyze' => await design(project, a, size: false),
+      'check' => await check(project, a),
+      'validate' => await validate(project, a),
+      'export' => await export(project, a, path),
+      'bom' => await bom(project, a),
+      _ => throw _UsageError('$command does not run on projects'),
+    };
+  }
+
+  /// Runs [command] on every project of [inputs] in turn: the files of each
+  /// (designed project, export, report, results, bill of materials) go to
+  /// --out-dir, or next to the project, named after it; a project that
+  /// fails does not stop the others. The exit code is the worst of all.
+  Future<int> batch(String command, List<String> inputs, _Args a) async {
+    if (a.values.containsKey('out') && command != 'bom') throw _UsageError('several projects: --out-dir tells where their files go (not --out)');
+    final dir = a.values['out-dir'];
+    if (dir != null) {
+      try {
+        Directory(dir).createSync(recursive: true);
+      } on FileSystemException catch (x) {
+        throw _Failure(OciExit.io, '$dir: cannot be made (${x.osError?.message ?? x.message})');
+      }
+    }
+    String ext(String v) => v.contains('.') ? v.split('.').last : v;
+    final formatName = a.values['format']?.toLowerCase();
+    final format = formatName == null ? null : DrawingFormat.values.where((f) => f.name == formatName).firstOrNull;
+    var worst = OciExit.ok, ok = 0, problems = 0, failed = 0;
+    for (final path in inputs) {
+      final stem = File(_stem(path)).uri.pathSegments.last;
+      final folder = dir ?? File(path).parent.path;
+      String named(String suffix) => '$folder/$stem$suffix';
+      final per = a.copy()..values.remove('out-dir');
+      if (command == 'design' && dir != null) per.values['out'] = named('.oci.json');
+      if (command == 'export' && format != null) per.values['out'] = named('.${format.extension}');
+      final bomOut = a.values['out'], report = a.values['report'];
+      if (command == 'bom' && bomOut != null) per.values['out'] = named('.bom.${ext(bomOut)}');
+      if (report != null) per.values['report'] = named('.report.${ext(report)}');
+      if (a.values['results'] != null) per.values['results'] = named('.results.json');
+      out.writeln('== $path');
+      int code;
+      try {
+        code = await runOn(command, path, per);
+      } on _Failure catch (x) {
+        err.writeln('oci: $path: ${x.message}');
+        code = x.code;
+      }
+      if (code > worst) worst = code;
+      if (code == OciExit.ok) {
+        ok++;
+      } else if (code == OciExit.problems) {
+        problems++;
+      } else {
+        failed++;
+      }
+    }
+    out.writeln('${inputs.length} projects: $ok done, $problems with problems, $failed failed');
+    return worst;
+  }
+
+  // ------------------------------------------------------------------ making projects (1.6.0 MOD)
+
+  /// A new project as the app makes one: the default catalogue in the
+  /// language and in the currency of --currency (the energy price too),
+  /// then --units, --hz, --name and --georef.
+  Project blankProject(_Args a) {
+    final code = (a.values['currency'] ?? catalogPriceCurrency).toUpperCase();
+    final currency = currencyByCode(code);
+    if (currency == null) throw _UsageError('unknown currency $code (an ISO 4217 code: BRL, USD, EUR…)');
+    final project = Project(catalog: Catalog.defaultCatalog(lang: lang, currency: code));
+    final defaults = DesignParameters();
+    final rate = exchangeRate(defaults.currencyCode, code);
+    project.params
+      ..currencyCode = code
+      ..currency = currency.symbol
+      ..powerCostPerKwh = defaults.powerCostPerKwh * (rate ?? 1);
+    project.meta.name = t('name.newProject');
+    _settings(project, a, currency: false);
+    return project;
+  }
+
+  /// --units, --hz, --name, --georef and (with [currency]) --currency on
+  /// [project]: a new currency converts every price at the reference rate.
+  void _settings(Project project, _Args a, {bool currency = true}) {
+    final units = a.values['units'];
+    if (units != null) {
+      project.params.units = switch (units.toLowerCase()) {
+        'metric' || 'si' => Units.metric,
+        'us' || 'imperial' => Units.us,
+        _ => throw _UsageError('--units: metric or us'),
+      };
+    }
+    final hz = a.values['hz'];
+    if (hz != null) {
+      final v = double.tryParse(hz);
+      if (v != 50 && v != 60) throw _UsageError('--hz: 50 or 60');
+      project.params.mainsHz = v!;
+    }
+    final name = a.values['name'];
+    if (name != null) project.meta.name = name;
+    final georef = a.values['georef'];
+    if (georef != null) {
+      final ll = parseLatLon(georef);
+      if (ll == null) throw _UsageError('--georef: not a position: $georef (e.g. -22.9068,-43.1729)');
+      project.meta.georef = GeoReference.fromLatLonOrigin(ll.$1, ll.$2);
+    }
+    final code = a.values['currency'];
+    if (currency && code != null) {
+      final to = code.toUpperCase();
+      if (currencyByCode(to) == null) throw _UsageError('unknown currency $to (an ISO 4217 code: BRL, USD, EUR…)');
+      final from = project.params.currencyCode;
+      if (to != from) {
+        final rate = from.isEmpty ? null : exchangeRate(from, to);
+        if (rate == null) err.writeln('oci: no reference rate from ${from.isEmpty ? '?' : from} to $to: the prices keep their numbers');
+        project.setCurrency(to, rate: rate);
+      }
+    }
+  }
+
+  void _writeProject(String path, Project project) => _write(path, encodeJson(project.toJson(), pretty: true));
+
+  /// import: drawings, maps and surveys into a new project, or into --into.
+  Future<int> importDrawings(_Args a) async {
+    if (a.positional.isEmpty) throw _UsageError('import needs one or more files (${drawingImportExtensions.join(' ')})');
+    final into = a.values['into'];
+    final project = into == null ? blankProject(a) : readProject(into);
+    // the first drawing without its extension names a new project and its file
+    final first = a.positional.first;
+    final dot = first.lastIndexOf('.'), slash = first.replaceAll(r'\', '/').lastIndexOf('/');
+    final base = dot > slash + 1 ? first.substring(0, dot) : first;
+    if (into == null) project.meta.name = a.values['name'] ?? File(base).uri.pathSegments.last;
+    for (final path in a.positional) {
+      _importInto(project, path);
+    }
+    _writeProject(a.values['out'] ?? into ?? '$base.oci.json', project);
+    return OciExit.ok;
+  }
+
+  /// Reads the drawing [path] into [project] (as File → Import does) and
+  /// says what came in.
+  FileImport _importInto(Project project, String path) {
+    final f = File(path);
+    if (!f.existsSync()) throw _Failure(OciExit.io, '$path: no such file');
+    final FileImport r;
+    try {
+      r = importFileInto(project, f.uri.pathSegments.last, f.readAsBytesSync());
+    } on FormatException catch (x) {
+      throw _Failure(OciExit.io, '$path: ${_importError(x.message)}');
+    }
+    final geo = r.georefTaken ? ' (georeference ${project.meta.georef?.crsName ?? '-'})' : '';
+    out.writeln('$path: ${r.kind}, ${r.entities.length} items$geo');
+    for (final w in r.warnings) {
+      err.writeln('oci: $path: ${t.warning(w)}');
+    }
+    return r;
+  }
+
+  String _importError(String code) => switch (code) {
+    'import_format' => 'not a format the command line imports (${drawingImportExtensions.join(' ')}); PDF plans and pictures come in with the app',
+    'import_not_dem' => 'a GeoTIFF without elevations: pictures come in with the app',
+    'file_corrupt' => 'the file is damaged (a reader could not go on)',
+    _ => t.has('imp.err.$code') ? t('imp.err.$code') : code,
+  };
+
+  /// new: a project with --boundary as its irrigated area and, with
+  /// --layout, sprinkler heads over it.
+  Future<int> newProject(_Args a) async {
+    final dest = a.values['out'] ?? (a.positional.length == 1 ? a.positional.single : null);
+    if (dest == null) throw _UsageError('new needs --out <project.oci.json>');
+    final project = blankProject(a);
+    AreaEntity? area;
+    final boundary = a.values['boundary'];
+    if (boundary != null) {
+      final r = _importInto(project, boundary);
+      area = _areaOf(project, r.entities);
+      if (area == null) throw _Failure(OciExit.failed, '$boundary: no closed outline to make the area of');
+      out.writeln('area «${area.name}»: ${fmt(area.area / 10000, 4)} ha');
+    }
+    if (a.flags.contains('layout')) {
+      if (area == null) throw _UsageError('--layout needs --boundary <file> (the area to lay the heads over)');
+      final heads = _layout(project, area, a.values['outlet']);
+      final family = project.catalog.outlet(heads.first.outletSpecId)?.name ?? heads.first.outletSpecId;
+      out.writeln('layout: ${heads.length} heads of $family');
+    }
+    _writeProject(dest, project);
+    return OciExit.ok;
+  }
+
+  /// The largest closed outline among [made] (a closed polyline, the
+  /// polygon of a map, a hatch, a circle…) made an irrigated area in its
+  /// place; null without one.
+  AreaEntity? _areaOf(Project project, List<Entity> made) {
+    (Entity, List<Pt>)? best;
+    for (final e in made) {
+      final o = e is AreaEntity ? e.points : areaOutline(e, tol: project.params.connectTolerance);
+      if (o == null || o.length < 3) continue;
+      if (best == null || polygonArea(o).abs() > polygonArea(best.$2).abs()) best = (e, o);
+    }
+    if (best == null) return null;
+    final (e, outline) = best;
+    if (e is AreaEntity) return e;
+    final area = AreaEntity(id: e.id, name: e.name.isNotEmpty ? e.name : t('name.area'), points: List.of(outline));
+    final i = project.entities.indexOf(e);
+    if (i >= 0) project.entities[i] = area;
+    // the other closed outlines inside it (the holes of a polygon of a map,
+    // a pond drawn in the field) are its islands
+    for (final other in made) {
+      if (identical(other, e) || other is AreaEntity) continue;
+      final o = areaOutline(other, tol: project.params.connectTolerance);
+      if (o == null || !fitsAsHole(area, o)) continue;
+      area.holes.add(o);
+      project.entities.remove(other);
+    }
+    return area;
+  }
+
+  /// Sprinkler heads of [outletId] (default: the first enabled sprinkler of
+  /// the catalogue) over [area], as the automatic layout of the app lays
+  /// them (no zones or pipes yet).
+  List<OutletEntity> _layout(Project project, AreaEntity area, String? outletId) {
+    final cat = project.catalog;
+    final family = outletId != null
+        ? (cat.outlet(outletId) ?? (throw _UsageError('--outlet: no emitter $outletId in the catalogue')))
+        : cat.outlets.where((o) => o.enabled && o.kind == OutletKind.sprinkler).firstOrNull;
+    if (family == null) throw _Failure(OciExit.failed, 'no enabled sprinkler in the catalogue: pass --outlet <id>');
+    final layout = layoutLandscape(outline: area.points, exclusions: holesOf(area), family: family);
+    if (layout.isEmpty) throw _Failure(OciExit.failed, 'no head fits the area (${layout.messages.join(', ')})');
+    final heads = layout.toOutlets(project);
+    project.entities.addAll(heads);
+    return heads;
+  }
+
+  /// set: --units, --currency, --hz, --name, --georef on a project.
+  Future<int> setProject(_Args a) async {
+    if (a.positional.length != 1) throw _UsageError('set needs one project file (.oci.json)');
+    final path = a.positional.single;
+    final project = readProject(path);
+    _settings(project, a);
+    _writeProject(a.values['out'] ?? path, project);
+    return OciExit.ok;
+  }
+
+  /// pack add: catalogue packs (a file, or the id of a bundled pack of
+  /// catalogs/) added to a project as the app adds them.
+  Future<int> pack(_Args a) async {
+    if (a.positional.length < 3 || a.positional.first != 'add') throw _UsageError('pack add <project.oci.json> <pack.oci.cat or bundled pack id>…');
+    final path = a.positional[1];
+    final project = readProject(path);
+    for (final ref in a.positional.skip(2)) {
+      final File? file = File(ref).existsSync() ? File(ref) : (home == null ? null : File('$home/catalogs/$ref$catalogPackExtension'));
+      if (file == null || !file.existsSync()) throw _Failure(OciExit.io, '$ref: no such pack (a .oci.cat file or the id of a pack in catalogs/)');
+      final CatalogPack pack;
+      try {
+        pack = CatalogPack.parse(file.readAsStringSync(), origin: file.path);
+      } catch (x) {
+        throw _Failure(OciExit.io, '$ref: not a catalogue pack ($x)');
+      }
+      final r = addCatalogPack(project.catalog, pack, projectCurrency: project.params.currencyCode);
+      final from = r.from.isEmpty ? '?' : r.from;
+      final prices = r.converted ? ', prices from ${r.from} to ${r.to}' : (r.unknownCurrency ? ', prices kept as they are (no rate from $from)' : '');
+      out.writeln('${pack.id}: ${r.added} items added$prices');
+    }
+    _writeProject(a.values['out'] ?? path, project);
+    return OciExit.ok;
+  }
 
   // ------------------------------------------------------------------ design
 

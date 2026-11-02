@@ -92,9 +92,17 @@ class SvgWriter {
               d.write('${i == 0 ? 'M' : 'L'}${n(sx(p.points[i].x))} ${n(sy(p.points[i].y))}');
             }
             if (p.closed) d.write('Z');
+            // 1.6.0 MOD: the islands of an area, cut out by the even-odd rule
+            for (final h in p.holes) {
+              for (var i = 0; i < h.length; i++) {
+                d.write('${i == 0 ? 'M' : 'L'}${n(sx(h[i].x))} ${n(sy(h[i].y))}');
+              }
+              d.write('Z');
+            }
             final fill = p.fillColor != null ? hex(p.fillColor!) : 'none';
+            final rule = p.holes.isEmpty ? '' : ' fill-rule="evenodd"';
             final dash = p.dashed ? ' stroke-dasharray="${n(p.widthMm * 6)} ${n(p.widthMm * 4)}"' : '';
-            out.writeln('<path d="$d" fill="$fill"${fillOpacity(p.fillOpacity)} stroke="${hex(p.color)}" stroke-width="${n(p.widthMm)}"$dash/>');
+            out.writeln('<path d="$d" fill="$fill"$rule${fillOpacity(p.fillOpacity)} stroke="${hex(p.color)}" stroke-width="${n(p.widthMm)}"$dash/>');
           case PlotCircle c:
             final fill = c.fillColor != null ? hex(c.fillColor!) : 'none';
             final stroke = c.stroke ? ' stroke="${hex(c.color)}" stroke-width="${n(c.widthMm)}"' : '';

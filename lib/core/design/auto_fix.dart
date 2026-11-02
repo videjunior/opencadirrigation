@@ -6,6 +6,7 @@ library;
 
 import 'dart:math' as math;
 
+import '../model/area_holes.dart' show holesWithin;
 import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
@@ -404,6 +405,8 @@ FixResult applyFix(Project p, Advice a, FixKind kind, {DesignResults? results, S
           for (var k = 0; k < parts.length; k++)
             area.clone(newId: k == 0 ? area.id : p.newId())
               ..points = parts[k]
+              // 1.6.0 MOD: each piece keeps the islands inside it
+              ..holes = holesWithin(area, parts[k])
               ..name = k == 0 || area.name.isEmpty ? area.name : '${area.name} (${k + 1})',
         ];
         p.entities

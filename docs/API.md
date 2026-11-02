@@ -39,7 +39,19 @@ readers take strings or bytes, writers return them, and the caller decides where
 
 **Where to run it.** The package depends on the Flutter SDK (for the app), so `dart run` works inside this repository
 (`dart run bin/oci.dart`, or a script of your own under `tool/` or `bin/`), and a Flutter project can depend on it by path
-or git. A Dart-only package cannot depend on it directly, because of that SDK dependency.
+or git. For a server, a CI job or a Dart-only program, `tool/engine_package.dart` writes the engine as a package of its
+own, without Flutter: `lib/core`, the command line, the two plain-Dart files of `lib/app` it reads (the string table and
+the version), the language packs, the PDF fonts and the catalogue packs, under a pubspec with the engine's packages only
+(archive, image, xml). It keeps the name `opencadirrigation`, so the imports stay the same, and the generator itself needs
+only the Dart SDK (`test/guards/engine_package_test.dart` checks that every library the package reaches is in it):
+
+```sh
+dart tool/engine_package.dart build/engine
+cd build/engine && dart pub get && dart run bin/oci.dart --help
+dart compile exe bin/oci.dart -o oci   # one executable, no SDK needed to run it
+```
+
+Another Dart package then depends on it by path (`opencadirrigation: {path: ../build/engine}`).
 
 **Translations.** The engine labels its output through a function you pass (`Translate`, `String Function(String key)`):
 the designer uses it for the names it gives (supplies, pivots, the automatic system flow, some lines of the bill of
@@ -54,6 +66,24 @@ KML/KMZ, GeoJSON, shapefile, GPX, LandXML, IFC, EPANET INP), `bom` and `schema` 
 built from the model: every key, its type, its unit and the default of a new project), with `--lang`, `--report`,
 `--results` and `--out` options. `design --out` writes the designed project with its results, as the app saves it (`--no-results` leaves them
 out).
+
+Projects are also made and changed there, without the interface: `import` makes a project of drawings, maps and surveys
+(DXF, DWG, DGN, KML/KMZ, shapefiles, GeoJSON, GPX, LandXML, EPANET .inp, LAS, GeoTIFF elevations, CSV points; `--into`
+adds them to a project), as File → Import does (`importFileInto` and `importDrawingInto` in `core/io/drawing_import.dart`);
+`new` starts a project with `--units`, `--currency`, `--hz`, `--name` and `--georef`, makes the largest closed outline of
+`--boundary` its irrigated area (the rings inside it its islands) and with `--layout` lays the sprinkler heads over it;
+`set` changes the units, the currency (the prices follow at the reference rates), the mains frequency, the name or the
+georeference; `pack add` adds catalogue packs (a `.oci.cat` file or the id of a bundled one, prices converted). `design`,
+`analyze`, `check`, `validate`, `export` and `bom` take several projects or folders of them in one run, with `--out-dir`
+for the files of each; the exit code is the worst of the run:
+
+```sh
+dart run bin/oci.dart import survey.dxf boundary.kml --out farm.oci.json
+dart run bin/oci.dart new --out lawn.oci.json --boundary lawn.geojson --layout --currency USD --hz 60
+dart run bin/oci.dart set farm.oci.json --units us --currency USD
+dart run bin/oci.dart pack add farm.oci.json iso1452 en12201
+dart run bin/oci.dart design projects/ --out-dir designed/ --report xlsx
+```
 
 ## 2. Projects and the design
 

@@ -1135,16 +1135,24 @@ class CadPainter extends CustomPainter {
   void _area(Canvas canvas, AreaEntity a) {
     final selected = c.selection.contains(a.id);
     final color = _inkOf(a.layer);
-    final path = Path();
-    final f = cam.toScreen(a.points.first);
-    path.moveTo(f.dx, f.dy);
-    for (final p in a.points.skip(1)) {
-      final s = cam.toScreen(p);
-      path.lineTo(s.dx, s.dy);
+    // 1.6.0 MOD: the islands are cut out of the fill (even-odd rule)
+    final path = Path()..fillType = PathFillType.evenOdd;
+    for (final ring in [a.points, ...a.holes]) {
+      if (ring.isEmpty || (!identical(ring, a.points) && ring.length < 3)) continue;
+      final f = cam.toScreen(ring.first);
+      path.moveTo(f.dx, f.dy);
+      for (final p in ring.skip(1)) {
+        final s = cam.toScreen(p);
+        path.lineTo(s.dx, s.dy);
+      }
+      path.close();
     }
-    path.close();
     canvas.drawPath(path, _fill(color.withValues(alpha: selected ? 0.35 : 0.18)));
-    _poly(canvas, a.points, _stroke(selected ? Cad.selection : color.withValues(alpha: 0.9), 1), close: true);
+    final edge = _stroke(selected ? Cad.selection : color.withValues(alpha: 0.9), 1);
+    _poly(canvas, a.points, edge, close: true);
+    for (final h in a.holes) {
+      if (h.length >= 3) _poly(canvas, h, edge, close: true);
+    }
     if (c.showLabels) {
       final cen = cam.toScreen(polygonCentroid(a.points));
       _label(canvas, cen, '${a.name}  ${fmt(a.area / 10000, 2)} ha', size: 11, shift: const Offset(-20, -6));

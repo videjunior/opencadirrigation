@@ -1,4 +1,8 @@
 /// Maintains the catalogue pack repository (`catalogs/`):
+/// - builds the generic pipe packs from lib/core/model/pipe_standards.dart
+///   (astm, en12201, is4984, is4985, iso1452: the dimension tables of the
+///   standards with their reference prices), checks every wall against its
+///   pressure class and the physical plausibility, and writes them;
 /// - validates every `*.oci.cat` (format, unique ids, k/x curves, the
 ///   physical plausibility of catalog_check.dart);
 /// - rewrites each pack normalised (pretty JSON, `items` count);
@@ -6,7 +10,8 @@
 ///
 /// Run: dart run tool/gen_catalogs.dart [--check]
 /// With `--check` nothing is written; the exit code is 1 when a file would
-/// change or a pack is invalid (for CI).
+/// change (a generated pack that differs from its file included) or a pack
+/// is invalid (for CI).
 library;
 
 import 'dart:io';
@@ -14,6 +19,7 @@ import 'dart:io';
 import 'package:opencadirrigation/core/io/catalog_io.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/catalog_check.dart';
+import 'package:opencadirrigation/core/model/pipe_standards.dart';
 
 void main(List<String> args) {
   final check = args.contains('--check');
@@ -22,11 +28,30 @@ void main(List<String> args) {
     stderr.writeln('catalogs/ not found (run from the repository root)');
     exit(2);
   }
+  var problems = 0, changed = 0;
+  // the packs built from the standards: a wall too thin for its table or its
+  // class, an implausible value, then the file as built
+  for (final pack in standardCatalogPacks()) {
+    final name = '${pack.meta.id}$catalogPackExtension';
+    for (final issue in [...standardCatalogIssues(pack.catalog), ...catalogPlausibility(pack.catalog)]) {
+      stderr.writeln('$name: built pipe fails $issue');
+      problems++;
+    }
+    final f = File('${dir.path}/$name');
+    final text = '${CatalogIo.encodePack(pack.meta, pack.catalog)}\n';
+    if (!f.existsSync() || f.readAsStringSync() != text) {
+      changed++;
+      if (check) {
+        stderr.writeln('$name: differs from the pack built from the standards (run without --check)');
+      } else {
+        f.writeAsStringSync(text);
+      }
+    }
+  }
   final files = dir.listSync().whereType<File>().where((f) => f.path.endsWith(catalogPackExtension)).toList()..sort((a, b) => a.path.compareTo(b.path));
   final entries = <CatalogIndexEntry>[];
   final ids = <String, String>{};
   final defaults = Catalog.defaultCatalog();
-  var problems = 0, changed = 0;
   for (final f in files) {
     final name = f.uri.pathSegments.last;
     late CatalogPackFile pack;

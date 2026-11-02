@@ -773,6 +773,12 @@ class PropertiesPanel extends StatelessWidget {
     final localized = isLocalizedArea(a);
     return [
       KV(t('props.area'), '${fmtUi(u.areaFromSi(a.area), 3)} ${u.areaLabel}'),
+      // 1.6.0 MOD: the islands left out of the area
+      if (a.holes.isNotEmpty)
+        KV(
+          t('area.holes.info'),
+          t('area.holes.value', {'n': '${a.holes.length}', 'a': '${fmtUi(u.areaFromSi(a.grossArea - a.area), 3)} ${u.areaLabel}', 'g': '${fmtUi(u.areaFromSi(a.grossArea), 3)} ${u.areaLabel}'}),
+        ),
       TextFieldRow(label: t('props.crop'), value: a.crop, onChanged: (x) => set(() => a.crop = x, inv: false)),
       SpecDropdown<String>(
         label: t('props.kcPreset'),

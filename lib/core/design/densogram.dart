@@ -451,7 +451,8 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
       } else {
         final c = Pt(origin.x + (i + 0.5) * cell, origin.y + (j + 0.5) * cell);
         for (var a = 0; a < areas.length; a++) {
-          if (pointInPolygon(c, areas[a])) {
+          // 1.6.0 MOD: the islands of an area are no part of it
+          if (areaEntities[a].contains(c)) {
             inside[k] = 1;
             areaOf[k] = a;
             perArea[a].add(rate[k]);

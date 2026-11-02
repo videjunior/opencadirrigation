@@ -39,7 +39,20 @@ própria: os leitores recebem textos ou bytes, os gravadores os devolvem, e quem
 
 **Onde executar.** O pacote depende do SDK do Flutter (por causa do aplicativo), então `dart run` funciona dentro deste
 repositório (`dart run bin/oci.dart`, ou um script seu em `tool/` ou `bin/`), e um projeto Flutter pode depender dele por
-caminho ou git. Um pacote só de Dart não pode depender dele diretamente, por causa dessa dependência do SDK.
+caminho ou git. Para um servidor, um job de CI ou um programa só de Dart, `tool/engine_package.dart` grava o motor como um
+pacote próprio, sem Flutter: `lib/core`, a linha de comando, os dois arquivos em Dart puro de `lib/app` que ela lê (a
+tabela de textos e a versão), os pacotes de idioma, as fontes do PDF e os pacotes de catálogo, com um pubspec que só tem
+os pacotes do motor (archive, image, xml). O nome continua `opencadirrigation`, então os imports não mudam, e o próprio
+gerador só precisa do SDK do Dart (`test/guards/engine_package_test.dart` confere que toda biblioteca que o pacote alcança
+está nele):
+
+```sh
+dart tool/engine_package.dart build/engine
+cd build/engine && dart pub get && dart run bin/oci.dart --help
+dart compile exe bin/oci.dart -o oci   # um executável, que roda sem o SDK
+```
+
+Outro pacote Dart então depende dele por caminho (`opencadirrigation: {path: ../build/engine}`).
 
 **Traduções.** O motor rotula o que produz com uma função que você passa (`Translate`, `String Function(String key)`): o
 dimensionador a usa para os nomes que dá (fontes de água, pivôs, a vazão de sistema automática, algumas linhas da lista
@@ -54,6 +67,24 @@ quando há erros), `validate` (o que a leitura do arquivo teve de reparar; códi
 do arquivo de projeto, gerado do modelo: cada chave, seu tipo, sua unidade e o padrão de um projeto novo), com as opções
 `--lang`, `--report`, `--results` e `--out`. `design --out` grava o projeto dimensionado com os resultados, como o aplicativo salva
 (`--no-results` os deixa de fora).
+
+Ali também se fazem e se alteram projetos, sem a interface: `import` faz um projeto de desenhos, mapas e levantamentos
+(DXF, DWG, DGN, KML/KMZ, shapefiles, GeoJSON, GPX, LandXML, .inp do EPANET, LAS, cotas em GeoTIFF, pontos em CSV; `--into`
+os acrescenta a um projeto), como Arquivo → Importar faz (`importFileInto` e `importDrawingInto` em
+`core/io/drawing_import.dart`); `new` começa um projeto com `--units`, `--currency`, `--hz`, `--name` e `--georef`, faz do
+maior contorno fechado de `--boundary` a área irrigada (os anéis dentro dele, as ilhas) e com `--layout` distribui os
+aspersores sobre ela; `set` muda as unidades, a moeda (os preços acompanham pelas taxas de referência), a frequência da
+rede, o nome ou a georreferência; `pack add` acrescenta pacotes de catálogo (um arquivo `.oci.cat` ou o id de um dos que
+vêm com o app, com os preços convertidos). `design`, `analyze`, `check`, `validate`, `export` e `bom` aceitam vários
+projetos ou pastas deles de uma vez, com `--out-dir` para os arquivos de cada um; o código de saída é o pior da execução:
+
+```sh
+dart run bin/oci.dart import levantamento.dxf divisa.kml --out fazenda.oci.json
+dart run bin/oci.dart new --out gramado.oci.json --boundary gramado.geojson --layout --currency BRL --hz 60
+dart run bin/oci.dart set fazenda.oci.json --units us --currency USD
+dart run bin/oci.dart pack add fazenda.oci.json iso1452 en12201
+dart run bin/oci.dart design projetos/ --out-dir dimensionados/ --report xlsx
+```
 
 ## 2. Projetos e o dimensionamento
 

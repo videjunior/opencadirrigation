@@ -16,10 +16,18 @@ import 'project.dart';
 
 /// What [pasteEntities] did.
 class PasteResult {
-  const PasteResult({required this.ids, this.renamedItems = const {}, this.rate});
+  const PasteResult({required this.ids, this.renamedItems = const {}, this.rate, this.idMap = const {}, this.renamedStations = const {}});
 
   /// Ids of the new entities, in the order given.
   final List<String> ids;
+
+  /// The id each pasted entity had → the id of its copy (1.6.0 MOD: what
+  /// refers to the entities outside them, such as system flows, follows it).
+  final Map<String, String> idMap;
+
+  /// Valve-in-head stations given a free name because the target used
+  /// theirs: old name → new name (1.6.0 MOD).
+  final Map<String, String> renamedStations;
 
   /// Catalogue items given a new id because the target has another item
   /// under theirs: old id → new id.
@@ -181,7 +189,7 @@ PasteResult pasteEntities(
     p.entities.add(e);
     ids.add(e.id);
   }
-  return PasteResult(ids: ids, renamedItems: renamed, rate: rate);
+  return PasteResult(ids: ids, renamedItems: renamed, rate: rate, idMap: newIds, renamedStations: stations);
 }
 
 bool _taken(Catalog c, String id) => c.pipe(id) != null || c.outlet(id) != null || c.tape(id) != null || c.valve(id) != null || c.pump(id) != null || c.fitting(id) != null || c.wire(id) != null;

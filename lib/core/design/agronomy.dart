@@ -196,7 +196,8 @@ List<AreaEntity> areasOfZone(Project project, DesignResults results, String valv
     var inside = 0;
     for (final o in z.outlets) {
       final head = heads[o.entityId];
-      if (head != null ? project.outletWatersArea(head, a.points) : watersArea(o.p, a.points)) inside += o.count;
+      // 1.6.0 MOD: an emitter in an island of the area is not in it
+      if ((head != null ? project.outletWatersArea(head, a.points) : watersArea(o.p, a.points)) && !a.inHole(o.p)) inside += o.count;
     }
     if (inside * 5 >= total) out.add(a);
   }
@@ -215,7 +216,7 @@ List<AreaEntity> areasOfStation(Project project, String stationId, {VihStations?
   ];
   return [
     for (final a in project.entities.whereType<AreaEntity>())
-      if (a.points.length >= 3 && heads.where((h) => project.outletWatersArea(h, a.points)).length * 5 >= heads.length) a,
+      if (a.points.length >= 3 && heads.where((h) => project.outletWatersArea(h, a.points) && !a.inHole(h.position)).length * 5 >= heads.length) a,
   ];
 }
 
@@ -225,13 +226,13 @@ List<AreaEntity> areasOfMachine(Project project, PivotEntity machine) {
   final outline = machine.outline();
   return [
     for (final a in project.entities.whereType<AreaEntity>())
-      if (a.points.length >= 3 && _shareInside(outline, a.points) >= 0.2) a,
+      if (a.points.length >= 3 && _shareInside(outline, a) >= 0.2) a,
   ];
 }
 
-/// Share of the polygon [src] that lies inside [area], sampled on a 40 × 40
-/// grid over [src].
-double _shareInside(List<Pt> src, List<Pt> area) {
+/// Share of the polygon [src] that lies inside [area] (out of its holes),
+/// sampled on a 40 × 40 grid over [src].
+double _shareInside(List<Pt> src, AreaEntity area) {
   final b = Bounds.ofPoints(src);
   const n = 40;
   var inSrc = 0, inBoth = 0;
@@ -240,7 +241,7 @@ double _shareInside(List<Pt> src, List<Pt> area) {
       final p = Pt(b.minX + (i + 0.5) * b.width / n, b.minY + (j + 0.5) * b.height / n);
       if (!pointInPolygon(p, src)) continue;
       inSrc++;
-      if (pointInPolygon(p, area)) inBoth++;
+      if (area.contains(p)) inBoth++;
     }
   }
   return inSrc == 0 ? 0 : inBoth / inSrc;

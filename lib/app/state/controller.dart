@@ -19,8 +19,6 @@ import '../../core/design/network_builder.dart';
 import '../../core/design/report_tables.dart';
 import '../../core/design/results.dart';
 import '../../core/hydraulics/lateral.dart';
-import '../../core/io/cad_drawing.dart' show aciRgb;
-import '../../core/io/cad_xdata.dart' show restoreHydraulic;
 import '../../core/io/climate_online.dart';
 import '../../core/io/codepages.dart' show decodeTextBytes, loadCjkCodepages, needsCjkCodepages;
 import '../../core/io/dem_online.dart';
@@ -28,6 +26,7 @@ import '../../core/io/dem_tiff.dart';
 import '../../core/io/dgn.dart';
 import '../../core/io/dwg.dart';
 import '../../core/io/dxf.dart';
+import '../../core/io/drawing_import.dart' show importDrawingInto;
 import '../../core/io/epanet_inp.dart';
 import '../../core/io/geo.dart';
 import '../../core/io/geoimage.dart';
@@ -74,6 +73,7 @@ import 'design_job.dart' show isDesignPassive;
 import 'design_runner.dart';
 import 'outline_check.dart';
 import 'drawing_prefs.dart' show attachDrawingPrefs;
+import 'new_project_prefs.dart';
 
 /// Language of the interface: the app lays itself out right to left for
 /// the languages written that way (see [rtlLanguages]).
@@ -3444,7 +3444,9 @@ class ProjectController extends ChangeNotifier {
     final code = defaultCurrency();
     project = Project(catalog: defaultCatalog(code));
     _applyNewProjectCurrency(code);
-    // 1.6.0 MOD: mains frequency and units of the user's region (or choice)
+    // 1.6.0 MOD: the parameters the user kept for new projects, then the
+    // mains frequency and units of the user's region (or choice)
+    applyNewProjectTemplate();
     project.params
       ..mainsHz = defaultMainsHz()
       ..units = defaultUnits();
@@ -4033,162 +4035,18 @@ class ProjectController extends ChangeNotifier {
   /// else code page 1252.
   static String _decodeText(Uint8List bytes) => decodeTextBytes(bytes);
 
-  /// Converts an imported drawing into project entities (contours and spot
-  /// heights when elevations are present).
-  ///
-  /// Points without an elevation (GPS waypoints, the markers of a KML, the
-  /// points of a 2D drawing, a list of points without Z) become small
-  /// circles: a spot height at zero would pull the terrain down. ([asSpots]
-  /// and [markers] are kept for the callers that pass them.) Layers are
-  /// matched without regard to case, as CAD programs do ("Text" and "TEXT"
-  /// are one layer), and new ones take the colour (index or true colour)
-  /// and the off or frozen state of the file. A drawing in UTM coordinates
-  /// imported into a georeferenced project is moved by the project origin
-  /// (with a note); into a project without one, the note says so.
+  /// Converts an imported drawing into project entities, in one undo step
+  /// ([importDrawingInto] of the engine, 1.6.0 MOD: the command line makes
+  /// projects with it too): contours and spot heights when elevations are
+  /// present, points without an elevation as small circles, layers matched
+  /// without regard to case, a drawing in UTM coordinates moved by the
+  /// project origin (the notes go to the import summary). ([asSpots] and
+  /// [markers] are kept for the callers that pass them.)
   int importDrawing(DxfDocument doc, {bool asSpots = false, bool markers = true, List<Entity> extra = const []}) {
-    final s = doc.unitScale;
-    final shift = _utmShift(doc);
-    Pt at(Pt p) => Pt(p.x * s - shift.x, p.y * s - shift.y);
-    final list = <Entity>[];
-    mutate(() {
-      final byKey = {for (final l in project.layers) l.name.toLowerCase(): l.name};
-      for (final l in doc.layers) {
-        final key = l.name.toLowerCase();
-        if (byKey.containsKey(key)) continue;
-        project.layers.add(Layer(name: l.name, color: 0xFF000000 | (l.rgb ?? aciRgb(l.color)), visible: l.visible));
-        byKey[key] = l.name;
-      }
-      // 1.6.0 FMT: the pipes and items an export of the app carried come back
-      // as pipes and items; the drawing of their blocks, their labels and the
-      // outlet symbols of their laterals are then left out (drawn only for
-      // what cannot be restored)
-      final restored = Map<DxfEntity, Entity>.identity();
-      final skip = Set<DxfEntity>.identity();
-      final restoredIds = <String>{};
-      for (final it in doc.items) {
-        if (it.xdata.containsKey('PART_OF')) continue;
-        final h = restoreHydraulic(it.xdata, project, position: at(it.position), id: project.newId(), layer: byKey[it.layer.toLowerCase()] ?? it.layer);
-        if (h == null) continue;
-        list.add(h);
-        skip.addAll(it.fallback);
-        restoredIds.add(it.xdata['ID'] ?? '');
-      }
-      for (final e in doc.entities) {
-        final x = e.xdata;
-        if (x == null || x.containsKey('PART_OF') || e.type != 'POLYLINE' || e.points.length < 2 || !_finiteGeometry(e)) continue;
-        final layer = byKey[e.layer.toLowerCase()] ?? e.layer;
-        final h = restoreHydraulic(x, project, points: e.points.map(at).toList(), id: project.newId(), layer: layer);
-        if (h == null) continue;
-        restored[e] = h;
-        restoredIds.add(x['ID'] ?? '');
-      }
-      restoredIds.remove('');
-      for (final it in doc.items) {
-        if (restoredIds.contains(it.xdata['PART_OF'])) skip.addAll(it.fallback);
-      }
-      list.addAll(extra);
-      for (final e in doc.entities) {
-        if (skip.contains(e) || restoredIds.contains(e.xdata?['PART_OF'])) continue;
-        final h = restored[e];
-        if (h != null) {
-          list.add(h);
-          continue;
-        }
-        // a damaged file may hold "nan" or huge exponents: such geometry is
-        // left out (it could neither be drawn nor saved)
-        if (!_finiteGeometry(e)) continue;
-        final layer = byKey[e.layer.toLowerCase()] ?? e.layer;
-        final elev = e.elevation != null && e.elevation!.isFinite ? e.elevation : null;
-        switch (e.type) {
-          case 'LINE':
-            list.add(LineEntity(id: project.newId(), layer: layer, name: e.name, a: at(e.points[0]), b: at(e.points[1])));
-          case 'POLYLINE':
-            if (e.points.length < 2) break;
-            final pts = e.points.map(at).toList();
-            if (!e.closed && _looksLikeBreaklineLayer(layer)) {
-              list.add(BreaklineEntity(id: project.newId(), layer: Layers.breaklines, name: e.name, points: pts, elevations: elev == null ? null : List.filled(pts.length, elev * s)));
-            } else if (elev != null && elev != 0 && !e.closed && _looksLikeContourLayer(layer)) {
-              list.add(ContourEntity(id: project.newId(), layer: Layers.contours, name: e.name, points: pts, elevation: elev * s));
-            } else if (elev != null && elev != 0 && !e.closed && pts.length >= 3) {
-              list.add(ContourEntity(id: project.newId(), layer: Layers.contours, name: e.name, points: pts, elevation: elev * s));
-            } else {
-              list.add(PolylineEntity(id: project.newId(), layer: layer, name: e.name, points: pts, closed: e.closed));
-            }
-          case 'SPLINE':
-            if (e.points.length >= 2) list.add(SplineEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map(at).toList(), closed: e.closed));
-          case 'HATCH':
-            if (e.points.length >= 3) {
-              list.add(HatchEntity(id: project.newId(), layer: layer, name: e.name, points: e.points.map(at).toList(), angleDeg: e.rotation, spacing: e.height > 0 ? e.height * s : 1, solid: e.solid));
-            }
-          case 'CIRCLE':
-            list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: at(e.center!), radius: e.radius * s));
-          case 'ARC':
-            // one turn at most, whatever the angles of the file
-            final sweep = radToDeg(cadSweepRad(degToRad(e.startAngle), degToRad(e.endAngle)));
-            list.add(
-              ArcEntity(id: project.newId(), layer: layer, name: e.name, center: at(e.center!), radius: e.radius * s, startRad: degToRad(cadNormalizeDeg(e.startAngle)), sweepRad: degToRad(sweep)),
-            );
-          case 'TEXT':
-            list.add(TextEntity(id: project.newId(), layer: layer, name: e.name, position: at(e.points[0]), text: e.text, height: e.height * s, rotationDeg: e.rotation));
-          case 'POINT':
-            if (elev == null) {
-              // a place without an elevation: a marker, never a spot height at zero
-              list.add(CircleEntity(id: project.newId(), layer: layer, name: e.name, center: at(e.points[0]), radius: 0.5));
-            } else {
-              list.add(SpotHeightEntity(id: project.newId(), layer: Layers.spotHeights, name: e.name, position: at(e.points[0]), elevation: elev * s));
-            }
-        }
-      }
-      // 1.6.0 FMT: pictures (ground overlays) under the drawing, as images are
-      project.entities
-        ..insertAll(0, list.whereType<ImageEntity>())
-        ..addAll(list.where((e) => e is! ImageEntity));
-    }, label: 'hist.import');
+    final r = mutate(() => importDrawingInto(project, doc, extra: extra), label: 'hist.import');
+    if (r != null) _drawingNotes.addAll(r.notes);
     zoomAll();
-    return list.length;
-  }
-
-  /// Offset of a drawing whose coordinates are UTM ones (eastings of 100 to
-  /// 900 km, northings up to 10 000 km) for a georeferenced project: its
-  /// origin, when the drawing lands within 100 km of it (a note says the
-  /// drawing was moved, or that it lies far away and was kept). Raw CAD
-  /// coordinates only reach here that large: the GIS readers place theirs.
-  Pt _utmShift(DxfDocument doc) {
-    final b = doc.bounds;
-    if (b.isEmpty) return Pt.zero;
-    final s = doc.unitScale;
-    final cx = (b.minX + b.maxX) / 2 * s, cy = (b.minY + b.maxY) / 2 * s;
-    if (!cx.isFinite || !cy.isFinite || (cx.abs() <= 100000 && cy.abs() <= 100000)) return Pt.zero;
-    final utm = cx >= 100000 && cx <= 900000 && cy >= 0 && cy <= 10000000;
-    if (!utm) return Pt.zero;
-    final g = project.meta.georef;
-    if (g == null) {
-      _drawingNotes.add('cad_utm_no_georef');
-      return Pt.zero;
-    }
-    if ((cx - g.originEasting).abs() > 100000 || (cy - g.originNorthing).abs() > 100000) {
-      _drawingNotes.add('cad_far_from_georef');
-      return Pt.zero;
-    }
-    _drawingNotes.add('cad_moved_to_georef');
-    return Pt(g.originEasting, g.originNorthing);
-  }
-
-  static bool _finiteGeometry(DxfEntity e) {
-    bool ok(Pt p) => p.x.isFinite && p.y.isFinite;
-    return e.points.every(ok) && (e.center == null || ok(e.center!)) && e.radius.isFinite && e.startAngle.isFinite && e.endAngle.isFinite && e.rotation.isFinite && e.height.isFinite;
-  }
-
-  /// Layers of breaklines in survey drawings ("BREAKLINES", "linha de
-  /// quebra", "quiebre", "ruptura").
-  static bool _looksLikeBreaklineLayer(String layer) {
-    final l = layer.toLowerCase();
-    return l.contains('break') || l.contains('quebra') || l.contains('quiebre') || l.contains('ruptura');
-  }
-
-  static bool _looksLikeContourLayer(String layer) {
-    final l = layer.toLowerCase();
-    return l.contains('cont') || l.contains('curva') || l.contains('nivel') || l.contains('nível') || l.contains('topo') || l.contains('elev');
+    return r?.entities.length ?? 0;
   }
 
   // ------------------------------------------------------------ export

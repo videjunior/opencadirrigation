@@ -781,14 +781,24 @@ class PdfSheetBuilder {
           _drawImage(page, im.bytes, im.mime, im.corners, im.opacity, map);
         case PlotPath p:
           final pts = p.points.map(map).toList();
+          // 1.6.0 MOD: an area with islands is one path filled by the even-odd rule
+          final rings = p.holes.isEmpty || !p.closed ? null : [pts, for (final h in p.holes) h.map(map).toList()];
+          void shape({required bool stroke, required bool fill}) {
+            if (rings == null) {
+              page.path(pts, close: p.closed, stroke: stroke, fill: fill);
+            } else {
+              page.rings(rings, stroke: stroke, fill: fill);
+            }
+          }
+
           final tinted = p.fillColor != null && p.fillOpacity < 1;
-          if (tinted) _tint(page, p.fillColor!, p.fillOpacity, () => page.path(pts, close: p.closed, stroke: false, fill: true));
+          if (tinted) _tint(page, p.fillColor!, p.fillOpacity, () => shape(stroke: false, fill: true));
           page.strokeColor(p.color);
           page.lineWidth(p.widthMm * ptPerMm);
           page.dash(p.dashed, p.widthMm * ptPerMm * 6, p.widthMm * ptPerMm * 4);
           final opaque = p.fillColor != null && !tinted;
           if (opaque) page.fillColor(p.fillColor!);
-          page.path(pts, close: p.closed, fill: opaque);
+          shape(stroke: true, fill: opaque);
         case PlotCircle c:
           final (x, y) = map(c.center);
           final r = c.radius / unitsPerMm * ptPerMm;

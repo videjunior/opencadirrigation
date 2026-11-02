@@ -150,6 +150,13 @@ class SheetReview {
           place(t.bounds, t);
         case SheetPathOp o:
           if (o.points.isNotEmpty) place(Bounds.ofPoints([for (final (x, y) in o.points) mm(x, y)]));
+        // 1.6.0 MOD: an area with islands
+        case SheetRingsOp o:
+          final pts = [
+            for (final r in o.rings)
+              for (final (x, y) in r) mm(x, y),
+          ];
+          if (pts.isNotEmpty) place(Bounds.ofPoints(pts));
         case SheetRectOp o:
           place(_norm(o.x / ptPerMm, o.y / ptPerMm, (o.x + o.w) / ptPerMm, (o.y + o.h) / ptPerMm));
         case SheetCircleOp o:

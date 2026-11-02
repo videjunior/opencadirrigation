@@ -134,12 +134,13 @@ void main() {
       expect(idw.slopeAt(const Pt(52, 48)), inInclusiveRange(0.05, 0.15));
     });
 
-    test('TIN: duplicates merge (last height wins), vertices and empty inputs', () {
+    test('TIN: duplicates merge (mean height, whatever their order), vertices and empty inputs', () {
       final tin = Tin.build([(0, 0, 1), (10, 0, 2), (0, 10, 3), (0, 0, 5), (double.nan, 1, 1)]);
       expect(tin.pointCount, 3);
       expect(tin.isEmpty, isFalse);
       expect(tin.vertex(0), const Pt(0, 0));
-      expect(tin.elevationAt(const Pt(0, 0)), closeTo(5, 1e-9));
+      expect(tin.elevationAt(const Pt(0, 0)), closeTo(3, 1e-9));
+      expect(Tin.build([(0, 0, 5), (10, 0, 2), (0, 10, 3), (0, 0, 1)]).elevationAt(const Pt(0, 0)), closeTo(3, 1e-9));
       expect(Tin.build([(0, 0, 1), (1, 1, 2)]).isEmpty, isTrue, reason: 'two points make no triangle');
       expect(Tin.build(const []).pointCount, 0);
     });

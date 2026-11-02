@@ -16,9 +16,11 @@ import '../actions.dart';
 import '../i18n.dart';
 import '../shortcuts.dart';
 import '../state/controller.dart';
+import '../state/insert_project.dart';
 import '../state/workspace.dart';
 import '../examples.dart';
 import '../theme.dart';
+import '../tools/area_hole_commands.dart';
 import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
@@ -329,6 +331,8 @@ class _MobileShellState extends State<MobileShell> {
             }),
             for (final ex in exampleGallery) row('${t('file.examples')}: ${t(ex.titleKey)}', () => openExampleAction(context, c, ex.id, ws: ws), icon: exampleIcon(ex.id)),
             row(t('file.importDrawing'), () => importDrawingAction(context, c), icon: Icons.upload_file),
+            // 1.6.0 MOD: another project into this one
+            row(t('file.insertProject'), () => insertProjectAction(context, c), icon: Icons.merge_type, key: const Key('mobile_menu_insert_project')),
             row(t('file.georefImage'), c.selectedEntity == null ? null : () => showImageGeorefDialog(context, c), icon: Icons.image_outlined),
             row(t('tool.alignImage'), c.selection.isEmpty ? null : () => c.setTool(ToolId.alignImage), icon: Icons.control_camera),
             for (final f in DrawingFormat.values) row('${t('file.exportDrawing')}: ${t('exp.${f.name}')}', () => exportDrawingAction(context, c, f), icon: Icons.download),
@@ -384,6 +388,9 @@ class _MobileShellState extends State<MobileShell> {
             row(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, key: const Key('mobile_menu_to_area')),
             // 1.6.0 CAD+
             ...cadPlusPhoneRows(context, c, row),
+            // 1.6.0 MOD: islands of the irrigated areas
+            row(t('area.subtract'), c.selection.isEmpty ? null : c.subtractSelectedFromAreas, key: const Key('mobile_menu_area_subtract')),
+            row(t('area.holes.clear'), c.selection.isEmpty ? null : c.clearSelectedAreaHoles, key: const Key('mobile_menu_area_holes_clear')),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),

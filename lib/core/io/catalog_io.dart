@@ -143,6 +143,8 @@ class CatalogPackMeta {
     this.updated = '',
     this.author = '',
     this.currency = '',
+    this.pricesSource = '',
+    this.pricesDate = '',
     this.sources = const [],
   });
 
@@ -163,6 +165,14 @@ class CatalogPackMeta {
   /// ISO 4217 code of the prices in the pack (empty: unknown, or no prices).
   final String currency;
 
+  /// Where the prices came from (document, items, what a price includes)
+  /// and how the ones the document does not give were estimated (empty: not
+  /// stated).
+  final String pricesSource;
+
+  /// Date of the prices, `YYYY-MM-DD` (empty: not stated).
+  final String pricesDate;
+
   /// The documents the data were taken from (data sheets, catalogues, URLs).
   final List<String> sources;
 
@@ -178,6 +188,8 @@ class CatalogPackMeta {
     if (updated.isNotEmpty) 'updated': updated,
     if (author.isNotEmpty) 'author': author,
     if (currency.isNotEmpty) 'currency': currency,
+    if (pricesSource.isNotEmpty) 'pricesSource': pricesSource,
+    if (pricesDate.isNotEmpty) 'pricesDate': pricesDate,
     if (sources.isNotEmpty) 'sources': sources,
   };
 
@@ -194,12 +206,18 @@ class CatalogPackMeta {
       updated: j['updated'] as String? ?? '',
       author: j['author'] as String? ?? '',
       currency: (j['currency'] as String? ?? '').trim().toUpperCase(),
+      pricesSource: _text(j['pricesSource']),
+      pricesDate: _text(j['pricesDate']),
       sources: [
         for (final x in (j['sources'] as List?) ?? const [])
           if (x is String && x.trim().isNotEmpty) x.trim(),
       ],
     );
   }
+
+  /// An optional text field read leniently: trimmed, empty when absent or
+  /// not a text.
+  static String _text(Object? v) => v is String ? v.trim() : '';
 
   /// A safe id derived from a file name or free text (`Rain Bird 5000.oci.cat`
   /// → `rain_bird_5000`).
@@ -230,8 +248,9 @@ class CatalogIndexEntry {
   final String file;
   final int items;
 
-  // the index stays short: the document list lives in the pack only
-  Map<String, dynamic> toJson() => {...meta.toJson()..remove('sources'), 'file': file, 'items': items};
+  // the index stays short: the document list and the note on the prices
+  // live in the pack only
+  Map<String, dynamic> toJson() => {...meta.toJson()..removeWhere((k, _) => k == 'sources' || k == 'pricesSource'), 'file': file, 'items': items};
   static CatalogIndexEntry fromJson(Map<String, dynamic> j) => CatalogIndexEntry(
     meta: CatalogPackMeta.fromJson(j, fallbackId: CatalogPackMeta.idFrom(j['file'] as String? ?? 'pack')),
     file: j['file'] as String? ?? '',
@@ -410,8 +429,12 @@ class CatalogIo {
       return -1;
     }
 
+    // 1.6.0 MOD (MOD-20): columns that name their unit (as exportCsv writes
+    // them for a project in other units, or a price list: "DN (in)")
+    final units = _UnitColumns(header);
     final g = group ?? _detectGroup(header);
     if (g == null) throw const FormatException('catalog_csv_columns');
+    units.decide(g);
     final c = Catalog();
     final idC = col(['id']), nameC = col(['name', 'nome', 'nombre', 'description', 'descricao']);
     final costC = col(['cost', 'custo', 'costo', 'price', 'preco']);
@@ -456,7 +479,7 @@ class CatalogIo {
     final skipped = <int>[];
     var n = 0;
     for (var li = 1; li < lines.length; li++) {
-      final r = splitLine(lines[li], sep);
+      final r = units.convert(splitLine(lines[li], sep));
       if (r.every((x) => x.isEmpty)) continue;
       final name = str(r, nameC, 'item $li');
       final cost = num(r, costC);
@@ -574,7 +597,7 @@ class CatalogIo {
           final ptsS = str(r, col(['points', 'curve', 'curva']));
           final pts = [for (final (q, h) in parseCurvePoints(ptsS)) (q * m3sPerM3h, h)];
           if (pts.isEmpty) {
-            final q = num(r, col(['qm3h', 'q'])), h = num(r, col(['hm', 'h', 'head']));
+            final q = num(r, col(['qm3h', 'q'])), h = num(r, col(['hm', 'h', 'head', 'headm']));
             if (q > 0 && h > 0) pts.add((q * m3sPerM3h, h));
           }
           if (pts.isEmpty) {
@@ -746,8 +769,18 @@ class CatalogIo {
     return CatalogImportResult(merged, n, group: last, generatedIds: generated, skippedRows: skipped, pnAsBar: pnAsBar);
   }
 
-  /// CSV of one group (round-trips through [parseCsv]).
-  static String exportCsv(Catalog c, CatalogGroup g) {
+  /// CSV of one group (round-trips through [parseCsv]), in the internal
+  /// units (mm, m, m³/h, L/h, price per metre) or, with [units] of a
+  /// project in others, the diameters, heads, lengths, device and pump
+  /// flows and prices per length in those, each column naming its unit
+  /// ("idMm" becomes "id_in", "ratingM" "rating_psi", "cost" of a pipe
+  /// "cost_per_ft"); the flows of emitters stay in L/h (1.6.0 MOD, MOD-20).
+  static String exportCsv(Catalog c, CatalogGroup g, {Units units = Units.metric}) {
+    final si = _exportCsvSi(c, g);
+    return _csvInUnits(si, g, units);
+  }
+
+  static String _exportCsvSi(Catalog c, CatalogGroup g) {
     final b = StringBuffer('﻿');
     String q(String s) => '"${s.replaceAll('"', '""')}"';
     switch (g) {
@@ -862,5 +895,258 @@ class CatalogIo {
       for (var i = 0; i < lines.length; i++)
         if (lines[i].isEmpty) lines[i] else if (i == 0) '${lines[i]};finame' else '${lines[i]};${q(c.finame[lines[i].split(';').first] ?? '')}',
     ].join('\n');
+  }
+
+  /// [csv] (written by [_exportCsvSi]) with the columns of [g] that [u]
+  /// shows in other units converted, each named with its unit.
+  static String _csvInUnits(String csv, CatalogGroup g, Units u) {
+    final bom = csv.startsWith('\ufeff') ? '\ufeff' : '';
+    final lines = csv.substring(bom.length).split('\n');
+    if (lines.isEmpty || lines.first.isEmpty) return csv;
+    final header = splitLine(lines.first, ';');
+    final names = [...header];
+    final conv = <int, String Function(String)>{};
+    String scaled(String cell, double f) {
+      final v = double.tryParse(cell);
+      return v == null ? cell : _num(v * f);
+    }
+
+    // device and pump flows: gpm for a project in gpm, else m³/h as kept
+    final p = _pressureToken(u.pressure), q = u.flow == FlowUnit.gpm ? 'gpm' : null;
+    final ft = u.length == LengthUnit.ft, inch = u.diameter == DiameterUnit.inch;
+    final perLength = g == CatalogGroup.pipes || g == CatalogGroup.tapes || g == CatalogGroup.wires;
+    for (var i = 0; i < header.length; i++) {
+      final h = header[i];
+      if (inch && const {'nominalMm', 'idMm', 'wallMm', 'sizeMm', 'size2Mm', 'inletMm'}.contains(h)) {
+        names[i] = '${h.substring(0, h.length - 2)}_in';
+        conv[i] = (x) => scaled(x, 1 / 25.4);
+      } else if (p != null && const {'ratingM', 'headM', 'minH', 'maxH', 'setting'}.contains(h)) {
+        names[i] = '${h.endsWith('M') ? h.substring(0, h.length - 1) : h}_$p';
+        final f = u.pressureFromHead(1);
+        conv[i] = (x) => scaled(x, f);
+      } else if (ft && (h == 'spacing' || h == 'radiusM')) {
+        names[i] = h == 'spacing' ? 'spacing_ft' : 'radius_ft';
+        conv[i] = (x) => scaled(x, 1 / metersPerFoot);
+      } else if (q != null && (h == 'minQm3h' || h == 'maxQm3h')) {
+        names[i] = '${h.substring(0, h.length - 3)}_$q';
+        final f = u.flowFromSi(m3sPerM3h);
+        conv[i] = (x) => scaled(x, f);
+      } else if ((q != null || p != null) && h == 'points') {
+        names[i] = 'points_${q ?? 'm3h'}_${p ?? 'm'}';
+        final fq = q == null ? 1.0 : u.flowFromSi(m3sPerM3h), fh = p == null ? 1.0 : u.pressureFromHead(1);
+        conv[i] = (x) => '"${[for (final (a, b) in parseCurvePoints(x)) '${_num(a * fq)}@${_num(b * fh)}'].join('|')}"';
+      } else if (ft && perLength && h == 'cost') {
+        names[i] = 'cost_per_ft';
+        conv[i] = (x) => scaled(x, metersPerFoot);
+      }
+    }
+    if (conv.isEmpty) return csv;
+    // the text cells go back between quotes, as written
+    const texts = {'name', 'supplier', 'code', 'nozzle', 'finame'};
+    bool text(int i, String cell) => cell.contains(';') || cell.contains('"') || (i < header.length && texts.contains(header[i]));
+    final out = [names.join(';')];
+    for (final l in lines.skip(1)) {
+      if (l.isEmpty) {
+        out.add(l);
+        continue;
+      }
+      final cells = splitLine(l, ';');
+      out.add([for (var i = 0; i < cells.length; i++) conv[i]?.call(cells[i]) ?? (text(i, cells[i]) ? '"${cells[i].replaceAll('"', '""')}"' : cells[i])].join(';'));
+    }
+    return '$bom${out.join('\n')}';
+  }
+
+  /// A number of a converted cell: whole numbers without decimals, the
+  /// others to ten significant digits.
+  static String _num(double v) => v == v.roundToDouble() && v.abs() < 1e15 ? '${v.toInt()}' : '${double.parse(v.toStringAsPrecision(10))}';
+
+  static String? _pressureToken(PressureUnit p) => switch (p) {
+    PressureUnit.mH2O => null,
+    PressureUnit.kPa => 'kpa',
+    PressureUnit.bar => 'bar',
+    PressureUnit.psi => 'psi',
+    PressureUnit.ftH2O => 'ftH2O',
+    PressureUnit.kgfcm2 => 'kgfcm2',
+  };
+}
+
+/// The columns of a catalogue table that name their unit (1.6.0 MOD,
+/// MOD-20): `<name>_<unit>`, `<name>(<unit>)` or `<name>[<unit>]` — a
+/// diameter in in, inch, cm or mm; a head or pressure in m, mca, ft,
+/// ftH2O, psi, bar, kPa or kgfcm2; a length in m, ft, in or cm; a flow in m3h,
+/// lph, lps, lpm, gpm or gph; a pump curve `points_<flow>_<head>`; a price
+/// per length `cost_per_ft` (pipes, tapes and wires). Their header is
+/// renamed to the column the reader knows and their values converted to
+/// its unit (mm, m, m³/h, L/h for emitters, price per metre).
+class _UnitColumns {
+  _UnitColumns(this.header) : _conv = List.filled(header.length, null) {
+    for (var i = 0; i < header.length; i++) {
+      final h = header[i];
+      // "cost_per_ft", "costperft", "cost(perft)", "cost/ft", "cost_m"
+      final cost = RegExp(r'^(cost|custo|costo|price|preco)[_/(\[]*(?:per|por)?_?(ft|m)[)\]]?$').firstMatch(h);
+      if (cost != null) {
+        header[i] = 'cost';
+        if (cost.group(2) == 'ft') _cost.add(i);
+        continue;
+      }
+      final m = RegExp(r'^([a-z0-9]+?)(?:_|\(|\[)([a-z0-9]+)(?:[_@,/]([a-z0-9]+))?[)\]]?$').firstMatch(h);
+      if (m == null) continue;
+      final base = m.group(1)!, u1 = m.group(2)!, u2 = m.group(3);
+      double Function(double)? by(String dim, String unit) {
+        final f = _factor(dim, unit);
+        return f == null ? null : (v) => v * f;
+      }
+
+      if (_curve.contains(base)) {
+        final fq = _factor('m3h', u1), fh = u2 == null ? 1.0 : _factor('head', u2);
+        if (fq == null || fh == null) continue;
+        header[i] = 'points';
+        _conv[i] = (cell) => [for (final (q, hh) in CatalogIo.parseCurvePoints(cell)) '${q * fq}@${hh * fh}'].join('|');
+        continue;
+      }
+      if (u2 != null) continue;
+      final (target, dim) = switch (base) {
+        _ when _dia[base] != null => (_dia[base]!, 'dia'),
+        _ when _head[base] != null => (_head[base]!, 'head'),
+        _ when _length[base] != null => (_length[base]!, 'len'),
+        _ when _deviceFlow[base] != null => (_deviceFlow[base]!, 'm3h'),
+        _ when _flow.contains(base) => ('q', 'flow'),
+        _ => ('', ''),
+      };
+      if (target.isEmpty) continue;
+      if (dim == 'flow') {
+        _flows[i] = u1;
+        header[i] = 'q';
+        continue;
+      }
+      final f = by(dim, u1);
+      if (f == null) continue;
+      header[i] = target;
+      _conv[i] = (cell) {
+        final v = parseNumber(cell, lenient: true);
+        return v == null ? cell : '${f(v)}';
+      };
+    }
+  }
+
+  final List<String> header;
+  final List<String Function(String)?> _conv;
+  final _cost = <int>[];
+  final _flows = <int, String>{};
+
+  /// The columns whose conversion depends on the group [g]: flows (L/h for
+  /// emitters and tapes, m³/h for pumps) and prices per length (only the
+  /// items sold by length).
+  void decide(CatalogGroup g) {
+    for (final e in _flows.entries) {
+      final pump = g == CatalogGroup.pumps;
+      header[e.key] = pump ? 'qm3h' : 'qlph';
+      final f = _factor(pump ? 'm3h' : 'lph', e.value);
+      if (f == null) continue;
+      _conv[e.key] = (cell) {
+        final v = parseNumber(cell, lenient: true);
+        return v == null ? cell : '${v * f}';
+      };
+    }
+    if (g == CatalogGroup.pipes || g == CatalogGroup.tapes || g == CatalogGroup.wires) {
+      for (final i in _cost) {
+        _conv[i] = (cell) {
+          final v = parseNumber(cell, lenient: true);
+          return v == null ? cell : '${v / metersPerFoot}';
+        };
+      }
+    }
+  }
+
+  /// [row] with its cells in the units the reader keeps.
+  List<String> convert(List<String> row) {
+    for (var i = 0; i < row.length && i < _conv.length; i++) {
+      final f = _conv[i];
+      if (f != null && row[i].trim().isNotEmpty) row[i] = f(row[i]);
+    }
+    return row;
+  }
+
+  static const _dia = {
+    'nominal': 'nominalmm',
+    'nominalmm': 'nominalmm',
+    'dn': 'dn',
+    'id': 'idmm',
+    'idmm': 'idmm',
+    'di': 'idmm',
+    'inner': 'idmm',
+    'innermm': 'idmm',
+    'wall': 'wallmm',
+    'wallmm': 'wallmm',
+    'size': 'sizemm',
+    'sizemm': 'sizemm',
+    'size2': 'size2mm',
+    'size2mm': 'size2mm',
+    'dn2': 'size2mm',
+    'inlet': 'inletmm',
+    'inletmm': 'inletmm',
+  };
+  static const _head = {
+    'rating': 'ratingm',
+    'ratingm': 'ratingm',
+    'pn': 'ratingm',
+    'head': 'headm',
+    'headm': 'headm',
+    'h': 'headm',
+    'inleth': 'headm',
+    'minh': 'minh',
+    'pmin': 'minh',
+    'maxh': 'maxh',
+    'pmax': 'maxh',
+    'setting': 'setting',
+  };
+  static const _length = {'spacing': 'spacing', 'espacamento': 'spacing', 'sp': 'spacing', 'radius': 'radiusm', 'radiusm': 'radiusm', 'raio': 'radiusm'};
+  static const _deviceFlow = {'minq': 'minqm3h', 'minqm3h': 'minqm3h', 'qmin': 'minqm3h', 'maxq': 'maxqm3h', 'maxqm3h': 'maxqm3h', 'qmax': 'maxqm3h'};
+  static const _flow = {'q', 'qlph', 'qm3h', 'flow'};
+  static const _curve = {'points', 'curve', 'curva'};
+
+  /// Factor from [unit] to the unit the reader keeps for [dim]: `dia` mm,
+  /// `head` and `len` m, `m3h` m³/h, `lph` L/h; null for a unit it does
+  /// not know.
+  static double? _factor(String dim, String unit) {
+    switch (dim) {
+      case 'dia':
+        return switch (unit) {
+          'in' || 'inch' => 25.4,
+          'mm' => 1.0,
+          'cm' => 10.0,
+          _ => null,
+        };
+      case 'head':
+        return switch (unit) {
+          'm' || 'mh2o' || 'mca' => 1.0,
+          'ft' || 'fth2o' => metersPerFoot,
+          'psi' => 1 / psiPerMeterHead,
+          'bar' => 1 / barPerMeterHead,
+          'kpa' => 1 / kPaPerMeterHead,
+          'kgfcm2' || 'kgf' => metersHeadPerKgfCm2,
+          _ => null,
+        };
+      case 'len':
+        return switch (unit) {
+          'm' => 1.0,
+          'ft' => metersPerFoot,
+          'in' || 'inch' => metersPerInch,
+          'cm' => 0.01,
+          _ => null,
+        };
+      case 'm3h' || 'lph':
+        final si = switch (unit) {
+          'm3h' => m3sPerM3h,
+          'lph' => m3sPerLph,
+          'lps' => m3sPerLps,
+          'lpm' => m3sPerLps / 60,
+          'gpm' => m3sPerGpm,
+          'gph' => m3sPerGpm / 60,
+          _ => null,
+        };
+        return si == null ? null : si / (dim == 'm3h' ? m3sPerM3h : m3sPerLph);
+    }
+    return null;
   }
 }

@@ -609,6 +609,30 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
     t('design.catalog'),
     StatefulBuilder(
       builder: (ctx, setState) {
+        // 1.6.0 MOD (MOD-20): the editor in the units of the project (the
+        // catalogue keeps mm, m, m³/s and prices per metre): diameters in
+        // inches, heads in the pressure unit, lengths and prices per foot,
+        // device and pump flows in gpm; in the metric defaults every value
+        // is shown as kept (device and pump flows in m³/h)
+        final u = c.units;
+        final inch = u.diameter == DiameterUnit.inch, mH2O = u.pressure == PressureUnit.mH2O, ft = u.length == LengthUnit.ft, gpm = u.flow == FlowUnit.gpm;
+        final m3h = !gpm;
+        double dia(double mm) => inch ? u.diameterFromSi(mm / 1000) : mm;
+        double diaBack(double v) => inch ? u.diameterToSi(v) * 1000 : v;
+        double prs(double m) => mH2O ? m : u.pressureFromHead(m);
+        double prsBack(double v) => mH2O ? v : u.pressureToHead(v);
+        double perLen(double perM) => ft ? perM * metersPerFoot : perM;
+        double perLenBack(double v) => ft ? v / metersPerFoot : v;
+        double len(double m) => ft ? m / metersPerFoot : m;
+        double lenBack(double v) => ft ? v * metersPerFoot : v;
+        double flw(double si) => m3h ? si / m3sPerM3h : u.flowFromSi(si);
+        double flwBack(double v) => m3h ? v * m3sPerM3h : u.flowToSi(v);
+        final dDec = inch ? 3 : 2;
+        String dnLabel(String key) => inch ? '${t(key)} (${u.diameterLabel})' : t(key);
+        final idLabel = inch ? t('cat.idU', {'u': u.diameterLabel}) : t('cat.idmm');
+        final pnLabel = mH2O ? t('cat.pn') : t('cat.pnU', {'u': u.pressureLabel});
+        final costLabel = ft ? t('cat.costFt', {'c': cur}) : t('cat.costM', {'c': cur});
+        String pLabel(String key) => mH2O ? t(key) : '${t(key)} (${u.pressureLabel})';
         // usage counts (for the remove confirmation)
         final used = <String, int>{};
         for (final e in c.project.entities) {
@@ -801,11 +825,11 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             t('cat.use'),
             t('cat.name'),
-            t('cat.dn'),
-            t('cat.idmm'),
+            dnLabel('cat.dn'),
+            idLabel,
             t('cat.c'),
-            t('cat.pn'),
-            t('cat.costM', {'c': cur}),
+            pnLabel,
+            costLabel,
             '${t('cat.supplier')} / ${t('cat.code')} / FINAME',
             '',
           ],
@@ -820,11 +844,11 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   }),
                 ),
                 _cell(p.name, (v) => p.name = v),
-                _num(p.nominalMm, (v) => p.nominalMm = v),
-                _num(p.innerDiameterMm, (v) => p.innerDiameterMm = v),
+                _num(dia(p.nominalMm), (v) => p.nominalMm = diaBack(v), decimals: dDec),
+                _num(dia(p.innerDiameterMm), (v) => p.innerDiameterMm = diaBack(v), decimals: dDec),
                 _num(p.hazenC, (v) => p.hazenC = v),
-                _num(p.pressureRatingM, (v) => p.pressureRatingM = v),
-                _num(p.costPerM, (v) => p.costPerM = v),
+                _num(prs(p.pressureRatingM), (v) => p.pressureRatingM = prsBack(v)),
+                _num(perLen(p.costPerM), (v) => p.costPerM = perLenBack(v)),
                 meta(p.id, p.supplier, p.code, (v) => p.supplier = v, (v) => p.code = v),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -834,7 +858,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ],
         );
         Widget outlets() => _catTable(
-          [t('cat.use'), t('cat.outlet'), t('cat.nozzle'), t('cat.k'), t('cat.x'), t('cat.pMin'), t('cat.pMax'), t('cat.pDefault'), t('cat.cv'), t('cat.tol'), cur, ''],
+          [t('cat.use'), t('cat.outlet'), t('cat.nozzle'), t('cat.k'), t('cat.x'), pLabel('cat.pMin'), pLabel('cat.pMax'), pLabel('cat.pDefault'), t('cat.cv'), t('cat.tol'), cur, ''],
           [
             for (final o in cat.outlets)
               for (final n in o.nozzles)
@@ -850,9 +874,9 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   _cell(n.name, (v) => n.name = v),
                   _num(n.curve.k / m3sPerLph, (v) => n.curve = EmitterCurve(k: v * m3sPerLph, x: n.curve.x, radiusA: n.curve.radiusA, radiusB: n.curve.radiusB), decimals: 3),
                   _num(n.curve.x, (v) => n.curve = EmitterCurve(k: n.curve.k, x: v, radiusA: n.curve.radiusA, radiusB: n.curve.radiusB), decimals: 3),
-                  _num(n.minHeadM, (v) => n.minHeadM = v),
-                  _num(n.maxHeadM, (v) => n.maxHeadM = v),
-                  _num(n.defaultHeadM, (v) => n.defaultHeadM = v),
+                  _num(prs(n.minHeadM), (v) => n.minHeadM = prsBack(v)),
+                  _num(prs(n.maxHeadM), (v) => n.maxHeadM = prsBack(v)),
+                  _num(prs(n.defaultHeadM), (v) => n.defaultHeadM = prsBack(v)),
                   _num(n.cv, (v) => n.cv = v, decimals: 3),
                   _num(n.flowTolBelow * 100, (v) {
                     n.flowTolBelow = v / 100;
@@ -909,15 +933,15 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           [
             t('cat.use'),
             t('cat.name'),
-            t('cat.idmm'),
-            t('cat.spacing'),
+            idLabel,
+            ft ? t('cat.spacingFt') : t('cat.spacing'),
             t('cat.qNom'),
             t('cat.x'),
             t('cat.kd'),
             t('cat.cv'),
-            t('cat.pMin'),
-            t('cat.pMax'),
-            t('cat.costM', {'c': cur}),
+            pLabel('cat.pMin'),
+            pLabel('cat.pMax'),
+            costLabel,
             '',
           ],
           [
@@ -931,15 +955,15 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   }),
                 ),
                 _cell(tp.name, (v) => tp.name = v),
-                _num(tp.innerDiameterMm, (v) => tp.innerDiameterMm = v),
-                _num(tp.emitterSpacingM, (v) => tp.emitterSpacingM = v > 0 ? v : tp.emitterSpacingM),
+                _num(dia(tp.innerDiameterMm), (v) => tp.innerDiameterMm = diaBack(v), decimals: dDec),
+                _num(len(tp.emitterSpacingM), (v) => tp.emitterSpacingM = v > 0 ? lenBack(v) : tp.emitterSpacingM),
                 _num(tp.emitter.flow(tp.defaultInletHeadM) / m3sPerLph, (v) => tp.emitter = EmitterCurve.fromNominal(flow: v * m3sPerLph, head: tp.defaultInletHeadM, x: tp.emitter.x)),
                 _num(tp.emitter.x, (v) => tp.emitter = EmitterCurve(k: tp.emitter.k, x: v), decimals: 3),
                 _num(tp.barbK, (v) => tp.barbK = v),
                 _num(tp.cv, (v) => tp.cv = v, decimals: 3),
-                _num(tp.minHeadM, (v) => tp.minHeadM = v),
-                _num(tp.maxHeadM, (v) => tp.maxHeadM = v),
-                _num(tp.costPerM, (v) => tp.costPerM = v),
+                _num(prs(tp.minHeadM), (v) => tp.minHeadM = prsBack(v)),
+                _num(prs(tp.maxHeadM), (v) => tp.maxHeadM = prsBack(v)),
+                _num(perLen(tp.costPerM), (v) => tp.costPerM = perLenBack(v)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [dupBtn(() => cat.tapes.add(TapeSpec.fromJson(tp.toJson()..['id'] = cat.newId('tape'))..name = '${tp.name} *')), removeBtn(tp.id, tp.name, () => cat.tapes.remove(tp))],
@@ -948,7 +972,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ],
         );
         Widget valves() => _catTable(
-          [t('cat.use'), t('cat.name'), t('cat.type'), t('cat.dn'), t('cat.kLoss'), t('cat.n'), t('cat.qMax'), cur, ''],
+          [t('cat.use'), t('cat.name'), t('cat.type'), dnLabel('cat.dn'), t('cat.kLoss'), t('cat.n'), m3h ? t('cat.qMax') : t('cat.qMaxU', {'u': u.flowLabel}), cur, ''],
           [
             for (final v in cat.valves)
               [
@@ -971,10 +995,10 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                     onChanged: (x) => setState(() => v.kind = ValveKind.values.byName(x!)),
                   ),
                 ),
-                _num(v.sizeMm, (x) => v.sizeMm = x),
+                _num(dia(v.sizeMm), (x) => v.sizeMm = diaBack(x), decimals: dDec),
                 _num(v.loss.k, (x) => v.loss = DeviceLossCurve(k: x, n: v.loss.n, c: v.loss.c), decimals: 0),
                 _num(v.loss.n, (x) => v.loss = DeviceLossCurve(k: v.loss.k, n: x, c: v.loss.c)),
-                _num(v.maxFlow / m3sPerM3h, (x) => v.maxFlow = x * m3sPerM3h),
+                _num(flw(v.maxFlow), (x) => v.maxFlow = flwBack(x)),
                 _num(v.cost, (x) => v.cost = x),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -984,7 +1008,19 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ],
         );
         Widget pumps() => _catTable(
-          [t('cat.use'), t('cat.name'), t('cat.points'), t('cat.eff'), t('cat.effPoints'), t('cat.npshPoints'), 'kW', t('cat.ratedHz'), t('cat.submersible'), cur, ''],
+          [
+            t('cat.use'),
+            t('cat.name'),
+            m3h && mH2O ? t('cat.points') : t('cat.pointsU', {'q': m3h ? 'm³/h' : u.flowLabel, 'h': u.pressureLabel}),
+            t('cat.eff'),
+            m3h ? t('cat.effPoints') : t('cat.effPointsU', {'q': u.flowLabel}),
+            m3h && mH2O ? t('cat.npshPoints') : t('cat.npshPointsU', {'q': m3h ? 'm³/h' : u.flowLabel, 'h': u.pressureLabel}),
+            'kW',
+            t('cat.ratedHz'),
+            t('cat.submersible'),
+            cur,
+            '',
+          ],
           [
             for (final p in cat.pumps)
               [
@@ -996,22 +1032,22 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   }),
                 ),
                 _cell(p.name, (x) => p.name = x),
-                _cell(p.points.map((pt) => '${fmtUi(pt.$1 / m3sPerM3h, 1)}@${fmtUi(pt.$2, 1)}').join(', '), (x) {
-                  final pts = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
+                _cell(p.points.map((pt) => '${fmtUi(flw(pt.$1), 1)}@${fmtUi(prs(pt.$2), 1)}').join(', '), (x) {
+                  final pts = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (flwBack(q), prsBack(h))];
                   if (pts.length >= 2) {
                     p.points = pts;
                     p.refit();
                   }
                 }),
                 _num(p.efficiency, (x) => p.efficiency = x),
-                _cell(p.efficiencyPoints.map((pt) => '${fmtUi(pt.$1 / m3sPerM3h, 1)}@${fmtUi(pt.$2 * 100, 0)}').join(', '), (x) {
+                _cell(p.efficiencyPoints.map((pt) => '${fmtUi(flw(pt.$1), 1)}@${fmtUi(pt.$2 * 100, 0)}').join(', '), (x) {
                   p.efficiencyPoints = [
                     for (final (q, e) in CatalogIo.parseCurvePoints(x))
-                      if (e > 0) (q * m3sPerM3h, e > 1 ? e / 100 : e),
+                      if (e > 0) (flwBack(q), e > 1 ? e / 100 : e),
                   ];
                 }),
-                _cell(p.npshPoints.map((pt) => '${fmtUi(pt.$1 / m3sPerM3h, 1)}@${fmtUi(pt.$2, 1)}').join(', '), (x) {
-                  p.npshPoints = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
+                _cell(p.npshPoints.map((pt) => '${fmtUi(flw(pt.$1), 1)}@${fmtUi(prs(pt.$2), 1)}').join(', '), (x) {
+                  p.npshPoints = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (flwBack(q), prsBack(h))];
                 }),
                 _num(p.powerKw, (x) => p.powerKw = x),
                 _num(p.ratedHz, (x) => p.ratedHz = x < 0 ? 0 : x),
@@ -1025,7 +1061,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
           ],
         );
         Widget fittings() => _catTable(
-          [t('cat.use'), t('cat.name'), t('cat.kind'), t('cat.dn'), t('cat.size2'), cur, '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''],
+          [t('cat.use'), t('cat.name'), t('cat.kind'), dnLabel('cat.dn'), dnLabel('cat.size2'), cur, '${t('cat.supplier')} / ${t('cat.code')} / FINAME', ''],
           [
             for (final f in cat.fittings)
               [
@@ -1048,8 +1084,8 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                     onChanged: (x) => setState(() => f.kind = FittingKind.values.byName(x!)),
                   ),
                 ),
-                _num(f.sizeMm, (x) => f.sizeMm = x),
-                _num(f.size2Mm, (x) => f.size2Mm = x),
+                _num(dia(f.sizeMm), (x) => f.sizeMm = diaBack(x), decimals: dDec),
+                _num(dia(f.size2Mm), (x) => f.size2Mm = diaBack(x), decimals: dDec),
                 _num(f.cost, (x) => f.cost = x),
                 meta(f.id, f.supplier, f.code, (v) => f.supplier = v, (v) => f.code = v),
                 Row(
@@ -1065,7 +1101,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
             t('cat.name'),
             t('cat.mm2'),
             t('cat.ohmKm'),
-            t('cat.costM', {'c': cur}),
+            costLabel,
             '${t('cat.supplier')} / ${t('cat.code')} / FINAME',
             '',
           ],
@@ -1087,7 +1123,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   setState(() {});
                 }),
                 _num(w.ohmPerKm, (x) => w.ohmPerKm = x, decimals: 3),
-                _num(w.costPerM, (x) => w.costPerM = x),
+                _num(perLen(w.costPerM), (x) => w.costPerM = perLenBack(x)),
                 meta(w.id, w.supplier, w.code, (v) => w.supplier = v, (v) => w.code = v),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1137,7 +1173,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   ),
                   OutlinedButton(onPressed: () => saveTextFile('catalog.json', CatalogIo.exportJson(cat)), child: Text(t('cat.export'))),
                   OutlinedButton(
-                    onPressed: () => saveTextFile('catalog_${tab.name}.csv', CatalogIo.exportCsv(cat, tab), mime: 'text/csv'),
+                    onPressed: () => saveTextFile('catalog_${tab.name}.csv', CatalogIo.exportCsv(cat, tab, units: u), mime: 'text/csv'),
                     child: Text(t('cat.exportCsv')),
                   ),
                   OutlinedButton(
@@ -1226,7 +1262,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
               // before the table loses its room (large text)
               Flexible(
                 child: Text(
-                  '${t('cat.importHint')}\n${t('cat.importUnits')}',
+                  '${t('cat.importHint')}\n${t('cat.importUnits')}${inch || !mH2O || ft || gpm ? '\n${t('cat.unitsNote')}' : ''}',
                   style: TextStyle(fontSize: 10, color: Cad.fg38),
                   maxLines: 6,
                   overflow: TextOverflow.ellipsis,

@@ -691,7 +691,8 @@ List<CheckIssue> checkAreaUniformity(Project project, {List<SpraySource>? source
         if (Bounds(s.p.x - s.radius, s.p.y - s.radius, s.p.x + s.radius, s.p.y + s.radius).intersects(box)) s,
     ];
     if (near.length < 2) continue;
-    final region = LayoutRegion(a.points);
+    // 1.6.0 MOD: the islands of the area are not watered
+    final region = LayoutRegion(a.points, exclusions: a.holes);
     if (region.isEmpty) continue;
     // a quarter of the shortest throw, no coarser than a tenth of the area's
     // size (the check runs after every edit: no inscribed-circle search)

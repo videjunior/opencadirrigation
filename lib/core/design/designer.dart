@@ -3339,7 +3339,8 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
     if (a.points.length < 3) continue;
     var flow = 0.0, machineFlow = 0.0;
     for (final e in project.entities) {
-      if (e is OutletEntity && project.outletWatersArea(e, a.points)) {
+      // 1.6.0 MOD: what falls in an island of the area waters none of it
+      if (e is OutletEntity && project.outletWatersArea(e, a.points) && !a.inHole(e.position)) {
         final res = outletsByEntity[e.id];
         if (res != null && res.isNotEmpty) {
           flow += res.first.flow * res.first.count;
@@ -3355,7 +3356,8 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
         const samples = 20;
         var hits = 0;
         for (var i = 0; i < samples; i++) {
-          if (pointInPolygonSafe(pointAlongPolyline(pts, total * (i + 0.5) / samples), a.points)) hits++;
+          final q = pointAlongPolyline(pts, total * (i + 0.5) / samples);
+          if (pointInPolygonSafe(q, a.points) && !a.inHole(q)) hits++;
         }
         final inside = hits / samples;
         if (inside == 0) continue;
@@ -3374,7 +3376,7 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
         // flow that falls on the part of the irrigated outline inside it
         final q = results?.pivots[e.id]?.flow ?? 0;
         if (q > 0) {
-          final share = q * _shareInside(e.outline(), a.points);
+          final share = q * _shareInside(e.outline(), a.contains);
           flow += share;
           machineFlow += share;
         }
@@ -3407,7 +3409,7 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
 
 /// Share of the polygon [src] that lies inside [area], sampled on a 40 × 40
 /// grid over [src].
-double _shareInside(List<Pt> src, List<Pt> area) {
+double _shareInside(List<Pt> src, bool Function(Pt) inArea) {
   final b = Bounds.ofPoints(src);
   const n = 40;
   var inSrc = 0, inBoth = 0;
@@ -3416,7 +3418,7 @@ double _shareInside(List<Pt> src, List<Pt> area) {
       final p = Pt(b.minX + (i + 0.5) * b.width / n, b.minY + (j + 0.5) * b.height / n);
       if (!pointInPolygon(p, src)) continue;
       inSrc++;
-      if (pointInPolygon(p, area)) inBoth++;
+      if (inArea(p)) inBoth++;
     }
   }
   return inSrc == 0 ? 0 : inBoth / inSrc;

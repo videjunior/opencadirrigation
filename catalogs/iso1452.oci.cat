@@ -1,0 +1,1461 @@
+{
+  "format": "opencadirrigation-catalog",
+  "version": 1,
+  "id": "iso1452",
+  "brand": "Generic (ISO)",
+  "name": "PVC-U pipes by ISO 1452",
+  "description": "PVC-U pressure pipes of ISO 1452-2 (EN ISO 1452-2), PN 6 / 8 / 10 / 12.5 / 16 at 25 °C, dn 20 to 315 mm: nominal walls of its Table 2 (MRS 25 MPa, design coefficient 2.5 up to dn 90 and 2.0 above); installed reference prices in EUR",
+  "source": "https://www.iso.org/standard/50362.html",
+  "license": "CC0-1.0",
+  "updated": "2026-11-02",
+  "author": "OpenCADIrrigation",
+  "currency": "EUR",
+  "pricesSource": "Regione Autonoma della Sardegna, Prezzario regionale dell'agricoltura, aggiornamento 2024 (Decreto n. 36 prot. 4817 del 12.12.2024), items F.001 to F.003: PVC-U pipes to UNI EN 1452-2 for irrigation, PN 6 / 10 / 16, supplied and laid with their joints and fittings (trench and bedding excluded), EUR per metre without VAT. Published rows used as printed; the other sizes and classes from a least-squares fit to the published rows: price = 3.52 EUR/m + 6.84 EUR/kg × mass per metre (PVC-U 1400 kg/m³).",
+  "pricesDate": "2024-12-12",
+  "sources": [
+    "ISO 1452-2:2009 - Plastics piping systems for water supply and for buried and above-ground drainage and sewerage under pressure - Unplasticized poly(vinyl chloride) (PVC-U) - Part 2: Pipes",
+    "ISO 4065 - Thermoplastics pipes - Universal wall thickness table",
+    "Regione Autonoma della Sardegna, Prezzario regionale dell'agricoltura, aggiornamento 2024 (Decreto n. 36 prot. 4817 del 12.12.2024): https://files.regione.sardegna.it/squidex/api/assets/redazionaleras/bc8424d3-e3a4-402e-a0e2-4755218dde78/allegato-decreto-n-36-prot-4817-del-12.12.2024-prezzario-agricoltura.pdf"
+  ],
+  "items": 82,
+  "catalog": {
+    "pipes": [
+      {
+        "id": "iso1452_pn6_40",
+        "name": "PVC-U ISO 1452 PN 6 40 × 1.5 mm",
+        "nominalMm": 40.0,
+        "idMm": 37.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 1.5,
+        "cost": 5.1,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_50",
+        "name": "PVC-U ISO 1452 PN 6 50 × 1.6 mm",
+        "nominalMm": 50.0,
+        "idMm": 46.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 1.6,
+        "cost": 5.77,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_63",
+        "name": "PVC-U ISO 1452 PN 6 63 × 2.0 mm",
+        "nominalMm": 63.0,
+        "idMm": 59.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 2.0,
+        "cost": 7.21,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_75",
+        "name": "PVC-U ISO 1452 PN 6 75 × 2.3 mm",
+        "nominalMm": 75.0,
+        "idMm": 70.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 2.3,
+        "cost": 8.8,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_90",
+        "name": "PVC-U ISO 1452 PN 6 90 × 2.8 mm",
+        "nominalMm": 90.0,
+        "idMm": 84.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 2.8,
+        "cost": 10.98,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_110",
+        "name": "PVC-U ISO 1452 PN 6 110 × 2.7 mm",
+        "nominalMm": 110.0,
+        "idMm": 104.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 2.7,
+        "cost": 12.5,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_125",
+        "name": "PVC-U ISO 1452 PN 6 125 × 3.1 mm",
+        "nominalMm": 125.0,
+        "idMm": 118.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 3.1,
+        "cost": 15.41,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_140",
+        "name": "PVC-U ISO 1452 PN 6 140 × 3.5 mm",
+        "nominalMm": 140.0,
+        "idMm": 133.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 3.5,
+        "cost": 18.53,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_160",
+        "name": "PVC-U ISO 1452 PN 6 160 × 4.0 mm",
+        "nominalMm": 160.0,
+        "idMm": 152.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 4.0,
+        "cost": 23.06,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_180",
+        "name": "PVC-U ISO 1452 PN 6 180 × 4.4 mm",
+        "nominalMm": 180.0,
+        "idMm": 171.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 4.4,
+        "cost": 26.76,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_200",
+        "name": "PVC-U ISO 1452 PN 6 200 × 4.9 mm",
+        "nominalMm": 200.0,
+        "idMm": 190.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 4.9,
+        "cost": 32.28,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_225",
+        "name": "PVC-U ISO 1452 PN 6 225 × 5.5 mm",
+        "nominalMm": 225.0,
+        "idMm": 214.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 5.5,
+        "cost": 39.84,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_250",
+        "name": "PVC-U ISO 1452 PN 6 250 × 6.2 mm",
+        "nominalMm": 250.0,
+        "idMm": 237.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 6.2,
+        "cost": 51.62,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_280",
+        "name": "PVC-U ISO 1452 PN 6 280 × 6.9 mm",
+        "nominalMm": 280.0,
+        "idMm": 266.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 6.9,
+        "cost": 60.21,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn6_315",
+        "name": "PVC-U ISO 1452 PN 6 315 × 7.7 mm",
+        "nominalMm": 315.0,
+        "idMm": 299.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 61.18,
+        "wallMm": 7.7,
+        "cost": 78.93,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_32",
+        "name": "PVC-U ISO 1452 PN 8 32 × 1.5 mm",
+        "nominalMm": 32.0,
+        "idMm": 29.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 1.5,
+        "cost": 4.89,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_40",
+        "name": "PVC-U ISO 1452 PN 8 40 × 1.6 mm",
+        "nominalMm": 40.0,
+        "idMm": 36.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 1.6,
+        "cost": 5.37,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_50",
+        "name": "PVC-U ISO 1452 PN 8 50 × 2.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 46.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 2.0,
+        "cost": 6.41,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_63",
+        "name": "PVC-U ISO 1452 PN 8 63 × 2.5 mm",
+        "nominalMm": 63.0,
+        "idMm": 58.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 2.5,
+        "cost": 8.07,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_75",
+        "name": "PVC-U ISO 1452 PN 8 75 × 2.9 mm",
+        "nominalMm": 75.0,
+        "idMm": 69.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 2.9,
+        "cost": 9.81,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_90",
+        "name": "PVC-U ISO 1452 PN 8 90 × 3.5 mm",
+        "nominalMm": 90.0,
+        "idMm": 83.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 3.5,
+        "cost": 12.63,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_110",
+        "name": "PVC-U ISO 1452 PN 8 110 × 3.4 mm",
+        "nominalMm": 110.0,
+        "idMm": 103.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 3.4,
+        "cost": 14.42,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_125",
+        "name": "PVC-U ISO 1452 PN 8 125 × 3.9 mm",
+        "nominalMm": 125.0,
+        "idMm": 117.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 3.9,
+        "cost": 17.73,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_140",
+        "name": "PVC-U ISO 1452 PN 8 140 × 4.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 131.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 4.3,
+        "cost": 21.07,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_160",
+        "name": "PVC-U ISO 1452 PN 8 160 × 4.9 mm",
+        "nominalMm": 160.0,
+        "idMm": 150.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 4.9,
+        "cost": 26.38,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_180",
+        "name": "PVC-U ISO 1452 PN 8 180 × 5.5 mm",
+        "nominalMm": 180.0,
+        "idMm": 169.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 5.5,
+        "cost": 32.39,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_200",
+        "name": "PVC-U ISO 1452 PN 8 200 × 6.2 mm",
+        "nominalMm": 200.0,
+        "idMm": 187.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 6.2,
+        "cost": 39.67,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_225",
+        "name": "PVC-U ISO 1452 PN 8 225 × 6.9 mm",
+        "nominalMm": 225.0,
+        "idMm": 211.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 6.9,
+        "cost": 48.8,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_250",
+        "name": "PVC-U ISO 1452 PN 8 250 × 7.7 mm",
+        "nominalMm": 250.0,
+        "idMm": 234.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 7.7,
+        "cost": 59.65,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_280",
+        "name": "PVC-U ISO 1452 PN 8 280 × 8.6 mm",
+        "nominalMm": 280.0,
+        "idMm": 262.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 8.6,
+        "cost": 73.74,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn8_315",
+        "name": "PVC-U ISO 1452 PN 8 315 × 9.7 mm",
+        "nominalMm": 315.0,
+        "idMm": 295.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 81.58,
+        "wallMm": 9.7,
+        "cost": 92.62,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_32",
+        "name": "PVC-U ISO 1452 PN 10 32 × 1.6 mm",
+        "nominalMm": 32.0,
+        "idMm": 28.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 1.6,
+        "cost": 4.98,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_40",
+        "name": "PVC-U ISO 1452 PN 10 40 × 1.9 mm",
+        "nominalMm": 40.0,
+        "idMm": 36.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 1.9,
+        "cost": 5.7,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_50",
+        "name": "PVC-U ISO 1452 PN 10 50 × 2.4 mm",
+        "nominalMm": 50.0,
+        "idMm": 45.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 2.4,
+        "cost": 6.91,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_63",
+        "name": "PVC-U ISO 1452 PN 10 63 × 3.0 mm",
+        "nominalMm": 63.0,
+        "idMm": 57.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 3.0,
+        "cost": 9.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_75",
+        "name": "PVC-U ISO 1452 PN 10 75 × 3.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 67.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 3.6,
+        "cost": 11.57,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_90",
+        "name": "PVC-U ISO 1452 PN 10 90 × 4.3 mm",
+        "nominalMm": 90.0,
+        "idMm": 81.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 4.3,
+        "cost": 14.2,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_110",
+        "name": "PVC-U ISO 1452 PN 10 110 × 4.2 mm",
+        "nominalMm": 110.0,
+        "idMm": 101.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 4.2,
+        "cost": 16.55,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_125",
+        "name": "PVC-U ISO 1452 PN 10 125 × 4.8 mm",
+        "nominalMm": 125.0,
+        "idMm": 115.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 4.8,
+        "cost": 20.4,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_140",
+        "name": "PVC-U ISO 1452 PN 10 140 × 5.4 mm",
+        "nominalMm": 140.0,
+        "idMm": 129.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 5.4,
+        "cost": 24.92,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_160",
+        "name": "PVC-U ISO 1452 PN 10 160 × 6.2 mm",
+        "nominalMm": 160.0,
+        "idMm": 147.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 6.2,
+        "cost": 31.71,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_180",
+        "name": "PVC-U ISO 1452 PN 10 180 × 6.9 mm",
+        "nominalMm": 180.0,
+        "idMm": 166.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 6.9,
+        "cost": 39.45,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_200",
+        "name": "PVC-U ISO 1452 PN 10 200 × 7.7 mm",
+        "nominalMm": 200.0,
+        "idMm": 184.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 7.7,
+        "cost": 47.34,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_225",
+        "name": "PVC-U ISO 1452 PN 10 225 × 8.6 mm",
+        "nominalMm": 225.0,
+        "idMm": 207.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 8.6,
+        "cost": 59.51,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_250",
+        "name": "PVC-U ISO 1452 PN 10 250 × 9.6 mm",
+        "nominalMm": 250.0,
+        "idMm": 230.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 9.6,
+        "cost": 72.09,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_280",
+        "name": "PVC-U ISO 1452 PN 10 280 × 10.7 mm",
+        "nominalMm": 280.0,
+        "idMm": 258.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 10.7,
+        "cost": 90.21,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn10_315",
+        "name": "PVC-U ISO 1452 PN 10 315 × 12.1 mm",
+        "nominalMm": 315.0,
+        "idMm": 290.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 101.97,
+        "wallMm": 12.1,
+        "cost": 113.18,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_25",
+        "name": "PVC-U ISO 1452 PN 12.5 25 × 1.5 mm",
+        "nominalMm": 25.0,
+        "idMm": 22.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 1.5,
+        "cost": 4.58,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_32",
+        "name": "PVC-U ISO 1452 PN 12.5 32 × 1.9 mm",
+        "nominalMm": 32.0,
+        "idMm": 28.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 1.9,
+        "cost": 5.24,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_40",
+        "name": "PVC-U ISO 1452 PN 12.5 40 × 2.4 mm",
+        "nominalMm": 40.0,
+        "idMm": 35.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 2.4,
+        "cost": 6.23,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_50",
+        "name": "PVC-U ISO 1452 PN 12.5 50 × 3.0 mm",
+        "nominalMm": 50.0,
+        "idMm": 44.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 3.0,
+        "cost": 7.76,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_63",
+        "name": "PVC-U ISO 1452 PN 12.5 63 × 3.8 mm",
+        "nominalMm": 63.0,
+        "idMm": 55.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 3.8,
+        "cost": 10.29,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_75",
+        "name": "PVC-U ISO 1452 PN 12.5 75 × 4.5 mm",
+        "nominalMm": 75.0,
+        "idMm": 66.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 4.5,
+        "cost": 13.06,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_90",
+        "name": "PVC-U ISO 1452 PN 12.5 90 × 5.4 mm",
+        "nominalMm": 90.0,
+        "idMm": 79.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 5.4,
+        "cost": 17.26,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_110",
+        "name": "PVC-U ISO 1452 PN 12.5 110 × 5.3 mm",
+        "nominalMm": 110.0,
+        "idMm": 99.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 5.3,
+        "cost": 20.21,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_125",
+        "name": "PVC-U ISO 1452 PN 12.5 125 × 6.0 mm",
+        "nominalMm": 125.0,
+        "idMm": 113.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 6.0,
+        "cost": 25.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_140",
+        "name": "PVC-U ISO 1452 PN 12.5 140 × 6.7 mm",
+        "nominalMm": 140.0,
+        "idMm": 126.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 6.7,
+        "cost": 30.39,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_160",
+        "name": "PVC-U ISO 1452 PN 12.5 160 × 7.7 mm",
+        "nominalMm": 160.0,
+        "idMm": 144.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 7.7,
+        "cost": 38.8,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_180",
+        "name": "PVC-U ISO 1452 PN 12.5 180 × 8.6 mm",
+        "nominalMm": 180.0,
+        "idMm": 162.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 8.6,
+        "cost": 47.87,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_200",
+        "name": "PVC-U ISO 1452 PN 12.5 200 × 9.6 mm",
+        "nominalMm": 200.0,
+        "idMm": 180.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 9.6,
+        "cost": 58.51,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_225",
+        "name": "PVC-U ISO 1452 PN 12.5 225 × 10.8 mm",
+        "nominalMm": 225.0,
+        "idMm": 203.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 10.8,
+        "cost": 73.12,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_250",
+        "name": "PVC-U ISO 1452 PN 12.5 250 × 11.9 mm",
+        "nominalMm": 250.0,
+        "idMm": 226.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 11.9,
+        "cost": 88.77,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_280",
+        "name": "PVC-U ISO 1452 PN 12.5 280 × 13.4 mm",
+        "nominalMm": 280.0,
+        "idMm": 253.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 13.4,
+        "cost": 111.0,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn12_5_315",
+        "name": "PVC-U ISO 1452 PN 12.5 315 × 15.0 mm",
+        "nominalMm": 315.0,
+        "idMm": 285.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 127.46,
+        "wallMm": 15.0,
+        "cost": 138.91,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_20",
+        "name": "PVC-U ISO 1452 PN 16 20 × 1.5 mm",
+        "nominalMm": 20.0,
+        "idMm": 17.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 1.5,
+        "cost": 4.35,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_25",
+        "name": "PVC-U ISO 1452 PN 16 25 × 1.9 mm",
+        "nominalMm": 25.0,
+        "idMm": 21.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 1.9,
+        "cost": 4.84,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_32",
+        "name": "PVC-U ISO 1452 PN 16 32 × 2.4 mm",
+        "nominalMm": 32.0,
+        "idMm": 27.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 2.4,
+        "cost": 5.66,
+        "usage": [
+          "lateral",
+          "zone"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_40",
+        "name": "PVC-U ISO 1452 PN 16 40 × 3.0 mm",
+        "nominalMm": 40.0,
+        "idMm": 34.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 3.0,
+        "cost": 6.86,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_50",
+        "name": "PVC-U ISO 1452 PN 16 50 × 3.7 mm",
+        "nominalMm": 50.0,
+        "idMm": 42.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 3.7,
+        "cost": 8.67,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_63",
+        "name": "PVC-U ISO 1452 PN 16 63 × 4.7 mm",
+        "nominalMm": 63.0,
+        "idMm": 53.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 4.7,
+        "cost": 12.0,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_75",
+        "name": "PVC-U ISO 1452 PN 16 75 × 5.6 mm",
+        "nominalMm": 75.0,
+        "idMm": 63.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 5.6,
+        "cost": 15.73,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_90",
+        "name": "PVC-U ISO 1452 PN 16 90 × 6.7 mm",
+        "nominalMm": 90.0,
+        "idMm": 76.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 6.7,
+        "cost": 19.67,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_110",
+        "name": "PVC-U ISO 1452 PN 16 110 × 6.6 mm",
+        "nominalMm": 110.0,
+        "idMm": 96.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 6.6,
+        "cost": 23.42,
+        "usage": [
+          "zone",
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_125",
+        "name": "PVC-U ISO 1452 PN 16 125 × 7.4 mm",
+        "nominalMm": 125.0,
+        "idMm": 110.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 7.4,
+        "cost": 29.01,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_140",
+        "name": "PVC-U ISO 1452 PN 16 140 × 8.3 mm",
+        "nominalMm": 140.0,
+        "idMm": 123.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 8.3,
+        "cost": 35.63,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_160",
+        "name": "PVC-U ISO 1452 PN 16 160 × 9.5 mm",
+        "nominalMm": 160.0,
+        "idMm": 141.0,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 9.5,
+        "cost": 45.55,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_180",
+        "name": "PVC-U ISO 1452 PN 16 180 × 10.7 mm",
+        "nominalMm": 180.0,
+        "idMm": 158.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 10.7,
+        "cost": 58.02,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_200",
+        "name": "PVC-U ISO 1452 PN 16 200 × 11.9 mm",
+        "nominalMm": 200.0,
+        "idMm": 176.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 11.9,
+        "cost": 69.47,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_225",
+        "name": "PVC-U ISO 1452 PN 16 225 × 13.4 mm",
+        "nominalMm": 225.0,
+        "idMm": 198.2,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 13.4,
+        "cost": 88.83,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_250",
+        "name": "PVC-U ISO 1452 PN 16 250 × 14.8 mm",
+        "nominalMm": 250.0,
+        "idMm": 220.4,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 14.8,
+        "cost": 108.25,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_280",
+        "name": "PVC-U ISO 1452 PN 16 280 × 16.6 mm",
+        "nominalMm": 280.0,
+        "idMm": 246.8,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 16.6,
+        "cost": 135.07,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      },
+      {
+        "id": "iso1452_pn16_315",
+        "name": "PVC-U ISO 1452 PN 16 315 × 18.7 mm",
+        "nominalMm": 315.0,
+        "idMm": 277.6,
+        "material": "pvc",
+        "c": 150.0,
+        "roughMm": 0.0015,
+        "ratingM": 163.15,
+        "wallMm": 18.7,
+        "cost": 170.23,
+        "usage": [
+          "mainline"
+        ],
+        "enabled": true,
+        "sup": "ISO 1452"
+      }
+    ],
+    "outlets": [],
+    "tapes": [],
+    "valves": [],
+    "pumps": [],
+    "fittings": []
+  }
+}

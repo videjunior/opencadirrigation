@@ -39,6 +39,20 @@
       "items": 12
     },
     {
+      "id": "en12201",
+      "brand": "Generic (EN)",
+      "name": "PE 100 pipes by EN 12201",
+      "description": "PE 100 pressure pipes of EN 12201-2 / ISO 4427-2, SDR 26 / 21 / 17 / 13.6 / 11 (PN 6 / 8 / 10 / 12.5 / 16 at 20 °C), dn 20 to 315 mm: nominal walls of its Table 2 (MRS 10 MPa, design coefficient 1.25); installed reference prices in EUR",
+      "source": "https://www.cencenelec.eu",
+      "license": "CC0-1.0",
+      "updated": "2026-11-02",
+      "author": "OpenCADIrrigation",
+      "currency": "EUR",
+      "pricesDate": "2024-12-12",
+      "file": "en12201.oci.cat",
+      "items": 80
+    },
+    {
       "id": "hunter",
       "brand": "Hunter Industries",
       "name": "Hunter Industries",
@@ -61,6 +75,48 @@
       "author": "OpenCADIrrigation",
       "file": "irritec.oci.cat",
       "items": 12
+    },
+    {
+      "id": "is4984",
+      "brand": "Generic (IS)",
+      "name": "PE pipes by IS 4984",
+      "description": "Polyethylene pipes for water supply of IS 4984:2016, PE 100 PN 4 / 6 / 8 / 10 / 12.5 / 16 (SDR 33 / 21 / 17 / 13.6 / 11 / 9) and PE 80 PN 4 / 6 / 8 / 10 (SDR 26 / 17 / 13.6 / 11) at 27 °C, dn 20 to 315 mm: minimum walls of its Table 4 (Amendment 2, 2022); supply reference prices in INR",
+      "source": "https://archive.org/details/gov.in.is.4984.2016",
+      "license": "CC0-1.0",
+      "updated": "2026-11-02",
+      "author": "OpenCADIrrigation",
+      "currency": "INR",
+      "pricesDate": "2023-06-20",
+      "file": "is4984.oci.cat",
+      "items": 161
+    },
+    {
+      "id": "is4985",
+      "brand": "Generic (IS)",
+      "name": "PVC-U pipes by IS 4985",
+      "description": "Unplasticized PVC pipes for water supplies of IS 4985:2021, class 1 to 6 (0.25 / 0.4 / 0.6 / 0.8 / 1.0 / 1.25 MPa at 27 °C), dn 20 to 315 mm: minimum walls of its Table 1 (design stress 8.6 MPa); supply reference prices in INR",
+      "source": "https://archive.org/details/gov.in.is.4985.2021",
+      "license": "CC0-1.0",
+      "updated": "2026-11-02",
+      "author": "OpenCADIrrigation",
+      "currency": "INR",
+      "pricesDate": "2023-06-20",
+      "file": "is4985.oci.cat",
+      "items": 92
+    },
+    {
+      "id": "iso1452",
+      "brand": "Generic (ISO)",
+      "name": "PVC-U pipes by ISO 1452",
+      "description": "PVC-U pressure pipes of ISO 1452-2 (EN ISO 1452-2), PN 6 / 8 / 10 / 12.5 / 16 at 25 °C, dn 20 to 315 mm: nominal walls of its Table 2 (MRS 25 MPa, design coefficient 2.5 up to dn 90 and 2.0 above); installed reference prices in EUR",
+      "source": "https://www.iso.org/standard/50362.html",
+      "license": "CC0-1.0",
+      "updated": "2026-11-02",
+      "author": "OpenCADIrrigation",
+      "currency": "EUR",
+      "pricesDate": "2024-12-12",
+      "file": "iso1452.oci.cat",
+      "items": 82
     },
     {
       "id": "jain",

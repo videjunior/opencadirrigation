@@ -23,6 +23,7 @@ class GeoFeature {
     Map<String, String>? data,
     this.fillAlpha = 0.3,
     this.numeric = const {},
+    this.holes = const [],
   }) : data = data ?? {};
 
   final String name;
@@ -46,6 +47,10 @@ class GeoFeature {
   /// Keys of [data] that hold numbers: GeoJSON carries them as numbers (a
   /// GIS can sort and filter them), KML as text.
   final Set<String> numeric;
+
+  /// Inner rings of a 'Polygon' (the islands of an area), as [coords]
+  /// (1.6.0 MOD).
+  final List<List<(double, double, double)>> holes;
 }
 
 class KmlWriter {
@@ -104,8 +109,16 @@ class KmlWriter {
           case 'Point':
             b.writeln('<Point><coordinates>$coords</coordinates></Point>');
           case 'Polygon':
-            final ring = f.coords.isNotEmpty && f.coords.first != f.coords.last ? '$coords ${_deg(f.coords.first.$1)},${_deg(f.coords.first.$2)},${_n(f.coords.first.$3)}' : coords;
-            b.writeln('<Polygon><tessellate>1</tessellate><outerBoundaryIs><LinearRing><coordinates>$ring</coordinates></LinearRing></outerBoundaryIs></Polygon>');
+            String ringOf(List<(double, double, double)> r) {
+              final text = r.map((c) => '${_deg(c.$1)},${_deg(c.$2)},${_n(c.$3)}').join(' ');
+              return r.isNotEmpty && r.first != r.last ? '$text ${_deg(r.first.$1)},${_deg(r.first.$2)},${_n(r.first.$3)}' : text;
+            }
+            // 1.6.0 MOD: the islands of an area as inner boundaries
+            final inner = [
+              for (final h in f.holes)
+                if (h.length >= 3) '<innerBoundaryIs><LinearRing><coordinates>${ringOf(h)}</coordinates></LinearRing></innerBoundaryIs>',
+            ].join();
+            b.writeln('<Polygon><tessellate>1</tessellate><outerBoundaryIs><LinearRing><coordinates>${ringOf(f.coords)}</coordinates></LinearRing></outerBoundaryIs>$inner</Polygon>');
           default:
             b.writeln('<LineString><tessellate>1</tessellate><coordinates>$coords</coordinates></LineString>');
         }
@@ -143,13 +156,21 @@ class GeoJsonWriter {
         case 'Point':
           geometry = {'type': 'Point', 'coordinates': pos(f.coords.first)};
         case 'Polygon':
-          var ring = f.coords.map(pos).toList();
-          if (ring.isNotEmpty && (ring.first[0] != ring.last[0] || ring.first[1] != ring.last[1])) ring.add(ring.first);
-          // RFC 7946 §3.1.6: the exterior ring runs counter-clockwise
-          if (_signedArea(ring) < 0) ring = ring.reversed.toList();
+          List<List<double>> closedRing(List<(double, double, double)> r, {required bool ccw}) {
+            var ring = r.map(pos).toList();
+            if (ring.isNotEmpty && (ring.first[0] != ring.last[0] || ring.first[1] != ring.last[1])) ring.add(ring.first);
+            // RFC 7946 §3.1.6: the exterior ring runs counter-clockwise, the holes clockwise
+            if ((_signedArea(ring) < 0) == ccw) ring = ring.reversed.toList();
+            return ring;
+          }
           geometry = {
             'type': 'Polygon',
-            'coordinates': [ring],
+            'coordinates': [
+              closedRing(f.coords, ccw: true),
+              // 1.6.0 MOD: the islands of an area
+              for (final h in f.holes)
+                if (h.length >= 3) closedRing(h, ccw: false),
+            ],
           };
         default:
           geometry = {'type': 'LineString', 'coordinates': f.coords.map(pos).toList()};

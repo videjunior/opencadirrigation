@@ -241,6 +241,26 @@ sealed class Entity {
       return out;
     }
 
+    // 1.6.0 MOD: closed rings of vertices (the holes of an area); a ring left
+    // with fewer than three valid vertices is dropped
+    List<List<Pt>> rings(String k) {
+      final raw = j[k];
+      final out = <List<Pt>>[];
+      for (final ring in raw is List ? raw : const []) {
+        final ringPts = <Pt>[];
+        for (final p in ring is List ? ring : const []) {
+          final q = Pt.tryFromList(p);
+          if (q != null) {
+            ringPts.add(q);
+          } else if (report != null) {
+            report.droppedVertices++;
+          }
+        }
+        if (ringPts.length >= 3) out.add(ringPts);
+      }
+      return out;
+    }
+
     Pt pt(String k) => Pt.tryFromList(j[k]) ?? (throw FormatException('entity_point', k));
     Pt pos() => pt('p');
     double d(String k, [double def = 0]) {
@@ -480,6 +500,8 @@ sealed class Entity {
           localizedKr: d('kr'),
           yieldPotentialPct: d('yp', 100),
           climateKc: j['kcc'] as bool? ?? true,
+          // 1.6.0 MOD
+          holes: rings('holes'),
         );
       case EntityType.pivot:
         return PivotEntity(
@@ -2331,9 +2353,17 @@ class AreaEntity extends Entity with PolyEntity {
     this.localizedKr = 0,
     this.yieldPotentialPct = 100,
     this.climateKc = true,
-  });
+    // 1.6.0 MOD
+    List<List<Pt>>? holes,
+  }) : holes = holes ?? [];
   @override
   List<Pt> points;
+
+  /// Islands inside the outline that are not irrigated (a pond, a building,
+  /// a bed of other plants): closed polygons of at least three vertices
+  /// within [points]. [area] leaves them out, [contains] is false in them
+  /// and the layout keeps the heads out of them (1.6.0 MOD).
+  List<List<Pt>> holes;
   double netDepthMmPerDay;
 
   /// Crop of the FAO-56 table (`crop.*`; '' = the free-text [crop] with a
@@ -2399,7 +2429,29 @@ class AreaEntity extends Entity with PolyEntity {
   /// humidity and wind of the site climate (FAO-56 eqs. 62 and 65).
   bool climateKc;
 
-  double get area => polygonArea(points).abs();
+  /// Irrigated surface (m²): the outline less its [holes].
+  double get area {
+    final gross = grossArea;
+    if (holes.isEmpty) return gross;
+    final islands = holes.fold(0.0, (s, h) => s + (h.length >= 3 ? polygonArea(h).abs() : 0.0));
+    return math.max(0.0, gross - islands);
+  }
+
+  /// Surface inside the outline, the [holes] included (m²).
+  double get grossArea => polygonArea(points).abs();
+
+  /// Whether [p] lies inside one of the [holes] (on its outline, where the
+  /// heads round an island stand, it does not).
+  bool inHole(Pt p) {
+    for (final h in holes) {
+      if (h.length >= 3 && pointInPolygon(p, h) && !pointOnPolygonBoundary(p, h, tol: 0.01)) return true;
+    }
+    return false;
+  }
+
+  /// Whether [p] lies in the irrigated area: inside the outline and in none
+  /// of the [holes].
+  bool contains(Pt p) => pointInPolygon(p, points) && !inHole(p);
 
   /// Crop evapotranspiration ETc = ETo·Kc (mm/day).
   double get etcMmDay => etoMmDay * kc;
@@ -2409,7 +2461,18 @@ class AreaEntity extends Entity with PolyEntity {
   @override
   EntityType get type => EntityType.area;
   @override
-  double distanceTo(Pt p) => pointInPolygon(p, points) ? 0 : math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
+  double distanceTo(Pt p) {
+    if (contains(p)) return 0;
+    var d = math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
+    // a click in a hole picks the area only near the hole's outline
+    for (final h in holes) {
+      for (var i = 0; i < h.length; i++) {
+        d = math.min(d, distanceToSegment(p, h[i], h[(i + 1) % h.length]));
+      }
+    }
+    return d;
+  }
+
   @override
   AreaEntity clone({String? newId}) => AreaEntity(
     id: newId ?? id,
@@ -2442,19 +2505,24 @@ class AreaEntity extends Entity with PolyEntity {
     localizedKr: localizedKr,
     yieldPotentialPct: yieldPotentialPct,
     climateKc: climateKc,
+    holes: [for (final h in holes) List.of(h)],
   )..extra = extra;
   @override
   AreaEntity translated(Pt d) => clone()
     ..points = points.map((p) => p + d).toList()
+    ..holes = [for (final h in holes) h.map((p) => p + d).toList()]
     ..extra = extra;
   @override
   AreaEntity transformed(Affine t) => clone()
     ..points = _map(points, t)
+    ..holes = [for (final h in holes) _map(h, t)]
     ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
     'pts': _ptsJson(points),
+    // 1.6.0 MOD: written only when the area has islands
+    if (holes.isNotEmpty) 'holes': [for (final h in holes) _ptsJson(h)],
     'depth': netDepthMmPerDay,
     'eff': efficiency,
     'crop': crop,

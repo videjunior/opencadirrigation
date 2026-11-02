@@ -211,6 +211,22 @@ class UiSheetCanvas implements SheetCanvas {
     }
   }
 
+  // 1.6.0 MOD: an area with islands, filled by the even-odd rule
+  @override
+  void rings(List<List<(double, double)>> rings, {bool stroke = true, bool fill = false}) {
+    if (fill) {
+      final shape = ui.Path()..fillType = ui.PathFillType.evenOdd;
+      for (final r in rings) {
+        if (r.length >= 2) shape.addPolygon([for (final (x, y) in r) _p(x, y)], true);
+      }
+      canvas.drawPath(shape, _fillPaint);
+    }
+    if (!stroke) return;
+    for (final r in rings) {
+      if (r.length >= 2) path(r, close: true);
+    }
+  }
+
   @override
   void line(double x1, double y1, double x2, double y2) => path([(x1, y1), (x2, y2)]);
 

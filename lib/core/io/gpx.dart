@@ -210,6 +210,10 @@ class GpxWriter {
           paths.add((pts: w.points, name: nameOr(e, ''), type: e.type.name, desc: ''));
         case AreaEntity a:
           paths.add((pts: [...a.points, if (a.points.isNotEmpty) a.points.first], name: nameOr(e, a.crop), type: e.type.name, desc: a.crop));
+          // 1.6.0 MOD: its islands, walked like the outline
+          for (final h in a.holes) {
+            if (h.length >= 3) paths.add((pts: [...h, h.first], name: nameOr(e, a.crop), type: 'hole', desc: a.crop));
+          }
         case PolylineEntity pl:
           paths.add((pts: [...pl.points, if (pl.closed && pl.points.isNotEmpty) pl.points.first], name: nameOr(e, layer(e)), type: e.type.name, desc: layer(e)));
         case LineEntity l:
