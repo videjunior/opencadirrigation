@@ -14,6 +14,7 @@ import '../translate.dart';
 import '../units.dart';
 import 'agronomy.dart';
 import 'area_requirement.dart';
+import 'area_water.dart';
 import 'designer.dart';
 import 'proposal.dart';
 import 'results.dart';
@@ -768,11 +769,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     );
     final prog = buildControllerProgram(project, results, days: 7);
     if (prog.entries.isNotEmpty) {
-      String hhmm(double h) {
-        final hh = h.floor() % 24, mm = ((h - h.floor()) * 60).round();
-        return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
-      }
-
+      // rounded to the minute, "+1 d" for an end after midnight
+      String hhmm(double h) => clockText(h, t: t);
       out.add(
         ReportTable(
           key: 'schedule',
@@ -793,12 +791,14 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     final rows = <List<Object>>[];
     final warn = <bool>[];
     final totals = <List<Object>>[];
+    final totalsWarn = <bool>[];
     for (final e in reqTables.entries) {
       final a = project.byId(e.key);
       final name = a == null || a.name.isEmpty ? labels.name(e.key) : a.name;
       for (final row in e.value.monthly) {
         if (row.cropDays == 0) continue;
-        final d = math.max(1, row.end.difference(row.start).inDays + 1);
+        // water too saline for the crop: no gross depth can keep the yield
+        Object na(Object v) => row.applicable ? v : '-';
         rows.add([
           name,
           t(row.cropKey),
@@ -811,18 +811,20 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           RNum(u.depthFromMm(row.rainMm), 1),
           RNum(u.depthFromMm(row.effectiveRainMm), 1),
           RNum(u.depthFromMm(row.netMm), 1),
-          RNum(row.leachingFraction * 100, 1),
-          RNum(u.depthFromMm(row.grossMm), 1),
-          RNum(u.depthFromMm(row.grossMm / d), 2),
+          na(RNum(row.leachingFraction * 100, 1)),
+          na(RNum(u.depthFromMm(row.grossMm), 1)),
+          // per day of crop in the field (the month of planting has fewer)
+          na(RNum(u.depthFromMm(row.grossMmDay), 2)),
           RNum(u.depthFromMm(row.rawMm), 1),
           row.intervalDays,
-          RNum(u.depthFromMm(row.grossPerEventMm), 1),
+          na(RNum(u.depthFromMm(row.grossPerEventMm), 1)),
           row.hoursPerEvent == null ? '-' : RNum(row.hoursPerEvent!, 2),
-          RNum(u.volumeFromM3(row.volumeM3), 0),
+          na(RNum(u.volumeFromM3(row.volumeM3), 0)),
         ]);
         warn.add(row.warnings.any((w) => w != 'req_no_application_rate'));
       }
       final tt = e.value.areaTotals;
+      totalsWarn.add(tt.notApplicableRows > 0);
       totals.add([
         name,
         RNum(u.depthFromMm(tt.etoMm), 0),
@@ -880,6 +882,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           '${t('req.peakVolume')} (${u.volumeLabel}/d)',
         ],
         rows: totals,
+        warn: totalsWarn,
       ),
     );
   }
@@ -1377,7 +1380,7 @@ String conamaCategory(String method, double hectares) {
 List<(String, double, String)> licensingRows(Project project) {
   final ha = <String, double>{};
   for (final e in project.entities) {
-    if (e is AreaEntity && e.points.length >= 3) ha[e.irrigationMethod] = (ha[e.irrigationMethod] ?? 0) + e.area / 10000;
+    if (e is AreaEntity && e.points.length >= 3) ha[areaIrrigationMethod(e)] = (ha[areaIrrigationMethod(e)] ?? 0) + e.area / 10000;
     // a machine on a field already drawn as an area counts once
     if (e is PivotEntity && !project.entities.any((a) => a is AreaEntity && a.points.length >= 3 && pointInPolygon(e.center, a.points))) {
       ha['sprinkler'] = (ha['sprinkler'] ?? 0) + polygonArea(e.outline()).abs() / 10000;
