@@ -483,11 +483,15 @@ class _Session {
     if (a.positional.isEmpty) throw _UsageError('import needs one or more files (${drawingImportExtensions.join(' ')})');
     final into = a.values['into'];
     final project = into == null ? blankProject(a) : readProject(into);
-    if (into == null) project.meta.name = a.values['name'] ?? File(_stem(a.positional.first)).uri.pathSegments.last;
+    // the first drawing without its extension names a new project and its file
+    final first = a.positional.first;
+    final dot = first.lastIndexOf('.'), slash = first.replaceAll(r'\', '/').lastIndexOf('/');
+    final base = dot > slash + 1 ? first.substring(0, dot) : first;
+    if (into == null) project.meta.name = a.values['name'] ?? File(base).uri.pathSegments.last;
     for (final path in a.positional) {
       _importInto(project, path);
     }
-    _writeProject(a.values['out'] ?? into ?? '${_stem(a.positional.first)}.oci.json', project);
+    _writeProject(a.values['out'] ?? into ?? '$base.oci.json', project);
     return OciExit.ok;
   }
 
