@@ -257,9 +257,9 @@ Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
   final m = c.project.meta;
   yield* [m.name, m.client, m.site, m.designer, m.notes];
   // 1.6.0 PRD: the professional title block
-  final tb = m.titleBlock;
-  yield* [tb.company, tb.responsible, tb.council, tb.registration, tb.responsibilityRecord, tb.car, tb.waterPermit, tb.municipality, tb.drawingNumber];
-  for (final r in tb.revisions) {
+  final block = m.titleBlock;
+  yield* [block.company, block.responsible, block.council, block.registration, block.responsibilityRecord, block.car, block.waterPermit, block.municipality, block.drawingNumber];
+  for (final r in block.revisions) {
     yield* [r.revision, r.date, r.description, r.author];
   }
   for (final l in c.project.layers) {
