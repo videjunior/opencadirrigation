@@ -30,6 +30,7 @@ import '../model/project.dart';
 import 'crops.dart';
 import 'effective_rain.dart';
 import 'irrigation_requirement.dart';
+import 'soils.dart';
 
 /// Whether area [a] is irrigated by localized irrigation: its method, or an
 /// area left at the default sprinkler method whose wetted fraction is below
@@ -53,6 +54,18 @@ double areaKr(AreaEntity a) {
 /// Wetted fraction Pw of area [a] that limits its readily available water
 /// (1 unless localized).
 double areaPw(AreaEntity a) => isLocalizedArea(a) ? a.wettedFraction.clamp(0.05, 1.0).toDouble() : 1.0;
+
+/// Sprinkle cover of area [a] for [maxSprinklerApplicationRateMmH]: grasses
+/// and alfalfa take 25 % more.
+SoilCover soilCoverOf(AreaEntity a) => const {'crop.turf', 'crop.turfCool', 'crop.pasture', 'crop.alfalfa'}.contains(a.cropKey) ? SoilCover.grass : SoilCover.average;
+
+/// Largest sprinkler application rate (mm/h) the soil and slope of area [a]
+/// take without runoff (USDA-SCS NEH Section 15 Chapter 11 Table 11-4);
+/// null without a soil class.
+double? soilRateLimitMmH(AreaEntity a) {
+  final soil = soilTable[a.soilKey];
+  return soil == null ? null : maxSprinklerApplicationRateMmH(soil.texture, a.slopePct, cover: soilCoverOf(a));
+}
 
 // ---------------------------------------------------------------- planting
 

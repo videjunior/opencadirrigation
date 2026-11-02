@@ -12,6 +12,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/terrain.dart';
 import 'corner_arm.dart';
+import 'area_water.dart' show soilRateLimitMmH;
 import 'pivot.dart';
 import 'pivot_electrical.dart';
 import 'pivot_package.dart';
@@ -42,11 +43,25 @@ PivotSpec pivotSpecOf(Project project, PivotEntity p) {
     hoursPerCycle: p.hoursPerCycle,
     wettedWidthM: p.wettedWidthM,
     machineLossM: p.machineLossM,
-    maxAppRateMmH: p.maxAppRateMmH,
+    maxAppRateMmH: machineRateLimitMmH(project, p),
     sectorDeg: p.sectorDeg,
     maxVelocity: math.max(params.maxMainlineVelocity, 3.0),
     sprinklerSpacingM: p.sprinklerSpacingM,
   );
+}
+
+/// Soil intake limit (mm/h) machine [p] is checked against: typed on the
+/// machine, else the largest sprinkler application rate of the soil and
+/// slope of the area under its pivot point (NEH 15-11 Table 11-4; 0 = no
+/// soil known, no check).
+double machineRateLimitMmH(Project project, PivotEntity p) {
+  if (p.maxAppRateMmH > 0) return p.maxAppRateMmH;
+  for (final a in project.entities.whereType<AreaEntity>()) {
+    if (a.points.length < 3 || !pointInPolygon(p.center, a.points)) continue;
+    final limit = soilRateLimitMmH(a);
+    if (limit != null) return limit;
+  }
+  return 0;
 }
 
 /// The package data of [p] with its machine data, the inlet at

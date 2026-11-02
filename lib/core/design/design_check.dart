@@ -11,9 +11,15 @@ import '../model/catalog.dart';
 import '../model/entities.dart';
 import '../model/geometry.dart';
 import '../model/project.dart';
+import 'area_water.dart';
+import 'crops.dart';
+import 'designer.dart' show areaRequirements;
 import 'electrical.dart';
+import 'irrigation_requirement.dart';
 import 'network_builder.dart';
+import 'soils.dart';
 import 'valve_in_head.dart';
+import 'water_budget.dart' show cycleAndSoakForSoil;
 
 enum CheckSeverity { error, warning, info }
 
@@ -300,6 +306,8 @@ DesignCheckReport runDesignCheck(Project project) {
     final ids = idx > 0 ? w.substring(idx + 1).split(':') : const <String>[];
     issues.add(CheckIssue(code, code == 'elec_stations' || code == 'elec_voltage' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
+  // 1.6.0 AGR
+  issues.addAll(agronomyIssues(project));
   // errors first
   const order = {CheckSeverity.error: 0, CheckSeverity.warning: 1, CheckSeverity.info: 2};
   issues.sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));
@@ -307,3 +315,66 @@ DesignCheckReport runDesignCheck(Project project) {
 }
 
 String _kind(Entity e) => e.type.name;
+
+// ---------------------------------------------------------------- 1.6.0 AGR
+
+/// Agronomy checks of the irrigated areas:
+/// - `area_rate_exceeds_soil`: the sprinklers of an area apply water faster
+///   than its soil and slope take it (NEH 15-11 Table 11-4), with the
+///   cycle-and-soak split that avoids the runoff (SWAT/EPA intake and
+///   surface storage);
+/// - `area_eto_climate`: the ETo typed on an area without a crop of the
+///   table differs from the design month of the site climate;
+/// - `area_planting_date`: a planting date that is not a date or whose day
+///   and month could be swapped;
+/// - `area_leaching_infeasible`: water too saline for the crop at the
+///   yield potential asked for.
+List<CheckIssue> agronomyIssues(Project p) {
+  final out = <CheckIssue>[];
+  final areas = [
+    for (final a in p.entities.whereType<AreaEntity>())
+      if (a.points.length >= 3) a,
+  ];
+  if (areas.isEmpty) return out;
+  String f1(double v) => v.toStringAsFixed(1);
+  // application rate against the soil
+  final sprinkled = [
+    for (final a in areas)
+      if (soilRateLimitMmH(a) != null && areaIrrigationMethod(a) == 'sprinkler') a,
+  ];
+  if (sprinkled.isNotEmpty) {
+    final rates = {for (final r in areaRequirements(p, null)) r.areaId: r.precipitationMmH};
+    for (final a in sprinkled) {
+      final pr = rates[a.id] ?? 0, limit = soilRateLimitMmH(a)!;
+      if (pr <= 0 || pr <= limit * (1 + 1e-6)) continue;
+      final soil = soilTable[a.soilKey]!;
+      final cs = cycleAndSoakForSoil(precipitationRateMmH: pr, depthMm: areaWaterBasis(p, a).grossPerEventMm, texture: soil.texture, slopePct: a.slopePct);
+      final split = cs.cycles > 1 ? ' · ${cs.cycles} × ${cs.runMinutesPerCycle.round()} min / ${cs.soakMinutes.round()} min' : '';
+      out.add(CheckIssue('area_rate_exceeds_soil', CheckSeverity.warning, entityIds: [a.id], value: '${f1(pr)} > ${f1(limit)} mm/h$split'));
+    }
+  }
+  // the ETo typed on an area against the site climate
+  final climate = p.climate;
+  if (climate != null) {
+    final peak = climate.etoMmDay.fold(0.0, math.max);
+    for (final a in areas) {
+      if (!a.useWaterBalance || fao56Crops.containsKey(a.cropKey) || peak <= 0) continue;
+      if ((a.etoMmDay - peak).abs() > math.max(0.15 * peak, 0.3)) out.add(CheckIssue('area_eto_climate', CheckSeverity.warning, entityIds: [a.id], value: '${f1(a.etoMmDay)} / ${f1(peak)} mm/d'));
+    }
+  }
+  final south = siteIsSouthern(p);
+  for (final a in areas) {
+    if (!fao56Crops.containsKey(a.cropKey)) continue;
+    // planting dates
+    final (_, how) = readPlantingDate(a, southern: south);
+    if (how == PlantingRead.invalid || how == PlantingRead.ambiguous) out.add(CheckIssue('area_planting_date', CheckSeverity.warning, entityIds: [a.id], value: '"${a.plantingMonthDay}"'));
+    // water too saline for the crop
+    if (a.ecwDsM > 0) {
+      final input = requirementInputOf(p, a);
+      if (input != null && irrigationRequirement(input).warnings.contains('req_leaching_infeasible')) {
+        out.add(CheckIssue('area_leaching_infeasible', CheckSeverity.warning, entityIds: [a.id], value: '${f1(a.ecwDsM)} dS/m'));
+      }
+    }
+  }
+  return out;
+}
