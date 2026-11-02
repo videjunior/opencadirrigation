@@ -132,7 +132,8 @@ void main() {
         'type': 'FeatureCollection',
         'crs': {
           'type': 'name',
-          'properties': {'name': 'urn:ogc:def:crs:EPSG::5880'},
+          // web Mercator (Brazil Polyconic, 5880, is known since 1.6.0)
+          'properties': {'name': 'urn:ogc:def:crs:EPSG::3857'},
         },
         'features': [
           {
