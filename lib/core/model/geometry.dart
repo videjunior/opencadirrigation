@@ -282,27 +282,71 @@ List<List<Pt>> splitPolylineAt(List<Pt> pts, List<double> distances) {
 }
 
 /// Offsets a polyline laterally by [d] (positive = left of direction).
-List<Pt> offsetPolyline(List<Pt> pts, double d) {
-  if (pts.length < 2) return List.of(pts);
-  final out = <Pt>[];
-  for (var i = 0; i < pts.length; i++) {
-    final prev = i > 0 ? pts[i - 1] : null;
-    final next = i < pts.length - 1 ? pts[i + 1] : null;
-    Pt n;
-    if (prev == null) {
-      n = (next! - pts[i]).normalized.perpendicular;
-    } else if (next == null) {
-      n = (pts[i] - prev).normalized.perpendicular;
-    } else {
-      final n1 = (pts[i] - prev).normalized.perpendicular;
-      final n2 = (next - pts[i]).normalized.perpendicular;
-      n = (n1 + n2).normalized;
-      final cosHalf = n.dot(n1);
-      if (cosHalf.abs() > 1e-6) n = n / cosHalf;
-    }
-    out.add(pts[i] + n * d);
+///
+/// Each vertex goes to where its two offset segments meet (a mitre). On
+/// the outer side of a turn sharper than the mitre allows (a mitre longer
+/// than [miterLimit] × |d|) the corner is cut by two vertices (a bevel)
+/// instead of shooting out; on the inner side of a turn tighter than |d|
+/// the offset segments cross each other, and the loops that leaves (no
+/// longer than 4·|d|) are cut off, so the line never runs back over
+/// itself. Repeated vertices are dropped first (they have no direction).
+List<Pt> offsetPolyline(List<Pt> pts, double d, {double miterLimit = 2.5}) {
+  final p = <Pt>[];
+  for (final q in pts) {
+    if (p.isEmpty || p.last.distanceTo(q) > 1e-12) p.add(q);
   }
-  return out;
+  if (p.length < 2) return List.of(pts);
+  final out = <Pt>[];
+  for (var i = 0; i < p.length; i++) {
+    if (i == 0 || i == p.length - 1) {
+      final u = i == 0 ? p[1] - p[0] : p[i] - p[i - 1];
+      out.add(p[i] + u.normalized.perpendicular * d);
+      continue;
+    }
+    final u1 = (p[i] - p[i - 1]).normalized, u2 = (p[i + 1] - p[i]).normalized;
+    final n1 = u1.perpendicular, n2 = u2.perpendicular;
+    final sum = n1 + n2;
+    // |n1 + n2| = 2·cos(θ/2) for a turn of θ
+    final cosHalf = sum.length / 2;
+    final outer = u1.cross(u2) * d < 0;
+    // inside the turn the mitre cuts |d|·tan(θ/2) off both segments: more
+    // than one of them is long and it would land beyond its far end
+    final sinHalf = math.sqrt(math.max(0.0, 1 - cosHalf * cosHalf));
+    final trim = cosHalf > 1e-9 ? d.abs() * sinHalf / cosHalf : double.infinity;
+    final tooShort = !outer && trim > math.min(p[i].distanceTo(p[i - 1]), p[i].distanceTo(p[i + 1]));
+    if (cosHalf < 1e-9 || (outer && 1 / cosHalf > miterLimit) || tooShort) {
+      out
+        ..add(p[i] + n1 * d)
+        ..add(p[i] + n2 * d);
+    } else {
+      out.add(p[i] + sum.normalized * (d / cosHalf));
+    }
+  }
+  return _withoutOffsetLoops(out, 4 * d.abs());
+}
+
+/// [pts] without the loops (a path of at most [maxLength] between two of
+/// its segments that cross) an offset leaves inside tight turns.
+List<Pt> _withoutOffsetLoops(List<Pt> pts, double maxLength) {
+  var l = pts;
+  for (var guard = 0; guard < 1000; guard++) {
+    (int, int, Pt)? cut;
+    for (var i = 0; i + 1 < l.length && cut == null; i++) {
+      var run = 0.0;
+      for (var j = i + 2; j + 1 < l.length; j++) {
+        run += l[j - 1].distanceTo(l[j]);
+        if (run > maxLength) break;
+        final x = segmentIntersection(l[i], l[i + 1], l[j], l[j + 1]);
+        if (x != null) {
+          cut = (i, j, x);
+          break;
+        }
+      }
+    }
+    if (cut == null) return l;
+    l = [...l.sublist(0, cut.$1 + 1), cut.$3, ...l.sublist(cut.$2 + 1)];
+  }
+  return l;
 }
 
 double degToRad(double d) => d * math.pi / 180;

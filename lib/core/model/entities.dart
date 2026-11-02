@@ -249,6 +249,7 @@ sealed class Entity {
           kind: enumByName(SymbolKind.values, j['kind'], SymbolKind.tree, report: report, key: 'kind'),
           size: d('size', 2),
           rotationDeg: d('rot'),
+          mirrored: j['mir'] as bool? ?? false,
         );
       case EntityType.text:
         return TextEntity(id: id, layer: layer, name: name, position: pos(), text: j['text'] as String? ?? '', height: d('h', 1), rotationDeg: d('rot'));
@@ -545,6 +546,14 @@ List<List<double>> _ptsJson(List<Pt> pts) => pts.map((p) => p.toList()).toList()
 List<Pt> _map(List<Pt> pts, Affine t) => pts.map(t.apply).toList();
 double _rotDeg(Affine t, double deg) => radToDeg(t.transformAngle(degToRad(deg)));
 
+/// [deg] in (-180, 180], without the rounding noise of the trigonometry.
+double _norm360(double deg) {
+  var d = deg % 360;
+  if (d > 180) d -= 360;
+  final r = d.roundToDouble();
+  return (d - r).abs() < 1e-9 ? r : d;
+}
+
 // ---------------------------------------------------------------- drawing
 
 class LineEntity extends Entity {
@@ -764,12 +773,17 @@ enum SymbolKind { northArrow, tree, building, tank, well, valveBox, pumpHouse, g
 
 /// Vector symbol (north arrow, tree, building…), sized in world metres.
 class SymbolEntity extends Entity with PointEntity {
-  SymbolEntity({required super.id, super.layer = Layers.symbols, super.name, required this.position, this.kind = SymbolKind.tree, this.size = 2, this.rotationDeg = 0});
+  SymbolEntity({required super.id, super.layer = Layers.symbols, super.name, required this.position, this.kind = SymbolKind.tree, this.size = 2, this.rotationDeg = 0, this.mirrored = false});
   @override
   Pt position;
   SymbolKind kind;
   double size;
   double rotationDeg;
+
+  /// The glyph is reflected across its own vertical axis before it is
+  /// turned (a symbol of a mirrored drawing: the north arrow of a drawing
+  /// mirrored top to bottom points south).
+  bool mirrored;
   @override
   EntityType get type => EntityType.symbol;
   @override
@@ -779,7 +793,8 @@ class SymbolEntity extends Entity with PointEntity {
 
   /// Glyph strokes in world coordinates (unit glyph scaled by [size]).
   List<List<Pt>> strokes() {
-    final t = Affine.rotation(degToRad(rotationDeg)).then(Affine.scaling(size)).then(Affine.translation(position));
+    final turn = Affine.rotation(degToRad(rotationDeg)).then(Affine.scaling(size)).then(Affine.translation(position));
+    final t = mirrored ? Affine.mirror(Pt.zero, const Pt(0, 1)).then(turn) : turn;
     List<Pt> poly(List<List<double>> pts) => [for (final p in pts) t.apply(Pt(p[0], p[1]))];
     List<Pt> circle(double cx, double cy, double r, [int n = 24]) => [for (var i = 0; i <= n; i++) t.apply(Pt(cx + r * math.cos(2 * math.pi * i / n), cy + r * math.sin(2 * math.pi * i / n)))];
     switch (kind) {
@@ -951,16 +966,22 @@ class SymbolEntity extends Entity with PointEntity {
   }
 
   @override
-  SymbolEntity clone({String? newId}) => SymbolEntity(id: newId ?? id, layer: layer, name: name, position: position, kind: kind, size: size, rotationDeg: rotationDeg)..extra = extra;
+  SymbolEntity clone({String? newId}) =>
+      SymbolEntity(id: newId ?? id, layer: layer, name: name, position: position, kind: kind, size: size, rotationDeg: rotationDeg, mirrored: mirrored)..extra = extra;
   @override
   SymbolEntity translated(Pt d) => clone()
     ..position = position + d
     ..extra = extra;
   @override
-  SymbolEntity transformed(Affine t) =>
-      SymbolEntity(id: id, layer: layer, name: name, position: t.apply(position), kind: kind, size: size * t.scale, rotationDeg: _rotDeg(t, rotationDeg))..extra = extra;
+  SymbolEntity transformed(Affine t) {
+    // a mirror reflects the glyph itself: the turn of a reflected glyph is
+    // the image of its direction less a half turn, its reflection toggles
+    final rot = t.isMirror ? _norm360(_rotDeg(t, rotationDeg) - 180) : _rotDeg(t, rotationDeg);
+    return SymbolEntity(id: id, layer: layer, name: name, position: t.apply(position), kind: kind, size: size * t.scale, rotationDeg: rot, mirrored: mirrored != t.isMirror)..extra = extra;
+  }
+
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'kind': kind.name, 'size': size, 'rot': rotationDeg};
+  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'kind': kind.name, 'size': size, 'rot': rotationDeg, if (mirrored) 'mir': true};
 }
 
 class TextEntity extends Entity with PointEntity {
@@ -994,8 +1015,18 @@ class TextEntity extends Entity with PointEntity {
   @override
   TextEntity translated(Pt d) => TextEntity(id: id, layer: layer, name: name, position: position + d, text: text, height: height, rotationDeg: rotationDeg)..extra = extra;
   @override
-  TextEntity transformed(Affine t) =>
-      TextEntity(id: id, layer: layer, name: name, position: t.apply(position), text: text, height: height * t.scale, rotationDeg: _rotDeg(t, rotationDeg))..extra = extra;
+  TextEntity transformed(Affine t) {
+    if (!t.isMirror) return TextEntity(id: id, layer: layer, name: name, position: t.apply(position), text: text, height: height * t.scale, rotationDeg: _rotDeg(t, rotationDeg))..extra = extra;
+    // mirrored, the text keeps reading left to right over the mirrored box:
+    // the baseline starts at the image of the top corner, or of the far end
+    // (and turns half round) when the image of its direction points left
+    final c = corners;
+    final dir = _rotDeg(t, rotationDeg);
+    final left = math.cos(degToRad(dir)) < -1e-9;
+    final at = left ? t.apply(c[1]) : t.apply(c[3]);
+    return TextEntity(id: id, layer: layer, name: name, position: at, text: text, height: height * t.scale, rotationDeg: _norm360(left ? dir - 180 : dir))..extra = extra;
+  }
+
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'text': text, 'h': height, 'rot': rotationDeg};
 }
