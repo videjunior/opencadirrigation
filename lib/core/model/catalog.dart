@@ -11,6 +11,7 @@ import '../hydraulics/minor_losses.dart';
 import '../hydraulics/pump.dart';
 import '../hydraulics/water_hammer.dart';
 import '../units.dart';
+import 'read_report.dart';
 
 enum PipeUsage { lateral, zone, mainline }
 
@@ -94,7 +95,11 @@ class PipeSpec {
     PipeMaterial.ductileIron || PipeMaterial.concrete => 0.013,
   };
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'nominalMm': nominalMm,
@@ -110,22 +115,30 @@ class PipeSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static PipeSpec fromJson(Map<String, dynamic> j) => PipeSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    nominalMm: (j['nominalMm'] as num).toDouble(),
-    innerDiameterMm: (j['idMm'] as num).toDouble(),
-    material: PipeMaterial.values.byName(j['material'] as String? ?? 'pvc'),
-    hazenC: (j['c'] as num?)?.toDouble() ?? 150,
-    roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.0015,
-    pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 60,
-    wallThicknessMm: (j['wallMm'] as num?)?.toDouble() ?? 2,
-    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
-    usage: ((j['usage'] as List?) ?? ['zone', 'mainline']).map((u) => PipeUsage.values.byName(u as String)).toSet(),
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static PipeSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return PipeSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      nominalMm: (j['nominalMm'] as num).toDouble(),
+      innerDiameterMm: (j['idMm'] as num).toDouble(),
+      material: enumByName(PipeMaterial.values, j['material'], PipeMaterial.pvc, report: report, key: 'material'),
+      hazenC: (j['c'] as num?)?.toDouble() ?? 150,
+      roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.0015,
+      pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 60,
+      wallThicknessMm: (j['wallMm'] as num?)?.toDouble() ?? 2,
+      costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+      usage: {
+        for (final u in (j['usage'] as List?) ?? const ['zone', 'mainline']) ?enumOrNull(PipeUsage.values, u, report: report, key: 'usage'),
+      },
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 enum OutletKind { sprinkler, microSprinkler, dripper, bubbler, gun, demandPoint }
@@ -165,7 +178,11 @@ class NozzleSpec {
   /// a full circle still waters only its own arc.
   double effectiveArcDeg(double headArcDeg) => (arcDeg < 360 && headArcDeg >= 360 ? arcDeg : headArcDeg).clamp(1.0, 360.0).toDouble();
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'curve': curve.toJson(),
@@ -181,19 +198,25 @@ class NozzleSpec {
         for (final (x, y) in profile) [x, y],
       ],
   };
-  static NozzleSpec fromJson(Map<String, dynamic> j) => NozzleSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    curve: EmitterCurve.fromJson(j['curve'] as Map<String, dynamic>),
-    arcDeg: (j['arc'] as num?)?.toDouble() ?? 360,
-    minHeadM: (j['minH'] as num?)?.toDouble() ?? 5,
-    maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 60,
-    defaultHeadM: (j['defH'] as num?)?.toDouble() ?? 20,
-    cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
-    flowTolBelow: (j['tolB'] as num?)?.toDouble() ?? 0.05,
-    flowTolAbove: (j['tolA'] as num?)?.toDouble() ?? 0.05,
-    profile: [for (final e in (j['prof'] as List?) ?? const []) (((e as List)[0] as num).toDouble(), (e[1] as num).toDouble())],
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static NozzleSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return NozzleSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      curve: EmitterCurve.fromJson(j['curve'] as Map<String, dynamic>),
+      arcDeg: (j['arc'] as num?)?.toDouble() ?? 360,
+      minHeadM: (j['minH'] as num?)?.toDouble() ?? 5,
+      maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 60,
+      defaultHeadM: (j['defH'] as num?)?.toDouble() ?? 20,
+      cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
+      flowTolBelow: (j['tolB'] as num?)?.toDouble() ?? 0.05,
+      flowTolAbove: (j['tolA'] as num?)?.toDouble() ?? 0.05,
+      profile: [for (final e in (j['prof'] as List?) ?? const []) (((e as List)[0] as num).toDouble(), (e[1] as num).toDouble())],
+    )..extra = j.unread;
+  }
 }
 
 /// Radial profile of a nozzle from a catch-can table: [rows] of (distance
@@ -245,7 +268,11 @@ class OutletSpec {
     return nozzles.firstWhere((n) => n.id == id, orElse: () => nozzles.first);
   }
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'kind': kind.name,
@@ -257,18 +284,24 @@ class OutletSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static OutletSpec fromJson(Map<String, dynamic> j) => OutletSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    kind: OutletKind.values.byName(j['kind'] as String),
-    nozzles: (j['nozzles'] as List).map((n) => NozzleSpec.fromJson(n as Map<String, dynamic>)).toList(),
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    inletMm: (j['inletMm'] as num?)?.toDouble() ?? 20,
-    riserHeightM: (j['riser'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static OutletSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return OutletSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      kind: enumByName(OutletKind.values, j['kind'], OutletKind.sprinkler, report: report, key: 'kind'),
+      nozzles: (j['nozzles'] as List).map((n) => NozzleSpec.fromJson(n as Map<String, dynamic>, report: report)).toList(),
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      inletMm: (j['inletMm'] as num?)?.toDouble() ?? 20,
+      riserHeightM: (j['riser'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 class TapeSpec {
@@ -320,7 +353,11 @@ class TapeSpec {
   /// Nominal specific discharge rate (m³/s per 100 m) at the default inlet head.
   double get nominalSdr => emitter.flow(defaultInletHeadM) * (100 / emitterSpacingM);
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'nominalMm': nominalMm,
@@ -342,28 +379,34 @@ class TapeSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static TapeSpec fromJson(Map<String, dynamic> j) => TapeSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    nominalMm: (j['nominalMm'] as num?)?.toDouble() ?? 16,
-    innerDiameterMm: (j['idMm'] as num).toDouble(),
-    emitterSpacingM: (j['spacing'] as num).toDouble(),
-    emitter: EmitterCurve.fromJson(j['emitter'] as Map<String, dynamic>),
-    barbK: (j['barbK'] as num?)?.toDouble() ?? 0.4,
-    cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
-    minHeadM: (j['minH'] as num?)?.toDouble() ?? 4,
-    maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 15,
-    defaultInletHeadM: (j['inletH'] as num?)?.toDouble() ?? 10,
-    tolBelowPct: (j['tolB'] as num?)?.toDouble() ?? 30,
-    tolAbovePct: (j['tolA'] as num?)?.toDouble() ?? 20,
-    pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 25,
-    roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.002,
-    hazenC: (j['c'] as num?)?.toDouble() ?? 140,
-    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static TapeSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return TapeSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      nominalMm: (j['nominalMm'] as num?)?.toDouble() ?? 16,
+      innerDiameterMm: (j['idMm'] as num).toDouble(),
+      emitterSpacingM: (j['spacing'] as num).toDouble(),
+      emitter: EmitterCurve.fromJson(j['emitter'] as Map<String, dynamic>),
+      barbK: (j['barbK'] as num?)?.toDouble() ?? 0.4,
+      cv: (j['cv'] as num?)?.toDouble() ?? 0.03,
+      minHeadM: (j['minH'] as num?)?.toDouble() ?? 4,
+      maxHeadM: (j['maxH'] as num?)?.toDouble() ?? 15,
+      defaultInletHeadM: (j['inletH'] as num?)?.toDouble() ?? 10,
+      tolBelowPct: (j['tolB'] as num?)?.toDouble() ?? 30,
+      tolAbovePct: (j['tolA'] as num?)?.toDouble() ?? 20,
+      pressureRatingM: (j['ratingM'] as num?)?.toDouble() ?? 25,
+      roughnessMm: (j['roughMm'] as num?)?.toDouble() ?? 0.002,
+      hazenC: (j['c'] as num?)?.toDouble() ?? 140,
+      costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 /// Kinds of valves and devices; [master] is the master valve on the
@@ -404,7 +447,11 @@ class ValveSpec {
   double defaultSettingM;
   bool enabled;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'kind': kind.name,
@@ -418,20 +465,26 @@ class ValveSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static ValveSpec fromJson(Map<String, dynamic> j) => ValveSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    kind: ValveKind.values.byName(j['kind'] as String),
-    sizeMm: (j['sizeMm'] as num).toDouble(),
-    loss: DeviceLossCurve.fromJson(j['loss'] as Map<String, dynamic>),
-    minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
-    maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    defaultSettingM: (j['setting'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static ValveSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return ValveSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      kind: enumByName(ValveKind.values, j['kind'], ValveKind.other, report: report, key: 'kind'),
+      sizeMm: (j['sizeMm'] as num).toDouble(),
+      loss: DeviceLossCurve.fromJson(j['loss'] as Map<String, dynamic>),
+      minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
+      maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      defaultSettingM: (j['setting'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+    )..extra = j.unread;
+  }
 }
 
 /// Ids of the submersible pumps of the default catalog.
@@ -530,7 +583,11 @@ class PumpSpec {
     return x1 > x0 ? y1 + (y1 - y0) * (x - x1) / (x1 - x0) : y1;
   }
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'points': points.map((p) => [p.$1, p.$2]).toList(),
@@ -553,24 +610,30 @@ class PumpSpec {
         for (final (q, n) in npshPoints) [q, n],
       ],
   };
-  static PumpSpec fromJson(Map<String, dynamic> j) => PumpSpec(
-    id: j['id'] as String,
-    // catalogs saved before the flag existed: the generic submersible units
-    submersible: j['sub'] as bool? ?? defaultSubmersiblePumpIds.contains(j['id']),
-    name: j['name'] as String,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    powerKw: (j['kw'] as num?)?.toDouble() ?? 0,
-    ratedHz: (j['hz'] as num?)?.toDouble() ?? 0,
-    points: (j['points'] as List).map((p) => ((p[0] as num).toDouble(), (p[1] as num).toDouble())).toList(),
-    efficiency: (j['eff'] as num?)?.toDouble() ?? 0.7,
-    minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
-    maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-    efficiencyPoints: [for (final p in (j['effPts'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
-    npshPoints: [for (final p in (j['npsh'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static PumpSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return PumpSpec(
+      id: j['id'] as String,
+      // catalogs saved before the flag existed: the generic submersible units
+      submersible: j['sub'] as bool? ?? defaultSubmersiblePumpIds.contains(j['id']),
+      name: j['name'] as String,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      powerKw: (j['kw'] as num?)?.toDouble() ?? 0,
+      ratedHz: (j['hz'] as num?)?.toDouble() ?? 0,
+      points: (j['points'] as List).map((p) => ((p[0] as num).toDouble(), (p[1] as num).toDouble())).toList(),
+      efficiency: (j['eff'] as num?)?.toDouble() ?? 0.7,
+      minFlow: (j['minQ'] as num?)?.toDouble() ?? 0,
+      maxFlow: (j['maxQ'] as num?)?.toDouble() ?? 1,
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+      efficiencyPoints: [for (final p in (j['effPts'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
+      npshPoints: [for (final p in (j['npsh'] as List?) ?? const []) (((p as List)[0] as num).toDouble(), (p[1] as num).toDouble())],
+    )..extra = j.unread;
+  }
 }
 
 /// Pipe connections selected automatically for the bill of materials.
@@ -602,7 +665,11 @@ class FittingSpec {
   bool enabled;
   String material;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'kind': kind.name,
@@ -614,18 +681,24 @@ class FittingSpec {
     if (code.isNotEmpty) 'code': code,
     if (material.isNotEmpty) 'mat': material,
   };
-  static FittingSpec fromJson(Map<String, dynamic> j) => FittingSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    kind: FittingKind.values.byName(j['kind'] as String),
-    sizeMm: (j['sizeMm'] as num).toDouble(),
-    size2Mm: (j['size2Mm'] as num?)?.toDouble() ?? 0,
-    cost: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-    material: j['mat'] as String? ?? '',
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static FittingSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return FittingSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      kind: enumByName(FittingKind.values, j['kind'], FittingKind.adapter, report: report, key: 'kind'),
+      sizeMm: (j['sizeMm'] as num).toDouble(),
+      size2Mm: (j['size2Mm'] as num?)?.toDouble() ?? 0,
+      cost: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+      material: j['mat'] as String? ?? '',
+    )..extra = j.unread;
+  }
 }
 
 /// Electrical wire (one insulated conductor for direct burial) that carries
@@ -648,7 +721,11 @@ class WireSpec {
   /// Resistance of [lengthM] metres of this conductor (Ω).
   double resistance(double lengthM) => ohmPerKm * lengthM / 1000;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'id': id,
     'name': name,
     'mm2': sectionMm2,
@@ -658,17 +735,23 @@ class WireSpec {
     if (supplier.isNotEmpty) 'sup': supplier,
     if (code.isNotEmpty) 'code': code,
   };
-  static WireSpec fromJson(Map<String, dynamic> j) => WireSpec(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    sectionMm2: (j['mm2'] as num?)?.toDouble() ?? 1.5,
-    // a copper conductor when the file gives only the section
-    ohmPerKm: (j['ohm'] as num?)?.toDouble() ?? copperOhmPerKm((j['mm2'] as num?)?.toDouble() ?? 1.5),
-    costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
-    enabled: j['enabled'] as bool? ?? true,
-    supplier: j['sup'] as String? ?? '',
-    code: j['code'] as String? ?? '',
-  );
+
+  /// Reads the item; options this version does not know take their
+  /// default (noted in [report]), fields it does not know are kept.
+  static WireSpec fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    return WireSpec(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      sectionMm2: (j['mm2'] as num?)?.toDouble() ?? 1.5,
+      // a copper conductor when the file gives only the section
+      ohmPerKm: (j['ohm'] as num?)?.toDouble() ?? copperOhmPerKm((j['mm2'] as num?)?.toDouble() ?? 1.5),
+      costPerM: (j['cost'] as num?)?.toDouble() ?? 0,
+      enabled: j['enabled'] as bool? ?? true,
+      supplier: j['sup'] as String? ?? '',
+      code: j['code'] as String? ?? '',
+    )..extra = j.unread;
+  }
 }
 
 /// Resistance (Ω/km at 20 °C) of a stranded copper conductor of [mm2]
@@ -811,7 +894,16 @@ class Catalog {
 
   List<PipeSpec> pipesFor(PipeUsage usage) => pipes.where((p) => p.enabled && p.usage.contains(usage)).toList()..sort((a, b) => a.innerDiameterMm.compareTo(b.innerDiameterMm));
 
+  /// Items that could not be read, by list (`pipes`, `outlets`…), kept as
+  /// they were and written back under `unreadable` (every read tries them
+  /// again).
+  final Map<String, List<Object?>> unreadable = {};
+
+  /// Top-level fields of a newer version, kept as read.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'pipes': pipes.map((p) => p.toJson()).toList(),
     'outlets': outlets.map((p) => p.toJson()).toList(),
     'tapes': tapes.map((p) => p.toJson()).toList(),
@@ -820,20 +912,49 @@ class Catalog {
     'fittings': fittings.map((p) => p.toJson()).toList(),
     if (wires.isNotEmpty) 'wires': wires.map((p) => p.toJson()).toList(),
     if (finame.isNotEmpty) 'finame': finame,
+    if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
   };
-  static Catalog fromJson(Map<String, dynamic> j) => Catalog(
-    finame: {
-      for (final e in ((j['finame'] as Map?) ?? const {}).entries)
-        if (e.key is String && e.value is String && (e.value as String).trim().isNotEmpty) e.key as String: (e.value as String).trim(),
-    },
-    pipes: ((j['pipes'] as List?) ?? []).map((p) => PipeSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    outlets: ((j['outlets'] as List?) ?? []).map((p) => OutletSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    tapes: ((j['tapes'] as List?) ?? []).map((p) => TapeSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    valves: ((j['valves'] as List?) ?? []).map((p) => ValveSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    pumps: ((j['pumps'] as List?) ?? []).map((p) => PumpSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    fittings: ((j['fittings'] as List?) ?? []).map((p) => FittingSpec.fromJson(p as Map<String, dynamic>)).toList(),
-    wires: ((j['wires'] as List?) ?? []).map((p) => WireSpec.fromJson(p as Map<String, dynamic>)).toList(),
-  );
+
+  /// Reads a catalogue item by item: an item that cannot be read is set
+  /// aside in [unreadable] (counted in [report]), options this version does
+  /// not know take their default and unknown fields are kept.
+  static Catalog fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    final aside = <String, List<Object?>>{};
+    List<T> each<T>(String key, T Function(Map<String, dynamic>) read) {
+      final out = <T>[];
+      final retry = j['unreadable'] is Map ? (j['unreadable'] as Map)[key] : null;
+      for (final list in [j[key], retry]) {
+        if (list is! List) continue;
+        for (final x in list) {
+          try {
+            out.add(read((x as Map).cast<String, dynamic>()));
+          } catch (_) {
+            report?.skip('catalog');
+            if (x is Map) (aside[key] ??= []).add(x);
+          }
+        }
+      }
+      return out;
+    }
+
+    final c = Catalog(
+      finame: {
+        for (final e in ((j['finame'] as Map?) ?? const {}).entries)
+          if (e.key is String && e.value is String && (e.value as String).trim().isNotEmpty) e.key as String: (e.value as String).trim(),
+      },
+      pipes: each('pipes', (m) => PipeSpec.fromJson(m, report: report)),
+      outlets: each('outlets', (m) => OutletSpec.fromJson(m, report: report)),
+      tapes: each('tapes', (m) => TapeSpec.fromJson(m, report: report)),
+      valves: each('valves', (m) => ValveSpec.fromJson(m, report: report)),
+      pumps: each('pumps', (m) => PumpSpec.fromJson(m, report: report)),
+      fittings: each('fittings', (m) => FittingSpec.fromJson(m, report: report)),
+      wires: each('wires', (m) => WireSpec.fromJson(m, report: report)),
+    );
+    c.unreadable.addAll(aside);
+    c.extra = j.unread;
+    return c;
+  }
 
   /// Price per metre used by the economic sizing: the catalogue price, or
   /// for a pipe without one (a manufacturer pack, prices still to be filled

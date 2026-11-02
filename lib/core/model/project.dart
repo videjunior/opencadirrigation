@@ -15,6 +15,7 @@ import 'entities.dart';
 import 'geometry.dart';
 import 'label_rules.dart';
 import 'proposal_settings.dart';
+import 'read_report.dart';
 import 'scenario.dart';
 import 'site_climate.dart';
 import 'terrain.dart';
@@ -25,10 +26,16 @@ class Layer {
   int color;
   bool visible;
   bool locked;
-  Map<String, dynamic> toJson() => {'name': name, 'color': color, 'visible': visible, 'locked': locked};
-  static Layer fromJson(Map<String, dynamic> j) {
-    final name = j['name'] as String;
-    return Layer(name: name, color: (j['color'] as num?)?.toInt() ?? Layers.defaultColors[name] ?? 0xFFB0BEC5, visible: j['visible'] as bool? ?? true, locked: j['locked'] as bool? ?? false);
+
+  /// Fields of a newer version, kept as read.
+  Map<String, dynamic>? extra;
+  Map<String, dynamic> toJson() => {...?extra, 'name': name, 'color': color, 'visible': visible, 'locked': locked};
+  static Layer fromJson(Map<String, dynamic> json) {
+    final j = KeyLog(json);
+    final name = j['name'];
+    if (name is! String || name.isEmpty) throw const FormatException('layer_name');
+    return Layer(name: name, color: (j['color'] as num?)?.toInt() ?? Layers.defaultColors[name] ?? 0xFFB0BEC5, visible: j['visible'] as bool? ?? true, locked: j['locked'] as bool? ?? false)
+      ..extra = j.unread;
   }
 }
 
@@ -170,7 +177,11 @@ class DesignParameters {
   double get kinematicViscosity => waterKinematicViscosity(waterTempC);
   double adjustedC(double c) => c * hazenCScale + hazenCOffset;
 
+  /// Fields of a newer version, kept as read and written back.
+  Map<String, dynamic>? extra;
+
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'units': units.toJson(),
     'method': frictionMethod.name,
     'temp': waterTempC,
@@ -213,12 +224,28 @@ class DesignParameters {
     'slack': wireSlackPct,
     if (mainsHz != 60) 'hz': mainsHz,
   };
-  static DesignParameters fromJson(Map<String, dynamic>? j) {
-    if (j == null) return DesignParameters();
-    double d(String k, double def) => (j[k] as num?)?.toDouble() ?? def;
+
+  /// Reads the parameters; options this version does not know take their
+  /// default (noted in [report]) and unknown fields are kept in [extra].
+  /// A missing key takes the value of a new project.
+  static DesignParameters fromJson(Map<String, dynamic>? json, {ProjectReadReport? report}) {
+    if (json == null) return DesignParameters();
+    final j = KeyLog(json);
+    double d(String k, double def) {
+      final v = j[k];
+      return v is num && v.isFinite ? v.toDouble() : def;
+    }
+
+    final units = j['units'];
+    if (units is Map && report != null) {
+      for (final (key, values) in [('length', LengthUnit.values), ('flow', FlowUnit.values), ('pressure', PressureUnit.values), ('diameter', DiameterUnit.values)]) {
+        final v = units[key];
+        if (v != null && !values.any((u) => u.name == v)) report.unknownValues.add('$key=$v');
+      }
+    }
     return DesignParameters(
-      units: Units.fromJson(j['units'] as Map<String, dynamic>?),
-      frictionMethod: FrictionMethod.values.byName(j['method'] as String? ?? 'hazenWilliams'),
+      units: Units.fromJson(units is Map ? units.cast<String, dynamic>() : null),
+      frictionMethod: enumByName(FrictionMethod.values, j['method'], FrictionMethod.hazenWilliams, report: report, key: 'method'),
       waterTempC: d('temp', 20),
       maxZoneVelocity: d('vZone', 1.5),
       maxMainlineVelocity: d('vMain', 2.0),
@@ -242,7 +269,7 @@ class DesignParameters {
       currency: j['currency'] as String? ?? 'R\$',
       // files written before the code existed: tell it from the symbol
       currencyCode: j['currencyCode'] as String? ?? currencyCodeForSymbol(j['currency'] as String? ?? 'R\$') ?? '',
-      sizingMethod: SizingMethod.values.byName(j['sizing'] as String? ?? 'lp'),
+      sizingMethod: enumByName(SizingMethod.values, j['sizing'], SizingMethod.lp, report: report, key: 'sizing'),
       maxMainlineSizes: (j['mainSizes'] as num?)?.toInt() ?? 3,
       emittersPerPlant: (j['epp'] as num?)?.toInt() ?? 1,
       maxNodesPerLateral: (j['maxNodes'] as num?)?.toInt() ?? 100,
@@ -253,13 +280,15 @@ class DesignParameters {
       selectFittings: j['fittings'] as bool? ?? true,
       pipeStickLengthM: d('stick', 6),
       maxZoneVariationPct: d('zoneVar', 0),
-      terrainMethod: TerrainMethod.values.byName(j['terrain'] as String? ?? 'idw'),
+      // files of version 1 without the key were interpolated by IDW (the
+      // migration states it); a file without it now gets a new project's TIN
+      terrainMethod: enumByName(TerrainMethod.values, j['terrain'], TerrainMethod.tin, report: report, key: 'terrain'),
       solenoidInrushA: d('inrushA', 0.37),
       solenoidHoldingA: d('holdA', 0.22),
       solenoidMinVolts: d('minV', 20),
       wireSlackPct: d('slack', 10),
       mainsHz: d('hz', 60),
-    );
+    )..extra = j.unread;
   }
 }
 
@@ -276,14 +305,25 @@ class SystemFlow {
   double startHour;
   double durationHours;
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'valves': valveIds.toList(), 'start': startHour, 'dur': durationHours};
-  static SystemFlow fromJson(Map<String, dynamic> j) => SystemFlow(
-    id: j['id'] as String,
-    name: j['name'] as String,
-    valveIds: ((j['valves'] as List?) ?? []).cast<String>().toSet(),
-    startHour: (j['start'] as num?)?.toDouble() ?? 0,
-    durationHours: (j['dur'] as num?)?.toDouble() ?? 1,
-  );
+  /// Fields of a newer version, kept as read.
+  Map<String, dynamic>? extra;
+
+  Map<String, dynamic> toJson() => {...?extra, 'id': id, 'name': name, 'valves': valveIds.toList(), 'start': startHour, 'dur': durationHours};
+  static SystemFlow fromJson(Map<String, dynamic> json) {
+    final j = KeyLog(json);
+    final id = j['id'];
+    if (id is! String || id.isEmpty) throw const FormatException('flow_id');
+    return SystemFlow(
+      id: id,
+      name: j['name'] as String? ?? '',
+      valveIds: {
+        for (final v in (j['valves'] as List?) ?? const [])
+          if (v is String) v,
+      },
+      startHour: (j['start'] as num?)?.toDouble() ?? 0,
+      durationHours: (j['dur'] as num?)?.toDouble() ?? 1,
+    )..extra = j.unread;
+  }
 }
 
 class ProjectMeta {
@@ -312,7 +352,11 @@ class ProjectMeta {
 
   /// Set when data was imported from geographic coordinates (KML/KMZ).
   GeoReference? georef;
+
+  /// Fields of a newer version, kept as read.
+  Map<String, dynamic>? extra;
   Map<String, dynamic> toJson() => {
+    ...?extra,
     'uid': uid,
     'created': created.toIso8601String(),
     if (modified != null) 'modified': modified!.toIso8601String(),
@@ -323,19 +367,37 @@ class ProjectMeta {
     'notes': notes,
     if (georef != null) 'georef': georef!.toJson(),
   };
-  static ProjectMeta fromJson(Map<String, dynamic>? j) => j == null
-      ? ProjectMeta()
-      : ProjectMeta(
-          uid: j['uid'] as String?,
-          created: DateTime.tryParse(j['created'] as String? ?? ''),
-          modified: DateTime.tryParse(j['modified'] as String? ?? ''),
-          name: j['name'] as String? ?? '',
-          client: j['client'] as String? ?? '',
-          site: j['site'] as String? ?? '',
-          designer: j['designer'] as String? ?? '',
-          notes: j['notes'] as String? ?? '',
-          georef: j['georef'] != null ? GeoReference.fromJson(j['georef'] as Map<String, dynamic>) : null,
-        );
+  static ProjectMeta fromJson(Map<String, dynamic>? json, {ProjectReadReport? report}) {
+    if (json == null) return ProjectMeta();
+    final j = KeyLog(json);
+    String text(String k) => j[k] is String ? j[k] as String : '';
+    GeoReference? georef;
+    final g = j['georef'];
+    if (g is Map) {
+      try {
+        georef = GeoReference.fromJson(g.cast<String, dynamic>());
+      } catch (_) {
+        // a damaged georeference: the drawing opens without it
+        report?.skip('georef');
+      }
+    }
+    final uid = j['uid'];
+    final meta = ProjectMeta(
+      uid: uid is String && uid.isNotEmpty ? uid : null,
+      created: DateTime.tryParse(text('created')),
+      modified: DateTime.tryParse(text('modified')),
+      name: text('name'),
+      client: text('client'),
+      site: text('site'),
+      designer: text('designer'),
+      notes: text('notes'),
+      georef: georef,
+    );
+    var unread = j.unread;
+    // kept as it was, so a later version can still read it
+    if (g != null && georef == null) (unread ??= {})['georef'] = g;
+    return meta..extra = unread;
+  }
 }
 
 class Project {
@@ -368,7 +430,31 @@ class Project {
 
   static const formatName = 'opencadirrigation';
   static const legacyFormatName = 'irrigationcad';
-  static const formatVersion = 1;
+
+  /// Version of the file layout written. 2: a missing key takes the value
+  /// of a new project (version 1 files are read through [migrations]).
+  static const formatVersion = 2;
+
+  /// Upgrades of a file of version k to k + 1, applied in order on read to
+  /// a copy of the file's JSON.
+  static final migrations = <int, Map<String, dynamic> Function(Map<String, dynamic>)>{
+    // version 1 files without the terrain key were written before the TIN
+    // existed: they were interpolated by IDW
+    1: (j) {
+      final p = j['params'];
+      if (p is Map && !p.containsKey('terrain')) j['params'] = {...p.cast<String, dynamic>(), 'terrain': TerrainMethod.idw.name};
+      return j;
+    },
+  };
+
+  /// Items of the file that could not be read, by section (`entities`,
+  /// `layers`, `systemFlows`, `scenarios`, `labelRules`), kept as they were
+  /// and written back under `unreadable`: every read tries them again, so a
+  /// later version of the app that knows them gets them back.
+  final Map<String, List<Object?>> unreadable = {};
+
+  /// Top-level fields of a newer version, kept as read.
+  Map<String, dynamic>? extra;
 
   ProjectMeta meta;
   DesignParameters params;
@@ -452,7 +538,7 @@ class Project {
     final i = layers.indexWhere((l) => l.name == from);
     if (i < 0) return false;
     final old = layers[i];
-    layers[i] = Layer(name: name, color: old.color, visible: old.visible, locked: old.locked);
+    layers[i] = Layer(name: name, color: old.color, visible: old.visible, locked: old.locked)..extra = old.extra;
     for (final e in entities) {
       if (e.layer == from) e.layer = name;
     }
@@ -579,6 +665,7 @@ class Project {
   }
 
   Map<String, dynamic> toJson({bool includeEntities = true}) => {
+    ...?extra,
     'format': formatName,
     'version': formatVersion,
     'meta': meta.toJson(),
@@ -595,30 +682,134 @@ class Project {
     if (aiNotes.isNotEmpty) 'aiNotes': aiNotes,
     'nextId': _nextId,
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
+    if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
   };
 
   String toJsonString({bool pretty = false}) => encodeJson(toJson(), pretty: pretty);
 
-  static Project fromJson(Map<String, dynamic> j) {
-    if (j['format'] != formatName && j['format'] != legacyFormatName) throw const FormatException('Not an OpenCADIrrigation project');
-    final entities = ((j['entities'] as List?) ?? []).map((e) => Entity.fromJson(e as Map<String, dynamic>)).toList();
-    return Project(
-      meta: ProjectMeta.fromJson(j['meta'] as Map<String, dynamic>?),
-      params: DesignParameters.fromJson(j['params'] as Map<String, dynamic>?),
-      catalog: j['catalog'] != null ? Catalog.fromJson(j['catalog'] as Map<String, dynamic>) : Catalog.defaultCatalog(),
-      layers: ((j['layers'] as List?) ?? []).map((l) => Layer.fromJson(l as Map<String, dynamic>)).toList().let((l) => l.isEmpty ? defaultLayers() : l),
+  /// Top-level keys other parts of the app write beside the project (the
+  /// design results of a saved file): not fields of the project itself.
+  static const _companionKeys = {'results'};
+
+  /// Reads a project file. The file opens item by item: an item that
+  /// cannot be read (damaged, or of a newer version) is set aside in
+  /// [unreadable], vertices without coordinates are dropped, repeated or
+  /// missing entity ids get new ones, options this version does not know
+  /// take their default and fields it does not know are kept; [report]
+  /// lists the repairs. Files of an older layout are upgraded through
+  /// [migrations]; a missing key takes the value of a new project. Throws a
+  /// [FormatException] (`project_format`) only when [json] is no project.
+  static Project fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final rep = report ?? ProjectReadReport();
+    if (json['format'] != formatName && json['format'] != legacyFormatName) throw const FormatException('project_format');
+    final version = json['version'] is num ? (json['version'] as num).toInt() : null;
+    rep.fileVersion = version;
+    var migrated = Map<String, dynamic>.of(json);
+    if (version != null && version > formatVersion) rep.newerVersion = true;
+    for (var v = version ?? formatVersion; v < formatVersion; v++) {
+      migrated = migrations[v]?.call(migrated) ?? migrated;
+    }
+    final j = KeyLog(migrated);
+    // read above, and rewritten by toJson
+    j
+      ..containsKey('format')
+      ..containsKey('version');
+    final aside = <String, List<Object?>>{};
+    // the items of [section] (and those set aside last time, tried again)
+    List<T> each<T>(String section, T Function(Map<String, dynamic>) read) {
+      final out = <T>[];
+      final retry = j['unreadable'] is Map ? (j['unreadable'] as Map)[section] : null;
+      for (final list in [j[section], retry]) {
+        if (list == null) continue;
+        if (list is! List) {
+          rep.skip(section);
+          continue;
+        }
+        for (final x in list) {
+          try {
+            out.add(read((x as Map).cast<String, dynamic>()));
+          } catch (_) {
+            rep.skip(section);
+            // kept for a later version (anything but an object is no item)
+            if (x is Map) (aside[section] ??= []).add(x);
+          }
+        }
+      }
+      return out;
+    }
+
+    Map<String, dynamic>? object(String key) => j[key] is Map ? (j[key] as Map).cast<String, dynamic>() : null;
+    final params = DesignParameters.fromJson(object('params'), report: rep);
+    final entities = each('entities', (e) => Entity.fromJson(e, report: rep));
+    // a file without the counter (written by hand or by another program)
+    // or with a stale one must not hand out ids that are already taken
+    var next = math.max((j['nextId'] as num?)?.toInt() ?? 1, nextIdAfter(entities));
+    for (final raw in aside['entities'] ?? const []) {
+      final m = _idNumber.firstMatch('${(raw as Map)['id']}');
+      if (m != null) next = math.max(next, (int.tryParse(m.group(1)!) ?? 0) + 1);
+    }
+    // an id met twice (a merged or hand-written file) or missing: a new one
+    final ids = <String>{};
+    for (var i = 0; i < entities.length; i++) {
+      if (entities[i].id.isNotEmpty && ids.add(entities[i].id)) continue;
+      entities[i] = entities[i].clone(newId: 'e${next++}');
+      ids.add(entities[i].id);
+      rep.renumbered++;
+    }
+    final layers = each('layers', Layer.fromJson);
+    Catalog catalog;
+    final catJson = object('catalog');
+    if (catJson != null) {
+      catalog = Catalog.fromJson(catJson, report: rep);
+    } else {
+      // a file without its catalogue: a new project's, priced in the file's currency
+      catalog = Catalog.defaultCatalog(currency: exchangeRate(catalogPriceCurrency, params.currencyCode) != null ? params.currencyCode : catalogPriceCurrency);
+      if (j['catalog'] != null) rep.skip('catalog');
+    }
+    ProposalSettings proposal;
+    try {
+      proposal = ProposalSettings.fromJson(object('proposal'));
+    } catch (_) {
+      proposal = ProposalSettings();
+      rep.skip('proposal');
+    }
+    SiteClimate? climate;
+    try {
+      climate = SiteClimate.fromJson(object('climate'));
+    } catch (_) {
+      rep.skip('climate');
+    }
+    BlockLibrary blocks;
+    try {
+      blocks = BlockLibrary.fromJson(j['blocks'] is List ? j['blocks'] as List : null);
+    } catch (_) {
+      blocks = BlockLibrary();
+      rep.skip('blocks');
+    }
+    final p = Project(
+      meta: ProjectMeta.fromJson(object('meta'), report: rep),
+      params: params,
+      catalog: catalog,
+      layers: layers.isEmpty ? defaultLayers() : layers,
       entities: entities,
-      systemFlows: ((j['systemFlows'] as List?) ?? []).map((s) => SystemFlow.fromJson(s as Map<String, dynamic>)).toList(),
-      proposal: ProposalSettings.fromJson(j['proposal'] as Map<String, dynamic>?),
-      scenarios: [for (final x in (j['scenarios'] as List?) ?? const []) Scenario.fromJson(x as Map<String, dynamic>)],
-      climate: SiteClimate.fromJson(j['climate'] as Map<String, dynamic>?),
-      labelRules: [for (final x in (j['labelRules'] as List?) ?? const []) LabelRule.fromJson(x as Map<String, dynamic>)],
-      blocks: BlockLibrary.fromJson(j['blocks'] as List?),
-      aiNotes: j['aiNotes'] as String? ?? '',
-      // a file without the counter (written by hand or by another program)
-      // or with a stale one must not hand out ids that are already taken
-      nextId: math.max((j['nextId'] as num?)?.toInt() ?? 1, nextIdAfter(entities)),
-    )..currentLayer = j['currentLayer'] as String? ?? Layers.drawing;
+      systemFlows: each('systemFlows', SystemFlow.fromJson),
+      proposal: proposal,
+      scenarios: each('scenarios', Scenario.fromJson),
+      climate: climate,
+      labelRules: each('labelRules', LabelRule.fromJson),
+      blocks: blocks,
+      aiNotes: j['aiNotes'] is String ? j['aiNotes'] as String : '',
+      nextId: next,
+    )..currentLayer = j['currentLayer'] is String ? j['currentLayer'] as String : Layers.drawing;
+    p.unreadable.addAll(aside);
+    _companionKeys.forEach(j.containsKey);
+    var unread = j.unread;
+    // sections that failed as a whole stay in the file as they were
+    for (final k in ['proposal', 'climate', 'blocks']) {
+      if (rep.skipped.containsKey(k) && migrated[k] != null) (unread ??= {})[k] = migrated[k];
+    }
+    p.extra = unread;
+    return p;
   }
 
   /// The first free number for [newId] given the ids of [entities]
@@ -636,10 +827,42 @@ class Project {
 
   static final _idNumber = RegExp(r'^e(\d{1,15})$');
 
-  static Project fromJsonString(String s) => fromJson(jsonDecode(s) as Map<String, dynamic>);
+  /// Reads a project file's text ([fromJson]); a text that is not JSON (cut
+  /// short, damaged) throws a [FormatException] `project_json`.
+  static Project fromJsonString(String s, {ProjectReadReport? report}) {
+    final Object? j;
+    try {
+      j = jsonDecode(s);
+    } on FormatException {
+      throw const FormatException('project_json');
+    }
+    if (j is! Map<String, dynamic>) throw const FormatException('project_format');
+    return fromJson(j, report: report);
+  }
 
   /// Deep copy via JSON (used for undo snapshots).
   Project copy() => fromJson(toJson());
+}
+
+/// A project file as read: the project, the design results the file keeps
+/// beside it (JSON, null when none) and what reading it had to repair.
+typedef ProjectFile = ({Project project, Map<String, dynamic>? results, ProjectReadReport report});
+
+/// Reads the text of a project file (see [Project.fromJson]); throws a
+/// [FormatException] `project_json` or `project_format` when it is no
+/// project at all.
+ProjectFile readProjectFile(String text) {
+  final Object? j;
+  try {
+    j = jsonDecode(text);
+  } on FormatException {
+    throw const FormatException('project_json');
+  }
+  if (j is! Map<String, dynamic>) throw const FormatException('project_format');
+  final report = ProjectReadReport();
+  final p = Project.fromJson(j, report: report);
+  final r = j['results'];
+  return (project: p, results: r is Map<String, dynamic> ? r : null, report: report);
 }
 
 /// JSON text of [value] in which a number that is not finite (NaN, ±∞,
@@ -648,7 +871,3 @@ class Project {
 String encodeJson(Object? value, {bool pretty = false}) => JsonEncoder.withIndent(pretty ? '  ' : null, _finiteOrNull).convert(value);
 
 Object? _finiteOrNull(Object? o) => o is double ? null : (o as dynamic).toJson();
-
-extension _Let<T> on T {
-  R let<R>(R Function(T) f) => f(this);
-}

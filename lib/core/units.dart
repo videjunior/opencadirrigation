@@ -50,13 +50,15 @@ class Units {
 
   Map<String, dynamic> toJson() => {'length': length.name, 'flow': flow.name, 'pressure': pressure.name, 'diameter': diameter.name};
 
+  /// Units of a file; a unit this version does not know falls back to the
+  /// metric one (the project still opens).
   static Units fromJson(Map<String, dynamic>? j) {
     if (j == null) return metric;
     return Units(
-      length: LengthUnit.values.byName(j['length'] as String? ?? 'm'),
-      flow: FlowUnit.values.byName(j['flow'] as String? ?? 'lph'),
-      pressure: PressureUnit.values.byName(j['pressure'] as String? ?? 'mH2O'),
-      diameter: DiameterUnit.values.byName(j['diameter'] as String? ?? 'mm'),
+      length: LengthUnit.values.asNameMap()[j['length']] ?? LengthUnit.m,
+      flow: FlowUnit.values.asNameMap()[j['flow']] ?? FlowUnit.lph,
+      pressure: PressureUnit.values.asNameMap()[j['pressure']] ?? PressureUnit.mH2O,
+      diameter: DiameterUnit.values.asNameMap()[j['diameter']] ?? DiameterUnit.mm,
     );
   }
 

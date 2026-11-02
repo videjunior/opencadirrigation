@@ -53,7 +53,7 @@ Future<void> openProjectAction(BuildContext context, ProjectController c) async 
     c.loadJson(f.$2);
     c.store.acknowledge(c.project.meta.uid);
   } catch (e) {
-    c.notify(c.t('msg.error', {'e': '$e'}));
+    c.notify(c.t('msg.error', {'e': c.describeError(e)}));
   }
 }
 
@@ -76,7 +76,7 @@ ProjectController? openJsonInTab(Workspace ws, String json) {
     return target;
   } catch (e) {
     if (!reuse) ws.closeTab(ws.tabs.indexOf(target));
-    ws.current.notify(cur.t('msg.error', {'e': '$e'}));
+    ws.current.notify(cur.t('msg.error', {'e': cur.describeError(e)}));
     return null;
   }
 }

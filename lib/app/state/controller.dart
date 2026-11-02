@@ -2729,18 +2729,19 @@ class ProjectController extends ChangeNotifier {
   }
 
   void loadJson(String s) {
-    final j = jsonDecode(s) as Map<String, dynamic>;
-    final p = Project.fromJson(j);
+    // item by item: what could not be read is set aside and reported
+    final f = readProjectFile(s);
     DesignResults? r;
-    final rj = j['results'];
-    if (rj is Map<String, dynamic>) {
+    final rj = f.results;
+    if (rj != null) {
       try {
         r = DesignResults.fromJson(rj);
       } catch (e) {
         debugPrint('results: $e');
       }
     }
-    openProject(p, results: r);
+    openProject(f.project, results: r);
+    if (!f.report.clean) notify([t('msg.loaded'), for (final n in f.report.notes) t('read.${n.code}', n.args)].join('. '));
   }
 
   /// Shows [p] in place of the current project (a file, a version, an

@@ -40,6 +40,15 @@ class Pt {
   List<double> toList() => [x, y];
   static Pt fromList(List<dynamic> l) => Pt((l[0] as num).toDouble(), (l[1] as num).toDouble());
 
+  /// The point a JSON pair `[x, y]` holds, or null when it is not one (a
+  /// coordinate saved as null after a failed calculation, text, a short list).
+  static Pt? tryFromList(Object? l) {
+    if (l is! List || l.length < 2) return null;
+    final x = l[0], y = l[1];
+    if (x is! num || y is! num || !x.isFinite || !y.isFinite) return null;
+    return Pt(x.toDouble(), y.toDouble());
+  }
+
   @override
   bool operator ==(Object other) => other is Pt && other.x == x && other.y == y;
   @override

@@ -27,6 +27,7 @@ import 'package:opencadirrigation/core/io/project_export.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
+import 'package:opencadirrigation/core/model/read_report.dart';
 import 'package:opencadirrigation/core/model/split.dart';
 import 'package:opencadirrigation/core/units.dart';
 
@@ -609,7 +610,13 @@ void main() {
       spot.elevation = double.nan;
       final text = c.saveJson();
       expect(text, contains('"z": null'));
-      expect(Project.fromJsonString(text).entities.whereType<SpotHeightEntity>().single.elevation, 0);
+      // and the file reopens: the spot height of unknown elevation is set
+      // aside (kept in the file, reported), never read as 0 m
+      final report = ProjectReadReport();
+      final back = Project.fromJsonString(text, report: report);
+      expect(back.entities.whereType<SpotHeightEntity>(), isEmpty);
+      expect(report.skipped['entities'], 1);
+      expect(back.unreadable['entities'], hasLength(1));
       expect(encodeJson({'a': double.infinity, 'b': 1.5}), '{"a":null,"b":1.5}');
     });
   });

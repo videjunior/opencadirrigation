@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import '../design/pivot.dart' show PivotKind;
 import 'geometry.dart';
 import 'pivot_machine.dart';
+import 'read_report.dart';
 
 export 'pivot_machine.dart';
 
@@ -167,19 +168,68 @@ sealed class Entity {
 
   Map<String, dynamic> toJson();
 
-  Map<String, dynamic> _base() => {'type': type.name, 'id': id, 'layer': layer, if (name.isNotEmpty) 'name': name};
+  /// Fields this version does not know (written by a newer one), kept as
+  /// read and written back unchanged; null when there are none.
+  Map<String, dynamic>? extra;
 
-  static Entity fromJson(Map<String, dynamic> j) {
-    final type = EntityType.values.byName(j['type'] as String);
-    final id = j['id'] as String;
-    final layer = j['layer'] as String? ?? Layers.drawing;
-    final name = j['name'] as String? ?? '';
-    List<Pt> pts() => ((j['pts'] as List?) ?? []).map((p) => Pt.fromList(p as List)).toList();
-    Pt pos() => Pt.fromList(j['p'] as List);
-    double d(String k, [double def = 0]) => (j[k] as num?)?.toDouble() ?? def;
+  Map<String, dynamic> _base() => {...?extra, 'type': type.name, 'id': id, 'layer': layer, if (name.isNotEmpty) 'name': name};
+
+  /// Reads an entity. Vertices without valid coordinates are dropped and
+  /// options this version does not know take their default (both noted in
+  /// [report]); fields it does not know are kept in [extra]. Throws a
+  /// [FormatException] when the item cannot be read at all: an unknown
+  /// type, a point item without a position, a terrain item without an
+  /// elevation (never taken as 0 m). A missing id comes back empty (the
+  /// project gives it a new one).
+  static Entity fromJson(Map<String, dynamic> json, {ProjectReadReport? report}) {
+    final j = KeyLog(json);
+    final e = _read(j, report);
+    e.extra = j.unread;
+    return e;
+  }
+
+  static Entity _read(KeyLog j, ProjectReadReport? report) {
+    final typeName = j['type'];
+    final type = typeName is String ? EntityType.values.asNameMap()[typeName] : null;
+    if (type == null) throw FormatException('entity_type', typeName);
+    final rawId = j['id'];
+    final id = rawId is String ? rawId : (rawId is num ? '$rawId' : '');
+    final rawLayer = j['layer'];
+    final layer = rawLayer is String && rawLayer.isNotEmpty ? rawLayer : Layers.drawing;
+    final rawName = j['name'];
+    final name = rawName is String ? rawName : '';
+    List<Pt> pts() {
+      final raw = j['pts'];
+      final out = <Pt>[];
+      for (final p in raw is List ? raw : const []) {
+        final q = Pt.tryFromList(p);
+        if (q != null) {
+          out.add(q);
+        } else if (report != null) {
+          report.droppedVertices++;
+        }
+      }
+      return out;
+    }
+
+    Pt pt(String k) => Pt.tryFromList(j[k]) ?? (throw FormatException('entity_point', k));
+    Pt pos() => pt('p');
+    double d(String k, [double def = 0]) {
+      final v = j[k];
+      return v is num && v.isFinite ? v.toDouble() : def;
+    }
+
+    // an unknown elevation is no datum: never 0 m
+    double z() {
+      final v = j['z'];
+      if (v is num && v.isFinite) return v.toDouble();
+      throw const FormatException('entity_elevation');
+    }
+
+    HydraulicScope scope(HydraulicScope def) => enumByName(HydraulicScope.values, j['scope'], def, report: report, key: 'scope');
     switch (type) {
       case EntityType.line:
-        return LineEntity(id: id, layer: layer, name: name, a: Pt.fromList(j['a'] as List), b: Pt.fromList(j['b'] as List));
+        return LineEntity(id: id, layer: layer, name: name, a: pt('a'), b: pt('b'));
       case EntityType.polyline:
         return PolylineEntity(id: id, layer: layer, name: name, points: pts(), closed: j['closed'] as bool? ?? false);
       case EntityType.circle:
@@ -191,15 +241,23 @@ sealed class Entity {
       case EntityType.hatch:
         return HatchEntity(id: id, layer: layer, name: name, points: pts(), angleDeg: d('ang', 45), spacing: d('sp', 1), solid: j['solid'] as bool? ?? false);
       case EntityType.symbol:
-        return SymbolEntity(id: id, layer: layer, name: name, position: pos(), kind: SymbolKind.values.byName(j['kind'] as String? ?? 'tree'), size: d('size', 2), rotationDeg: d('rot'));
+        return SymbolEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          kind: enumByName(SymbolKind.values, j['kind'], SymbolKind.tree, report: report, key: 'kind'),
+          size: d('size', 2),
+          rotationDeg: d('rot'),
+        );
       case EntityType.text:
         return TextEntity(id: id, layer: layer, name: name, position: pos(), text: j['text'] as String? ?? '', height: d('h', 1), rotationDeg: d('rot'));
       case EntityType.dimension:
-        return DimensionEntity(id: id, layer: layer, name: name, a: Pt.fromList(j['a'] as List), b: Pt.fromList(j['b'] as List), offset: d('off', 1));
+        return DimensionEntity(id: id, layer: layer, name: name, a: pt('a'), b: pt('b'), offset: d('off', 1));
       case EntityType.angularDimension:
-        return AngularDimensionEntity(id: id, layer: layer, name: name, vertex: Pt.fromList(j['v'] as List), a: Pt.fromList(j['a'] as List), b: Pt.fromList(j['b'] as List), radius: d('r', 2));
+        return AngularDimensionEntity(id: id, layer: layer, name: name, vertex: pt('v'), a: pt('a'), b: pt('b'), radius: d('r', 2));
       case EntityType.radialDimension:
-        return RadialDimensionEntity(id: id, layer: layer, name: name, center: Pt.fromList(j['c'] as List), point: pos(), diameter: j['dia'] as bool? ?? false);
+        return RadialDimensionEntity(id: id, layer: layer, name: name, center: pt('c'), point: pos(), diameter: j['dia'] as bool? ?? false);
       case EntityType.leader:
         return LeaderEntity(id: id, layer: layer, name: name, points: pts(), text: j['text'] as String? ?? '', height: d('h', 1));
       case EntityType.image:
@@ -217,18 +275,19 @@ sealed class Entity {
           source: j['src'] as String? ?? '',
         );
       case EntityType.contour:
-        return ContourEntity(id: id, layer: layer, name: name, points: pts(), elevation: d('z'), derived: j['gen'] as bool? ?? false);
+        return ContourEntity(id: id, layer: layer, name: name, points: pts(), elevation: z(), derived: j['gen'] as bool? ?? false);
       case EntityType.breakline:
         return BreaklineEntity(id: id, layer: layer, name: name, points: pts(), elevations: [for (final z in (j['zs'] as List?) ?? const []) z is num ? z.toDouble() : double.nan]);
       case EntityType.spotHeight:
-        return SpotHeightEntity(id: id, layer: layer, name: name, position: pos(), elevation: d('z'));
+        return SpotHeightEntity(id: id, layer: layer, name: name, position: pos(), elevation: z());
       case EntityType.pipe:
         return PipeEntity(
           id: id,
           layer: layer,
           name: name,
           points: pts(),
-          scope: HydraulicScope.values.byName(j['scope'] as String),
+          // a pipe without its scope: the one its layer tells
+          scope: scope(layer == Layers.mainlinePipes ? HydraulicScope.mainline : HydraulicScope.zone),
           pipeSpecId: j['spec'] as String?,
           computerSized: j['auto'] as bool? ?? true,
           depth: d('depth'),
@@ -269,7 +328,7 @@ sealed class Entity {
           layer: layer,
           name: name,
           position: pos(),
-          scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'zone'),
+          scope: scope(HydraulicScope.zone),
           outletSpecId: j['outlet'] as String? ?? '',
           nozzleId: j['nozzle'] as String?,
           headM: d('head', 20),
@@ -312,7 +371,7 @@ sealed class Entity {
           pumpSpecId: j['spec'] as String?,
           speedRatio: d('speed', 1),
           orientationDeg: d('rot'),
-          scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'),
+          scope: scope(HydraulicScope.mainline),
           hourMeter: j['hm'] != null,
           hourMeterCost: d('hm'),
           targetPressureM: d('vfd'),
@@ -325,13 +384,13 @@ sealed class Entity {
           name: name,
           position: pos(),
           valveSpecId: j['spec'] as String?,
-          scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'mainline'),
+          scope: scope(HydraulicScope.mainline),
           settingM: d('set'),
           orientationDeg: d('rot'),
           settingFlow: d('setq'),
         );
       case EntityType.junction:
-        return JunctionEntity(id: id, layer: layer, name: name, position: pos(), scope: HydraulicScope.values.byName(j['scope'] as String? ?? 'zone'), fixedElevation: (j['z'] as num?)?.toDouble());
+        return JunctionEntity(id: id, layer: layer, name: name, position: pos(), scope: scope(HydraulicScope.zone), fixedElevation: (j['z'] as num?)?.toDouble());
       case EntityType.area:
         return AreaEntity(
           id: id,
@@ -370,7 +429,7 @@ sealed class Entity {
           center: pos(),
           radiusM: d('r', 400),
           angleDeg: d('ang'),
-          kind: PivotKind.values.byName(j['kind'] as String? ?? 'pivot'),
+          kind: enumByName(PivotKind.values, j['kind'], PivotKind.pivot, report: report, key: 'kind'),
           travelM: d('travel'),
           spanLengthM: d('span', 50),
           pipeSpecId: j['spec'] as String?,
@@ -436,15 +495,7 @@ sealed class Entity {
           arcLength: d('arc', 0),
         );
       case EntityType.ordinateDimension:
-        return OrdinateDimensionEntity(
-          id: id,
-          layer: layer,
-          name: name,
-          point: pos(),
-          leaderEnd: Pt.fromList(j['e'] as List),
-          origin: j['o'] == null ? Pt.zero : Pt.fromList(j['o'] as List),
-          xAxis: j['x'] as bool? ?? true,
-        );
+        return OrdinateDimensionEntity(id: id, layer: layer, name: name, point: pos(), leaderEnd: pt('e'), origin: j['o'] == null ? Pt.zero : pt('o'), xAxis: j['x'] as bool? ?? true);
     }
   }
 }
@@ -511,11 +562,11 @@ class LineEntity extends Entity {
   @override
   void setGrip(int index, Pt p) => index == 0 ? a = p : b = p;
   @override
-  LineEntity clone({String? newId}) => LineEntity(id: newId ?? id, layer: layer, name: name, a: a, b: b);
+  LineEntity clone({String? newId}) => LineEntity(id: newId ?? id, layer: layer, name: name, a: a, b: b)..extra = extra;
   @override
-  LineEntity translated(Pt d) => LineEntity(id: id, layer: layer, name: name, a: a + d, b: b + d);
+  LineEntity translated(Pt d) => LineEntity(id: id, layer: layer, name: name, a: a + d, b: b + d)..extra = extra;
   @override
-  LineEntity transformed(Affine t) => LineEntity(id: id, layer: layer, name: name, a: t.apply(a), b: t.apply(b));
+  LineEntity transformed(Affine t) => LineEntity(id: id, layer: layer, name: name, a: t.apply(a), b: t.apply(b))..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'a': a.toList(), 'b': b.toList()};
 }
@@ -540,11 +591,11 @@ class PolylineEntity extends Entity with PolyEntity {
 
   double get area => closed ? polygonArea(points).abs() : 0;
   @override
-  PolylineEntity clone({String? newId}) => PolylineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), closed: closed);
+  PolylineEntity clone({String? newId}) => PolylineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), closed: closed)..extra = extra;
   @override
-  PolylineEntity translated(Pt d) => PolylineEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), closed: closed);
+  PolylineEntity translated(Pt d) => PolylineEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), closed: closed)..extra = extra;
   @override
-  PolylineEntity transformed(Affine t) => PolylineEntity(id: id, layer: layer, name: name, points: _map(points, t), closed: closed);
+  PolylineEntity transformed(Affine t) => PolylineEntity(id: id, layer: layer, name: name, points: _map(points, t), closed: closed)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'closed': closed};
 }
@@ -571,11 +622,11 @@ class CircleEntity extends Entity {
   }
 
   @override
-  CircleEntity clone({String? newId}) => CircleEntity(id: newId ?? id, layer: layer, name: name, center: center, radius: radius);
+  CircleEntity clone({String? newId}) => CircleEntity(id: newId ?? id, layer: layer, name: name, center: center, radius: radius)..extra = extra;
   @override
-  CircleEntity translated(Pt d) => CircleEntity(id: id, layer: layer, name: name, center: center + d, radius: radius);
+  CircleEntity translated(Pt d) => CircleEntity(id: id, layer: layer, name: name, center: center + d, radius: radius)..extra = extra;
   @override
-  CircleEntity transformed(Affine t) => CircleEntity(id: id, layer: layer, name: name, center: t.apply(center), radius: radius * t.scale);
+  CircleEntity transformed(Affine t) => CircleEntity(id: id, layer: layer, name: name, center: t.apply(center), radius: radius * t.scale)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': center.toList(), 'r': radius};
 }
@@ -640,12 +691,12 @@ class ArcEntity extends Entity {
   }
 
   @override
-  ArcEntity clone({String? newId}) => ArcEntity(id: newId ?? id, layer: layer, name: name, center: center, radius: radius, startRad: startRad, sweepRad: sweepRad);
+  ArcEntity clone({String? newId}) => ArcEntity(id: newId ?? id, layer: layer, name: name, center: center, radius: radius, startRad: startRad, sweepRad: sweepRad)..extra = extra;
   @override
-  ArcEntity translated(Pt d) => ArcEntity(id: id, layer: layer, name: name, center: center + d, radius: radius, startRad: startRad, sweepRad: sweepRad);
+  ArcEntity translated(Pt d) => ArcEntity(id: id, layer: layer, name: name, center: center + d, radius: radius, startRad: startRad, sweepRad: sweepRad)..extra = extra;
   @override
   ArcEntity transformed(Affine t) =>
-      ArcEntity(id: id, layer: layer, name: name, center: t.apply(center), radius: radius * t.scale, startRad: t.transformAngle(startRad), sweepRad: t.isMirror ? -sweepRad : sweepRad);
+      ArcEntity(id: id, layer: layer, name: name, center: t.apply(center), radius: radius * t.scale, startRad: t.transformAngle(startRad), sweepRad: t.isMirror ? -sweepRad : sweepRad)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': center.toList(), 'r': radius, 's': startRad, 'w': sweepRad};
 }
@@ -674,11 +725,11 @@ class SplineEntity extends Entity with PolyEntity {
   }
 
   @override
-  SplineEntity clone({String? newId}) => SplineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), closed: closed);
+  SplineEntity clone({String? newId}) => SplineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), closed: closed)..extra = extra;
   @override
-  SplineEntity translated(Pt d) => SplineEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), closed: closed);
+  SplineEntity translated(Pt d) => SplineEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), closed: closed)..extra = extra;
   @override
-  SplineEntity transformed(Affine t) => SplineEntity(id: id, layer: layer, name: name, points: _map(points, t), closed: closed);
+  SplineEntity transformed(Affine t) => SplineEntity(id: id, layer: layer, name: name, points: _map(points, t), closed: closed)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'closed': closed};
 }
@@ -698,11 +749,13 @@ class HatchEntity extends Entity with PolyEntity {
   @override
   double distanceTo(Pt p) => pointInPolygon(p, points) ? 0 : math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
   @override
-  HatchEntity clone({String? newId}) => HatchEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), angleDeg: angleDeg, spacing: spacing, solid: solid);
+  HatchEntity clone({String? newId}) => HatchEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), angleDeg: angleDeg, spacing: spacing, solid: solid)..extra = extra;
   @override
-  HatchEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  HatchEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
-  HatchEntity transformed(Affine t) => HatchEntity(id: id, layer: layer, name: name, points: _map(points, t), angleDeg: _rotDeg(t, angleDeg), spacing: spacing * t.scale, solid: solid);
+  HatchEntity transformed(Affine t) => HatchEntity(id: id, layer: layer, name: name, points: _map(points, t), angleDeg: _rotDeg(t, angleDeg), spacing: spacing * t.scale, solid: solid)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'ang': angleDeg, 'sp': spacing, 'solid': solid};
 }
@@ -898,11 +951,14 @@ class SymbolEntity extends Entity with PointEntity {
   }
 
   @override
-  SymbolEntity clone({String? newId}) => SymbolEntity(id: newId ?? id, layer: layer, name: name, position: position, kind: kind, size: size, rotationDeg: rotationDeg);
+  SymbolEntity clone({String? newId}) => SymbolEntity(id: newId ?? id, layer: layer, name: name, position: position, kind: kind, size: size, rotationDeg: rotationDeg)..extra = extra;
   @override
-  SymbolEntity translated(Pt d) => clone()..position = position + d;
+  SymbolEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
-  SymbolEntity transformed(Affine t) => SymbolEntity(id: id, layer: layer, name: name, position: t.apply(position), kind: kind, size: size * t.scale, rotationDeg: _rotDeg(t, rotationDeg));
+  SymbolEntity transformed(Affine t) =>
+      SymbolEntity(id: id, layer: layer, name: name, position: t.apply(position), kind: kind, size: size * t.scale, rotationDeg: _rotDeg(t, rotationDeg))..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'kind': kind.name, 'size': size, 'rot': rotationDeg};
 }
@@ -934,11 +990,12 @@ class TextEntity extends Entity with PointEntity {
   }
 
   @override
-  TextEntity clone({String? newId}) => TextEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, height: height, rotationDeg: rotationDeg);
+  TextEntity clone({String? newId}) => TextEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, height: height, rotationDeg: rotationDeg)..extra = extra;
   @override
-  TextEntity translated(Pt d) => TextEntity(id: id, layer: layer, name: name, position: position + d, text: text, height: height, rotationDeg: rotationDeg);
+  TextEntity translated(Pt d) => TextEntity(id: id, layer: layer, name: name, position: position + d, text: text, height: height, rotationDeg: rotationDeg)..extra = extra;
   @override
-  TextEntity transformed(Affine t) => TextEntity(id: id, layer: layer, name: name, position: t.apply(position), text: text, height: height * t.scale, rotationDeg: _rotDeg(t, rotationDeg));
+  TextEntity transformed(Affine t) =>
+      TextEntity(id: id, layer: layer, name: name, position: t.apply(position), text: text, height: height * t.scale, rotationDeg: _rotDeg(t, rotationDeg))..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'text': text, 'h': height, 'rot': rotationDeg};
 }
@@ -970,11 +1027,11 @@ class DimensionEntity extends Entity {
   }
 
   @override
-  DimensionEntity clone({String? newId}) => DimensionEntity(id: newId ?? id, layer: layer, name: name, a: a, b: b, offset: offset);
+  DimensionEntity clone({String? newId}) => DimensionEntity(id: newId ?? id, layer: layer, name: name, a: a, b: b, offset: offset)..extra = extra;
   @override
-  DimensionEntity translated(Pt d) => DimensionEntity(id: id, layer: layer, name: name, a: a + d, b: b + d, offset: offset);
+  DimensionEntity translated(Pt d) => DimensionEntity(id: id, layer: layer, name: name, a: a + d, b: b + d, offset: offset)..extra = extra;
   @override
-  DimensionEntity transformed(Affine t) => DimensionEntity(id: id, layer: layer, name: name, a: t.apply(a), b: t.apply(b), offset: offset * t.scale * (t.isMirror ? -1 : 1));
+  DimensionEntity transformed(Affine t) => DimensionEntity(id: id, layer: layer, name: name, a: t.apply(a), b: t.apply(b), offset: offset * t.scale * (t.isMirror ? -1 : 1))..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'a': a.toList(), 'b': b.toList(), 'off': offset};
 }
@@ -1031,13 +1088,15 @@ class AngularDimensionEntity extends Entity {
   }
 
   @override
-  AngularDimensionEntity clone({String? newId}) => AngularDimensionEntity(id: newId ?? id, layer: layer, name: name, vertex: vertex, a: a, b: b, radius: radius);
+  AngularDimensionEntity clone({String? newId}) => AngularDimensionEntity(id: newId ?? id, layer: layer, name: name, vertex: vertex, a: a, b: b, radius: radius)..extra = extra;
   @override
-  AngularDimensionEntity translated(Pt d) => AngularDimensionEntity(id: id, layer: layer, name: name, vertex: vertex + d, a: a + d, b: b + d, radius: radius);
+  AngularDimensionEntity translated(Pt d) => AngularDimensionEntity(id: id, layer: layer, name: name, vertex: vertex + d, a: a + d, b: b + d, radius: radius)..extra = extra;
   @override
-  AngularDimensionEntity transformed(Affine t) => t.isMirror
-      ? AngularDimensionEntity(id: id, layer: layer, name: name, vertex: t.apply(vertex), a: t.apply(b), b: t.apply(a), radius: radius * t.scale)
-      : AngularDimensionEntity(id: id, layer: layer, name: name, vertex: t.apply(vertex), a: t.apply(a), b: t.apply(b), radius: radius * t.scale);
+  AngularDimensionEntity transformed(Affine t) =>
+      t.isMirror
+            ? AngularDimensionEntity(id: id, layer: layer, name: name, vertex: t.apply(vertex), a: t.apply(b), b: t.apply(a), radius: radius * t.scale)
+            : AngularDimensionEntity(id: id, layer: layer, name: name, vertex: t.apply(vertex), a: t.apply(a), b: t.apply(b), radius: radius * t.scale)
+        ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'v': vertex.toList(), 'a': a.toList(), 'b': b.toList(), 'r': radius};
 }
@@ -1067,11 +1126,11 @@ class RadialDimensionEntity extends Entity {
   @override
   void setGrip(int index, Pt p) => index == 0 ? center = p : point = p;
   @override
-  RadialDimensionEntity clone({String? newId}) => RadialDimensionEntity(id: newId ?? id, layer: layer, name: name, center: center, point: point, diameter: diameter);
+  RadialDimensionEntity clone({String? newId}) => RadialDimensionEntity(id: newId ?? id, layer: layer, name: name, center: center, point: point, diameter: diameter)..extra = extra;
   @override
-  RadialDimensionEntity translated(Pt d) => RadialDimensionEntity(id: id, layer: layer, name: name, center: center + d, point: point + d, diameter: diameter);
+  RadialDimensionEntity translated(Pt d) => RadialDimensionEntity(id: id, layer: layer, name: name, center: center + d, point: point + d, diameter: diameter)..extra = extra;
   @override
-  RadialDimensionEntity transformed(Affine t) => RadialDimensionEntity(id: id, layer: layer, name: name, center: t.apply(center), point: t.apply(point), diameter: diameter);
+  RadialDimensionEntity transformed(Affine t) => RadialDimensionEntity(id: id, layer: layer, name: name, center: t.apply(center), point: t.apply(point), diameter: diameter)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'c': center.toList(), 'p': point.toList(), if (diameter) 'dia': true};
 }
@@ -1089,11 +1148,13 @@ class LeaderEntity extends Entity with PolyEntity {
   @override
   Bounds get bounds => Bounds.ofPoints([...points, if (points.isNotEmpty) points.last + Pt(height * 0.6 * text.length, height)]);
   @override
-  LeaderEntity clone({String? newId}) => LeaderEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), text: text, height: height);
+  LeaderEntity clone({String? newId}) => LeaderEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), text: text, height: height)..extra = extra;
   @override
-  LeaderEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  LeaderEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
-  LeaderEntity transformed(Affine t) => LeaderEntity(id: id, layer: layer, name: name, points: _map(points, t), text: text, height: height * t.scale);
+  LeaderEntity transformed(Affine t) => LeaderEntity(id: id, layer: layer, name: name, points: _map(points, t), text: text, height: height * t.scale)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'text': text, 'h': height};
 }
@@ -1169,9 +1230,12 @@ class ImageEntity extends Entity {
 
   @override
   ImageEntity clone({String? newId}) =>
-      ImageEntity(id: newId ?? id, layer: layer, name: name, origin: origin, width: width, height: height, rotationDeg: rotationDeg, opacity: opacity, mime: mime, data: data, source: source);
+      ImageEntity(id: newId ?? id, layer: layer, name: name, origin: origin, width: width, height: height, rotationDeg: rotationDeg, opacity: opacity, mime: mime, data: data, source: source)
+        ..extra = extra;
   @override
-  ImageEntity translated(Pt d) => clone()..origin = origin + d;
+  ImageEntity translated(Pt d) => clone()
+    ..origin = origin + d
+    ..extra = extra;
   @override
   ImageEntity transformed(Affine t) {
     final c = corners.map(t.apply).toList();
@@ -1214,11 +1278,11 @@ class ContourEntity extends Entity with PolyEntity {
   @override
   EntityType get type => EntityType.contour;
   @override
-  ContourEntity clone({String? newId}) => ContourEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), elevation: elevation, derived: derived);
+  ContourEntity clone({String? newId}) => ContourEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), elevation: elevation, derived: derived)..extra = extra;
   @override
-  ContourEntity translated(Pt d) => ContourEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), elevation: elevation, derived: derived);
+  ContourEntity translated(Pt d) => ContourEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), elevation: elevation, derived: derived)..extra = extra;
   @override
-  ContourEntity transformed(Affine t) => ContourEntity(id: id, layer: layer, name: name, points: _map(points, t), elevation: elevation, derived: derived);
+  ContourEntity transformed(Affine t) => ContourEntity(id: id, layer: layer, name: name, points: _map(points, t), elevation: elevation, derived: derived)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'z': elevation, if (derived) 'gen': true};
 }
@@ -1238,11 +1302,15 @@ class BreaklineEntity extends Entity with PolyEntity {
   @override
   EntityType get type => EntityType.breakline;
   @override
-  BreaklineEntity clone({String? newId}) => BreaklineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), elevations: List.of(elevations));
+  BreaklineEntity clone({String? newId}) => BreaklineEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), elevations: List.of(elevations))..extra = extra;
   @override
-  BreaklineEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  BreaklineEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
-  BreaklineEntity transformed(Affine t) => clone()..points = _map(points, t);
+  BreaklineEntity transformed(Affine t) => clone()
+    ..points = _map(points, t)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -1263,11 +1331,11 @@ class SpotHeightEntity extends Entity with PointEntity {
   /// the import), as opposed to a surveyed or typed spot height.
   bool get isDem => name.startsWith('DEM ');
   @override
-  SpotHeightEntity clone({String? newId}) => SpotHeightEntity(id: newId ?? id, layer: layer, name: name, position: position, elevation: elevation);
+  SpotHeightEntity clone({String? newId}) => SpotHeightEntity(id: newId ?? id, layer: layer, name: name, position: position, elevation: elevation)..extra = extra;
   @override
-  SpotHeightEntity translated(Pt d) => SpotHeightEntity(id: id, layer: layer, name: name, position: position + d, elevation: elevation);
+  SpotHeightEntity translated(Pt d) => SpotHeightEntity(id: id, layer: layer, name: name, position: position + d, elevation: elevation)..extra = extra;
   @override
-  SpotHeightEntity transformed(Affine t) => SpotHeightEntity(id: id, layer: layer, name: name, position: t.apply(position), elevation: elevation);
+  SpotHeightEntity transformed(Affine t) => SpotHeightEntity(id: id, layer: layer, name: name, position: t.apply(position), elevation: elevation)..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'z': elevation};
 }
@@ -1286,12 +1354,15 @@ class PipeEntity extends Entity with PolyEntity {
   @override
   EntityType get type => EntityType.pipe;
   @override
-  PipeEntity clone({String? newId}) => PipeEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth);
+  PipeEntity clone({String? newId}) =>
+      PipeEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth)..extra = extra;
   @override
   PipeEntity translated(Pt d) =>
-      PipeEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth);
+      PipeEntity(id: id, layer: layer, name: name, points: points.map((p) => p + d).toList(), scope: scope, pipeSpecId: pipeSpecId, computerSized: computerSized, depth: depth)..extra = extra;
   @override
-  PipeEntity transformed(Affine t) => clone()..points = _map(points, t);
+  PipeEntity transformed(Affine t) => clone()
+    ..points = _map(points, t)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'scope': scope.name, if (pipeSpecId != null) 'spec': pipeSpecId, 'auto': computerSized, 'depth': depth};
 }
@@ -1359,14 +1430,17 @@ class SpraylineEntity extends Entity with PolyEntity {
     arcDeg: arcDeg,
     riserHeight: riserHeight,
     depth: depth,
-  );
+  )..extra = extra;
   @override
-  SpraylineEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  SpraylineEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
   SpraylineEntity transformed(Affine t) => clone()
     ..points = _map(points, t)
     ..spacing = spacing * t.scale
-    ..offset = offset * t.scale;
+    ..offset = offset * t.scale
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -1421,11 +1495,15 @@ class TapeEntity extends Entity with PolyEntity {
     submainMinHeadM: submainMinHeadM,
     depth: depth,
     flushingFlow: flushingFlow,
-  );
+  )..extra = extra;
   @override
-  TapeEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  TapeEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
-  TapeEntity transformed(Affine t) => clone()..points = _map(points, t);
+  TapeEntity transformed(Affine t) => clone()
+    ..points = _map(points, t)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points), 'spec': tapeSpecId, 'inlet': inletHeadM, 'reg': regulated, 'submin': submainMinHeadM, 'depth': depth, 'flush': flushingFlow};
 }
@@ -1477,9 +1555,11 @@ class OutletEntity extends Entity with PointEntity {
     orientationDeg: orientationDeg,
     riserHeight: riserHeight,
     zoneName: zoneName,
-  );
+  )..extra = extra;
   @override
-  OutletEntity translated(Pt d) => clone()..position = position + d;
+  OutletEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
 
   /// The wetted sector runs counter-clockwise from [orientationDeg] over
   /// [arcDeg]; a mirror turns it clockwise, so the mirrored sector starts at
@@ -1487,7 +1567,8 @@ class OutletEntity extends Entity with PointEntity {
   @override
   OutletEntity transformed(Affine t) => clone()
     ..position = t.apply(position)
-    ..orientationDeg = _rotDeg(t, t.isMirror && arcDeg < 360 ? orientationDeg + arcDeg : orientationDeg);
+    ..orientationDeg = _rotDeg(t, t.isMirror && arcDeg < 360 ? orientationDeg + arcDeg : orientationDeg)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -1537,13 +1618,16 @@ class ControlValveEntity extends Entity with PointEntity {
     orientationDeg: orientationDeg,
     fixedDownstreamHeadM: fixedDownstreamHeadM,
     depth: depth,
-  );
+  )..extra = extra;
   @override
-  ControlValveEntity translated(Pt d) => clone()..position = position + d;
+  ControlValveEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
   ControlValveEntity transformed(Affine t) => clone()
     ..position = t.apply(position)
-    ..orientationDeg = _rotDeg(t, orientationDeg);
+    ..orientationDeg = _rotDeg(t, orientationDeg)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -1593,11 +1677,15 @@ class WaterSupplyEntity extends Entity with PointEntity {
     designFlow: designFlow,
     maxFlow: maxFlow,
     waterLevelOffsetM: waterLevelOffsetM,
-  );
+  )..extra = extra;
   @override
-  WaterSupplyEntity translated(Pt d) => clone()..position = position + d;
+  WaterSupplyEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
-  WaterSupplyEntity transformed(Affine t) => clone()..position = t.apply(position);
+  WaterSupplyEntity transformed(Affine t) => clone()
+    ..position = t.apply(position)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'calc': calculatePressure, 'dh': designHeadM, 'mh': maxHeadM, 'dq': designFlow, 'mq': maxFlow, 'wl': waterLevelOffsetM};
 }
@@ -1650,13 +1738,16 @@ class PumpEntity extends Entity with PointEntity {
     hourMeterCost: hourMeterCost,
     targetPressureM: targetPressureM,
     minSpeedRatio: minSpeedRatio,
-  );
+  )..extra = extra;
   @override
-  PumpEntity translated(Pt d) => clone()..position = position + d;
+  PumpEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
   PumpEntity transformed(Affine t) => clone()
     ..position = t.apply(position)
-    ..orientationDeg = _rotDeg(t, orientationDeg);
+    ..orientationDeg = _rotDeg(t, orientationDeg)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -1708,13 +1799,16 @@ class MiscHydraulicEntity extends Entity with PointEntity {
     settingM: settingM,
     orientationDeg: orientationDeg,
     settingFlow: settingFlow,
-  );
+  )..extra = extra;
   @override
-  MiscHydraulicEntity translated(Pt d) => clone()..position = position + d;
+  MiscHydraulicEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
   MiscHydraulicEntity transformed(Affine t) => clone()
     ..position = t.apply(position)
-    ..orientationDeg = _rotDeg(t, orientationDeg);
+    ..orientationDeg = _rotDeg(t, orientationDeg)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -1736,11 +1830,15 @@ class JunctionEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.junction;
   @override
-  JunctionEntity clone({String? newId}) => JunctionEntity(id: newId ?? id, layer: layer, name: name, position: position, scope: scope, fixedElevation: fixedElevation);
+  JunctionEntity clone({String? newId}) => JunctionEntity(id: newId ?? id, layer: layer, name: name, position: position, scope: scope, fixedElevation: fixedElevation)..extra = extra;
   @override
-  JunctionEntity translated(Pt d) => clone()..position = position + d;
+  JunctionEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
-  JunctionEntity transformed(Affine t) => clone()..position = t.apply(position);
+  JunctionEntity transformed(Affine t) => clone()
+    ..position = t.apply(position)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'scope': scope.name, if (fixedElevation != null) 'z': fixedElevation};
 }
@@ -1924,15 +2022,18 @@ class PivotEntity extends Entity {
     regulatorSpecId: regulatorSpecId,
     towerCost: towerCost,
     machine: machine.clone(),
-  );
+  )..extra = extra;
   @override
-  PivotEntity translated(Pt d) => clone()..center = center + d;
+  PivotEntity translated(Pt d) => clone()
+    ..center = center + d
+    ..extra = extra;
   @override
   PivotEntity transformed(Affine t) => clone()
     ..center = t.apply(center)
     ..radiusM = radiusM * t.scale
     ..travelM = travelM * t.scale
-    ..angleDeg = _rotDeg(t, angleDeg);
+    ..angleDeg = _rotDeg(t, angleDeg)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -2091,11 +2192,15 @@ class AreaEntity extends Entity with PolyEntity {
     rainMethod: rainMethod,
     useDependableRain: useDependableRain,
     plantWaterUse: plantWaterUse,
-  );
+  )..extra = extra;
   @override
-  AreaEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  AreaEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
-  AreaEntity transformed(Affine t) => clone()..points = _map(points, t);
+  AreaEntity transformed(Affine t) => clone()
+    ..points = _map(points, t)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -2179,11 +2284,15 @@ class ControllerEntity extends Entity with PointEntity {
     cost: cost,
     maxSimultaneous: maxSimultaneous,
     accessories: Map.of(accessories),
-  );
+  )..extra = extra;
   @override
-  ControllerEntity translated(Pt d) => clone()..position = position + d;
+  ControllerEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
-  ControllerEntity transformed(Affine t) => clone()..position = t.apply(position);
+  ControllerEntity transformed(Affine t) => clone()
+    ..position = t.apply(position)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -2207,11 +2316,15 @@ class WireEntity extends Entity with PolyEntity {
   @override
   EntityType get type => EntityType.wire;
   @override
-  WireEntity clone({String? newId}) => WireEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points));
+  WireEntity clone({String? newId}) => WireEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points))..extra = extra;
   @override
-  WireEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  WireEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
-  WireEntity transformed(Affine t) => clone()..points = _map(points, t);
+  WireEntity transformed(Affine t) => clone()
+    ..points = _map(points, t)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'pts': _ptsJson(points)};
 }
@@ -2258,15 +2371,17 @@ class OrdinateDimensionEntity extends Entity {
   @override
   void setGrip(int index, Pt p) => index == 0 ? point = p : leaderEnd = p;
   @override
-  OrdinateDimensionEntity clone({String? newId}) => OrdinateDimensionEntity(id: newId ?? id, layer: layer, name: name, point: point, leaderEnd: leaderEnd, origin: origin, xAxis: xAxis);
+  OrdinateDimensionEntity clone({String? newId}) => OrdinateDimensionEntity(id: newId ?? id, layer: layer, name: name, point: point, leaderEnd: leaderEnd, origin: origin, xAxis: xAxis)..extra = extra;
   @override
   OrdinateDimensionEntity translated(Pt d) => clone()
     ..point = point + d
-    ..leaderEnd = leaderEnd + d;
+    ..leaderEnd = leaderEnd + d
+    ..extra = extra;
   @override
   OrdinateDimensionEntity transformed(Affine t) => clone()
     ..point = t.apply(point)
-    ..leaderEnd = t.apply(leaderEnd);
+    ..leaderEnd = t.apply(leaderEnd)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {..._base(), 'p': point.toList(), 'e': leaderEnd.toList(), if (origin != Pt.zero) 'o': origin.toList(), 'x': xAxis};
 }
@@ -2293,11 +2408,16 @@ class CommentEntity extends Entity with PointEntity {
   @override
   EntityType get type => EntityType.comment;
   @override
-  CommentEntity clone({String? newId}) => CommentEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, author: author, date: date, resolved: resolved, photo: photo);
+  CommentEntity clone({String? newId}) =>
+      CommentEntity(id: newId ?? id, layer: layer, name: name, position: position, text: text, author: author, date: date, resolved: resolved, photo: photo)..extra = extra;
   @override
-  CommentEntity translated(Pt d) => clone()..position = position + d;
+  CommentEntity translated(Pt d) => clone()
+    ..position = position + d
+    ..extra = extra;
   @override
-  CommentEntity transformed(Affine t) => clone()..position = t.apply(position);
+  CommentEntity transformed(Affine t) => clone()
+    ..position = t.apply(position)
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
@@ -2369,13 +2489,16 @@ class RevisionCloudEntity extends Entity with PolyEntity {
   double distanceTo(Pt p) => math.min(super.distanceTo(p), points.length > 2 ? distanceToSegment(p, points.last, points.first) : double.infinity);
   @override
   RevisionCloudEntity clone({String? newId}) =>
-      RevisionCloudEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), revision: revision, date: date, description: description, arcLength: arcLength);
+      RevisionCloudEntity(id: newId ?? id, layer: layer, name: name, points: List.of(points), revision: revision, date: date, description: description, arcLength: arcLength)..extra = extra;
   @override
-  RevisionCloudEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
+  RevisionCloudEntity translated(Pt d) => clone()
+    ..points = points.map((p) => p + d).toList()
+    ..extra = extra;
   @override
   RevisionCloudEntity transformed(Affine t) => clone()
     ..points = _map(points, t)
-    ..arcLength = arcLength * t.scale;
+    ..arcLength = arcLength * t.scale
+    ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
     ..._base(),
