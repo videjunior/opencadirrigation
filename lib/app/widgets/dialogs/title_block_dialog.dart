@@ -84,8 +84,8 @@ Future<void> showTitleBlockDialog(BuildContext context, ProjectController c) asy
       return StatefulBuilder(
         builder: (ctx, setState) {
           final defaults = titleBlockDefaults();
-          Widget text(String key, String label, String value, ValueChanged<String> on) =>
-              TextFieldRow(key: Key('tb_$key'), label: label, value: value, onChanged: (v) => setState(() => on(v.trim())));
+          Widget text(String key, String label, String value, ValueChanged<String> apply) =>
+              TextFieldRow(key: Key('tb_$key'), label: label, value: value, onChanged: (v) => setState(() => apply(v.trim())));
           return AlertDialog(
             title: Text(t('prd.tb.title'), style: const TextStyle(fontSize: 15)),
             content: SizedBox(

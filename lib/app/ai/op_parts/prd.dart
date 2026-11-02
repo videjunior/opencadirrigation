@@ -132,26 +132,26 @@ List<AgentTool> opsPrd(AgentToolbox b) {
         if (edits) {
           b.change('set_title_block', () {
             final m = b.p.meta, tb = m.titleBlock;
-            void set(String key, void Function(String v) on) {
+            void take(String key, void Function(String v) apply) {
               final v = a.str(key);
               if (v == null) return;
-              on(v);
+              apply(v);
               changes.add(key);
             }
 
-            set('client', (v) => m.client = v);
-            set('property', (v) => m.site = v);
-            set('designer', (v) => m.designer = v);
-            set('company', (v) => tb.company = v);
-            set('responsible', (v) => tb.responsible = v);
-            set('council', (v) => tb.council = v);
-            set('registration', (v) => tb.registration = v);
-            set('record', (v) => tb.responsibilityRecord = v);
-            set('car', (v) => tb.car = v);
-            set('water_permit', (v) => tb.waterPermit = v);
-            set('municipality', (v) => tb.municipality = v);
-            set('drawing_number', (v) => tb.drawingNumber = v);
-            set('issue_date', (v) {
+            take('client', (v) => m.client = v);
+            take('property', (v) => m.site = v);
+            take('designer', (v) => m.designer = v);
+            take('company', (v) => tb.company = v);
+            take('responsible', (v) => tb.responsible = v);
+            take('council', (v) => tb.council = v);
+            take('registration', (v) => tb.registration = v);
+            take('record', (v) => tb.responsibilityRecord = v);
+            take('car', (v) => tb.car = v);
+            take('water_permit', (v) => tb.waterPermit = v);
+            take('municipality', (v) => tb.municipality = v);
+            take('drawing_number', (v) => tb.drawingNumber = v);
+            take('issue_date', (v) {
               final d = parseTitleDate(v);
               tb.issueDate = d == null ? '' : titleDateText(d);
             });

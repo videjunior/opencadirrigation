@@ -96,7 +96,7 @@ List<List<TitleCell>> titleBlockColumns(
   String crsNote = '',
 }) {
   final m = p.meta, tb = m.titleBlock;
-  bool set(String s) => s.trim().isNotEmpty;
+  bool has(String s) => s.trim().isNotEmpty;
   String one(String s) => s.replaceAll(RegExp(r'\s*\n\s*'), ' ').trim();
   final rev = tb.currentRevision;
   final dn = tb.drawingNumber.trim();
@@ -105,21 +105,21 @@ List<List<TitleCell>> titleBlockColumns(
   final cols = <List<TitleCell>>[
     [
       TitleCell(t('dlg.project'), m.name.isEmpty ? t('name.newProject') : one(m.name), bold: true, size: 10),
-      if (set(m.client)) TitleCell(t('dlg.client'), one(m.client)),
-      if (set(m.site)) TitleCell(t('prd.tb.property'), one(m.site)),
-      if (set(tb.municipality)) TitleCell(t('prd.tb.municipality'), one(tb.municipality)),
+      if (has(m.client)) TitleCell(t('dlg.client'), one(m.client)),
+      if (has(m.site)) TitleCell(t('prd.tb.property'), one(m.site)),
+      if (has(tb.municipality)) TitleCell(t('prd.tb.municipality'), one(tb.municipality)),
     ],
     [
-      if (set(tb.car)) TitleCell(t('prd.tb.car'), one(tb.car)),
-      if (set(tb.waterPermit)) TitleCell(t('prd.tb.permit'), one(tb.waterPermit)),
+      if (has(tb.car)) TitleCell(t('prd.tb.car'), one(tb.car)),
+      if (has(tb.waterPermit)) TitleCell(t('prd.tb.permit'), one(tb.waterPermit)),
       if (tb.stage != ProjectStage.none) TitleCell(t('prd.tb.stage'), t('prd.stage.${tb.stage.name}')),
-      if (set(m.notes)) TitleCell(t('dlg.notes'), one(m.notes)),
+      if (has(m.notes)) TitleCell(t('dlg.notes'), one(m.notes)),
     ],
     [
-      if (set(tb.responsible)) TitleCell(t('prd.tb.responsible'), one(tb.responsible), bold: true),
-      if (set(tb.registrationText)) TitleCell(t('prd.tb.registration'), tb.registrationText),
-      if (set(tb.responsibilityRecord)) TitleCell(tb.recordName, one(tb.responsibilityRecord)),
-      if (set(m.designer)) TitleCell(t('dlg.designer'), one(m.designer)),
+      if (has(tb.responsible)) TitleCell(t('prd.tb.responsible'), one(tb.responsible), bold: true),
+      if (has(tb.registrationText)) TitleCell(t('prd.tb.registration'), tb.registrationText),
+      if (has(tb.responsibilityRecord)) TitleCell(tb.recordName, one(tb.responsibilityRecord)),
+      if (has(m.designer)) TitleCell(t('dlg.designer'), one(m.designer)),
     ],
     [
       TitleCell(t('pdf.sheet'), sheetValue, bold: true, note: sheetNote),

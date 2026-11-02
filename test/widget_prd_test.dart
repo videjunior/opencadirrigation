@@ -225,9 +225,9 @@ void main() {
     addTearDown(() => engFileSink = sink);
     await tester.runAsync(() async {
       expect((await op('get_title_block').run({})).text, contains('plain title block'));
-      final set = op('set_title_block');
-      expect(set.effectOf(const {}), ToolEffect.write);
-      final out = await set.run({
+      final setOp = op('set_title_block');
+      expect(setOp.effectOf(const {}), ToolEffect.write);
+      final out = await setOp.run({
         'responsible': 'Ana Souza',
         'council': 'CREA',
         'registration': 'MG 1412345678',
@@ -244,8 +244,8 @@ void main() {
       expect(tb.logoMime, 'image/png');
       expect(titleBlockDefaults()!.responsible, 'Ana Souza');
       expect(c.canUndo, isTrue);
-      await expectLater(set.run({'issue_date': 'tomorrow'}), throwsA(isA<ToolInputError>()));
-      await expectLater(set.run({'logo_attachment': 'missing.png'}), throwsA(isA<ToolInputError>()));
+      await expectLater(setOp.run({'issue_date': 'tomorrow'}), throwsA(isA<ToolInputError>()));
+      await expectLater(setOp.run({'logo_attachment': 'missing.png'}), throwsA(isA<ToolInputError>()));
       // the datum
       await expectLater(op('set_datum').run({'datum': 'wgs84'}), throwsA(isA<ToolInputError>()), reason: 'no georeference yet');
       c.project.meta.georef = GeoReference.fromLatLonOrigin(-19.75, -47.93);
@@ -256,12 +256,12 @@ void main() {
       // the packages
       final list = (await op('list_document_packages').run({})).text;
       expect(list, allOf(contains('proposal'), contains('prd.identification'), contains('needs the design results')));
-      final export = op('export_document_package');
-      expect(export.mustConfirm(const {'profile': 'memorial'}), isTrue, reason: 'a download is always confirmed');
-      final done = await export.run({'profile': 'permit', 'recipient': 'IGAM', 'base_map': false});
+      final exportOp = op('export_document_package');
+      expect(exportOp.mustConfirm(const {'profile': 'memorial'}), isTrue, reason: 'a download is always confirmed');
+      final done = await exportOp.run({'profile': 'permit', 'recipient': 'IGAM', 'base_map': false});
       expect(done.text, startsWith('Exported '));
       expect(files.keys.single, endsWith('.pdf'));
-      await expectLater(export.run({'profile': 'memorial', 'sections': ['nope']}), throwsA(isA<ToolInputError>()));
+      await expectLater(exportOp.run({'profile': 'memorial', 'sections': ['nope']}), throwsA(isA<ToolInputError>()));
       // the sheets: grid and the slope sheet
       files.clear();
       final sheets = await box.operations.firstWhere((o) => o.name == 'export_sheet_pdf').run({'grid': 'both', 'themes': ['slope'], 'base_map': false});
