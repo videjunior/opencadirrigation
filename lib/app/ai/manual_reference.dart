@@ -364,6 +364,8 @@ const reportTableNotes = <String, String>{
   'requirementTotals': 'the yearly totals of the requirement per area',
   'water': 'water use per area: area, gross depth, daily volume and flow',
   'licensing': 'water-use licence data per irrigation method: area, category and limits',
+  // 1.6.0 SIT
+  'sources': 'the third-party data the project carries (online elevation, the downloaded climate, base map pictures kept for the field): source, the credit it asks for, what its free use allows; ⚠ where the free service is for non-commercial use only',
   'scenarios': 'the design alternatives saved for comparison and their figures',
   'comments': 'the review comments of the drawing',
   'revisions': 'the revision clouds: revision, date, description',

@@ -483,7 +483,8 @@ void main() {
         expect(privacy, contains(needle), reason: needle);
       }
       final terms = File('web/terms/index.html').readAsStringSync();
-      for (final needle in ['MIT licence', '&quot;as is&quot;', 'qualified professional', 'technical responsibility', 'ART', 'data sheets']) {
+      // (1.6.0: the free use of the third-party data in professional work, PRD-06)
+      for (final needle in ['MIT licence', '&quot;as is&quot;', 'qualified professional', 'technical responsibility', 'ART', 'data sheets', 'Terms of the data', 'NASA POWER', 'non-commercial']) {
         expect(terms, contains(needle), reason: needle);
       }
       final pt = File('web/pt/terms/index.html').readAsStringSync();

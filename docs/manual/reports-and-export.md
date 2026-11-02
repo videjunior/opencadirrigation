@@ -18,7 +18,8 @@ content, and are the basis of every exporter, so PDF, Excel and CSV show the sam
 
 File → Export drawing → PDF opens the plot options: size (A4 to A0, Letter, Tabloid), orientation,
 scale (automatic or fixed), margin, wetted radii, labels, layer legend, bill of materials on the
-sheet, the base map of the screen under the drawing (with its credit) and attached report pages.
+sheet, the base map of the screen under the drawing (with its credit, and below it those of the
+base map pictures kept for the field and of the online elevation shown) and attached report pages.
 A PDF can hold a **set of sheets**: one sheet, or an overview plus one sheet per zone or per
 irrigated area (each fitted to its subject with its own materials, the other zones in grey or
 hidden), and the current screen view as an extra sheet at its own scale; then **construction

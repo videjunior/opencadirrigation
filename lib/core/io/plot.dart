@@ -15,6 +15,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../translate.dart';
 import '../units.dart';
+import 'data_credits.dart'; // 1.6.0 SIT
 
 enum PlotAnchor { bottomLeft, bottomCenter, bottomRight, center, centerLeft }
 
@@ -584,7 +585,8 @@ PlotScene buildPlotScene(
         }
     }
   }
-  return PlotScene(items: items, bounds: bounds, unitsPerMm: unitsPerMm, layers: layersUsed, rasters: rasters, attribution: attribution);
+  // 1.6.0 SIT: under the base map's credit, those of the kept base map pictures and of the online elevation shown (PRD-06)
+  return PlotScene(items: items, bounds: bounds, unitsPerMm: unitsPerMm, layers: layersUsed, rasters: rasters, attribution: sheetCredits(project, attribution));
 }
 
 /// Width of [s] in average characters: East Asian wide characters (Han,

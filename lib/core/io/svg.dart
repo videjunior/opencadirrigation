@@ -119,7 +119,8 @@ class SvgWriter {
       out.writeln('</g>');
     }
     if (scene.attribution.isNotEmpty) {
-      out.writeln('<text x="${n(w - marginMm / 2)}" y="${n(h - marginMm / 3)}" font-size="1.8" fill="#8a8f94" text-anchor="end">${_esc(scene.attribution)}</text>');
+      // 1.6.0 SIT: the credits of every source on one line
+      out.writeln('<text x="${n(w - marginMm / 2)}" y="${n(h - marginMm / 3)}" font-size="1.8" fill="#8a8f94" text-anchor="end">${_esc(scene.attribution.split('\n').join(' · '))}</text>');
     }
     out.writeln('</svg>');
     return out.toString();

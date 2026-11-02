@@ -15,6 +15,8 @@ import '../tutorial/tutorial.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
+import 'dialogs/data_terms_dialog.dart'; // 1.6.0 SIT
+import 'dialogs/field_map_dialog.dart'; // 1.6.0 SIT
 import 'dialogs/agronomy_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
@@ -320,6 +322,8 @@ class AppMenuBar extends StatelessWidget {
                         const Divider(height: 1),
                         item(t('basemap.osm.menu'), () => showStreetsServerDialog(context, c), icon: Icons.dns_outlined, key: const Key('menu_osm_server')),
                         item(t('basemap.terms.menu'), () => showBaseMapTermsDialog(context, c), icon: Icons.gavel_outlined, key: const Key('menu_map_terms')),
+                        // 1.6.0 SIT: the map of the area kept in the project, for the field without a network (PRD-09)
+                        item(t('fieldmap.menu'), () => showFieldMapDialog(context, c), icon: Icons.download_for_offline_outlined, key: const Key('menu_field_map')),
                       ],
                       child: Text(t('view.baseMap')),
                     ),
@@ -584,6 +588,8 @@ class AppMenuBar extends StatelessWidget {
                     item(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
                     // 1.6.0 UI
                     item(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('menu_messages')),
+                    // 1.6.0 SIT: the terms of the third-party data in professional work (PRD-06)
+                    item(t('terms.menu'), () => showDataTermsDialog(context, c), icon: Icons.policy_outlined, key: const Key('menu_data_terms')),
                     item(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
                   ],
                   child: Text(t('menu.help')),

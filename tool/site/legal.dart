@@ -124,6 +124,7 @@ const _legalEn = LegalText(
     ]),
     LegalSection('Data and services of others', [
       'Maps, imagery, elevation, climate, address search and the manufacturer catalogues come from third parties, under their own terms and licences (see Help → About in the app). Catalogue data are taken from published tables and may be out of date: confirm models, curves and prices with the current data sheets before buying.',
+      'In professional work, use each source within its terms: Help → Terms of the data in the app says what the free use of each allows. Some free services are for non-commercial use only (the free Open-Meteo services and the CARTO base maps), so the app downloads the climate from NASA POWER and the elevation from Terrain Tiles by default; the OpenStreetMap Foundation\'s tile server forbids heavy use and downloading areas for offline use, so the map kept for the field uses only the tiles already shown. The sheets, the PDFs and the report carry the credit of every source: keep it when you deliver or publish the work.',
       'The optional AI assistant runs on your own account with Anthropic or OpenAI, under that company\'s terms, and that company bills the use. A model can be wrong: approve the changes it proposes knowingly and check its work.',
     ]),
     LegalSection('Your content', ['Your projects, drawings, images and files are yours: you are responsible for them and for having the right to use what you import.']),
@@ -197,6 +198,7 @@ const _legalPt = LegalText(
     ]),
     LegalSection('Dados e serviços de terceiros', [
       'Mapas, imagens, elevação, clima, busca de endereços e os catálogos de fabricantes vêm de terceiros, com termos e licenças próprios (veja Ajuda → Sobre no app). Os dados de catálogo são tirados das tabelas publicadas e podem estar desatualizados: confirme modelos, curvas e preços nas folhas de dados atuais antes de comprar.',
+      'No trabalho profissional, use cada fonte dentro dos seus termos: Ajuda → Termos dos dados, no app, diz o que o uso gratuito de cada uma permite. Alguns serviços gratuitos são só para uso não comercial (os serviços gratuitos do Open-Meteo e os mapas base da CARTO), por isso o app baixa o clima do NASA POWER e a elevação do Terrain Tiles por padrão; o servidor de blocos da Fundação OpenStreetMap proíbe o uso intenso e o download de áreas para uso off-line, por isso o mapa guardado para o campo usa só os blocos já mostrados. As pranchas, os PDFs e o relatório levam o crédito de cada fonte: mantenha-o ao entregar ou publicar o trabalho.',
       'O assistente de IA, opcional, funciona com a sua própria conta na Anthropic ou na OpenAI, sob os termos dessa empresa, que cobra o uso. Um modelo pode errar: aprove com consciência as alterações que ele propõe e confira o trabalho dele.',
     ]),
     LegalSection('O seu conteúdo', ['Os seus projetos, desenhos, imagens e arquivos são seus: você responde por eles e por ter o direito de usar o que importa.']),
@@ -270,6 +272,7 @@ const _legalEs = LegalText(
     ]),
     LegalSection('Datos y servicios de terceros', [
       'Los mapas, las imágenes, la elevación, el clima, la búsqueda de direcciones y los catálogos de fabricantes provienen de terceros, con sus propios términos y licencias (vea Ayuda → Acerca de en la aplicación). Los datos de catálogo se toman de las tablas publicadas y pueden estar desactualizados: confirme modelos, curvas y precios en las fichas técnicas vigentes antes de comprar.',
+      'En el trabajo profesional, use cada fuente dentro de sus términos: Ayuda → Términos de los datos, en la aplicación, dice lo que permite el uso gratuito de cada una. Algunos servicios gratuitos son solo para uso no comercial (los servicios gratuitos de Open-Meteo y los mapas base de CARTO), por eso la aplicación descarga el clima de NASA POWER y la elevación de Terrain Tiles por defecto; el servidor de teselas de la Fundación OpenStreetMap prohíbe el uso intensivo y la descarga de áreas para uso sin conexión, por eso el mapa guardado para el campo usa solo las teselas ya mostradas. Las láminas, los PDF y el informe llevan el crédito de cada fuente: consérvelo al entregar o publicar el trabajo.',
       'El asistente de IA, opcional, funciona con su propia cuenta en Anthropic u OpenAI, según los términos de esa empresa, que factura el uso. Un modelo puede equivocarse: apruebe con criterio los cambios que propone y revise su trabajo.',
     ]),
     LegalSection('Su contenido', ['Sus proyectos, dibujos, imágenes y archivos son suyos: usted responde por ellos y por tener derecho a usar lo que importa.']),

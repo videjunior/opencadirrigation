@@ -34,6 +34,8 @@ import 'dialogs/welcome_dialog.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
+import 'dialogs/data_terms_dialog.dart'; // 1.6.0 SIT
+import 'dialogs/field_map_dialog.dart'; // 1.6.0 SIT
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
@@ -407,6 +409,8 @@ class _MobileShellState extends State<MobileShell> {
             // 1.6.0 CAD
             row(t('basemap.osm.menu'), () => showStreetsServerDialog(context, c), icon: Icons.dns_outlined),
             row(t('basemap.terms.menu'), () => showBaseMapTermsDialog(context, c), icon: Icons.gavel_outlined),
+            // 1.6.0 SIT
+            row(t('fieldmap.menu'), () => showFieldMapDialog(context, c), icon: Icons.download_for_offline_outlined),
             for (final l in supportedLanguages) check(languageNames[l] ?? l, c.lang == l, (_) => c.setLanguage(l)),
             for (final m in CadThemeMode.values)
               check('${t('view.theme')}: ${t('view.theme.${m.name}')}', uiThemeMode.value == m, (_) {
@@ -488,6 +492,8 @@ class _MobileShellState extends State<MobileShell> {
             row(t('help.welcome'), widget.onShowWelcome, icon: Icons.waving_hand_outlined),
             row(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
             row(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('mobile_menu_messages')),
+            // 1.6.0 SIT
+            row(t('terms.menu'), () => showDataTermsDialog(context, c), icon: Icons.policy_outlined),
             row(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
           ]),
         ],

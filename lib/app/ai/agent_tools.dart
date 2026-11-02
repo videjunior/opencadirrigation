@@ -532,6 +532,8 @@ const reportTableKeys = [
   'requirementTotals',
   'water',
   'licensing',
+  // 1.6.0 SIT
+  'sources',
   'scenarios',
   'comments',
   'revisions',
