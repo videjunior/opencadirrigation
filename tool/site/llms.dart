@@ -4,7 +4,7 @@ part of '../site.dart';
 // model needs to describe OpenCADIrrigation correctly, in Markdown and
 // without the application shell. English, the canonical language of the
 // project, with links to the page of every other language. The page texts
-// come from `_en`; the technical facts below follow README.md, so update both
+// come from `_en`; the technical facts below follow the manual (docs/manual/), so update both
 // when the app changes (and keep to the editorial rules: no competing
 // products).
 

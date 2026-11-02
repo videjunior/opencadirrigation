@@ -3,7 +3,10 @@
     "public": "public",
     "ignore": [
       "firebase.json",
-      "**/.*",
+      "**/.DS_Store",
+      "**/.last_build_id",
+      "**/.git/**",
+      "**/.firebase/**",
       "**/node_modules/**"
     ],
     "redirects": [

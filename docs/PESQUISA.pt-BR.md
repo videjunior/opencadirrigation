@@ -2659,7 +2659,7 @@ leitura de catálogos XLSX.
 ### 24.12 Projeto e catálogos
 
 O projeto `.oci.json` e o catálogo `.oci.cat` são JSON com chave `format` e `version`; a estrutura
-está no README (seção 11) e em `catalogs/README.md`. A decisão de embutir o catálogo no projeto torna o
+está no manual (docs/manual/pt-BR/file-formats.md) e em `catalogs/README.md`. A decisão de embutir o catálogo no projeto torna o
 arquivo autossuficiente e legível; a biblioteca de blocos de usuário também viaja no projeto, e as
 exportações DXF e DWG a gravam como definições de bloco.
 
@@ -2738,7 +2738,7 @@ exportações DXF e DWG a gravam como definições de bloco.
   como são; a seleção é magenta em vez de amarela. Os dados nunca mudam de cor, e as plotagens e as
   exportações (PDF, SVG, PNG e os arquivos CAD) são papel e não seguem o tema da interface.
 - **Site**: páginas geradas com conteúdo HTML real para os buscadores, porque o Flutter desenha em
-  canvas (ver README, seção 13).
+  canvas (ver docs/manual/pt-BR/languages-and-site.md).
 
 ---
 

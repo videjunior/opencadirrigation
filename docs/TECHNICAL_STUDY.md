@@ -2592,7 +2592,7 @@ catalogues.
 ### 24.12 Project and catalogues
 
 The `.oci.json` project and the `.oci.cat` catalogue are JSON with `format` and `version` keys; the
-structure is in the README (section 11) and in `catalogs/README.md`. The decision to embed the
+structure is in the manual (docs/manual/file-formats.md) and in `catalogs/README.md`. The decision to embed the
 catalogue in the project makes the file self-contained and readable; the library of user blocks
 travels in the project too, and the DXF and DWG exports write it as block definitions.
 
@@ -2669,7 +2669,7 @@ travels in the project too, and the DXF and DWG exports write it as block defini
   magenta instead of yellow. The data never changes colour, and the plots and exports (PDF, SVG, PNG
   and the CAD files) are paper and do not follow the interface theme.
 - **Site**: pages generated with real HTML content for the search engines, because Flutter paints
-  on a canvas (see README, section 13).
+  on a canvas (see docs/manual/languages-and-site.md).
 
 ---
 

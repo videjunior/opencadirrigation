@@ -1630,6 +1630,7 @@ Map<String, String> renderSite() => {
   for (final l in siteLanguages) '${l.path}privacy/index.html': renderLegalPage(l, privacy: true),
   for (final l in siteLanguages) '${l.path}terms/index.html': renderLegalPage(l, privacy: false),
   'site.js': renderSiteScript(),
+  '.well-known/security.txt': renderSecurityTxt(),
   'en/index.html': renderLegacyEnRedirect(),
   'sitemap.xml': renderSitemap(),
   '404.html': render404(),
@@ -1639,6 +1640,21 @@ Map<String, String> renderSite() => {
   'llms-full.txt': renderLlmsFullTxt(),
   '$indexNowKey.txt': indexNowKey,
 };
+
+/// security.txt (RFC 9116): where to report a vulnerability privately
+/// (SECURITY.md), valid for a year after the site's last update, so every
+/// release renews it.
+String renderSecurityTxt() {
+  final expires = DateTime.parse(siteLastMod).add(const Duration(days: 365)).toIso8601String().substring(0, 10);
+  return [
+    'Contact: $appRepositoryUrl/security/advisories/new',
+    'Expires: ${expires}T00:00:00.000Z',
+    'Preferred-Languages: en, pt, es',
+    'Canonical: $siteUrl.well-known/security.txt',
+    'Policy: $appRepositoryUrl/blob/main/SECURITY.md',
+    '',
+  ].join('\n');
+}
 
 /// Files generated outside `web/`, by path from the repository root: the
 /// hosting configuration (see hosting/README.md).
@@ -1672,7 +1688,8 @@ String renderHostingConfig() {
   final config = {
     'hosting': {
       'public': 'public',
-      'ignore': ['firebase.json', '**/.*', '**/node_modules/**'],
+      // the dot files of a build and of the system, not /.well-known/
+      'ignore': ['firebase.json', '**/.DS_Store', '**/.last_build_id', '**/.git/**', '**/.firebase/**', '**/node_modules/**'],
       'redirects': [
         for (final source in ['/en', '/en/', '/en/index.html']) {'source': source, 'destination': '/', 'type': 301},
       ],
