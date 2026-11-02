@@ -24,6 +24,10 @@ import 'package:opencadirrigation/app/i18n.dart';
 import 'package:opencadirrigation/core/design/designer.dart';
 import 'package:opencadirrigation/core/design/results.dart';
 import 'package:opencadirrigation/core/design/zoning.dart';
+import 'package:opencadirrigation/core/design/pivot.dart';
+import 'package:opencadirrigation/core/design/proposal.dart';
+import 'package:opencadirrigation/core/design/report_tables.dart';
+import 'package:opencadirrigation/core/model/proposal_settings.dart';
 
 List<Pt> rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
@@ -858,6 +862,62 @@ void main() {
       final given = defaultMaxZoneFlow(p, family: family);
       expect(given.typical, isFalse);
       expect(given.flow * 3600, closeTo(3, 1e-9));
+    });
+  });
+
+  group('AUT-21 elevations of the report in the units of the project', () {
+    test('a pivot rise and the pipe ends in feet', () {
+      final t = I18n('en');
+      final p = buildExample(ExampleId.garden, t.call, lang: 'en');
+      p.params.units = Units.us;
+      final r = Designer(p, label: t.call).designAll();
+      r.pivots['pv'] = analyzePivot(
+        const PivotSpec(kind: PivotKind.pivot, lengthM: 300, endThrowM: 0),
+        id: 'pv',
+        name: 'Pivot',
+        groundRiseAt: (d) => d / 100,
+      );
+      final tables = buildReportTables(
+        project: p,
+        results: r,
+        labels: ReportLabels(t: t.call, has: t.has, warning: (w) => t.warning(w)),
+      );
+      final pivots = tables.firstWhere((x) => x.key == 'pivots');
+      final col = pivots.headers.indexWhere((h) => h.startsWith(t('rep.rise')));
+      expect(pivots.headers[col], contains('(ft)'));
+      expect((pivots.rows.single[col] as RNum).value, closeTo(3 / metersPerFoot, 1e-6), reason: '3 m showed as "3 ft" before');
+      final pipes = tables.firstWhere((x) => x.key == 'pipes');
+      final za = pipes.headers.indexWhere((h) => h.startsWith(t('rep.zStart')));
+      expect(pipes.headers[za], contains('(ft)'));
+      final seg = r.zones.values.expand((z) => z.pipes).first;
+      final row = pipes.rows.firstWhere((x) => x[2] == seg.segmentIndex && (x[5] as RNum).value == (RNum(Units.us.lengthFromSi(seg.length), 1)).value);
+      expect((row[za] as RNum).value, closeTo(seg.elevationA / metersPerFoot, 1e-6));
+    });
+  });
+
+  group('AUT-25 trenches of the networks the automatic tools draw', () {
+    test('a mainline without a depth is dug as buried pipe; generated submains are buried', () {
+      final p = Project();
+      p.entities.add(PipeEntity(id: 'main', points: [Pt.zero, const Pt(100, 0)], scope: HydraulicScope.mainline, pipeSpecId: 'pvc100'));
+      p.entities.add(PipeEntity(id: 'zone', points: [Pt.zero, const Pt(0, 30)], scope: HydraulicScope.zone, pipeSpecId: 'pvc50'));
+      final rows = trenchRows(p, ProposalSettings());
+      expect(rows, hasLength(1), reason: 'no trench at all before');
+      expect(rows.single.scope, HydraulicScope.mainline);
+      expect(rows.single.length, closeTo(100, 1e-9));
+      expect(rows.single.depth, greaterThan(defaultMainlineDepthM));
+      expect(scheduleTasks(p, ProposalSettings()).map((k) => k.key), containsAll(['trench', 'backfill']));
+      // a block of the subdivision gets its submain and stub buried
+      final b = generateBlock(p, BlockOptions(polygon: rect(0, 0, 60, 30), direction: const Pt(1, 0), lateralSpacing: 1.5, isTape: true, tapeSpecId: 'tape16', submainDepth: defaultZonePipeDepthM));
+      expect(b.submain!.depth, defaultZonePipeDepthM);
+      expect(b.stub!.depth, defaultZonePipeDepthM);
+      expect(b.laterals.whereType<TapeEntity>(), isNotEmpty);
+      // routed zones: zone pipes and mainline as deep as asked
+      final routed = routeZones([
+        [const Pt(5, 5), const Pt(10, 5)],
+      ], RouteOptions(pointOfConnection: const Pt(-5, 0)));
+      final es = routed.toEntities(p, depth: defaultZonePipeDepthM, mainlineDepth: defaultMainlineDepthM).whereType<PipeEntity>().toList();
+      expect(es.where((e) => e.scope == HydraulicScope.zone).every((e) => e.depth == defaultZonePipeDepthM), isTrue);
+      expect(es.where((e) => e.scope == HydraulicScope.mainline).every((e) => e.depth == defaultMainlineDepthM), isTrue);
     });
   });
 }

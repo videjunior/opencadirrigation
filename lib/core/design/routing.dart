@@ -155,8 +155,10 @@ class RoutingResult {
 
   /// The valves and pipes as entities of [p] (new ids): a zone valve named
   /// [zoneNames] (the zone index when missing) with [valveSpecIds], zone
-  /// pipes and mainline pipes sized by the designer unless a spec is given.
-  List<Entity> toEntities(Project p, {List<String>? zoneNames, List<String?>? valveSpecIds, String? zonePipeSpecId, String? mainlinePipeSpecId, double depth = 0}) {
+  /// pipes and mainline pipes sized by the designer unless a spec is given,
+  /// buried [depth] metres (the mainline [mainlineDepth], by default as
+  /// deep).
+  List<Entity> toEntities(Project p, {List<String>? zoneNames, List<String?>? valveSpecIds, String? zonePipeSpecId, String? mainlinePipeSpecId, double depth = 0, double? mainlineDepth}) {
     final out = <Entity>[];
     for (final z in zones) {
       final name = zoneNames != null && z.zone < zoneNames.length ? zoneNames[z.zone] : '${z.zone + 1}';
@@ -167,7 +169,16 @@ class RoutingResult {
       }
     }
     for (final pipe in mainline) {
-      out.add(PipeEntity(id: p.newId(), points: List.of(pipe.points), scope: HydraulicScope.mainline, pipeSpecId: mainlinePipeSpecId, computerSized: mainlinePipeSpecId == null, depth: depth));
+      out.add(
+        PipeEntity(
+          id: p.newId(),
+          points: List.of(pipe.points),
+          scope: HydraulicScope.mainline,
+          pipeSpecId: mainlinePipeSpecId,
+          computerSized: mainlinePipeSpecId == null,
+          depth: mainlineDepth ?? depth,
+        ),
+      );
     }
     return out;
   }

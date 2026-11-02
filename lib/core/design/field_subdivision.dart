@@ -155,6 +155,7 @@ BlockOptions blockOptionsFor(
   String submainLabel = 'Submain',
   String stubLabel = 'Stub',
   String lateralPrefix = 'L',
+  double submainDepth = 0,
 }) => BlockOptions(
   polygon: block.polygon,
   direction: direction,
@@ -176,6 +177,7 @@ BlockOptions blockOptionsFor(
   submainLabel: submainLabel,
   stubLabel: stubLabel,
   lateralPrefix: lateralPrefix,
+  submainDepth: submainDepth,
 );
 
 /// Pieces of the simple polygon [poly] where p·[n] ≥ [c] ([above]) or

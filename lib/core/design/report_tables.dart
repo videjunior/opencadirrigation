@@ -156,8 +156,9 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         RNum(u.pressureFromHead(p.headLoss.abs()), 2),
         RNum(u.pressureFromHead(p.pressureStart), 1),
         RNum(u.pressureFromHead(p.pressureEnd), 1),
-        RNum(p.elevationA, 1),
-        RNum(p.elevationB, 1),
+        // 1.6.0 AUT: elevations in the length unit of the project
+        RNum(u.lengthFromSi(p.elevationA), 1),
+        RNum(u.lengthFromSi(p.elevationB), 1),
         RNum(u.pressureFromHead(p.pressureRating), 0),
       ]);
       pipeWarn.add(p.overVelocity || p.overPressure);
@@ -189,8 +190,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           '${t('rep.hf')} (${u.pressureLabel})',
           t('rep.pStart'),
           t('rep.pEnd'),
-          t('rep.zStart'),
-          t('rep.zEnd'),
+          '${t('rep.zStart')} (${u.lengthLabel})',
+          '${t('rep.zEnd')} (${u.lengthLabel})',
           t('rep.pn'),
         ],
         rows: pipeRows,
@@ -557,7 +558,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
                 RNum(u.pressureFromHead(p.inletHead), 1),
                 p.availableHead == null ? '-' : RNum(u.pressureFromHead(p.availableHead!), 1),
                 RNum(u.pressureFromHead(p.frictionLoss), 2),
-                RNum(p.elevationRise, 2),
+                // 1.6.0 AUT: the column says the length unit; the rise was in metres
+                RNum(u.lengthFromSi(p.elevationRise), 2),
                 RNum(u.pressureFromHead(p.endPressure), 1),
                 RNum(u.velocityFromSi(p.inletVelocity), 2),
                 RNum(p.depthPerCycleMm, 1),

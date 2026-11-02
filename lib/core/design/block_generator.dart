@@ -37,6 +37,7 @@ class BlockOptions {
     this.stubLabel = 'Stub',
     this.lateralPrefix = 'L',
     this.guide,
+    this.submainDepth = 0,
   });
 
   final List<Pt> polygon;
@@ -68,6 +69,10 @@ class BlockOptions {
   final String submainLabel;
   final String stubLabel;
   final String lateralPrefix;
+
+  /// Burial depth (m) of the submain, its branches and the stub (0 = on the
+  /// surface); the laterals stay on the surface.
+  final double submainDepth;
 }
 
 class BlockResult {
@@ -314,7 +319,7 @@ BlockResult generateBlock(Project project, BlockOptions o) {
 /// of one (it would lie on that row's lateral).
 BlockResult _finishBlock(Project project, BlockOptions o, String zone, List<Entity> laterals, List<Pt> main, List<List<Pt>> branchLines, Pt outward, {List<String> messages = const []}) {
   PipeEntity pipe(String name, List<Pt> pts) =>
-      PipeEntity(id: project.newId(), name: name, points: pts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null);
+      PipeEntity(id: project.newId(), name: name, points: pts, scope: HydraulicScope.zone, pipeSpecId: o.submainPipeSpecId, computerSized: o.submainPipeSpecId == null, depth: o.submainDepth);
   final submain = main.length >= 2 && polylineLength(main) > 1e-6 ? pipe('${o.submainLabel} $zone', main) : null;
   final branches = [for (var k = 0; k < branchLines.length; k++) pipe('${o.submainLabel} $zone (${k + 2})', branchLines[k])];
   final total = polylineLength(main);

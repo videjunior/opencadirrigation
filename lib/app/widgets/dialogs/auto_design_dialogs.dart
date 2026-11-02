@@ -17,6 +17,7 @@ import '../../../core/design/block_generator.dart';
 import '../../../core/design/densogram.dart' show SprayProfile, sprayProfileKey;
 import '../../../core/design/field_subdivision.dart';
 import '../../../core/design/pivot_fit.dart';
+import '../../../core/design/proposal.dart' show defaultMainlineDepthM, defaultZonePipeDepthM;
 import '../../../core/design/routing.dart';
 import '../../../core/design/templates.dart';
 import '../../../core/design/tree_rings.dart';
@@ -604,7 +605,14 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
       final p = c.project;
       final out = <Entity>[
         ...plan.layout.toOutlets(p, zoneName: plan.groups.isEmpty ? null : (i) => plan.names[zoneOf[i] ?? 0]),
-        ...?plan.routing?.toEntities(p, zoneNames: plan.names, valveSpecIds: [for (var z = 0; z < plan.groups.length; z++) pickZoneValve(p.catalog, plan.flowOf(z))?.id]),
+        // 1.6.0 AUT: buried zone pipes and mainline (their trenches go in the quote)
+        ...?plan.routing?.toEntities(
+          p,
+          zoneNames: plan.names,
+          valveSpecIds: [for (var z = 0; z < plan.groups.length; z++) pickZoneValve(p.catalog, plan.flowOf(z))?.id],
+          depth: defaultZonePipeDepthM,
+          mainlineDepth: defaultMainlineDepthM,
+        ),
       ];
       p.entities.addAll(out);
       return out;
@@ -1164,6 +1172,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
             submainLabel: t('name.submain'),
             stubLabel: t('name.stub'),
             lateralPrefix: t('name.lateral'),
+            submainDepth: defaultZonePipeDepthM,
           ),
         );
         out.addAll(res.all);
@@ -1171,7 +1180,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
       }
       if (mainlineOn && poc != null && valves.isNotEmpty) {
         for (final m in routeMainline(poc, valves, boundary: field)) {
-          out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline));
+          out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline, depth: defaultMainlineDepthM));
         }
       }
       p.entities.addAll(out);
