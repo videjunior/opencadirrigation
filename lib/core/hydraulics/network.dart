@@ -355,7 +355,9 @@ class HydraulicNetwork {
               yk = _closedResistance * qk;
             } else {
               // open: the curve at |Q| (EPANET); a pump that cannot deliver
-              // the head is closed by the status check below
+              // the head is closed by the status check below. Left of the
+              // top of a curve that rises first, the top: the pump runs on
+              // the falling part (a rising gradient made the system singular)
               final qa = math.max(qk.abs(), _qMin);
               final runout = p.runoutFlow;
               if (runout.isFinite && qa > runout) {
@@ -363,8 +365,9 @@ class HydraulicNetwork {
                 gk = gr;
                 yk = -p.head(runout) + (qa - runout) * gr;
               } else {
-                gk = math.max(-p.gradient(qa), 1e-6);
-                yk = -p.head(qa);
+                final qe = math.max(qa, p.peakFlow);
+                gk = math.max(-p.gradient(qe), 1e-6);
+                yk = -p.head(qe);
               }
             }
         }
@@ -777,9 +780,11 @@ class HydraulicNetwork {
       }
       if (l.kind == HLinkKind.pump && l.pump != null) {
         // built-in check valve: closed while the head gain asked for is
-        // above the shutoff head, reopened below it
+        // above the highest head of the curve, reopened below it (the
+        // shutoff head closed a pump that runs right of the top of a curve
+        // that rises first)
         final gain = heads[toNode[k]] - heads[fromNode[k]];
-        final shutoff = l.pump!.shutoffHead;
+        final shutoff = l.pump!.maxHead;
         if (l.status == LinkStatus.closed) {
           if (gain < shutoff - 1e-4) {
             l.status = LinkStatus.open;
@@ -905,10 +910,10 @@ class HydraulicNetwork {
     return NetworkResult(converged: converged, iterations: iter, nodes: nodeResults, links: linkResults, warnings: warnings, relativeFlowError: relErr);
   }
 
-  /// Flow on the curve of [pump] where it gives [head] (a trickle when it
-  /// cannot).
+  /// Flow on the falling part of the curve of [pump] where it gives [head]
+  /// (a trickle when it cannot).
   static double _pumpFlowAtHead(PumpCurve pump, double head) {
-    var lo = 0.0, hi = pump.runoutFlow.isFinite ? pump.runoutFlow : 1.0;
+    var lo = pump.peakFlow, hi = pump.runoutFlow.isFinite ? pump.runoutFlow : math.max(1.0, 2 * pump.peakFlow);
     if (!(pump.head(lo) > head)) return _qMin;
     for (var i = 0; i < 60; i++) {
       final mid = (lo + hi) / 2;

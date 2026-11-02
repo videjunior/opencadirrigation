@@ -1474,11 +1474,20 @@ class _Simulation {
       return;
     }
     final w = p.speedRatio;
-    e.pa = p.a;
-    e.pb = p.b * w;
-    e.pc = p.c * w * w;
     final gain = nodes[to].h0 - nodes[from].h0;
     final running = lr?.status != LinkStatus.closed && q0 > 0 && _flowing(q0);
+    if (p.throughPoints) {
+      // a curve through the manufacturer's points: its tangent parabola at
+      // the operating point (at half the runout flow when idle)
+      final (pa, pb, pc) = p.localParabola(running ? q0 : (p.runoutFlow.isFinite ? p.runoutFlow / 2 : 0.01));
+      e.pa = pa;
+      e.pb = pb;
+      e.pc = pc;
+    } else {
+      e.pa = p.a;
+      e.pb = p.b * w;
+      e.pc = p.c * w * w;
+    }
     if (running) {
       e.pc += gain - p.head(q0);
       e.q = q0;
