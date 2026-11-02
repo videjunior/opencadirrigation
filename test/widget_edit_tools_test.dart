@@ -155,6 +155,32 @@ void main() {
     expect(c.selection, {'l1'});
   });
 
+  testWidgets('Edit → Geometry joins the selection and starts the fillet tool (CAD-26)', (tester) async {
+    final c = await pumpShell(tester);
+    c.addEntities([LineEntity(id: 'a', a: Pt.zero, b: const Pt(10, 0)), LineEntity(id: 'b', a: const Pt(10, 0), b: const Pt(10, 10))]);
+    c.selectAll();
+    await settle(tester);
+    await tester.tap(find.text('Edit'));
+    await settle(tester, 2);
+    await tester.tap(find.text(c.t('edt.geometry')));
+    await settle(tester, 2);
+    await tester.tap(find.text(c.t('edt.join')));
+    await settle(tester, 2);
+    expect(c.project.entities.single, isA<PolylineEntity>());
+    expect(c.historyEntries.where((h) => h.current).single.label, 'hist.join|2');
+    await tester.tap(find.text('Edit'));
+    await settle(tester, 2);
+    await tester.tap(find.text(c.t('edt.geometry')));
+    await settle(tester, 2);
+    await tester.tap(find.text(c.t('tool.fillet')));
+    await settle(tester, 2);
+    expect(c.activeTool, ToolId.fillet);
+    expect(find.byKey(const Key('tool_fillet_radius')), findsNothing, reason: 'the selection shows its properties');
+    c.select(const []);
+    await settle(tester, 2);
+    expect(find.byKey(const Key('tool_fillet_radius')), findsOneWidget, reason: 'the radius in the panel of the tool');
+  });
+
   testWidgets('Edit → Move and Copy start the tools (CAD-06)', (tester) async {
     final c = await pumpShell(tester);
     await tester.tap(find.text('Edit'));

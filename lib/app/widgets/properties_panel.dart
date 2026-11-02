@@ -1401,7 +1401,7 @@ class PropertiesPanel extends StatelessWidget {
           ),
         );
       // 1.6.0 EDT: the settings of the new editing and selection tools
-      case ToolId.lasso || ToolId.fence:
+      case ToolId.lasso || ToolId.fence || ToolId.fillet || ToolId.chamfer:
         items.addAll(editToolFields(c, tool));
       default:
         items.add(

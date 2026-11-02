@@ -57,6 +57,10 @@ class ToolPalette extends StatelessWidget {
         // 1.6.0 EDT
         (ToolId.move, Icons.open_with),
         (ToolId.copy, Icons.file_copy_outlined),
+        (ToolId.stretch, Icons.unfold_more_double),
+        (ToolId.fillet, Icons.rounded_corner),
+        (ToolId.chamfer, Icons.signal_cellular_null),
+        (ToolId.breakTwo, Icons.link_off),
       ],
     ),
     ('terrain', [(ToolId.contour, Icons.landscape_outlined), (ToolId.breakline, Icons.show_chart), (ToolId.spot, Icons.add_location_alt_outlined), (ToolId.area, Icons.grass)]),

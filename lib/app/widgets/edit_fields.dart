@@ -115,6 +115,7 @@ class _CoordinateRow extends StatelessWidget {
 /// active (nothing selected), and its hint.
 List<Widget> editToolFields(ProjectController c, ToolId tool) {
   final t = c.t;
+  final u = c.units;
   final s = c.editSettings;
   void upd(void Function() fn) {
     fn();
@@ -122,6 +123,27 @@ List<Widget> editToolFields(ProjectController c, ToolId tool) {
   }
 
   return [
+    if (tool == ToolId.fillet)
+      NumField(
+        key: const Key('tool_fillet_radius'),
+        label: '${t('tool.fillet')} R (${u.lengthLabel})',
+        value: u.lengthFromSi(s.filletRadius),
+        onChanged: (v) => upd(() => s.filletRadius = v < 0 ? 0 : u.lengthToSi(v)),
+      ),
+    if (tool == ToolId.chamfer) ...[
+      NumField(
+        key: const Key('tool_chamfer_d1'),
+        label: '${t('edt.chamferFirst')} (${u.lengthLabel})',
+        value: u.lengthFromSi(s.chamferDistance1),
+        onChanged: (v) => upd(() => s.chamferDistance1 = v <= 0 ? s.chamferDistance1 : u.lengthToSi(v)),
+      ),
+      NumField(
+        key: const Key('tool_chamfer_d2'),
+        label: '${t('edt.chamferSecond')} (${u.lengthLabel})',
+        value: u.lengthFromSi(s.chamferDistance2),
+        onChanged: (v) => upd(() => s.chamferDistance2 = v <= 0 ? s.chamferDistance2 : u.lengthToSi(v)),
+      ),
+    ],
     if (tool == ToolId.lasso)
       SwitchListTile(
         key: const Key('tool_lasso_crossing'),

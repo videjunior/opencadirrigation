@@ -123,6 +123,10 @@ const toolInstead = <ToolId, String>{
   ToolId.copy: 'transform_entities {ids, operation: "copy", dx, dy} (once per copy)',
   ToolId.lasso: 'list_entities {bbox, types, layer} to find the items, then select_entities {ids}',
   ToolId.fence: 'list_entities {bbox, types, layer} to find the items, then select_entities {ids}',
+  ToolId.stretch: 'update_entities {updates: [{id, set: {pts}}]} with the vertices inside the window moved (one entry per item)',
+  ToolId.fillet: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the arc vertices (or create_entities an arc between two lines)',
+  ToolId.chamfer: 'update_entities {updates: [{id, set: {pts}}]} with the corner vertex replaced by the two cut points',
+  ToolId.breakTwo: 'run_operation split_entity {id, at} at both points, then delete_entities the piece between',
 };
 
 /// English names for the model.

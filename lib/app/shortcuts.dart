@@ -58,10 +58,13 @@ enum CadAction {
   insertBlock,
   saveBlock,
   assistant,
-  // 1.6.0 EDT: selection filters
+  // 1.6.0 EDT: selection filters and geometry edits of the selection
   selectSimilar,
   quickSelect,
   selectLayer,
+  join,
+  explode,
+  toArea,
 }
 
 /// Command alias → [ToolId] or [CadAction].
@@ -179,6 +182,13 @@ const commandAliases = <String, Object>{
   'SELLAYER': CadAction.selectLayer, 'LAYSEL': CadAction.selectLayer, 'SELCAMADA': CadAction.selectLayer, 'SELCAPA': CadAction.selectLayer,
   'LASSO': ToolId.lasso, 'WP': ToolId.lasso, 'LACO': ToolId.lasso, 'LAZO': ToolId.lasso,
   'FENCE': ToolId.fence, 'FEN': ToolId.fence, 'CERCA': ToolId.fence, 'CERCO': ToolId.fence,
+  'JOIN': CadAction.join, 'JO': CadAction.join, 'UNIR': CadAction.join, 'JUNTAR': CadAction.join,
+  'X': CadAction.explode, 'EXPLODE': CadAction.explode, 'EXPLODIR': CadAction.explode, 'DESCOMPOR': CadAction.explode, 'DESCOMPONER': CadAction.explode,
+  'TOAREA': CadAction.toArea, 'CONVAREA': CadAction.toArea, 'PARAAREA': CadAction.toArea, 'ENAREA': CadAction.toArea,
+  'STRETCH': ToolId.stretch, 'STR': ToolId.stretch, 'ESTICAR': ToolId.stretch, 'ESTIRAR': ToolId.stretch,
+  'FILLET': ToolId.fillet, 'FIL': ToolId.fillet, 'CONCORDAR': ToolId.fillet, 'CONCORDANCIA': ToolId.fillet, 'EMPALME': ToolId.fillet,
+  'CHA': ToolId.chamfer, 'CHAMFER': ToolId.chamfer, 'CHANFRO': ToolId.chamfer, 'CHANFRAR': ToolId.chamfer, 'CHAFLAN': ToolId.chamfer,
+  'BREAK': ToolId.breakTwo, 'BK': ToolId.breakTwo, 'QUEBRAR': ToolId.breakTwo, 'PARTIR': ToolId.breakTwo, 'ROMPER': ToolId.breakTwo,
 };
 
 /// Preferred (shortest) alias of a tool, for tooltips and menus.
@@ -247,6 +257,9 @@ String actionLabelKey(CadAction a) => switch (a) {
   CadAction.selectSimilar => 'sel.similar',
   CadAction.quickSelect => 'sel.quick',
   CadAction.selectLayer => 'sel.layer',
+  CadAction.join => 'edt.join',
+  CadAction.explode => 'edt.explode',
+  CadAction.toArea => 'edt.toArea',
 };
 
 /// " → Linha ⏎" for a typed alias that matches a command, else "".
@@ -354,6 +367,13 @@ const shortcutGroups = <ShortcutGroup>[
     ('SELLAYER', 'sel.layer'),
     ('LASSO · WP', 'tool.lasso'),
     ('FENCE · FEN', 'tool.fence'),
+    ('STRETCH · STR', 'tool.stretch'),
+    ('FILLET · FIL', 'tool.fillet'),
+    ('CHA · CHAMFER', 'tool.chamfer'),
+    ('BREAK · BK', 'tool.breakTwo'),
+    ('JOIN · JO', 'edt.join'),
+    ('X · EXPLODE', 'edt.explode'),
+    ('TOAREA', 'edt.toArea'),
     ('CLIPCUT', 'edit.clipCut'),
     ('PA · PASTE', 'edit.paste'),
     ('U · UNDO  /  REDO', 'edit.undo'),

@@ -259,6 +259,10 @@ class _MobileShellState extends State<MobileShell> {
             row(t('sel.quick'), () => showQuickSelectDialog(context, c), key: const Key('mobile_menu_quick_select')),
             row(t('sel.layer'), c.selectOnLayer, key: const Key('mobile_menu_select_layer')),
             for (final id in [ToolId.lasso, ToolId.fence]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
+            for (final id in [ToolId.stretch, ToolId.fillet, ToolId.chamfer, ToolId.breakTwo]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
+            row(t('edt.join'), c.selection.isEmpty ? null : c.joinSelected, key: const Key('mobile_menu_join')),
+            row(t('edt.explode'), c.selection.isEmpty ? null : c.explodeSelected, key: const Key('mobile_menu_explode')),
+            row(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, key: const Key('mobile_menu_to_area')),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),

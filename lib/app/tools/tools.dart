@@ -1675,6 +1675,10 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.copy => CopyTool(c, host),
   ToolId.lasso => LassoTool(c, host),
   ToolId.fence => FenceTool(c, host),
+  ToolId.stretch => StretchTool(c, host),
+  ToolId.fillet => CornerTool(c, host, chamfer: false),
+  ToolId.chamfer => CornerTool(c, host, chamfer: true),
+  ToolId.breakTwo => BreakTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1725,4 +1729,8 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.copy => 'copy',
   ToolId.lasso => 'lasso',
   ToolId.fence => 'fence',
+  ToolId.stretch => 'stretch',
+  ToolId.fillet => 'fillet',
+  ToolId.chamfer => 'chamfer',
+  ToolId.breakTwo => 'breakTwo',
 };

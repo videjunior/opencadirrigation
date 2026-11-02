@@ -550,6 +550,12 @@ class Hotkeys {
         actions.quickSelect();
       case CadAction.selectLayer:
         c.selectOnLayer();
+      case CadAction.join:
+        c.joinSelected();
+      case CadAction.explode:
+        c.explodeSelected();
+      case CadAction.toArea:
+        c.convertSelectedToArea();
     }
   }
 

@@ -115,11 +115,16 @@ enum ToolId {
   // the user's marks for the AI assistant (ai_marks.dart): no project items
   aiMarkPoint,
   aiMarkLine,
-  // 1.6.0 EDT: move and copy by base point, lasso and fence selection (edit_tools.dart)
+  // 1.6.0 EDT: move and copy by base point, lasso and fence selection,
+  // stretch, fillet, chamfer and break at two points (edit_tools.dart)
   move,
   copy,
   lasso,
-  fence;
+  fence,
+  stretch,
+  fillet,
+  chamfer,
+  breakTwo;
 
   /// One of the tools that mark the drawing for the AI assistant.
   bool get isAiMark => this == aiMarkPoint || this == aiMarkLine;

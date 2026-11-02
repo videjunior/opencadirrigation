@@ -428,6 +428,13 @@ void main() {
           expect(a.calls, ['quickSelect']);
         case CadAction.selectLayer:
           expect(c.selection.length, c.project.entities.where((x) => x.layer == c.project.currentLayer).length, reason: e.key);
+        // a lone line selected: nothing to join, explode or close, and the user is told
+        case CadAction.join:
+          expect(c.lastMessage, c.t('edt.nothingToJoin'), reason: e.key);
+        case CadAction.explode:
+          expect(c.lastMessage, c.t('edt.nothingToExplode'), reason: e.key);
+        case CadAction.toArea:
+          expect(c.lastMessage, c.t('edt.notClosed'), reason: e.key);
       }
     }
   });
