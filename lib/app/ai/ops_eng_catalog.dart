@@ -470,8 +470,9 @@ List<AgentTool> catalogOperations(AgentToolbox b) {
           case 'csv':
             final g = CatalogGroup.values.byName(a.str('group') ?? 'pipes');
             final file = 'catalog_${g.name}.csv';
-            await engFileSink(c, file, 'text/csv', CatalogIo.exportCsv(cat, g));
-            return ToolOutput('Saved $file.');
+            // 1.6.0 MOD (MOD-20): in the units of the project, as the editor writes it
+            await engFileSink(c, file, 'text/csv', CatalogIo.exportCsv(cat, g, units: b.p.params.units));
+            return ToolOutput('Saved $file (in the units of the project; each column names its unit).');
           case 'xlsx':
             await engFileSink(c, 'catalog.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', CatalogIo.exportXlsx(cat));
             return const ToolOutput('Saved catalog.xlsx.');
