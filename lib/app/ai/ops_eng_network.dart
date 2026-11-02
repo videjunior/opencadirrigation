@@ -856,6 +856,10 @@ List<AgentTool> networkOperations(AgentToolbox b) {
         final out = <String>[
           if (c.results == null) 'No design results: the pumps and valves as drawn; run_design first for the designed system.',
           'Day: ${engN(d.energyKwh, 1)} kWh, $cur ${engN(d.cost, 2)}, ${engN(d.volume, 0)} m³${d.converged ? '' : ' (some steps did not converge)'}.',
+          // 1.6.0 MOT: the level of every reservoir through the day
+          for (final e in d.levels.entries)
+            if (e.value.isNotEmpty)
+              'Reservoir of ${engItemName(b, e.key)}: ${engN(e.value.first, 2)} m at midnight, lowest ${engN(e.value.reduce(math.min), 2)} m, ${engN(e.value.last, 2)} m at the end of the day.',
           d.pumps.isEmpty
               ? 'No pump runs.'
               : engTable(

@@ -11,6 +11,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+// 1.6.0 MOT: progress and cancel (UI-19)
+import '../../../core/design/analysis_control.dart';
 import '../../../core/design/calibration.dart' show CalibrationResidual, MeasurementKind;
 import '../../../core/design/designer.dart';
 import '../../../core/design/energy_grouping.dart';
@@ -83,8 +85,10 @@ Widget _switch(String label, bool value, ValueChanged<bool> onChanged, {Key? key
   onChanged: onChanged,
 );
 
-/// A button that starts a computation, with a bar while it runs.
-Widget _runButton(Key key, String label, IconData icon, bool busy, VoidCallback onPressed) => Padding(
+/// A button that starts a computation, with a bar while it runs (filled as
+/// far as the computation got when [progress] is known) and, with
+/// [onCancel], a button that stops it (1.6.0 MOT, UI-19).
+Widget _runButton(Key key, String label, IconData icon, bool busy, VoidCallback onPressed, {double? progress, VoidCallback? onCancel, String cancelLabel = ''}) => Padding(
   padding: const EdgeInsets.symmetric(vertical: 6),
   child: Wrap(
     spacing: 8,
@@ -92,10 +96,28 @@ Widget _runButton(Key key, String label, IconData icon, bool busy, VoidCallback 
     crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       FilledButton.icon(key: key, onPressed: busy ? null : onPressed, icon: Icon(icon, size: 16), label: Text(label)),
-      if (busy) const SizedBox(width: 120, child: LinearProgressIndicator()),
+      if (busy) SizedBox(width: 120, child: LinearProgressIndicator(value: progress)),
+      if (busy && onCancel != null) TextButton(key: Key('${key is ValueKey<String> ? key.value : 'run'}_cancel'), onPressed: onCancel, child: Text(cancelLabel)),
     ],
   ),
 );
+
+/// 1.6.0 MOT (UI-19): the control of an analysis run from a dialog: the
+/// progress goes to [onProgress] while the dialog is open; once it closes,
+/// the analysis stops at its next step.
+AnalysisControl _control(BuildContext ctx, void Function(double fraction) onProgress) {
+  late final AnalysisControl ctl;
+  ctl = AnalysisControl(
+    onProgress: (done, total) {
+      if (!ctx.mounted) {
+        ctl.cancel();
+        return;
+      }
+      if (total > 0) onProgress((done / total).clamp(0.0, 1.0));
+    },
+  );
+  return ctl;
+}
 
 /// The messages of an analysis, translated (`warn.<code>`), each once.
 Widget _codes(ProjectController c, Iterable<String> codes, String Function(String id) name) {
@@ -211,6 +233,9 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
   var quality = 95.0, utilisation = 1.0;
   var nMin = 4, configurations = 200;
   var fixedDischarge = false, flowLimited = false, busy = false;
+  // 1.6.0 MOT: progress and cancel of the random check
+  AnalysisControl? control;
+  double? progress;
   RandomCheckResult? check;
   final vmax = c.project.params.maxMainlineVelocity;
   final peak = r.systemFlows.fold(0.0, (a, f) => math.max(a, f.totalFlow));
@@ -231,19 +256,27 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
     });
     Future<void> run() async {
       FocusManager.instance.primaryFocus?.unfocus();
-      setState(() => busy = true);
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      final res = checkRandomConfigurations(
-        onDemandCheckNetwork(m, pressure),
-        hydrants,
-        probabilities: cl.probabilities,
-        options: RandomCheckOptions(configurations: configurations, upstreamDischarge: fixedDischarge ? source : 0, flowLimited: flowLimited),
-      );
-      if (ctx.mounted) {
-        setState(() {
-          check = res;
-          busy = false;
-        });
+      setState(() {
+        busy = true;
+        progress = null;
+      });
+      final ctl = control = _control(ctx, (x) => setState(() => progress = x));
+      try {
+        final res = await checkRandomConfigurationsAsync(
+          onDemandCheckNetwork(m, pressure),
+          hydrants,
+          probabilities: cl.probabilities,
+          options: RandomCheckOptions(configurations: configurations, upstreamDischarge: fixedDischarge ? source : 0, flowLimited: flowLimited),
+          control: ctl,
+        );
+        if (ctx.mounted) {
+          setState(() {
+            check = res;
+            busy = false;
+          });
+        }
+      } on AnalysisCancelled {
+        if (ctx.mounted) setState(() => busy = false);
       }
     }
 
@@ -338,7 +371,7 @@ Future<void> showOnDemandDialog(BuildContext context, ProjectController c) {
         ),
       ]),
       _switch(t('od.flowLimited'), flowLimited, (v) => change(() => flowLimited = v)),
-      _runButton(const Key('od_run'), t('od.run'), Icons.casino_outlined, busy, run),
+      _runButton(const Key('od_run'), t('od.run'), Icons.casino_outlined, busy, run, progress: progress, onCancel: () => control?.cancel(), cancelLabel: t('cancel')),
       if (ch != null) ...[
         KV(t('od.configs'), '${ch.configurations}'),
         KV(t('od.failShare'), _pct(1 - ch.satisfiedShare, 1), color: ch.satisfiedShare < 1 ? Cad.warning : Cad.ok),
@@ -409,6 +442,9 @@ Future<void> showTariffDialog(BuildContext context, ProjectController c) {
   final names = {for (final s in r.systemFlows) s.flowId: s.name, for (final s in p.systemFlows) s.id: s.name};
   TariffSchedule? schedule;
   var busy = false;
+  // 1.6.0 MOT: progress and cancel of the schedule
+  AnalysisControl? control;
+  double? progress;
   var gen = 0;
   bool applicable(TariffSchedule s) => s.jobs.any((j) => c.project.systemFlows.any((x) => x.id == j.id));
   return _show(
@@ -423,19 +459,27 @@ Future<void> showTariffDialog(BuildContext context, ProjectController c) {
       });
       Future<void> compute() async {
         FocusManager.instance.primaryFocus?.unfocus();
-        setState(() => busy = true);
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-        final jobs = tariffJobsFromDesign(p, r, motorEfficiency: f.motorEfficiency);
-        final s = scheduleJobs(
-          jobs,
-          f.season,
-          options: ScheduleOptions(stepMinutes: f.step, maxHoursPerDay: f.maxHours, keepOrder: f.keepOrder),
-        );
-        if (ctx.mounted) {
-          setState(() {
-            schedule = s;
-            busy = false;
-          });
+        setState(() {
+          busy = true;
+          progress = null;
+        });
+        final ctl = control = _control(ctx, (x) => setState(() => progress = x));
+        try {
+          final jobs = tariffJobsFromDesign(p, r, motorEfficiency: f.motorEfficiency);
+          final s = await scheduleJobsAsync(
+            jobs,
+            f.season,
+            options: ScheduleOptions(stepMinutes: f.step, maxHoursPerDay: f.maxHours, keepOrder: f.keepOrder),
+            control: ctl,
+          );
+          if (ctx.mounted) {
+            setState(() {
+              schedule = s;
+              busy = false;
+            });
+          }
+        } on AnalysisCancelled {
+          if (ctx.mounted) setState(() => busy = false);
         }
       }
 
@@ -543,7 +587,7 @@ Future<void> showTariffDialog(BuildContext context, ProjectController c) {
           NumField(label: t('tar.motorEfficiency'), value: f.motorEfficiency, onChanged: (v) => change(() => f.motorEfficiency = v.clamp(0.05, 1).toDouble())),
         ]),
         _switch(t('tar.keepOrder'), f.keepOrder, (v) => change(() => f.keepOrder = v)),
-        _runButton(const Key('tar_compute'), t('tar.compute'), Icons.schedule, busy, compute),
+        _runButton(const Key('tar_compute'), t('tar.compute'), Icons.schedule, busy, compute, progress: progress, onCancel: () => control?.cancel(), cancelLabel: t('cancel')),
         if (s != null) ...[
           SectionTitle(t('tar.schedule')),
           _table(
@@ -624,6 +668,9 @@ Future<void> showEnergyGroupingDialog(BuildContext context, ProjectController c)
   var maxGroups = 0, maxZones = 0;
   var maxHours = 24.0, efficiency = p.params.pumpEfficiency;
   var exact = true, busy = false;
+  // 1.6.0 MOT: progress and cancel of the grouping
+  AnalysisControl? control;
+  double? progress;
   EnergyGroupingResult? result;
   var currentKwh = 0.0;
   final currentHours = p.systemFlows.fold(0.0, (s, f) => s + f.durationHours);
@@ -640,20 +687,28 @@ Future<void> showEnergyGroupingDialog(BuildContext context, ProjectController c)
       });
       Future<void> compute() async {
         FocusManager.instance.primaryFocus?.unfocus();
-        setState(() => busy = true);
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-        final g = groupZonesForEnergy(
-          zones,
-          options: GroupingOptions(maxFlow: maxFlow, maxGroups: maxGroups, maxHours: maxHours, maxZonesPerGroup: maxZones, sourceElevation: source, pumpEfficiency: efficiency),
-          groupHead: exact ? head : null,
-        );
-        final now = groupingEnergyKwh([for (final f in d.effectiveSystemFlows()) f.valveIds], zones, head, efficiency: efficiency);
-        if (ctx.mounted) {
-          setState(() {
-            result = g;
-            currentKwh = now;
-            busy = false;
-          });
+        setState(() {
+          busy = true;
+          progress = null;
+        });
+        final ctl = control = _control(ctx, (x) => setState(() => progress = x));
+        try {
+          final g = await groupZonesForEnergyAsync(
+            zones,
+            options: GroupingOptions(maxFlow: maxFlow, maxGroups: maxGroups, maxHours: maxHours, maxZonesPerGroup: maxZones, sourceElevation: source, pumpEfficiency: efficiency),
+            groupHead: exact ? head : null,
+            control: ctl,
+          );
+          final now = groupingEnergyKwh([for (final f in d.effectiveSystemFlows()) f.valveIds], zones, head, efficiency: efficiency);
+          if (ctx.mounted) {
+            setState(() {
+              result = g;
+              currentKwh = now;
+              busy = false;
+            });
+          }
+        } on AnalysisCancelled {
+          if (ctx.mounted) setState(() => busy = false);
         }
       }
 
@@ -671,7 +726,7 @@ Future<void> showEnergyGroupingDialog(BuildContext context, ProjectController c)
           _switch(t('eg.exact'), exact, (v) => change(() => exact = v)),
         ]),
         _note(t('eg.currentFlows', {'n': '${p.systemFlows.length}', 'h': fmtUi(currentHours, 1)}), color: Cad.fg54),
-        _runButton(const Key('eg_compute'), t('eg.compute'), Icons.bolt, busy, compute),
+        _runButton(const Key('eg_compute'), t('eg.compute'), Icons.bolt, busy, compute, progress: progress, onCancel: () => control?.cancel(), cancelLabel: t('cancel')),
         if (g != null) ...[
           SectionTitle(t('eg.proposal')),
           _table(
@@ -917,17 +972,27 @@ Future<void> showCriticalityDialog(BuildContext context, ProjectController c) {
   final name = _namer(c, d);
   var flowId = _largestFlow(flows, r);
   var pressureDriven = true, busy = false;
+  // 1.6.0 MOT: progress and cancel of the failures
+  AnalysisControl? control;
+  double? progress;
   CriticalityView? view;
   return _show(context, c, title, 780, (ctx, setState) {
     Future<void> run() async {
-      setState(() => busy = true);
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      final v = criticalityOf(d, r, flows.firstWhere((f) => f.id == flowId), pressureDriven: pressureDriven);
-      if (ctx.mounted) {
-        setState(() {
-          view = v;
-          busy = false;
-        });
+      setState(() {
+        busy = true;
+        progress = null;
+      });
+      final ctl = control = _control(ctx, (x) => setState(() => progress = x));
+      try {
+        final v = await criticalityOfAsync(d, r, flows.firstWhere((f) => f.id == flowId), pressureDriven: pressureDriven, control: ctl);
+        if (ctx.mounted) {
+          setState(() {
+            view = v;
+            busy = false;
+          });
+        }
+      } on AnalysisCancelled {
+        if (ctx.mounted) setState(() => busy = false);
       }
     }
 
@@ -952,7 +1017,7 @@ Future<void> showCriticalityDialog(BuildContext context, ProjectController c) {
           view = null;
         }),
       ),
-      _runButton(const Key('crit_run'), t('crit.run'), Icons.call_split, busy, run),
+      _runButton(const Key('crit_run'), t('crit.run'), Icons.call_split, busy, run, progress: progress, onCancel: () => control?.cancel(), cancelLabel: t('cancel')),
       if (v != null) ...[
         KV(t('crit.total'), '${_q(u, total)} ${u.flowLabel}'),
         if (v.result.tree) _note(t('crit.tree'), color: Cad.fg60),
@@ -1062,6 +1127,9 @@ Future<void> showCalibrationDialog(BuildContext context, ProjectController c) {
   pressures.add(_Reading(first.entityId, ((model.$1[first.entityId] ?? 0) * 10).roundToDouble() / 10, 0.5));
   FieldCalibration? result;
   var busy = false;
+  // 1.6.0 MOT: progress and cancel of the fit
+  AnalysisControl? control;
+  double? progress;
   var gen = 0;
   final params = p.params;
   bool canApply() {
@@ -1083,19 +1151,27 @@ Future<void> showCalibrationDialog(BuildContext context, ProjectController c) {
       });
       Future<void> run() async {
         FocusManager.instance.primaryFocus?.unfocus();
-        setState(() => busy = true);
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-        final res = calibrateFromField(
-          d,
-          flows.firstWhere((f) => f.id == flowId),
-          pressures: [for (final x in pressures) FieldReading(entityId: x.entityId, value: x.value, sigma: x.sigma)],
-          flows: [for (final x in flowReadings) FieldReading(entityId: x.entityId, value: x.value, sigma: x.sigma)],
-        );
-        if (ctx.mounted) {
-          setState(() {
-            result = res;
-            busy = false;
-          });
+        setState(() {
+          busy = true;
+          progress = null;
+        });
+        final ctl = control = _control(ctx, (x) => setState(() => progress = x));
+        try {
+          final res = await calibrateFromFieldAsync(
+            d,
+            flows.firstWhere((f) => f.id == flowId),
+            pressures: [for (final x in pressures) FieldReading(entityId: x.entityId, value: x.value, sigma: x.sigma)],
+            flows: [for (final x in flowReadings) FieldReading(entityId: x.entityId, value: x.value, sigma: x.sigma)],
+            control: ctl,
+          );
+          if (ctx.mounted) {
+            setState(() {
+              result = res;
+              busy = false;
+            });
+          }
+        } on AnalysisCancelled {
+          if (ctx.mounted) setState(() => busy = false);
         }
       }
 
@@ -1217,7 +1293,7 @@ Future<void> showCalibrationDialog(BuildContext context, ProjectController c) {
           ),
         ),
         _note(t('cal.sigmaHint'), color: Cad.fg54),
-        _runButton(const Key('cal_run'), t('cal.run'), Icons.tune, busy, run),
+        _runButton(const Key('cal_run'), t('cal.run'), Icons.tune, busy, run, progress: progress, onCancel: () => control?.cancel(), cancelLabel: t('cancel')),
         if (res != null) ...[
           SectionTitle(t('dens.results')),
           if (res.scales.isNotEmpty) KV(t('cal.factor'), '${fmtUi(res.scales.single, 3)}${res.standardErrors.single.isFinite ? ' ± ${fmtUi(res.standardErrors.single, 3)}' : ''}'),

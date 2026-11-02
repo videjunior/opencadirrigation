@@ -602,6 +602,8 @@ class NetworkBuilder {
               model.warnings.add('valve_spec_missing:${e.id}');
               continue;
             }
+            // 1.6.0 MOT: a pilot on a valve of any kind
+            if (_insertPilot(e.id, m, spec)) continue;
             final kind = switch (spec.kind) {
               ValveKind.prv => GLinkKind.prv,
               ValveKind.psv => GLinkKind.psv,
@@ -956,7 +958,8 @@ class NetworkBuilder {
       if (e is! WaterSupplyEntity) continue;
       final n = model.nodes[model.supplyNodes[e.id] ?? ''];
       if (n == null) continue;
-      final z = n.ground + e.waterLevelOffsetM;
+      // 1.6.0 MOT: a reservoir by the level the intake draws from
+      final z = e.reservoir?.designLevelM ?? n.ground + e.waterLevelOffsetM;
       n.fixedElevation = z;
       waterLevel[n.id] = z;
     }
@@ -1056,6 +1059,25 @@ class NetworkBuilder {
       n.emitters.clear();
     }
     _register(make(n.id, down.id));
+  }
+
+  /// 1.6.0 MOT: the links of a valve with a pilot
+  /// ([MiscHydraulicEntity.pilot]): a PRV for a reducing pilot (set to
+  /// [MiscHydraulicEntity.pilotReduceM], or the model's setting), a PSV for a
+  /// sustaining one ([MiscHydraulicEntity.pilotSustainM]), both in series for
+  /// a reducing and sustaining one, the PSV first; each with the loss of the
+  /// valve fully open. False when the pilot holds nothing (no pilot, or no
+  /// setting): the valve is then built as its kind says.
+  bool _insertPilot(String id, MiscHydraulicEntity m, ValveSpec spec) {
+    final reduce = m.pilot.reduces ? (m.pilotReduceM > 0 ? m.pilotReduceM : spec.defaultSettingM) : 0.0;
+    final sustain = m.pilot.sustains ? m.pilotSustainM : 0.0;
+    if (!(reduce > 0) && !(sustain > 0)) return false;
+    GLink link(String lid, GLinkKind kind, double setting, String up, String down) =>
+        GLink(id: lid, from: up, to: down, kind: kind, scope: m.scope, entityId: id, valveSpecId: spec.id, settingM: setting, a: m.position, b: m.position);
+    if (reduce > 0) _insertInline(id, m.position, m.scope, (up, down) => link('dev_$id', GLinkKind.prv, reduce, up, down));
+    // inserted second at the same point, the PSV comes before the PRV
+    if (sustain > 0) _insertInline(id, m.position, m.scope, (up, down) => link(reduce > 0 ? 'dev_${id}_s' : 'dev_$id', GLinkKind.psv, sustain, up, down));
+    return true;
   }
 
   Map<String, double> _hopDistances(HydraulicScope scope) {

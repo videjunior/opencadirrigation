@@ -33,7 +33,7 @@ class EpsTank {
   /// Levels are measured from the bottom (m). The volume is a cylinder of
   /// [area] (or [diameter]) or follows [volumeCurve], (level, volume)
   /// points with both increasing.
-  const EpsTank({required this.nodeId, required this.initialLevel, required this.maxLevel, this.minLevel = 0, this.area, this.diameter, this.volumeCurve, this.bottomElevation});
+  const EpsTank({required this.nodeId, required this.initialLevel, required this.maxLevel, this.minLevel = 0, this.area, this.diameter, this.volumeCurve, this.bottomElevation, this.inflow = 0});
   final String nodeId;
   final double initialLevel;
   final double maxLevel;
@@ -44,6 +44,10 @@ class EpsTank {
 
   /// Elevation of the bottom (m); null = the node elevation.
   final double? bottomElevation;
+
+  /// 1.6.0 MOT: water flowing into the tank all the time from outside the
+  /// network (m³/s): a stream or a spring filling a reservoir.
+  final double inflow;
 
   double get _area {
     final a = area;
@@ -723,7 +727,8 @@ class _Eps {
   /// Net inflow (m³/s) of every tank.
   List<double> _tankFlows(NetworkResult r) => [
     for (final s in tanks)
-      (linksAt[s.node.id] ?? const <HLink>[]).fold(0.0, (q, l) {
+      // 1.6.0 MOT: with the inflow from outside the network
+      (linksAt[s.node.id] ?? const <HLink>[]).fold(s.spec.inflow, (q, l) {
         final f = _flow(r, l);
         return q + (l.to == s.node.id ? f : -f);
       }),

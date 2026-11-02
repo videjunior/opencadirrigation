@@ -261,22 +261,28 @@ class ReportsPanel extends StatelessWidget {
   /// (separate tables: their columns are inlet / outlet pressures).
   Widget _mainlineAndDevices() {
     final tables = c.reportTables();
-    final dev = tables.where((x) => x.key == 'devices').firstOrNull;
-    if (dev == null || dev.isEmpty) return _fromTable('mainline');
+    // 1.6.0 MOT: below the devices, the pump stations and the real operation of the zones
+    final below = [
+      for (final k in const ['devices', 'stations', 'operation'])
+        if (tables.where((x) => x.key == k).firstOrNull case final tb? when !tb.isEmpty) tb,
+    ];
+    if (below.isEmpty) return _fromTable('mainline');
     final main = tables.where((x) => x.key == 'mainline').firstOrNull;
     return Column(
       children: [
         if (main != null && !main.isEmpty) Expanded(flex: main.rows.length + 1, child: _fromTable('mainline')),
-        Container(
-          width: double.infinity,
-          color: Cad.panel,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Text(
-            dev.title,
-            style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600),
+        for (final tb in below) ...[
+          Container(
+            width: double.infinity,
+            color: Cad.panel,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Text(
+              tb.title,
+              style: TextStyle(fontSize: 11.5, color: Cad.fg70, fontWeight: FontWeight.w600),
+            ),
           ),
-        ),
-        Expanded(flex: dev.rows.length + 1, child: _fromTable('devices')),
+          Expanded(flex: tb.rows.length + 1, child: _fromTable(tb.key)),
+        ],
       ],
     );
   }

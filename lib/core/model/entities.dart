@@ -8,9 +8,16 @@ import 'dart:typed_data';
 import '../design/pivot.dart' show PivotKind;
 import 'geometry.dart';
 import 'pivot_machine.dart';
+import 'pump_station.dart';
 import 'read_report.dart';
+import 'reservoir.dart';
+import 'valve_pilot.dart';
 
 export 'pivot_machine.dart';
+// 1.6.0 MOT: the pumps of a pump station, the pilot of a valve, a reservoir
+export 'pump_station.dart';
+export 'reservoir.dart';
+export 'valve_pilot.dart';
 
 enum HydraulicScope { zone, mainline }
 
@@ -349,6 +356,10 @@ sealed class Entity {
           orientationDeg: d('rot'),
           fixedDownstreamHeadM: (j['fixed'] as num?)?.toDouble(),
           depth: d('depth'),
+          // 1.6.0 MOT: the pilot of the valve
+          pilot: enumByName(ValvePilot.values, j['pilot'], ValvePilot.none, report: report, key: 'pilot'),
+          pilotReduceM: d('pr'),
+          pilotSustainM: d('ps'),
         );
       case EntityType.waterSupply:
         return WaterSupplyEntity(
@@ -362,6 +373,8 @@ sealed class Entity {
           designFlow: d('dq'),
           maxFlow: d('mq'),
           waterLevelOffsetM: d('wl'),
+          // 1.6.0 MOT: a reservoir or dam behind the supply
+          reservoir: ReservoirSpec.fromJson(j['res'], report: report),
         );
       case EntityType.pump:
         return PumpEntity(
@@ -378,6 +391,9 @@ sealed class Entity {
           targetPressureM: d('vfd'),
           minSpeedRatio: d('vmin', 0.5),
           motorEfficiency: d('meff', 1).clamp(0.05, 1.0).toDouble(),
+          // 1.6.0 MOT: a pump station, a flywheel
+          station: PumpStation.fromJson(j['stn'], report: report),
+          flywheelKgm2: d('fly'),
         );
       case EntityType.misc:
         return MiscHydraulicEntity(
@@ -390,9 +406,25 @@ sealed class Entity {
           settingM: d('set'),
           orientationDeg: d('rot'),
           settingFlow: d('setq'),
+          // 1.6.0 MOT: the pilot of the valve
+          pilot: enumByName(ValvePilot.values, j['pilot'], ValvePilot.none, report: report, key: 'pilot'),
+          pilotReduceM: d('pr'),
+          pilotSustainM: d('ps'),
         );
       case EntityType.junction:
-        return JunctionEntity(id: id, layer: layer, name: name, position: pos(), scope: scope(HydraulicScope.zone), fixedElevation: (j['z'] as num?)?.toDouble());
+        return JunctionEntity(
+          id: id,
+          layer: layer,
+          name: name,
+          position: pos(),
+          scope: scope(HydraulicScope.zone),
+          fixedElevation: (j['z'] as num?)?.toDouble(),
+          // 1.6.0 MOT: an air vessel at the junction
+          vesselLiters: d('vl'),
+          vesselGasLiters: d('vg'),
+          vesselConnectionMm: d('vd', 100),
+          vesselCost: d('vc'),
+        );
       case EntityType.area:
         return AreaEntity(
           id: id,
@@ -1634,6 +1666,9 @@ class ControlValveEntity extends Entity with PointEntity {
     this.orientationDeg = 0,
     this.fixedDownstreamHeadM,
     this.depth = 0,
+    this.pilot = ValvePilot.none,
+    this.pilotReduceM = 0,
+    this.pilotSustainM = 0,
   });
   @override
   Pt position;
@@ -1644,6 +1679,15 @@ class ControlValveEntity extends Entity with PointEntity {
   /// If set, the zone is analysed with this downstream pressure (Detailed Analysis).
   double? fixedDownstreamHeadM;
   double depth;
+
+  /// 1.6.0 MOT: the pilot of the valve. A reducing pilot holds the zone at
+  /// [pilotReduceM] (0 = at the pressure the design finds for it) and passes
+  /// no surplus on; a sustaining one keeps the mainline before the valve at
+  /// [pilotSustainM] or more, throttling the zone rather than letting it
+  /// fall below.
+  ValvePilot pilot;
+  double pilotReduceM;
+  double pilotSustainM;
   @override
   EntityType get type => EntityType.controlValve;
   @override
@@ -1657,6 +1701,9 @@ class ControlValveEntity extends Entity with PointEntity {
     orientationDeg: orientationDeg,
     fixedDownstreamHeadM: fixedDownstreamHeadM,
     depth: depth,
+    pilot: pilot,
+    pilotReduceM: pilotReduceM,
+    pilotSustainM: pilotSustainM,
   )..extra = extra;
   @override
   ControlValveEntity translated(Pt d) => clone()
@@ -1676,6 +1723,9 @@ class ControlValveEntity extends Entity with PointEntity {
     'rot': orientationDeg,
     if (fixedDownstreamHeadM != null) 'fixed': fixedDownstreamHeadM,
     'depth': depth,
+    if (pilot != ValvePilot.none) 'pilot': pilot.name,
+    if (pilotReduceM > 0) 'pr': pilotReduceM,
+    if (pilotSustainM > 0) 'ps': pilotSustainM,
   };
 }
 
@@ -1691,6 +1741,7 @@ class WaterSupplyEntity extends Entity with PointEntity {
     this.designFlow = 0,
     this.maxFlow = 0,
     this.waterLevelOffsetM = 0,
+    this.reservoir,
   });
   @override
   Pt position;
@@ -1702,6 +1753,10 @@ class WaterSupplyEntity extends Entity with PointEntity {
 
   /// Static water level relative to ground (tank +, well −).
   double waterLevelOffsetM;
+
+  /// 1.6.0 MOT: the reservoir or dam whose water the supply takes (its
+  /// outline, basin and levels, PRD-16); null = a supply of fixed level.
+  ReservoirSpec? reservoir;
   @override
   EntityType get type => EntityType.waterSupply;
   @override
@@ -1716,6 +1771,7 @@ class WaterSupplyEntity extends Entity with PointEntity {
     designFlow: designFlow,
     maxFlow: maxFlow,
     waterLevelOffsetM: waterLevelOffsetM,
+    reservoir: reservoir?.copy(),
   )..extra = extra;
   @override
   WaterSupplyEntity translated(Pt d) => clone()
@@ -1726,7 +1782,17 @@ class WaterSupplyEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..extra = extra;
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'calc': calculatePressure, 'dh': designHeadM, 'mh': maxHeadM, 'dq': designFlow, 'mq': maxFlow, 'wl': waterLevelOffsetM};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    'calc': calculatePressure,
+    'dh': designHeadM,
+    'mh': maxHeadM,
+    'dq': designFlow,
+    'mq': maxFlow,
+    'wl': waterLevelOffsetM,
+    if (reservoir != null) 'res': reservoir!.toJson(),
+  };
 }
 
 class PumpEntity extends Entity with PointEntity {
@@ -1744,6 +1810,8 @@ class PumpEntity extends Entity with PointEntity {
     this.targetPressureM = 0,
     this.minSpeedRatio = 0.5,
     this.motorEfficiency = 1,
+    this.station,
+    this.flywheelKgm2 = 0,
   });
   @override
   Pt position;
@@ -1751,6 +1819,15 @@ class PumpEntity extends Entity with PointEntity {
   double speedRatio;
   double orientationDeg;
   HydraulicScope scope;
+
+  /// 1.6.0 MOT: the other pumps of a pump station this item stands for (in
+  /// parallel or in series, on duty or on standby); null = a single pump.
+  PumpStation? station;
+
+  /// 1.6.0 MOT: moment of inertia (kg·m²) of a flywheel fitted to the pump
+  /// against the water hammer: added to that of the pump and its motor in
+  /// the transient study, it slows the run-down after a power failure.
+  double flywheelKgm2;
 
   /// Efficiency (0–1) of the motor and of its drive, from the wire to the
   /// pump shaft: the energy divides by it as well as by the pump's own
@@ -1784,6 +1861,8 @@ class PumpEntity extends Entity with PointEntity {
     targetPressureM: targetPressureM,
     minSpeedRatio: minSpeedRatio,
     motorEfficiency: motorEfficiency,
+    station: station?.copy(),
+    flywheelKgm2: flywheelKgm2,
   )..extra = extra;
   @override
   PumpEntity translated(Pt d) => clone()
@@ -1806,6 +1885,8 @@ class PumpEntity extends Entity with PointEntity {
     if (targetPressureM > 0) 'vfd': targetPressureM,
     if (targetPressureM > 0) 'vmin': minSpeedRatio,
     if (motorEfficiency != 1) 'meff': motorEfficiency,
+    if (station case final s? when !s.isEmpty || s.extra != null) 'stn': s.toJson(),
+    if (flywheelKgm2 > 0) 'fly': flywheelKgm2,
   };
 }
 
@@ -1820,11 +1901,22 @@ class MiscHydraulicEntity extends Entity with PointEntity {
     this.settingM = 0,
     this.orientationDeg = 0,
     this.settingFlow = 0,
+    this.pilot = ValvePilot.none,
+    this.pilotReduceM = 0,
+    this.pilotSustainM = 0,
   });
   @override
   Pt position;
   String? valveSpecId;
   HydraulicScope scope;
+
+  /// 1.6.0 MOT: the pilot of a valve of any kind (a master or control
+  /// valve of the mainline): reducing (it then works as a PRV set to
+  /// [pilotReduceM], 0 = the model's setting), sustaining (a PSV set to
+  /// [pilotSustainM]) or both, the sustaining part first.
+  ValvePilot pilot;
+  double pilotReduceM;
+  double pilotSustainM;
 
   /// Pressure setting (m): downstream of a PRV, upstream of a PSV.
   double settingM;
@@ -1846,6 +1938,9 @@ class MiscHydraulicEntity extends Entity with PointEntity {
     settingM: settingM,
     orientationDeg: orientationDeg,
     settingFlow: settingFlow,
+    pilot: pilot,
+    pilotReduceM: pilotReduceM,
+    pilotSustainM: pilotSustainM,
   )..extra = extra;
   @override
   MiscHydraulicEntity translated(Pt d) => clone()
@@ -1865,19 +1960,56 @@ class MiscHydraulicEntity extends Entity with PointEntity {
     'set': settingM,
     'rot': orientationDeg,
     if (settingFlow > 0) 'setq': settingFlow,
+    if (pilot != ValvePilot.none) 'pilot': pilot.name,
+    if (pilotReduceM > 0) 'pr': pilotReduceM,
+    if (pilotSustainM > 0) 'ps': pilotSustainM,
   };
 }
 
 class JunctionEntity extends Entity with PointEntity {
-  JunctionEntity({required super.id, super.layer = Layers.junctions, super.name, required this.position, this.scope = HydraulicScope.zone, this.fixedElevation});
+  JunctionEntity({
+    required super.id,
+    super.layer = Layers.junctions,
+    super.name,
+    required this.position,
+    this.scope = HydraulicScope.zone,
+    this.fixedElevation,
+    this.vesselLiters = 0,
+    this.vesselGasLiters = 0,
+    this.vesselConnectionMm = 100,
+    this.vesselCost = 0,
+  });
   @override
   Pt position;
   HydraulicScope scope;
   double? fixedElevation;
+
+  /// 1.6.0 MOT: an air vessel (hydropneumatic tank) at the junction, against
+  /// the water hammer (PRD-31): its volume (L; 0 = none), the gas it holds
+  /// in the steady state (L; 0 = a third of the volume), the bore of its
+  /// connection (mm) and its price for the bill of materials.
+  double vesselLiters;
+  double vesselGasLiters;
+  double vesselConnectionMm;
+  double vesselCost;
+
+  /// Whether the junction holds an air vessel.
+  bool get hasVessel => vesselLiters > 0;
   @override
   EntityType get type => EntityType.junction;
   @override
-  JunctionEntity clone({String? newId}) => JunctionEntity(id: newId ?? id, layer: layer, name: name, position: position, scope: scope, fixedElevation: fixedElevation)..extra = extra;
+  JunctionEntity clone({String? newId}) => JunctionEntity(
+    id: newId ?? id,
+    layer: layer,
+    name: name,
+    position: position,
+    scope: scope,
+    fixedElevation: fixedElevation,
+    vesselLiters: vesselLiters,
+    vesselGasLiters: vesselGasLiters,
+    vesselConnectionMm: vesselConnectionMm,
+    vesselCost: vesselCost,
+  )..extra = extra;
   @override
   JunctionEntity translated(Pt d) => clone()
     ..position = position + d
@@ -1887,7 +2019,16 @@ class JunctionEntity extends Entity with PointEntity {
     ..position = t.apply(position)
     ..extra = extra;
   @override
-  Map<String, dynamic> toJson() => {..._base(), 'p': position.toList(), 'scope': scope.name, if (fixedElevation != null) 'z': fixedElevation};
+  Map<String, dynamic> toJson() => {
+    ..._base(),
+    'p': position.toList(),
+    'scope': scope.name,
+    if (fixedElevation != null) 'z': fixedElevation,
+    if (vesselLiters > 0) 'vl': vesselLiters,
+    if (vesselLiters > 0 && vesselGasLiters > 0) 'vg': vesselGasLiters,
+    if (vesselLiters > 0 && vesselConnectionMm != 100) 'vd': vesselConnectionMm,
+    if (vesselLiters > 0 && vesselCost > 0) 'vc': vesselCost,
+  };
 }
 
 /// Centre pivot or linear-move machine: a demand point on the mainline whose

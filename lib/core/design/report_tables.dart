@@ -18,6 +18,8 @@ import 'area_water.dart';
 import 'designer.dart';
 import 'proposal.dart';
 import 'report_standards.dart'; // 1.6.0 PRD
+// 1.6.0 MOT: pump stations and the real operation of the zones
+import 'report_tables_mot.dart';
 import 'results.dart';
 import 'slope_report.dart'; // 1.6.0 PRD
 
@@ -353,6 +355,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         warn: devWarn,
       ),
     );
+    // 1.6.0 MOT: the pumps of the pump stations and the real operation of the zones
+    out.addAll(motReportTables(project, r, labels));
     // ---- valve-in-head stations in every flow they run in
     if (r.systemFlows.any((f) => f.heads.isNotEmpty)) {
       final vihRows = <List<Object>>[];

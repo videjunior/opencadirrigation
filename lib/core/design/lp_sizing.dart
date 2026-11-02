@@ -42,6 +42,26 @@ class LpHeadConstraint {
   final String tag;
 }
 
+/// 1.6.0 MOT: the energy balance of a loop of a looped network for the
+/// flows of the LP: going round it the head losses (signed by the direction
+/// the water runs) add up to nothing, within [tolerance] m. With it the
+/// sizes the LP picks keep the flows it assumed (Alperovits & Shamir 1977,
+/// "Design of optimal water distribution systems", Water Resources Research
+/// 13(6)); without it a looped network was sized as a tree.
+class LpLoopConstraint {
+  LpLoopConstraint({required this.lossByUnitSpec, this.constant = 0, this.tolerance = 0.05, this.tag = ''});
+
+  /// unit id → spec id → signed head loss (m) of the part of the unit in the
+  /// loop when built entirely with that spec.
+  final Map<String, Map<String, double>> lossByUnitSpec;
+
+  /// Signed head drop (m) of the pipes and devices of the loop that are not
+  /// sized.
+  final double constant;
+  final double tolerance;
+  final String tag;
+}
+
 class LpSizingInput {
   LpSizingInput({
     required this.units,
@@ -53,6 +73,7 @@ class LpSizingInput {
     required this.crf,
     required this.tradeCapital,
     this.pipeCost,
+    this.loops = const [],
   });
 
   /// Unit ids in order.
@@ -68,6 +89,9 @@ class LpSizingInput {
   /// Price per metre of a candidate (default: its catalogue price); lets the
   /// designer supply estimates for pipes that have no price.
   final double Function(PipeSpec spec)? pipeCost;
+
+  /// 1.6.0 MOT: the energy balance of every loop of a looped network.
+  final List<LpLoopConstraint> loops;
 }
 
 class LpAssignment {
@@ -136,6 +160,22 @@ LpAssignment lpSize(LpSizingInput input) {
     if (row.isEmpty) continue;
     if (c.minPressure != null) p.add(Map.of(row), LpSense.ge, c.minPressure! + c.constant - rhsShift);
     if (c.maxPressure != null && c.maxPressure!.isFinite) p.add(Map.of(row), LpSense.le, c.maxPressure! + c.constant - rhsShift);
+  }
+  // 1.6.0 MOT: the losses round every loop add up to nothing
+  for (final c in input.loops) {
+    final row = <int, double>{};
+    c.lossByUnitSpec.forEach((u, bySpec) {
+      final m = varIndex[u];
+      if (m == null) return;
+      bySpec.forEach((sid, loss) {
+        final v = m[sid];
+        if (v != null) row[v] = (row[v] ?? 0) + loss;
+      });
+    });
+    row.removeWhere((_, v) => v == 0);
+    if (row.isEmpty) continue;
+    p.add(Map.of(row), LpSense.ge, -c.tolerance - c.constant);
+    p.add(Map.of(row), LpSense.le, c.tolerance - c.constant);
   }
   if (p.cost.isEmpty) return LpAssignment(feasible: true, fractions: const {}, heads: [for (final h in input.headVars) h.fixedValue ?? 0]);
   final r = solveLp(p);

@@ -90,6 +90,7 @@ class DesignParameters {
     this.solenoidMinVolts = 20,
     this.wireSlackPct = 10,
     this.mainsHz = 60,
+    this.realZoneOperation = false,
   });
 
   Units units;
@@ -175,6 +176,13 @@ class DesignParameters {
   /// faster (PumpSpec.mainsSpeedRatio).
   double mainsHz;
 
+  /// 1.6.0 MOT: after the design, every zone and pivot of each system flow
+  /// also runs at the pressure the mainline really gives it: its emitters
+  /// deliver what that pressure allows, a valve that does not regulate
+  /// passes a surplus on, and the line and the pumps settle at the flows
+  /// that follow (SystemFlowResult.operation, the "real operation" table).
+  bool realZoneOperation;
+
   double get kinematicViscosity => waterKinematicViscosity(waterTempC);
   double adjustedC(double c) => c * hazenCScale + hazenCOffset;
 
@@ -224,6 +232,7 @@ class DesignParameters {
     'minV': solenoidMinVolts,
     'slack': wireSlackPct,
     if (mainsHz != 60) 'hz': mainsHz,
+    if (realZoneOperation) 'realOp': true,
   };
 
   /// Reads the parameters; options this version does not know take their
@@ -289,6 +298,7 @@ class DesignParameters {
       solenoidMinVolts: d('minV', 20),
       wireSlackPct: d('slack', 10),
       mainsHz: d('hz', 60),
+      realZoneOperation: j['realOp'] as bool? ?? false,
     )..extra = j.unread;
   }
 }
