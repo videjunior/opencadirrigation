@@ -2,16 +2,16 @@
 /// the crop water table, the run times of the design and the controller
 /// programme, so that the same field gives the same numbers in every report.
 ///
-/// Localized irrigation (drip, micro-sprinklers) follows FAO-56 (Allen et
-/// al. 1998, §9 and the note on localized irrigation of chapter 7) with the
-/// reduction factor of Keller & Karmeli (1974) and Keller & Bliesner (1990,
-/// Sprinkle and Trickle Irrigation, chapter 17): the crop transpires
-/// ETc,loc = Kr·Kc·ETo over the whole area, Kr from the ground shaded by the
-/// canopy (Kr = 0.1·√Pd, Pd in %, or typed); that depth sets the volumes and
-/// the run times. The wetted fraction Pw only limits the water the soil
-/// holds within the reach of the emitters: RAW = p·TAW·Pw (Keller &
-/// Bliesner 1990 eq. 17.6), and the interval is RAW / ETc,loc. Sprinkler and
-/// surface irrigation use Kr = Pw = 1.
+/// Localized irrigation (drip, micro-sprinklers) takes the crop coefficients
+/// of FAO-56 (Allen et al. 1998) with the reduction factor of Keller &
+/// Karmeli (1974) and Keller & Bliesner (1990, Sprinkle and Trickle
+/// Irrigation, chapter 17): the crop transpires ETc,loc = Kr·Kc·ETo over the
+/// whole area, Kr from the ground shaded by the canopy (Kr = 0.1·√Pd, Pd in
+/// %, or typed); that depth sets the volumes and the run times. The wetted
+/// fraction Pw only limits the water the soil holds within the reach of the
+/// emitters: RAW = p·TAW·Pw (the net depth MAD·Wa·Z·Pw of Keller & Bliesner),
+/// and the interval is RAW / ETc,loc. Sprinkler and surface irrigation use
+/// Kr = Pw = 1.
 ///
 /// Three sources, in order:
 /// - a fixed net depth typed on the area (no water balance): the net
