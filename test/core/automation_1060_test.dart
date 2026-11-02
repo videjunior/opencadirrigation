@@ -594,4 +594,40 @@ void main() {
       expect(overlaps(p), hasLength(1));
     });
   });
+
+  group('AUT-06 field subdivision of long outlines is quick', () {
+    List<Pt> wiggly(int n) => [for (var i = 0; i < n; i++) Pt.polar(560 + 15 * math.sin(7 * 2 * math.pi * i / n) + 5 * math.sin(31 * 2 * math.pi * i / n), 2 * math.pi * i / n)];
+    test('100 ha with 2000 vertices in blocks of 1 ha', () {
+      final sw = Stopwatch()..start();
+      final s = subdivideField(wiggly(2000), FieldSubdivisionOptions(direction: const Pt(1, 0), maxBlockArea: 1e4));
+      sw.stop();
+      expect(sw.elapsedMilliseconds, lessThan(1500), reason: 'about 10 s before the area profile');
+      // as many strips as the 10 m minimum width allows (the larger blocks say so)
+      expect(s.blocks.length, greaterThan(70));
+      expect(s.blocks.every((b) => b.area <= 1e4 * (1 + 1e-6) || s.messages.contains('field_block_large:${s.blocks.indexOf(b)}')), isTrue);
+    });
+
+    test('equal strips: the cuts give blocks of equal area', () {
+      for (final f in [
+        rect(0, 0, 400, 300),
+        const [Pt(0, 0), Pt(420, 0), Pt(420, 180), Pt(250, 260), Pt(0, 260)],
+        wiggly(600),
+        // far from the origin, as in projected coordinates
+        [for (final q in wiggly(300)) q + const Pt(700000, 7400000)],
+      ]) {
+        final s = subdivideField(f, FieldSubdivisionOptions(direction: Pt.polar(1, 0.3), maxBlockArea: 2e4, roadWidth: 0));
+        final areas = [for (final b in s.blocks) b.area];
+        expect(areas.fold(0.0, (a, b) => a + b), closeTo(s.fieldArea, s.fieldArea * 1e-6));
+        final mean = areas.fold(0.0, (a, b) => a + b) / areas.length;
+        // strips cut into several pieces aside, every strip has the same area
+        final byStrip = <int, double>{};
+        for (final b in s.blocks) {
+          byStrip[b.strip] = (byStrip[b.strip] ?? 0) + b.area;
+        }
+        for (final a in byStrip.values) {
+          expect(a, closeTo(byStrip.values.first, mean * 1e-4));
+        }
+      }
+    });
+  });
 }

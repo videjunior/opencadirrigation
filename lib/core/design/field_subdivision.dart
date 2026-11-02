@@ -255,20 +255,104 @@ List<List<Pt>> clipPolygonHalfPlane(List<Pt> poly, Pt n, double c, {bool above =
 /// Pieces of [poly] between p·[n] = [a] and p·[n] = [b] (a < b).
 List<List<Pt>> clipPolygonSlab(List<Pt> poly, Pt n, double a, double b) => [for (final piece in clipPolygonHalfPlane(poly, n, a)) ...clipPolygonHalfPlane(piece, n, b, above: false)];
 
-double _areaBelow(List<Pt> poly, Pt n, double v) => clipPolygonHalfPlane(poly, n, v, above: false).fold(0.0, (s, q) => s + polygonArea(q).abs());
-
-/// v where the part of [poly] below p·n = v has area [target] (bisection).
-double _cutAt(List<Pt> poly, Pt n, double vMin, double vMax, double target) {
-  var lo = vMin, hi = vMax;
-  for (var it = 0; it < 60 && hi - lo > 1e-9 * math.max(1, vMax - vMin); it++) {
-    final mid = (lo + hi) / 2;
-    if (_areaBelow(poly, n, mid) < target) {
-      lo = mid;
-    } else {
-      hi = mid;
+/// Area of a polygon below the line p·n = v as a function of v, in closed
+/// form: by Green's theorem with the 1-form (t − v) du, which vanishes on
+/// the cut, every edge adds a polynomial of degree two at most in v
+/// (nothing below its lower end, a quadratic across it, a linear term
+/// above it), so the area is piecewise quadratic between the projections of
+/// the vertices. Built once in O(n log n), it answers in O(log n) what a
+/// clip of the polygon answered in O(n) with allocations; the subdivision
+/// of a field with thousands of vertices asks it hundreds of thousands of
+/// times.
+class _AreaProfile {
+  _AreaProfile(List<Pt> polygon, Pt n) {
+    final poly = normalizePolygon(polygon);
+    final d = n.perpendicular;
+    // positions relative to the first vertex: the squares stay small in
+    // projected coordinates of millions of metres
+    _t0 = poly.isEmpty ? 0 : poly.first.dot(n);
+    final u0 = poly.isEmpty ? 0.0 : poly.first.dot(d);
+    final events = <(double, double, double, double)>[]; // position, Δa, Δb, Δc
+    for (var i = 0; i < poly.length; i++) {
+      final p = poly[i], q = poly[(i + 1) % poly.length];
+      final ta = p.dot(n) - _t0, tb = q.dot(n) - _t0, ua = p.dot(d) - u0, ub = q.dot(d) - u0;
+      if ((tb - ta).abs() < 1e-12) {
+        // along the cut direction: (c − v)·Δu once v reaches it
+        final du = ub - ua;
+        events.add((ta, du * ta, -du, 0));
+        continue;
+      }
+      final t0 = math.min(ta, tb), t1 = math.max(ta, tb);
+      // w·∫ (t − v) dt over the part below v, w = σ·du/dt = Δu/Δt·sign = Δu/(t1 − t0)
+      final w = (ub - ua) / (tb - ta) * (ta < tb ? 1 : -1);
+      // across the edge: −w(v − t0)²/2
+      events.add((t0, -w * t0 * t0 / 2, w * t0, -w / 2));
+      // above it: w(t1 − t0)((t1 + t0)/2 − v), replacing the quadratic
+      events.add((t1, w * (t1 * t1 - t0 * t0) / 2 + w * t0 * t0 / 2, -w * (t1 - t0) - w * t0, w / 2));
     }
+    events.sort((x, y) => x.$1.compareTo(y.$1));
+    var a = 0.0, b = 0.0, c = 0.0;
+    for (final (t, da, db, dc) in events) {
+      a += da;
+      b += db;
+      c += dc;
+      if (_pos.isNotEmpty && (t - _pos.last).abs() <= 1e-12) {
+        _a[_a.length - 1] = a;
+        _b[_b.length - 1] = b;
+        _c[_c.length - 1] = c;
+      } else {
+        _pos.add(t);
+        _a.add(a);
+        _b.add(b);
+        _c.add(c);
+      }
+    }
+    total = polygonArea(poly).abs();
+    final top = _pos.isEmpty ? 0.0 : _raw(_pos.last + 1);
+    _sign = top < 0 ? -1 : 1;
   }
-  return (lo + hi) / 2;
+
+  final List<double> _pos = [], _a = [], _b = [], _c = [];
+  double _sign = 1;
+  late final double _t0;
+  late final double total;
+
+  /// The raw sum at [v] measured from the first vertex.
+  double _raw(double v) {
+    if (_pos.isEmpty || v <= _pos.first) return 0;
+    var lo = 0, hi = _pos.length - 1;
+    while (lo < hi) {
+      final mid = (lo + hi + 1) >> 1;
+      if (_pos[mid] <= v) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    return _a[lo] + _b[lo] * v + _c[lo] * v * v;
+  }
+
+  /// Area (m²) of the polygon where p·n ≤ [v].
+  double below(double v) {
+    final t = v - _t0;
+    if (_pos.isEmpty || t <= _pos.first) return 0;
+    if (t >= _pos.last) return total;
+    return (_raw(t) * _sign).clamp(0.0, total).toDouble();
+  }
+
+  /// v in [lo, hi] where the area below reaches [target] (bisection).
+  double cutAt(double lo, double hi, double target) {
+    final span = hi - lo;
+    for (var it = 0; it < 64 && hi - lo > 1e-9 * math.max(1, span); it++) {
+      final mid = (lo + hi) / 2;
+      if (below(mid) < target) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return (lo + hi) / 2;
+  }
 }
 
 /// Positions of the cuts of [poly] across [n] into [count] parts of equal
@@ -280,12 +364,13 @@ List<(double, double)> _equalCuts(List<Pt> poly, Pt n, int count, double road) {
     vMax = math.max(vMax, p.dot(n));
   }
   if (count <= 1) return [(vMin, vMax)];
-  final total = polygonArea(poly).abs();
+  final profile = _AreaProfile(poly, n);
+  final total = profile.total;
   List<(double, double)> place(double target) {
     final out = <(double, double)>[];
     var e = vMin;
     for (var k = 1; k < count; k++) {
-      final s = _cutAt(poly, n, e, vMax, _areaBelow(poly, n, e) + target);
+      final s = profile.cutAt(e, vMax, profile.below(e) + target);
       out.add((e, s));
       e = math.min(vMax, s + road);
     }
@@ -293,7 +378,7 @@ List<(double, double)> _equalCuts(List<Pt> poly, Pt n, int count, double road) {
     return out;
   }
 
-  double lastArea(List<(double, double)> cuts) => total - _areaBelow(poly, n, cuts.last.$1);
+  double lastArea(List<(double, double)> cuts) => total - profile.below(cuts.last.$1);
   var lo = 0.0, hi = total / count;
   for (var it = 0; it < 50; it++) {
     final mid = (lo + hi) / 2;
