@@ -664,15 +664,64 @@ class Designer {
   /// Mean reference pressure of the emitters of a zone from a solved network.
   /// Whether [id] is a tape, for the entities of [_tapeModel]: a scan of the
   /// entities for every emitter of each analysis was quadratic.
-  final Map<String, bool> _tapeOf = {};
+  final Map<String, int> _tapeOf = {};
   NetworkModel? _tapeModel;
 
-  bool _isTape(String id) {
+  /// 0 for an item that is no tape, 1 for a tape, 2 for a tape with a
+  /// pressure regulator at its inlet.
+  int _tapeKind(String id) {
     if (!identical(_tapeModel, model)) {
       _tapeModel = model;
       _tapeOf.clear();
+      _regulatorsOf.clear();
     }
-    return id.isNotEmpty && (_tapeOf[id] ??= project.byId(id) is TapeEntity);
+    if (id.isEmpty) return 0;
+    return _tapeOf[id] ??= switch (project.byId(id)) {
+      TapeEntity t => t.regulated ? 2 : 1,
+      _ => 0,
+    };
+  }
+
+  bool _isTape(String id) => _tapeKind(id) > 0;
+
+  /// Whether the emitters of [id] sit behind the regulator of a tape: their
+  /// pressure follows the regulator, not the zone valve.
+  bool _regulated(String id) => _tapeKind(id) == 2;
+
+  final Map<String, List<(String, double)>> _regulatorsOf = {};
+
+  /// The inlet regulators of the tapes of zone [valveId]: the submain node
+  /// before each one and the least pressure it needs there (the minimum
+  /// submain pressure of the tape, at least its inlet pressure).
+  List<(String, double)> _regulators(String valveId) {
+    _tapeKind('');
+    return _regulatorsOf[valveId] ??= [
+      for (final lid in model.zoneLinks[valveId] ?? const <String>{})
+        if (model.linkById(lid) case final l? when l.kind == GLinkKind.prv && _regulated(l.entityId))
+          if (project.byId(l.entityId) case final TapeEntity t) (l.from, math.max(t.submainMinHeadM, t.inletHeadM)),
+    ];
+  }
+
+  /// Whether zone [valveId] has emitters that follow the valve (not behind
+  /// the inlet regulator of a tape).
+  bool _followers(String valveId) {
+    for (final id in model.zoneNodes[valveId] ?? const <String>{}) {
+      for (final e in model.nodes[id]!.emitters) {
+        if (e.index != -2 && !_regulated(e.entityId)) return true;
+      }
+    }
+    return false;
+  }
+
+  /// The least margin of the regulators of [regs] in solution [r]: pressure
+  /// at the submain node less what the regulator needs there.
+  double _regulatorMargin(List<(String, double)> regs, NetworkResult r) {
+    var m = double.infinity;
+    for (final (node, need) in regs) {
+      final nr = r.nodes[node];
+      if (nr != null) m = math.min(m, nr.pressure - need);
+    }
+    return m;
   }
 
   (double, double) _meanPressures(String valveId, NetworkResult r) {
@@ -683,8 +732,10 @@ class Designer {
       if (head == null) continue;
       for (final e in n.emitters) {
         if (e.index == -2) continue; // flushing
-        // a tape by the pressure at its inlet (whichever way it was drawn)
+        // a tape by the pressure at its inlet (whichever way it was drawn);
+        // behind a regulator by the regulator, not by the valve
         if (!e.inlet && _isTape(e.entityId)) continue;
+        if (_regulated(e.entityId)) continue;
         final p = head - (n.elevation + e.offset);
         sumActual += p * e.count;
         sumNominal += e.nominalHead * e.count;
@@ -727,14 +778,28 @@ class Designer {
     var head = downstreamHead ?? valve.fixedDownstreamHeadM;
     NetworkResult r;
     var saturated = false;
+    // tapes with an inlet regulator do not follow the valve: they set a
+    // least pressure at the submain instead (MOT-14)
+    final regs = _regulators(valveId);
+    final followers = _followers(valveId);
+    var byRegulators = false;
     if (head != null) {
       r = _zoneNetwork(valveId, head, detailed).solve();
     } else if (!detailed) {
       final h0 = 10.0;
       r = _zoneNetwork(valveId, h0, false).solve();
       final (pm, pn) = _meanPressures(valveId, r);
-      head = h0 + (pn - pm);
+      head = followers ? h0 + (pn - pm) : 0.0;
+      // fixed demands: the pressures upstream of the regulators move with
+      // the valve head
+      if (regs.isNotEmpty && h0 - _regulatorMargin(regs, r) > head) {
+        head = h0 - _regulatorMargin(regs, r);
+        byRegulators = true;
+      }
       r = _zoneNetwork(valveId, head, false).solve();
+    } else if (!followers) {
+      head = 0.0;
+      r = _zoneNetwork(valveId, head, true).solve();
     } else {
       // bisection so that mean emitter pressure equals nominal mean
       final probe = _zoneNetwork(valveId, 10, false).solve();
@@ -790,11 +855,41 @@ class Designer {
         r = _zoneNetwork(valveId, head, true).solve();
       }
     }
+    if (detailed && downstreamHead == null && valve.fixedDownstreamHeadM == null && regs.isNotEmpty) {
+      // raise the valve until every regulator gets the pressure it needs
+      final m0 = _regulatorMargin(regs, r);
+      if (m0 < 0) {
+        final base = head;
+        var step = -m0, margin = m0;
+        var top = _zoneNetwork(valveId, base + step, true).solve();
+        for (var it = 0; it < 20; it++) {
+          final m = _regulatorMargin(regs, top);
+          if (m >= 0) break;
+          // a regulator held by another device upstream: as far as it goes
+          if (m - margin < _saturationSlope * step) break;
+          margin = m;
+          step *= 2;
+          top = _zoneNetwork(valveId, base + step, true).solve();
+        }
+        var lo = base, hi = base + step;
+        for (var i = 0; i < 40 && hi - lo >= 1e-3; i++) {
+          final mid = (lo + hi) / 2;
+          if (_regulatorMargin(regs, _zoneNetwork(valveId, mid, true).solve()) >= 0) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
+        }
+        head = hi;
+        r = _zoneNetwork(valveId, head, true).solve();
+        byRegulators = true;
+      }
+    }
     if (!r.converged) warnings.add('not_converged');
 
     // If the spread of pressures fits inside the allowable window but the
     // mean-targeted head leaves some outlets outside, centre the band.
-    if (downstreamHead == null && valve.fixedDownstreamHeadM == null && !saturated) {
+    if (downstreamHead == null && valve.fixedDownstreamHeadM == null && !saturated && !byRegulators) {
       final (mn, mx, aMin, aMax) = _pressureSpread(valveId, r);
       if (mx - mn <= aMax - aMin + 1e-9 && (mn < aMin - 1e-6 || mx > aMax + 1e-6)) {
         final shift = (aMin + aMax) / 2 - (mn + mx) / 2;
@@ -1089,7 +1184,7 @@ class Designer {
       final nr = r.nodes[id];
       if (nr == null) continue;
       for (final e in n.emitters) {
-        if (e.index == -2) continue;
+        if (e.index == -2 || _regulated(e.entityId)) continue;
         final p = nr.head - (n.elevation + e.offset);
         mn = math.min(mn, p);
         mx = math.max(mx, p);
@@ -1232,7 +1327,19 @@ class Designer {
       if (target == null) break;
       final targetNode = _nodeOfOutlet(valveId, target);
       if (targetNode == null) break;
-      final path = _path(zoneNode, targetNode, linkIds).toSet();
+      // only the pipes after the last regulating device that holds the
+      // pressure on the way change the pressure of the outlet
+      final route = _path(zoneNode, targetNode, linkIds);
+      final active = {
+        for (final d in res.devices)
+          if (d.status == LinkStatus.active.name) d.linkId,
+      };
+      var from = 0;
+      for (var i = 0; i < route.length; i++) {
+        final k = route[i].kind;
+        if ((k == GLinkKind.prv || k == GLinkKind.psv || k == GLinkKind.fcv) && active.contains(route[i].id)) from = i + 1;
+      }
+      final path = route.sublist(from).toSet();
       final lossByLink = {for (final p in res.pipes) p.linkId: p.headLoss};
       String? bestUnit;
       PipeSpec? bestSpec;
@@ -1301,7 +1408,9 @@ class Designer {
     for (final id in model.zoneNodes[valveId] ?? <String>{}) {
       final n = model.nodes[id]!;
       for (final e in n.emitters) {
-        if (e.index == -2) continue;
+        // behind a regulator the pressure is the regulator's, whatever the
+        // sizes: the regulator's own need at the submain stands for them
+        if (e.index == -2 || _regulated(e.entityId)) continue;
         byEntity.putIfAbsent(e.entityId, () => []).add(id);
       }
     }
@@ -1376,14 +1485,18 @@ class Designer {
         ? annualEnergyCost(flow: total, head: 1, hoursPerYear: params.zoneHoursPerYear, costPerKwh: params.powerCostPerKwh, pumpEfficiency: params.pumpEfficiency)
         : 0.0;
     final zRoot = model.nodes[zoneNode]!.elevation;
-    final nodes = {..._criticalNodes(valveId, depth), ...extraNodes};
+    final regNeed = <String, double>{};
+    for (final (node, need) in _regulators(valveId)) {
+      regNeed[node] = math.max(regNeed[node] ?? need, need);
+    }
+    final nodes = {..._criticalNodes(valveId, depth), ...extraNodes, ...regNeed.keys};
     final constraints = <LpHeadConstraint>[];
     for (final k in nodes) {
       final n = model.nodes[k];
       if (n == null || !parent.containsKey(k)) continue;
-      var lo = -double.infinity, hi = double.infinity, off = 0.0, nomSum = 0.0, nomW = 0.0;
+      var lo = regNeed[k] ?? -double.infinity, hi = double.infinity, off = 0.0, nomSum = 0.0, nomW = 0.0;
       for (final e in n.emitters) {
-        if (e.index == -2) continue;
+        if (e.index == -2 || _regulated(e.entityId)) continue;
         lo = math.max(lo, e.allowedMin);
         hi = math.min(hi, e.allowedMax);
         off = math.max(off, e.offset);

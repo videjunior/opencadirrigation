@@ -474,6 +474,7 @@ class NetworkBuilder {
             perEmitterK: spec.barbK,
             endFlow: t.flushingFlow,
             inletAtEnd: fromEnd,
+            regulatorM: t.regulated ? t.inletHeadM : null,
           );
         default:
           break;
@@ -816,6 +817,7 @@ class NetworkBuilder {
     double perEmitterK = 0,
     double endFlow = 0,
     bool inletAtEnd = false,
+    double? regulatorM,
   }) {
     // Build a list of stations along the polyline: vertices + emitter lumps.
     final total = polylineLength(pts);
@@ -837,7 +839,17 @@ class NetworkBuilder {
     final made = <(GNode, GNode, double, double, Pt, Pt, int)>[];
     for (final d in walk) {
       final p = pointAlongPolyline(pts, d);
-      final n = (prev != null && (d - prevD).abs() < tol) ? prev : _nodeAt(p, scope);
+      var n = (prev != null && (d - prevD).abs() < tol) ? prev : _nodeAt(p, scope);
+      if (prev == null && regulatorM != null) {
+        // a regulated inlet: a pressure regulator set to the inlet pressure
+        // between the submain and the tape, whose own first node no other
+        // item joins
+        final inlet = GNode(id: 'n${_seq++}', p: p, ground: n.ground, scope: scope);
+        model.nodes[inlet.id] = inlet;
+        n.entityIds.add(entityId);
+        _register(GLink(id: 'reg_$entityId', from: n.id, to: inlet.id, kind: GLinkKind.prv, scope: scope, entityId: entityId, settingM: regulatorM, depth: depth, a: p, b: p));
+        n = inlet;
+      }
       n.entityIds.add(entityId);
       final em = emitterAt[d];
       if (em != null) {

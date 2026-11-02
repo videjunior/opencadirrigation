@@ -265,8 +265,11 @@ final Map<String, TypeDoc> entityDocs = {
       unit: 'm',
       panel: 'props.inlet',
     ),
-    'reg': const FieldDoc('regulated inlet flag, kept with the item and shown in the panel; the analysis does not use it', panel: 'props.regulated'),
-    'submin': const FieldDoc('submain minimum pressure for a regulated inlet; kept, not used by the analysis', unit: 'm', panel: 'props.submainMin'),
+    'reg': const FieldDoc(
+      'pressure regulator at the inlet: it holds the tape inlet at "inlet" whatever the submain gives (the tape no longer follows the zone valve); the zone valve is raised until every regulated tape has submin at its submain connection',
+      panel: 'props.regulated',
+    ),
+    'submin': const FieldDoc('least submain pressure a regulated inlet needs to regulate (at least "inlet"; 0 = "inlet")', unit: 'm', panel: 'props.submainMin'),
     'depth': const FieldDoc('burial depth (subsurface drip): the emitters sit this far below the ground', unit: 'm', panel: 'props.depth'),
     'flush': const FieldDoc('extra flow out of the open end for the flushing analysis; 0 = from flushingVelocity', unit: 'm³/s', panel: 'props.flushingFlow'),
   }, connects: 'Zone scope, joins like a sprayline. Emitter count = floor(length / tape emitter spacing). Never sized: its tape model is its pipe.'),

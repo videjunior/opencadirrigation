@@ -410,4 +410,65 @@ void main() {
       expect(back.excessive, duty.excessive);
     }
   });
+
+  test('MOT-14: a regulated tape holds its inlet pressure and the zone keeps its submain at the regulator minimum', () {
+    ZoneResult run(bool regulated, double slopePct, {bool design = true}) {
+      final p = Project();
+      final block = generateBlock(
+        p,
+        BlockOptions(
+          polygon: const [Pt(0, 0), Pt(100, 0), Pt(100, 30), Pt(0, 30)],
+          direction: const Pt(1, 0),
+          lateralSpacing: 1.5,
+          isTape: true,
+          tapeSpecId: 'tape16_16_20',
+          tapeInletHeadM: 8,
+          submainPosition: SubmainPosition.start,
+          valveSpecId: 'ev50',
+          valvePosition: ValvePosition.centre,
+          submainStub: 1.5,
+          zoneName: 'Z',
+        ),
+      );
+      p.entities.addAll(block.all);
+      for (final e in block.laterals.whereType<TapeEntity>()) {
+        e
+          ..regulated = regulated
+          ..submainMinHeadM = 12;
+      }
+      for (final (x, y) in [(-200.0, -200.0), (300.0, -200.0), (-200.0, 300.0), (300.0, 300.0)]) {
+        p.entities.add(SpotHeightEntity(id: p.newId(), position: Pt(x, y), elevation: 100 - slopePct / 100 * y));
+      }
+      final valve = block.valve!;
+      final supplyPos = valve.position + const Pt(-100, 0);
+      p.entities.add(PipeEntity(id: 'main', points: [supplyPos, valve.position], scope: HydraulicScope.mainline, name: 'Main'));
+      p.entities.add(WaterSupplyEntity(id: 'tank', position: supplyPos, name: 'Tank', calculatePressure: true));
+      final d = Designer(p);
+      return (design ? d.designAll() : d.analyzeAll()).zones.values.single;
+    }
+
+    for (final design in [false, true]) {
+      final flat = run(true, 0, design: design), slope = run(true, 4, design: design);
+      for (final z in [flat, slope]) {
+        final regs = z.devices.where((d) => d.linkId.startsWith('reg_')).toList();
+        expect(regs, hasLength(20), reason: 'one regulator per tape');
+        expect(regs.every((d) => d.status == 'active'), isTrue);
+        // the submain keeps 12 m at the least favoured regulator, no more
+        expect(regs.map((d) => d.upstreamPressure).reduce(math.min), closeTo(12, 0.01));
+        // every tape inlet at its 8 m, whatever the submain gives
+        for (final o in z.outlets.where((o) => o.index == 0)) {
+          expect(o.pressure, closeTo(8, 0.3), reason: o.entityId);
+        }
+      }
+      // the tapes behind their regulators do not see the slope
+      expect(slope.minOutletPressure, closeTo(flat.minOutletPressure, 1e-6));
+      expect(slope.maxOutletPressure, closeTo(flat.maxOutletPressure, 1e-6));
+      expect(slope.downstreamHead, greaterThan(flat.downstreamHead), reason: 'the valve gives the higher regulators their 12 m');
+    }
+    // without regulators the inlet pressures follow the valve
+    final plain = run(false, 4, design: false);
+    expect(plain.devices.where((d) => d.linkId.startsWith('reg_')), isEmpty);
+    final inlets = [for (final o in plain.outlets.where((o) => o.index == 0)) o.pressure];
+    expect(inlets.reduce(math.max) - inlets.reduce(math.min), greaterThan(1));
+  });
 }
