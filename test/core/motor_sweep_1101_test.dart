@@ -214,6 +214,41 @@ void main() {
     );
     expect(a.feasible, isTrue, reason: '${a.message} after ${a.iterations} iterations');
     expect(a.iterations, lessThan(5000));
+    // and with four diameters, whatever the data (some seeds cycled on
+    // degenerate vertices until the limit: 53 550 iterations)
+    for (final seed in [2, 3, 4, 6]) {
+      final rnd = math.Random(seed);
+      final narrow = specs.take(4).toList();
+      final len = {for (final u in units) u: 50.0 + rnd.nextDouble() * 100};
+      final cs = <LpHeadConstraint>[];
+      for (var k = 0; k < nUnits * 3; k++) {
+        final u = k % nUnits;
+        cs.add(
+          LpHeadConstraint(
+            headVar: 0,
+            lossByUnitSpec: {
+              for (final pu in <String>{'u0', 'u${(u ~/ 10) * 10}', 'u$u'}) pu: {for (final s in narrow) s.id: (0.5 + rnd.nextDouble()) * math.pow(40 / s.innerDiameterMm, 4.871)},
+            },
+            minPressure: 10,
+            maxPressure: 13 + rnd.nextDouble(),
+          ),
+        );
+      }
+      final b = lpSize(
+        LpSizingInput(
+          units: units,
+          candidates: {for (final u in units) u: narrow},
+          unitLength: len,
+          maxSizes: {for (final u in units) u: 2},
+          headVars: [LpHeadVar(energyPerMetre: 10)],
+          constraints: cs,
+          crf: 0.1,
+          tradeCapital: true,
+        ),
+      );
+      expect(b.feasible, isTrue, reason: 'seed $seed: ${b.message} after ${b.iterations} iterations');
+      expect(b.iterations, lessThan(3000), reason: 'seed $seed');
+    }
     expect(sw.elapsedMilliseconds, lessThan(5000));
     expect(a.heads.single, greaterThanOrEqualTo(lo - 1e-6), reason: 'no less head than the largest pipes need');
     // an iteration limit is told apart from infeasibility
