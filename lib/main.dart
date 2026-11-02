@@ -364,10 +364,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   }
 
   void _onPointerKind() {
-    // (the pointer is pressed during a frame's input handling: rebuild after it)
+    // (the pointer is pressed during a frame's input handling: rebuild after it,
+    // in a frame of its own when none is coming — a tap that changes nothing on
+    // the screen asks for none)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() {});
     });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   /// Help → Interactive tutorial (also the welcome's "Start tutorial" and
@@ -712,9 +715,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     hotkeys.runCommand();
   }
 
-  // 1.6.0 UI: the AI chapter of the tutorial watches the assistant and writes in its box (never sends)
+  // 1.6.0 UI: the AI chapter of the tutorial watches the assistant and writes in its box (never sends);
+  // shown, not made: the robot button of the status bar makes the tab's assistant for its badge
   @override
-  bool get assistantShown => AiAssistant.panelOpen.value || AiAssistant.peek(c) != null;
+  bool get assistantShown => AiAssistant.panelOpen.value || AiAssistant.viewsShown > 0;
 
   @override
   void showAssistant({String? prompt}) => showAiAssistantDialog(context, c, prompt: prompt);

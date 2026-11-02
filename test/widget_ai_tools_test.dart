@@ -357,8 +357,13 @@ void main() {
   testWidgets('reads answer with the program’s numbers and explain what is missing', (tester) async {
     expect(await refused(tester, 'get_report_table', {'table': 'zones'}), contains('run_design'));
     loadExampleAction(c, ExampleId.orchard);
+    // the orchard's well has neither a water meter nor an hour meter: a note
+    // of the permit (1.6.0), with its why and how, as on the Messages tab
     final before = await run(tester, 'get_design_messages', {});
-    expect(before.text, contains(c.t('adv.noneYet')), reason: 'no message, and no results yet to check pressures');
+    expect(before.text, contains('0 errors, 0 warnings, 1 notes'));
+    expect(before.text, contains('No design results yet'), reason: 'no results yet to check pressures');
+    expect(before.text, contains('[supply_no_meter]'));
+    expect(before.text, contains('why: ${c.t('adv.supply_no_meter.why')}'));
     await tester.runAsync(() => c.runDesign());
     final zones = await run(tester, 'get_report_table', {'table': 'zones'});
     expect(zones.text, contains('Zone A'));

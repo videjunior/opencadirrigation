@@ -539,6 +539,11 @@ class AiAssistant extends ChangeNotifier {
   static final panelOpen = ValueNotifier<bool>(false);
   static void togglePanel() => panelOpen.value = !panelOpen.value;
 
+  /// Views of an assistant on the screen: the docked panel, its sheet on a
+  /// phone, its dialog. An assistant that exists is not one on the screen:
+  /// the robot button makes the tab's own for its badge.
+  static int viewsShown = 0;
+
   /// The app's tabs, set where the app builds its workspace (tabs and the
   /// clipboard for the tools; null: one project only).
   static Workspace? workspace;
