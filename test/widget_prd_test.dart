@@ -102,6 +102,8 @@ void main() {
     await enter(tester, 'issued', '02/11/2026');
     await enter(tester, 'company', 'Irriga Projetos');
     expect(find.text(c.t('prd.tb.recordNo', {'r': 'RRT'})), findsOneWidget, reason: 'the record named after the council');
+    await tester.ensureVisible(find.byKey(const Key('tb_rev_add')));
+    await settle(tester, 1);
     await tester.tap(find.byKey(const Key('tb_rev_add')));
     await settle(tester, 2);
     await tester.tap(find.byKey(const Key('tb_ok')));
@@ -165,6 +167,8 @@ void main() {
     await settle(tester);
     expect(find.byKey(const Key('plot_grid')), findsOneWidget);
     expect(find.byKey(const Key('plot_theme_slope')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('plot_grid')));
+    await settle(tester, 1);
     await tester.tap(find.byKey(const Key('plot_grid')));
     await settle(tester, 2);
     await tester.tap(find.text(c.t('prd.plot.grid.both')).last);

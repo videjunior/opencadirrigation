@@ -165,7 +165,11 @@ List<AgentTool> exportOperations(AgentToolbox b) {
         final file = '${engStem(c)}.pdf';
         await engFileSink(c, file, DrawingFormat.pdf.mime, data);
         final split = o.split;
-        final extra = (split == SheetSplit.zones ? zoneMembers(b.p, c.results).length : (split == SheetSplit.areas ? areaZones(b.p, const {}).length : 0)) + o.windows.length;
+        final extra =
+            (split == SheetSplit.zones ? zoneMembers(b.p, c.results).length : (split == SheetSplit.areas ? areaZones(b.p, const {}).length : 0)) +
+            o.windows.length +
+            // 1.6.0 PRD: the thematic sheets of the terrain
+            builder.sheetPlan(o).where((s) => s.theme != null).length;
         return ToolOutput(
           'Saved $file: ${1 + extra} drawing sheets (${o.page.label} ${o.landscape ? 'landscape' : 'portrait'}, 1:${engN(o.scale ?? builder.sheetScale(o), 0)}${o.scale == null ? ' to fit' : ''}), ${builder.detailSheets(o).length} detail sheets${o.includeReports ? ', report pages' : ''}${o.charts ? ', chart pages' : ''}${o.rasters.isEmpty ? '' : ', base map under the drawing'}.${noCharts ? ' No charts: they need design results, a profile path or a catalogue pump.' : ''}',
         );

@@ -67,7 +67,7 @@ void main() {
       expect(tb['stage'], 'executive');
       expect(tb['logoMime'], 'image/png');
       expect(identical(tb['logo'], p.meta.toJson()['titleBlock']['logo']), isTrue, reason: 'one Base64 text for every undo step');
-      final back = Project.fromJson(jsonDecode(jsonEncode(p.toJson())) as Map<String, dynamic>).meta.titleBlock;
+      final back = Project.fromJsonString(p.toJsonString()).meta.titleBlock;
       expect(back.company, 'Irriga Projetos');
       expect(back.responsible, 'Ana Souza');
       expect(back.registrationText, 'CREA MG 1412345678');
