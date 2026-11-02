@@ -712,8 +712,8 @@ TechDocument permitDocument(Project p, PermitStudy study, Translate t, {String F
           (t('prb.permit.basin'), info.basin),
           (t('prb.permit.municipality'), info.municipality),
           (t('prb.permit.datum'), u == null ? '' : t('prb.src.sirgas')),
-          (t('prb.permit.lat'), src.lat == null ? '' : '${permitDms(src.lat!, 'N', 'S')}  (${fmt(src.lat!, 6)}°)'),
-          (t('prb.permit.lon'), src.lon == null ? '' : '${permitDms(src.lon!, t('prb.east'), t('prb.west'))}  (${fmt(src.lon!, 6)}°)'),
+          (t('prb.permit.lat'), src.lat == null ? '' : '${permitDms(src.lat!, t('compass.n'), t('compass.s'))}  (${fmt(src.lat!, 6)}°)'),
+          (t('prb.permit.lon'), src.lon == null ? '' : '${permitDms(src.lon!, t('compass.e'), t('compass.w'))}  (${fmt(src.lon!, 6)}°)'),
           (
             t('prb.permit.utm'),
             u == null ? '' : 'E ${fmt(u.easting, 1)} m · N ${fmt(u.northing, 1)} m · ${t('prb.permit.zone')} ${u.zone}${u.north ? 'N' : 'S'}${src.epsg == null ? '' : ' (EPSG:${src.epsg})'}',

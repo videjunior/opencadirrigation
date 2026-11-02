@@ -98,8 +98,6 @@ const _prb = <String, (String, String, String)>{
   'prb.power': ('Potência', 'Power', 'Potencia'),
   'prb.hourMeter': ('Horímetro', 'Hour meter', 'Horómetro'),
   'prb.criteria': ('Critérios e fontes', 'Criteria and sources', 'Criterios y fuentes'),
-  'prb.east': ('L', 'E', 'E'),
-  'prb.west': ('O', 'W', 'O'),
   'prb.mon.1': ('Jan', 'Jan', 'Ene'),
   'prb.mon.2': ('Fev', 'Feb', 'Feb'),
   'prb.mon.3': ('Mar', 'Mar', 'Mar'),
