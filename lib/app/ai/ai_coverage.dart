@@ -40,6 +40,7 @@ import 'coverage_parts/ui.dart';
 import 'coverage_parts/sit.dart';
 import 'coverage_parts/eng.dart';
 import 'coverage_parts/prd.dart';
+import 'coverage_parts/edt.dart';
 
 /// The functions the tools sent with every request already cover.
 const coreCoverage = <String, String>{
