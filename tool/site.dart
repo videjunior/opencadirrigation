@@ -40,6 +40,7 @@ part 'site/ha.dart';
 part 'site/hi.dart';
 part 'site/id.dart';
 part 'site/ja.dart';
+part 'site/legal.dart';
 part 'site/llms.dart';
 part 'site/mr.dart';
 part 'site/pa.dart';
@@ -53,9 +54,32 @@ part 'site/zh.dart';
 
 const siteUrl = 'https://opencadirrigation.com/';
 
-/// Google Analytics measurement id of the site.
-const analyticsId = 'G-3M0P4T8V2T';
+/// Google Analytics measurement id of the site, written into the pages for
+/// `site.js`, which loads the statistics only after the visitor accepts
+/// them and never in a page where the app runs. A fork sets its own:
+/// `OCI_ANALYTICS_ID=G-… dart run tool/gen_site.dart`; an empty one leaves
+/// the statistics and their notice out of the pages.
+final analyticsId = Platform.environment['OCI_ANALYTICS_ID'] ?? 'G-3M0P4T8V2T';
 const siteLastMod = '2026-10-31';
+
+/// The Firebase project that serves the site: its default addresses
+/// (`<id>.web.app`, `<id>.firebaseapp.com`) send a new visitor to [siteUrl].
+const firebaseProjectId = 'opencadirrigation';
+
+/// Content Security Policy of the entry and legal pages, as a meta element
+/// so that it travels with the pages (the hosting configuration,
+/// [renderHostingConfig], adds what a meta element cannot carry). Scripts
+/// come only from the site (no inline script: the page logic is `site.js`)
+/// and, after the visitor accepts the statistics, from Google's tag
+/// manager; WebAssembly is compiled for CanvasKit; images, map tiles, the
+/// elevation, climate and AI services and the catalogues by URL are
+/// fetched from any HTTPS address the user picks; fonts also come from
+/// fonts.gstatic.com; no plugins, frames or foreign base address.
+const contentSecurityPolicy =
+    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: data: blob:; "
+    "worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; "
+    "object-src 'none'; base-uri 'self'; form-action 'self'";
 
 /// IndexNow key (Bing, Yandex, Seznam, Naver…): published as `/<key>.txt` so
 /// `dart run tool/indexnow.dart` can announce changed pages after a deploy.
@@ -209,6 +233,14 @@ class SiteText {
   final String notFoundHome;
 }
 
+/// Answer of the FAQ "Are my projects stored in the cloud?" in English. The
+/// pages of the languages written in tool/site/<code>.dart use it as well
+/// until its translation arrives (the earlier answer promised that the
+/// internet was reached only on request, which the fonts and the visit
+/// statistics contradicted).
+const faqCloudAnswerEn =
+    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The browser does reach other services: the interface fonts come from Google Fonts on the first start; base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the pages of the site count visits with Google Analytics only if you accept it, never while the app is open. The privacy policy lists each service and what it receives.';
+
 const _pt = SiteText(
   title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
   description: 'Software grátis e de código aberto para projeto de irrigação com assistente de IA que distribui aspersores e gotejamento, traça tubos e dimensiona o sistema.',
@@ -350,7 +382,7 @@ const _pt = SiteText(
     ),
     (
       'Meus projetos ficam na nuvem?',
-      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada a nenhum servidor. A internet só é acessada quando você pede: mapas base, elevação e clima online, catálogos carregados por URL e, se você usar, o assistente de IA, que fala apenas com o provedor que você escolheu (Anthropic ou OpenAI).',
+      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. O navegador acessa outros serviços: as fontes da interface vêm do Google Fonts na primeira abertura; mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e as páginas do site contam as visitas com o Google Analytics só se você aceitar, nunca com o app aberto. A política de privacidade lista cada serviço e o que ele recebe.',
     ),
     (
       'Como é feito o cálculo hidráulico?',
@@ -514,10 +546,7 @@ const _en = SiteText(
       'Does it work offline?',
       'Yes, after the first visit: the app keeps a copy of itself in the browser (about 24 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background and is used from the next start.',
     ),
-    (
-      'Are my projects stored in the cloud?',
-      'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded. The internet is reached only when you ask for it: base maps, online elevation and climate, catalogues loaded by URL and, if you use it, the AI assistant, which talks only to the provider you chose (Anthropic or OpenAI).',
-    ),
+    ('Are my projects stored in the cloud?', faqCloudAnswerEn),
     (
       'How does it calculate the hydraulics?',
       'Friction losses by Hazen-Williams, Darcy-Weisbach, Scobey or Manning, emitters by q = k·Hˣ and the whole network solved by the Global Gradient Algorithm, the method used by EPANET. Pipes are sized by linear programming within the emitter pressure window and the pipe pressure class, and the design also checks uniformity (CU, DU, EU), flushing and transients by the method of characteristics (valve closure, pump trip, air valves), with a 24-hour simulation of pressures and energy cost.',
@@ -685,7 +714,7 @@ const _es = SiteText(
     ),
     (
       '¿Mis proyectos se guardan en la nube?',
-      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada a ningún servidor. Solo se accede a internet cuando usted lo pide: mapas base, elevación y clima en línea, catálogos cargados por URL y, si lo usa, el asistente de IA, que solo se comunica con el proveedor que usted eligió (Anthropic u OpenAI).',
+      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. El navegador sí accede a otros servicios: las fuentes de la interfaz vienen de Google Fonts en el primer inicio; los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y las páginas del sitio cuentan las visitas con Google Analytics solo si usted lo acepta, nunca con la aplicación abierta. La política de privacidad enumera cada servicio y lo que recibe.',
     ),
     (
       '¿Cómo se hace el cálculo hidráulico?',
@@ -760,16 +789,28 @@ String landingShot(int width) => versioned('screenshots/design-$width.webp');
 /// Address of the file at [path] inside `web/`, versioned by its content:
 /// firebase.json lets browsers keep images for a month, and a new image gets
 /// a new address.
-String versioned(String path) {
-  var hash = 0x811c9dc5; // 32-bit FNV-1a
-  for (final byte in File('web/$path').readAsBytesSync()) {
+String versioned(String path) => '$path?v=${_fnv(File('web/$path').readAsBytesSync())}';
+
+/// 32-bit FNV-1a of [bytes], in hex: the version of a file in its address.
+String _fnv(List<int> bytes) {
+  var hash = 0x811c9dc5;
+  for (final byte in bytes) {
     hash = ((hash ^ byte) * 0x01000193) & 0xffffffff;
   }
-  return '$path?v=${hash.toRadixString(16).padLeft(8, '0')}';
+  return hash.toRadixString(16).padLeft(8, '0');
 }
 
-String _hreflangLinks() =>
-    [for (final l in siteLanguages) '  <link rel="alternate" hreflang="${l.tag}" href="${l.url}">', '  <link rel="alternate" hreflang="x-default" href="${siteLang('en').url}">'].join('\n');
+/// hreflang values of [l]: its BCP 47 tag and, when the tag names a region
+/// (pt-BR, zh-CN), the bare language as well, so that the speakers of the
+/// language elsewhere (Portugal, Angola, Singapore…) are sent to the page
+/// in their language and not to the English default.
+List<String> hreflangsOf(SiteLang l) => [l.tag, if (l.tag != l.code) l.code];
+
+String _hreflangLinks() => [
+  for (final l in siteLanguages)
+    for (final h in hreflangsOf(l)) '  <link rel="alternate" hreflang="$h" href="${l.url}">',
+  '  <link rel="alternate" hreflang="x-default" href="${siteLang('en').url}">',
+].join('\n');
 
 /// What the application is about, as entities search engines and language
 /// models already know: name, Wikipedia article, Wikidata item.
@@ -987,6 +1028,7 @@ String renderIndex(SiteLang lang) {
   b.writeln('  <base href="$base">');
   b.writeln('''
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="$contentSecurityPolicy">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
   <title>${_esc(t.title)}</title>
@@ -1040,20 +1082,18 @@ ${_hreflangLinks()}
   <meta name="apple-mobile-web-app-title" content="OpenCADIrrigation">
   <meta name="msapplication-TileColor" content="#0D47A1">
   <meta name="msapplication-TileImage" content="brand/logo-tile-512.png">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="${lang.path}manifest.json">
 
   <script type="application/ld+json">
 ${jsonLd(lang)}
   </script>
 
-$_analytics
-
-  <style>$_style  </style>
+  <style>$_style$_consentStyle  </style>
 </head>
 <body>
   <noscript><div id="oci-noscript"${lang.dirAttr}>${_esc(t.noScript)}</div></noscript>
   <!-- Readable content: the page itself until the app is opened, hidden (kept in the page) on Flutter's first frame. -->
-  <main id="oci-landing"${lang.dirAttr}>
+  <main id="oci-landing"${lang.dirAttr} data-loading="${_esc(t.loading)}" data-slow="${_esc(t.slow)}">
     <div class="wrap">
       <header>
         <img src="${landingLogo(landingLogoWidths.first)}" srcset="${[for (final w in landingLogoWidths) '${landingLogo(w)} ${w}w'].join(', ')}" sizes="(max-width: 666px) 78vw, 520px" alt="OpenCADIrrigation" width="1040" height="349" fetchpriority="high">
@@ -1126,83 +1166,206 @@ $_analytics
       <footer>
         <nav aria-label="${_esc(t.otherLanguages)}">${_esc(t.otherLanguages)}: ${[for (final l in siteLanguages) l.code == lang.code ? '<strong lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</strong>' : '<a href="${l.url}" hreflang="${l.tag}" lang="${l.tag}" dir="${l.dir}">${languageNames[l.code]}</a>'].join(' · ')}</nav>
         <p>${_esc(t.footer)}</p>
-        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · <time datetime="$siteLastMod">$siteLastMod</time></p>
+        <p class="meta">OpenCADIrrigation $appVersion · <a href="$appRepositoryUrl">${_esc(t.sourceCode)}</a> · ${legalLinks(lang)} · <time datetime="$siteLastMod">$siteLastMod</time></p>
       </footer>
     </div>
+${consentNotice(lang, legalText(lang.code))}
   </main>
-  <script>
-    (function () {
-      var landing = document.getElementById('oci-landing');
-      var status = document.getElementById('oci-status');
-      // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
-      var prefix = 'opencadirrigation.';
-      var started = false;
-      function remember() {
-        try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
-      }
-      // The app starts by itself for an app address, the installed app and whoever has used it here before.
-      function wanted() {
-        if (/[?&](example|tutorial|design|ai|lang|source|app)=/.test(location.search)) return true;
-        if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
-        try {
-          for (var i = 0; i < localStorage.length; i++) {
-            if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
-          }
-        } catch (e) {}
-        return false;
-      }
-      function start() {
-        if (started) return;
-        started = true;
-        remember();
-        landing.className += ' oci-starting';
-        status.textContent = ${jsonEncode(t.loading)};
-        // The engine and the app code come from this site and are fetched while the loader runs;
-        // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
-        var engine = document.createElement('link');
-        engine.rel = 'preconnect';
-        engine.href = 'https://fonts.gstatic.com';
-        engine.crossOrigin = '';
-        document.head.appendChild(engine);
-        var code = document.createElement('link');
-        code.rel = 'preload';
-        code.as = 'script';
-        code.href = 'main.dart.js';
-        document.head.appendChild(code);
-        var boot = document.createElement('script');
-        boot.src = 'flutter_bootstrap.js';
-        boot.async = true;
-        document.body.appendChild(boot);
-        setTimeout(function () {
-          if (!landing.hasAttribute('hidden')) status.textContent = ${jsonEncode(t.slow)};
-        }, 30000);
-      }
-      // The app buttons and example links open the app in this page (the app reads the query of the address);
-      // opened in a new tab, the app starts there by itself.
-      function onAppLink(e) {
-        var a = e.target.closest ? e.target.closest('a[data-app]') : null;
-        if (!a) return;
-        remember();
-        if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-        e.preventDefault();
-        history.replaceState(null, '', location.pathname + a.search);
-        window.scrollTo(0, 0);
-        start();
-      }
-      document.addEventListener('click', onAppLink);
-      document.addEventListener('auxclick', onAppLink);
-      window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
-      if (wanted()) start();
-    })();
-  </script>
+  ${siteScriptTag(absolute: false)}
 </body>
 </html>''');
   return b.toString();
 }
 
+/// Address of the site script, versioned by its content (the page asks for
+/// a new address when the script changes).
+String siteScriptPath() => 'site.js?v=${_fnv(utf8.encode(renderSiteScript()))}';
+
+/// The script element of a page: `site.js` with the measurement id of the
+/// statistics. Relative on the entry pages (their base is the site root, or
+/// the folder the root page is served from), absolute on the legal pages.
+String siteScriptTag({bool absolute = true}) => '<script src="${absolute ? '/' : ''}${siteScriptPath()}" data-ga="$analyticsId" defer></script>';
+
+/// `site.js`, the only script of the site's own pages (no inline script, so
+/// that the Content Security Policy allows the site's files alone):
+///
+/// - on an entry page it starts the app when it is wanted (an app address,
+///   the installed app, a visitor who has used it here before) and opens
+///   it in place from the page's buttons and example links;
+/// - on every page it asks once whether visits may be counted; Google
+///   Analytics (Consent Mode v2, everything denied by default and only the
+///   statistics granted) is loaded after "Accept" and never in a page
+///   where the app runs, the page that holds the projects and the keys:
+///   with the statistics loaded, the app buttons open the app in a new
+///   page instead;
+/// - a new visitor arriving at a default address of the hosting project is
+///   sent to the site's own address (whoever has projects stored there stays:
+///   the storage belongs to the address).
+String renderSiteScript() {
+  final hosts = jsonEncode(['$firebaseProjectId.web.app', '$firebaseProjectId.firebaseapp.com']);
+  final origin = jsonEncode(Uri.parse(siteUrl).origin);
+  return '''// OpenCADIrrigation: the script of the site's pages. Generated by tool/gen_site.dart from tool/site.dart; do not edit by hand.
+(function () {
+  'use strict';
+  var script = document.currentScript;
+  var analyticsId = (script && script.getAttribute('data-ga')) || '';
+  // Keys of the app's own storage (lib/app/io/prefs_web.dart): there once the app has run in this browser.
+  var prefix = 'opencadirrigation.';
+  // The answer to the notice; not under the app's prefix, since answering it is not using the app.
+  var consentKey = 'oci-consent';
+  var landing = document.getElementById('oci-landing');
+  var status = document.getElementById('oci-status');
+  var banner = document.getElementById('oci-consent');
+  var started = false;
+  var analytics = false;
+
+  function usedHere() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (String(localStorage.key(i)).indexOf(prefix) === 0) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  // ---- the site's own address
+  if ($hosts.indexOf(location.hostname) >= 0 && !usedHere()) {
+    location.replace($origin + location.pathname + location.search + location.hash);
+    return;
+  }
+
+  // ---- visit statistics, after consent
+  function readConsent() {
+    try {
+      var v = JSON.parse(localStorage.getItem(consentKey) || 'null');
+      // asked again after a year
+      if (v && (v.c === 'granted' || v.c === 'denied') && Date.now() - v.t < 365 * 24 * 3600 * 1000) return v.c;
+    } catch (e) {}
+    return null;
+  }
+  function saveConsent(c) {
+    try { localStorage.setItem(consentKey, JSON.stringify({ c: c, t: Date.now() })); } catch (e) {}
+  }
+  function dropCookies() {
+    var parts = location.hostname.split('.');
+    var domains = ['', location.hostname, '.' + location.hostname];
+    if (parts.length > 2) domains.push('.' + parts.slice(-2).join('.'));
+    document.cookie.split(';').forEach(function (c) {
+      var name = c.split('=')[0].trim();
+      if (name !== '_ga' && name.indexOf('_ga_') !== 0) return;
+      domains.forEach(function (d) {
+        document.cookie = name + '=; Max-Age=0; path=/' + (d ? '; domain=' + d : '');
+      });
+    });
+  }
+  function loadAnalytics() {
+    if (analytics || started || !analyticsId) return;
+    analytics = true;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
+    window.gtag('consent', 'update', { analytics_storage: 'granted' });
+    window.gtag('js', new Date());
+    window.gtag('config', analyticsId);
+    var tag = document.createElement('script');
+    tag.async = true;
+    tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(analyticsId);
+    document.head.appendChild(tag);
+  }
+  function showBanner(show) {
+    if (banner) banner.hidden = !show;
+  }
+  function choose(c) {
+    saveConsent(c);
+    showBanner(false);
+    if (c === 'granted') {
+      loadAnalytics();
+    } else {
+      if (analytics) window.gtag('consent', 'update', { analytics_storage: 'denied' });
+      dropCookies();
+    }
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-consent], [data-consent-open]') : null;
+    if (!t) return;
+    e.preventDefault();
+    if (t.hasAttribute('data-consent-open')) showBanner(true);
+    else choose(t.getAttribute('data-consent'));
+  });
+
+  // ---- the app, on an entry page
+  function remember() {
+    try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
+  }
+  // The app starts by itself for an app address, the installed app and whoever has used it here before.
+  function wanted() {
+    if (/[?&](example|tutorial|design|ai|lang|source|app)=/.test(location.search)) return true;
+    if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
+    return usedHere();
+  }
+  function start() {
+    if (started) return;
+    started = true;
+    remember();
+    showBanner(false);
+    landing.className += ' oci-starting';
+    status.textContent = landing.getAttribute('data-loading');
+    // The engine and the app code come from this site and are fetched while the loader runs;
+    // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
+    var engine = document.createElement('link');
+    engine.rel = 'preconnect';
+    engine.href = 'https://fonts.gstatic.com';
+    engine.crossOrigin = '';
+    document.head.appendChild(engine);
+    var code = document.createElement('link');
+    code.rel = 'preload';
+    code.as = 'script';
+    code.href = 'main.dart.js';
+    document.head.appendChild(code);
+    var boot = document.createElement('script');
+    boot.src = 'flutter_bootstrap.js';
+    boot.async = true;
+    document.body.appendChild(boot);
+    setTimeout(function () {
+      if (!landing.hasAttribute('hidden')) status.textContent = landing.getAttribute('data-slow');
+    }, 30000);
+  }
+  // The app buttons and example links open the app in this page (the app reads the query of the address);
+  // opened in a new tab, the app starts there by itself. With the statistics running here, the app opens
+  // in a fresh page, where they never run.
+  function onAppLink(e) {
+    var a = e.target.closest ? e.target.closest('a[data-app]') : null;
+    if (!a) return;
+    remember();
+    if (e.type !== 'click' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    if (analytics) {
+      location.assign(location.pathname + a.search);
+      return;
+    }
+    history.replaceState(null, '', location.pathname + a.search);
+    window.scrollTo(0, 0);
+    start();
+  }
+  if (landing) {
+    document.addEventListener('click', onAppLink);
+    document.addEventListener('auxclick', onAppLink);
+    window.addEventListener('flutter-first-frame', function () { landing.setAttribute('hidden', ''); });
+    if (wanted()) start();
+  }
+  if (!started && analyticsId) {
+    var answer = readConsent();
+    if (answer === 'granted') loadAnalytics();
+    else if (answer === null) showBanner(true);
+  }
+})();
+''';
+}
+
 /// sitemap.xml with the entry pages, their hreflang alternates and their
 /// images (for image search): the screenshot and logo on the page, the
-/// sharing image and the screenshot of the app manifest.
+/// sharing image and the screenshot of the app manifest; then the legal
+/// pages of the languages they are written in.
 String renderSitemap() {
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
@@ -1214,7 +1377,9 @@ String renderSitemap() {
     b.writeln('    <changefreq>weekly</changefreq>');
     b.writeln('    <priority>${l.isRoot ? '1.0' : '0.9'}</priority>');
     for (final a in siteLanguages) {
-      b.writeln('    <xhtml:link rel="alternate" hreflang="${a.tag}" href="${a.url}"/>');
+      for (final h in hreflangsOf(a)) {
+        b.writeln('    <xhtml:link rel="alternate" hreflang="$h" href="${a.url}"/>');
+      }
     }
     b.writeln('    <xhtml:link rel="alternate" hreflang="x-default" href="${siteLang('en').url}"/>');
     for (final image in [landingShot(landingShotWidths.last), landingLogo(landingLogoWidths.last), 'og-image.png', 'screenshots/design-1440x900.png']) {
@@ -1222,9 +1387,89 @@ String renderSitemap() {
     }
     b.writeln('  </url>');
   }
+  final translated = [
+    for (final l in siteLanguages)
+      if (hasLegalText(l.code)) l,
+  ];
+  for (final page in [privacyUrl, termsUrl]) {
+    for (final l in translated) {
+      b.writeln('  <url>');
+      b.writeln('    <loc>${page(l)}</loc>');
+      b.writeln('    <lastmod>$legalLastMod</lastmod>');
+      b.writeln('    <changefreq>yearly</changefreq>');
+      b.writeln('    <priority>0.3</priority>');
+      for (final a in translated) {
+        b.writeln('    <xhtml:link rel="alternate" hreflang="${a.tag}" href="${page(a)}"/>');
+      }
+      b.writeln('    <xhtml:link rel="alternate" hreflang="x-default" href="${page(siteLang('en'))}"/>');
+      b.writeln('  </url>');
+    }
+  }
   b.writeln('</urlset>');
   return b.toString();
 }
+
+/// The web app manifest of [lang]: `manifest.json` at the root (English)
+/// and `<code>/manifest.json` beside every other entry page, with the same
+/// identity (installing from /pt/ or from / is the same app), a start
+/// address in that language (the app reads it from the path) and the names,
+/// shortcuts and screenshot labels of that page.
+String renderManifest(SiteLang lang) {
+  final t = siteText(lang.code);
+  // the root manifest keeps addresses relative to it (the root page may be served from a folder)
+  final up = lang.isRoot ? '' : '../';
+  SiteExample example(String id) => t.examples.firstWhere((e) => e.id == id);
+  Map<String, Object> shortcut(String name, String? description, String query) => {
+    'name': name,
+    'description': ?description,
+    'url': './?$query',
+    'icons': [
+      {'src': '${up}icons/Icon-192.png', 'sizes': '192x192'},
+    ],
+  };
+  final manifest = {
+    'name': 'OpenCADIrrigation — ${t.subCategory}',
+    'short_name': 'OpenCADIrrig',
+    'id': lang.isRoot ? './' : '/',
+    'start_url': './?source=pwa',
+    'scope': lang.isRoot ? './' : '../',
+    'display': 'standalone',
+    'display_override': ['window-controls-overlay', 'standalone', 'browser'],
+    'orientation': 'any',
+    'background_color': '#14171B',
+    'theme_color': '#0D47A1',
+    'lang': lang.tag,
+    'dir': lang.dir,
+    'description': t.description,
+    'categories': ['productivity', 'utilities', 'education', 'business'],
+    'prefer_related_applications': false,
+    'icons': [
+      for (final (src, size, purpose) in [
+        ('icons/Icon-192.png', '192x192', 'any'),
+        ('icons/Icon-512.png', '512x512', 'any'),
+        ('icons/Icon-maskable-192.png', '192x192', 'maskable'),
+        ('icons/Icon-maskable-512.png', '512x512', 'maskable'),
+        ('brand/logo-mark-1024.png', '1024x1024', 'any'),
+      ])
+        {'src': '$up$src', 'sizes': size, 'type': 'image/png', 'purpose': purpose},
+    ],
+    'screenshots': [
+      for (final (src, size, form) in manifestScreenshots) {'src': '$up$src', 'sizes': size, 'type': 'image/png', 'form_factor': form, 'label': t.screenshotLabel},
+    ],
+    'shortcuts': [
+      shortcut(t.tutorial, null, 'tutorial=1'),
+      shortcut(t.aiCta, t.aiTitle, 'ai=1'),
+      shortcut(example('orchard').title, example('orchard').text, 'design=1'),
+      shortcut(example('garden').title, example('garden').text, 'example=garden'),
+      shortcut(example('pivot').title, example('pivot').text, 'example=pivot'),
+    ],
+  };
+  return '${const JsonEncoder.withIndent('  ').convert(manifest)}\n';
+}
+
+/// Screenshots of the app in the manifests: `(path, size, form factor)`;
+/// the narrow one lets phones show the full install sheet.
+const manifestScreenshots = [('screenshots/design-1440x900.png', '1440x900', 'wide'), ('screenshots/phone-780x1688.png', '780x1688', 'narrow')];
 
 /// Crawlers of search engines and of AI assistants, by the user-agent token
 /// each company documents: those that index or answer live questions and
@@ -1348,17 +1593,6 @@ String render404() {
   return b.toString();
 }
 
-/// Google Analytics (gtag.js), on every entry page.
-const _analytics =
-    '''  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=$analyticsId"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '$analyticsId');
-  </script>''';
-
 /// Page kept at the old English address `/en/`, which is now the site root:
 /// it is not indexed and sends the visitor (and any `?example=`, `?tutorial=`
 /// query it carries) to `/`.
@@ -1392,6 +1626,10 @@ String renderLegacyEnRedirect() {
 /// Every generated file: path inside `web/` → content.
 Map<String, String> renderSite() => {
   for (final l in siteLanguages) l.file: renderIndex(l),
+  for (final l in siteLanguages) '${l.path}manifest.json': renderManifest(l),
+  for (final l in siteLanguages) '${l.path}privacy/index.html': renderLegalPage(l, privacy: true),
+  for (final l in siteLanguages) '${l.path}terms/index.html': renderLegalPage(l, privacy: false),
+  'site.js': renderSiteScript(),
   'en/index.html': renderLegacyEnRedirect(),
   'sitemap.xml': renderSitemap(),
   '404.html': render404(),
@@ -1401,3 +1639,56 @@ Map<String, String> renderSite() => {
   'llms-full.txt': renderLlmsFullTxt(),
   '$indexNowKey.txt': indexNowKey,
 };
+
+/// Files generated outside `web/`, by path from the repository root: the
+/// hosting configuration (see hosting/README.md).
+Map<String, String> renderRepositoryFiles() => {'hosting/firebase.json': renderHostingConfig()};
+
+/// Cache rule of the hosting: a month for the images whose addresses carry
+/// their version (`?v=`) or never change, and a revalidation (`no-cache`,
+/// a cheap 304 when unchanged) for every file of the app whose name stays
+/// the same from build to build, so that a browser without the service
+/// worker never mixes two builds.
+const _monthCache = 'public, max-age=2592000';
+const _revalidate = 'no-cache';
+
+/// Permissions the pages may ask for: the device position (GPS walks and
+/// stake-out) and the microphone (voice dictation of the AI assistant) on
+/// the site itself; nothing else.
+const permissionsPolicy = 'camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), serial=(), hid=(), bluetooth=(), browsing-topics=()';
+
+/// firebase.json for the site: security headers on every file, the cache
+/// rules above, and the old English address answered by a permanent
+/// redirect (the query, `?example=…`, is kept by the hosting). The default
+/// addresses of the project cannot be redirected here (the rules do not see
+/// the host): site.js sends new visitors from them to the site's address.
+String renderHostingConfig() {
+  Map<String, Object> rule(String source, Map<String, String> headers) => {
+    'source': source,
+    'headers': [
+      for (final e in headers.entries) {'key': e.key, 'value': e.value},
+    ],
+  };
+  final config = {
+    'hosting': {
+      'public': 'public',
+      'ignore': ['firebase.json', '**/.*', '**/node_modules/**'],
+      'redirects': [
+        for (final source in ['/en', '/en/', '/en/index.html']) {'source': source, 'destination': '/', 'type': 301},
+      ],
+      'headers': [
+        rule('**', {'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': permissionsPolicy}),
+        rule('/@(brand|icons|screenshots)/**', {'Cache-Control': _monthCache}),
+        rule('/*.@(png|ico)', {'Cache-Control': _monthCache}),
+        rule('/', {'Cache-Control': _revalidate}),
+        rule('/*/', {'Cache-Control': _revalidate}),
+        rule('**/*.html', {'Cache-Control': _revalidate}),
+        rule('**/manifest.json', {'Cache-Control': _revalidate}),
+        rule('/@(flutter_bootstrap.js|flutter.js|version.json|sw.js|offline.js|site.js|main.dart.js|design_worker.js)', {'Cache-Control': _revalidate}),
+        rule('/*.part.js', {'Cache-Control': _revalidate}),
+        rule('/@(assets|canvaskit)/**', {'Cache-Control': _revalidate}),
+      ],
+    },
+  };
+  return '${const JsonEncoder.withIndent('  ').convert(config)}\n';
+}

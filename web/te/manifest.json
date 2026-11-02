@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — నీటిపారుదల కోసం CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "te",
+  "dir": "ltr",
+  "description": "ఉచిత, ఓపెన్ సోర్స్ నీటిపారుదల డిజైన్ సాఫ్ట్‌వేర్: దీని AI అసిస్టెంట్ బ్రౌజర్‌లోనే స్ప్రింక్లర్లు, డ్రిప్ అమర్చి, పైపులు వేసి, వ్యవస్థ పరిమాణం నిర్ణయిస్తుంది.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "జోన్ వారీ ఫలితాలతో పరిమాణం నిర్ణయించిన నీటిపారుదల డిజైన్"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "జోన్ వారీ ఫలితాలతో పరిమాణం నిర్ణయించిన నీటిపారుదల డిజైన్"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ఇంటరాక్టివ్ ట్యుటోరియల్",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI అసిస్టెంట్‌ను తెరవండి",
+      "description": "మీతో కలిసి గీసి, డిజైన్ చేసే AI అసిస్టెంట్",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "తోట",
+      "description": "నిమ్మజాతిపై మైక్రో-స్ప్రింక్లర్లు మరియు ద్రాక్షపై డ్రిప్, పంపు మరియు ఫిల్టర్‌తో బావి, వాలు నేల.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ఇంటి తోట",
+      "description": "ముందు లాన్‌పై పాప్-అప్ స్ప్రేలు, వెనుక రోటర్లు మరియు మడులలో డ్రిప్, మీటర్ మరియు బ్యాక్‌ఫ్లో ప్రివెంటర్‌తో పురపాలక సరఫరా నుండి.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "సెంటర్ పివట్",
+      "description": "మొక్కజొన్నపై 300 m పివట్, ప్రధాన లైన్, బావి మరియు పంపు సరఫరా; టవర్, స్పాన్ మరియు నాజిల్ నివేదిక.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

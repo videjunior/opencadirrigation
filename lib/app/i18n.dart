@@ -1088,9 +1088,9 @@ const _base = <String, (String, String, String)>{
   'basemap.googleKey.docs': ('Como obter a chave', 'How to get a key', 'Cómo obtener la clave'),
   'basemap.googleKey.field': ('Chave da API', 'API key', 'Clave de la API'),
   'basemap.googleKey.privacy': (
-    'A chave fica guardada só neste navegador e é enviada apenas ao Google.',
-    'The key is kept in this browser only and sent to Google only.',
-    'La clave se guarda solo en este navegador y se envía únicamente a Google.',
+    'A chave é guardada no armazenamento deste navegador, que qualquer script deste site poderia ler (as estatísticas de visita do site nunca rodam com o app aberto), e é enviada apenas ao Google. Restrinja a chave a este site no console do Google Cloud.',
+    'The key is kept in this browser\'s storage, which any script of this site could read (the site\'s visit statistics never run while the app is open), and it is sent to Google only. Restrict the key to this site in the Google Cloud console.',
+    'La clave se guarda en el almacenamiento de este navegador, que cualquier script de este sitio podría leer (las estadísticas de visitas del sitio nunca se ejecutan con la aplicación abierta), y se envía únicamente a Google. Restrinja la clave a este sitio en la consola de Google Cloud.',
   ),
   'basemap.googleKey.remove': ('Remover chave', 'Remove key', 'Quitar clave'),
   'basemap.googleKeyMissing': (
@@ -6240,9 +6240,9 @@ const _base = <String, (String, String, String)>{
   'ai.key.replace': ('Nova chave da API', 'New API key', 'Nueva clave de la API'),
   'ai.key.save': ('Salvar', 'Save', 'Guardar'),
   'ai.key.privacy': (
-    'Sem “Lembrar”, a chave fica só na memória enquanto a página está aberta. Com “Lembrar”, ela é guardada no armazenamento deste navegador, onde scripts que rodam nesta página (inclusive o de estatísticas de visita do site) poderiam lê-la. Em qualquer caso, cada chave é enviada só à API da sua empresa (api.anthropic.com ou api.openai.com) e nunca entra em arquivos do projeto, autossalvamento, links de compartilhamento ou exportações.',
-    'Without “Remember”, a key stays only in memory while the page is open. With “Remember”, it is kept in this browser\'s storage, where scripts running on this page (including the site\'s visit statistics) could read it. Either way each key is sent only to its own company\'s API (api.anthropic.com or api.openai.com) and never goes into project files, autosave, share links or exports.',
-    'Sin “Recordar”, la clave queda solo en la memoria mientras la página está abierta. Con “Recordar”, se guarda en el almacenamiento de este navegador, donde los scripts que se ejecutan en esta página (incluido el de estadísticas de visitas del sitio) podrían leerla. En cualquier caso, cada clave se envía solo a la API de su empresa (api.anthropic.com o api.openai.com) y nunca entra en archivos del proyecto, autoguardado, enlaces para compartir ni exportaciones.',
+    'Sem “Lembrar”, a chave fica só na memória enquanto a página está aberta. Com “Lembrar”, ela é guardada no armazenamento deste navegador, que qualquer script deste site poderia ler (as estatísticas de visita do site nunca rodam com o app aberto). Em qualquer caso, cada chave é enviada só à API da sua empresa (api.anthropic.com ou api.openai.com) e nunca entra em arquivos do projeto, autossalvamento, links de compartilhamento ou exportações.',
+    'Without “Remember”, a key stays only in memory while the page is open. With “Remember”, it is kept in this browser\'s storage, which any script of this site could read (the site\'s visit statistics never run while the app is open). Either way each key is sent only to its own company\'s API (api.anthropic.com or api.openai.com) and never goes into project files, autosave, share links or exports.',
+    'Sin “Recordar”, la clave queda solo en la memoria mientras la página está abierta. Con “Recordar”, se guarda en el almacenamiento de este navegador, que cualquier script de este sitio podría leer (las estadísticas de visitas del sitio nunca se ejecutan con la aplicación abierta). En cualquier caso, cada clave se envía solo a la API de su empresa (api.anthropic.com o api.openai.com) y nunca entra en archivos del proyecto, autoguardado, enlaces para compartir ni exportaciones.',
   ),
   'ai.key.odd': (
     'Salva. Chaves da {p} costumam começar com {x}: confira a chave se os pedidos falharem.',

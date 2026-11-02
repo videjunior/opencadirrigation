@@ -156,7 +156,7 @@ const _de = SiteText(
     ),
     (
       'Werden meine Projekte in der Cloud gespeichert?',
-      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie ablegen, wo Sie möchten; beim Teilen per Link steckt das Projekt in der Adresse selbst, es wird also nichts hochgeladen. Auf das Internet wird nur zugegriffen, wenn Sie es anfordern: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent, der nur mit dem von Ihnen gewählten Anbieter (Anthropic oder OpenAI) kommuniziert.',
+      faqCloudAnswerEn,
     ),
     (
       'Wie wird die Hydraulik berechnet?',

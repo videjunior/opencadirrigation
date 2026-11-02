@@ -145,7 +145,7 @@ const _vi = SiteText(
     ),
     (
       'Dự án của tôi có được lưu trên đám mây không?',
-      'Không. Dự án được lưu trong trình duyệt của bạn và trong các tệp .oci.json mà bạn cất ở bất kỳ đâu; liên kết chia sẻ chứa dự án ngay trong chính địa chỉ, nên không có gì được tải lên. Internet chỉ được truy cập khi bạn yêu cầu: bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI, vốn chỉ giao tiếp với nhà cung cấp bạn đã chọn (Anthropic hoặc OpenAI).',
+      faqCloudAnswerEn,
     ),
     (
       'Tính toán thủy lực được thực hiện thế nào?',

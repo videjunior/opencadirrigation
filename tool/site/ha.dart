@@ -165,7 +165,7 @@ const _ha = SiteText(
     ),
     (
       'Shin ana ajiye ayyukana a gajimare (cloud)?',
-      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a fayilolin .oci.json da kake ajiyewa inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a wata sabar ba. Ana amfani da intanet ne kawai idan ka nema: taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da kuma, idan kana amfani da shi, mataimakin AI, wanda ke magana da mai ba da sabis ɗin da ka zaɓa kaɗai (Anthropic ko OpenAI).',
+      faqCloudAnswerEn,
     ),
     (
       'Yaya ake lissafin ruwa?',

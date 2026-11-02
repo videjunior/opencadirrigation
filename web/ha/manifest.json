@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — CAD na ban ruwa",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "ha",
+  "dir": "ltr",
+  "description": "Manhajar ƙirar ban ruwa kyauta mai buɗaɗɗen tushe, da mataimakin AI mai tsara masu fesa ruwa da ɗigo, shimfiɗa bututu da auna girma, a mai binciken gizo.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Ƙirar ban ruwa da aka auna girma tare da sakamako na kowane yanki"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Ƙirar ban ruwa da aka auna girma tare da sakamako na kowane yanki"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Koyarwa mai mu'amala",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Buɗe mataimakin AI",
+      "description": "Mataimakin AI da ke zane da ƙira tare da kai",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Gonar 'ya'yan itace",
+      "description": "Ƙananan masu fesa ruwa a lemu da ɗigo a inabi, rijiya da famfo da tace, ƙasa mai gangara.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Lambun gida",
+      "description": "Fesa na pop-up a ciyawar gaba, rotors a baya da ɗigo a lambu, daga ruwan famfo na gari da mita da mai hana komawar ruwa.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Pivot na tsakiya",
+      "description": "Pivot na m 300 a masara da babban bututu, rijiya da famfo ke ciyarwa; rahoton hasumiya, tsawo da bakin fesawa.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

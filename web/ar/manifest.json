@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — برنامج CAD للري",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "ar",
+  "dir": "rtl",
+  "description": "برنامج مجاني ومفتوح المصدر لتصميم الري مع مساعد ذكاء اصطناعي يوزّع الرشاشات والتنقيط ويخطط مسارات الأنابيب ويحدد أقطارها، مباشرةً في متصفحك.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "تصميم ري محدد الأقطار مع النتائج لكل منطقة"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "تصميم ري محدد الأقطار مع النتائج لكل منطقة"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "الدرس التفاعلي",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "افتح مساعد الذكاء الاصطناعي",
+      "description": "مساعد ذكاء اصطناعي يرسم ويصمّم معك",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "بستان",
+      "description": "رشاشات دقيقة على الحمضيات وتنقيط على العنب، بئر بمضخة ومرشح، أرض منحدرة.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "حديقة منزلية",
+      "description": "رشاشات منبثقة على العشب الأمامي، دوّارات في الخلف وتنقيط في الأحواض، تغذية من الشبكة العامة بعداد ومانع ارتداد.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "محور مركزي",
+      "description": "محور 300 م على الذرة يغذيه خط رئيسي وبئر ومضخة؛ تقرير الأبراج والامتدادات والفوهات.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

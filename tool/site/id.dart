@@ -160,7 +160,7 @@ const _id = SiteText(
     ),
     (
       'Apakah proyek saya disimpan di cloud?',
-      'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana saja; tautan berbagi membawa proyek di dalam alamatnya sendiri, sehingga tidak ada yang diunggah. Internet hanya diakses saat Anda memintanya: peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL dan, jika Anda memakainya, asisten AI, yang hanya berkomunikasi dengan penyedia layanan pilihan Anda (Anthropic atau OpenAI).',
+      faqCloudAnswerEn,
     ),
     (
       'Bagaimana perhitungan hidrauliknya?',

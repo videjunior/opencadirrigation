@@ -172,7 +172,7 @@ const _fr = SiteText(
     ),
     (
       'Mes projets sont-ils stockés dans le cloud ?',
-      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous rangez où vous voulez ; un lien de partage contient le projet dans l’adresse elle-même, si bien que rien n’est envoyé sur un serveur. L’application n’accède à Internet que lorsque vous le demandez : fonds de carte, altitude et climat en ligne, catalogues chargés par URL et, si vous l’utilisez, l’assistant IA, qui ne communique qu’avec le fournisseur que vous avez choisi (Anthropic ou OpenAI).',
+      faqCloudAnswerEn,
     ),
     (
       'Comment l’hydraulique est-elle calculée ?',

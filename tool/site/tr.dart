@@ -149,7 +149,7 @@ const _tr = SiteText(
     ),
     (
       'Projelerim bulutta mı saklanıyor?',
-      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde tuttuğunuz .oci.json dosyalarında saklanır; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey bir sunucuya yüklenmez. İnternete yalnızca siz istediğinizde bağlanılır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve, kullanıyorsanız, sadece seçtiğiniz hizmet sağlayıcıyla (Anthropic veya OpenAI) iletişim kuran yapay zekâ asistanı için.',
+      faqCloudAnswerEn,
     ),
     (
       'Hidrolik hesap nasıl yapılır?',

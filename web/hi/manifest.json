@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — सिंचाई के लिए CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "hi",
+  "dir": "ltr",
+  "description": "मुफ़्त और ओपन सोर्स सिंचाई डिज़ाइन सॉफ़्टवेयर, जिसका AI सहायक आपके ब्राउज़र में स्प्रिंकलर और ड्रिप लगाता है, पाइप बिछाता है और प्रणाली की साइज़िंग करता है।",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ज़ोन-वार परिणामों के साथ आकार-निर्धारित सिंचाई डिज़ाइन"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "ज़ोन-वार परिणामों के साथ आकार-निर्धारित सिंचाई डिज़ाइन"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "इंटरैक्टिव ट्यूटोरियल",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI सहायक खोलें",
+      "description": "एक AI सहायक जो आपके साथ ड्रॉइंग बनाता और डिज़ाइन करता है",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "बाग़",
+      "description": "नींबूवर्गीय पर माइक्रो-स्प्रिंकलर और अंगूर पर ड्रिप, पंप और फ़िल्टर वाला कुआँ, ढलान वाली ज़मीन।",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "घरेलू बगीचा",
+      "description": "सामने के लॉन पर पॉप-अप स्प्रे, पीछे रोटर और क्यारियों में ड्रिप, मीटर और बैकफ़्लो प्रिवेंटर के साथ नगर जलापूर्ति से।",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "सेंटर पिवट",
+      "description": "मक्का पर 300 m पिवट जिसे मुख्य लाइन, कुआँ और पंप आपूर्ति करते हैं; टावर, स्पैन और नोज़ल रिपोर्ट।",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

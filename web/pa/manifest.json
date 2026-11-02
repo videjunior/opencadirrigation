@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — ਸਿੰਚਾਈ ਲਈ CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "pa",
+  "dir": "ltr",
+  "description": "ਮੁਫ਼ਤ ਅਤੇ ਓਪਨ ਸੋਰਸ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ ਸਾਫ਼ਟਵੇਅਰ, ਜਿਸਦਾ AI ਸਹਾਇਕ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਹੀ ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਡ੍ਰਿਪ ਲਗਾਉਂਦਾ, ਪਾਈਪਾਂ ਵਿਛਾਉਂਦਾ ਅਤੇ ਸਿਸਟਮ ਦਾ ਆਕਾਰ ਤੈਅ ਕਰਦਾ ਹੈ।",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ਜ਼ੋਨ-ਵਾਰ ਨਤੀਜਿਆਂ ਨਾਲ ਆਕਾਰ ਤੈਅ ਕੀਤਾ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "ਜ਼ੋਨ-ਵਾਰ ਨਤੀਜਿਆਂ ਨਾਲ ਆਕਾਰ ਤੈਅ ਕੀਤਾ ਸਿੰਚਾਈ ਡਿਜ਼ਾਈਨ"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ਇੰਟਰਐਕਟਿਵ ਟਿਊਟੋਰਿਅਲ",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI ਸਹਾਇਕ ਖੋਲ੍ਹੋ",
+      "description": "ਇੱਕ AI ਸਹਾਇਕ ਜੋ ਤੁਹਾਡੇ ਨਾਲ ਮਿਲ ਕੇ ਡਰਾਇੰਗ ਬਣਾਉਂਦਾ ਅਤੇ ਡਿਜ਼ਾਈਨ ਕਰਦਾ ਹੈ",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ਬਾਗ਼",
+      "description": "ਨਿੰਬੂ ਜਾਤੀ 'ਤੇ ਮਾਈਕ੍ਰੋ-ਸਪ੍ਰਿੰਕਲਰ ਅਤੇ ਅੰਗੂਰ 'ਤੇ ਡ੍ਰਿਪ, ਪੰਪ ਅਤੇ ਫਿਲਟਰ ਵਾਲਾ ਖੂਹ, ਢਲਾਣ ਵਾਲੀ ਜ਼ਮੀਨ।",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ਘਰੇਲੂ ਬਗ਼ੀਚਾ",
+      "description": "ਅਗਲੇ ਲਾਅਨ 'ਤੇ ਪੌਪ-ਅੱਪ ਸਪਰੇਅ, ਪਿੱਛੇ ਰੋਟਰ ਅਤੇ ਕਿਆਰੀਆਂ ਵਿੱਚ ਡ੍ਰਿਪ, ਮੀਟਰ ਅਤੇ ਬੈਕਫਲੋ ਪ੍ਰੀਵੈਂਟਰ ਨਾਲ ਜਨਤਕ ਸਪਲਾਈ ਤੋਂ।",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ਸੈਂਟਰ ਪਿਵਟ",
+      "description": "ਮੱਕੀ 'ਤੇ 300 m ਪਿਵਟ ਜਿਸਨੂੰ ਮੁੱਖ ਲਾਈਨ, ਖੂਹ ਅਤੇ ਪੰਪ ਸਪਲਾਈ ਕਰਦੇ ਹਨ; ਟਾਵਰ, ਸਪੈਨ ਅਤੇ ਨੋਜ਼ਲ ਰਿਪੋਰਟ।",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

@@ -180,7 +180,7 @@ const _sw = SiteText(
     ),
     (
       'Je, miradi yangu huhifadhiwa kwenye wingu?',
-      'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na katika faili za .oci.json unazoweka popote upendapo; kiungo cha kushiriki hubeba mradi ndani ya anwani yenyewe, kwa hiyo hakuna kinachopakiwa kwenye seva. Intaneti hutumika tu unapoiomba: ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, katalogi zinazopakiwa kutoka URL na, ukimtumia, msaidizi wa AI, ambaye huwasiliana tu na mtoa huduma uliyemchagua (Anthropic au OpenAI).',
+      faqCloudAnswerEn,
     ),
     (
       'Ukokotoaji wa haidroliki hufanywaje?',

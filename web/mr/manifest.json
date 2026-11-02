@@ -1,0 +1,130 @@
+{
+  "name": "OpenCADIrrigation — सिंचनासाठी CAD",
+  "short_name": "OpenCADIrrig",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "../",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "any",
+  "background_color": "#14171B",
+  "theme_color": "#0D47A1",
+  "lang": "mr",
+  "dir": "ltr",
+  "description": "मोफत आणि ओपन सोर्स सिंचन डिझाइन सॉफ्टवेअर: त्याचा AI सहाय्यक तुमच्या ब्राउझरमध्येच स्प्रिंकलर व ठिबक मांडतो, पाईपचे मार्ग आखतो आणि प्रणालीचा आकार ठरवतो.",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education",
+    "business"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../brand/logo-mark-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "../screenshots/design-1440x900.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "झोननिहाय निकालांसह आकार निश्चित केलेले सिंचन डिझाइन"
+    },
+    {
+      "src": "../screenshots/phone-780x1688.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "झोननिहाय निकालांसह आकार निश्चित केलेले सिंचन डिझाइन"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "परस्परसंवादी ट्युटोरियल",
+      "url": "./?tutorial=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI सहाय्यक उघडा",
+      "description": "तुमच्यासोबत रेखाटन आणि डिझाइन करणारा AI सहाय्यक",
+      "url": "./?ai=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "फळबाग",
+      "description": "लिंबूवर्गीय पिकावर मायक्रो-स्प्रिंकलर आणि द्राक्षावर ठिबक, पंप आणि फिल्टर असलेली विहीर, उताराची जमीन.",
+      "url": "./?design=1",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "घरगुती बाग",
+      "description": "समोरच्या हिरवळीवर पॉप-अप स्प्रे, मागे रोटर आणि वाफ्यांत ठिबक, मीटर आणि बॅकफ्लो प्रिव्हेंटरसह नळ पाणीपुरवठ्यातून.",
+      "url": "./?example=garden",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "सेंटर पिव्हट",
+      "description": "मक्यावरील 300 m पिव्हट ज्याला मुख्य लाईन, विहीर आणि पंप पुरवठा करतात; टॉवर, स्पॅन आणि नोझल अहवाल.",
+      "url": "./?example=pivot",
+      "icons": [
+        {
+          "src": "../icons/Icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
