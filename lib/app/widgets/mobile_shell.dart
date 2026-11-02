@@ -303,6 +303,9 @@ class _MobileShellState extends State<MobileShell> {
             for (final m in BaseMap.values) check('${t('view.baseMap')}: ${t('view.baseMap.${m.name}')}', c.baseMap == m, (_) => selectBaseMap(context, c, m)),
             row(t('view.baseMap.googleKey'), () => showGoogleMapsKeyDialog(context, c), icon: Icons.key_outlined),
             row(t('view.baseMap.customUrl'), () => showCustomTilesDialog(context, c), icon: Icons.link),
+            // 1.6.0 CAD
+            row(t('basemap.osm.menu'), () => showStreetsServerDialog(context, c), icon: Icons.dns_outlined),
+            row(t('basemap.terms.menu'), () => showBaseMapTermsDialog(context, c), icon: Icons.gavel_outlined),
             for (final l in supportedLanguages) check(languageNames[l] ?? l, c.lang == l, (_) => c.setLanguage(l)),
             for (final m in CadThemeMode.values)
               check('${t('view.theme')}: ${t('view.theme.${m.name}')}', uiThemeMode.value == m, (_) {

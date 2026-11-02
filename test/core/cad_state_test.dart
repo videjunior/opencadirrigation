@@ -1,17 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/actions.dart';
+import 'package:opencadirrigation/app/canvas/basemap.dart';
 import 'package:opencadirrigation/app/examples.dart';
 import 'package:opencadirrigation/app/io/gps.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
+import 'package:opencadirrigation/app/io/sheet_basemap.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/state/design_job.dart';
 import 'package:opencadirrigation/app/state/design_runner_io.dart';
 import 'package:opencadirrigation/app/state/workspace.dart';
 import 'package:opencadirrigation/core/design/auto_fix.dart';
+import 'package:opencadirrigation/core/io/geo.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
@@ -337,6 +341,109 @@ void main() {
         expect(labels, contains(k));
         expect(c.t.has(k), isTrue, reason: k);
       }
+    });
+  });
+
+  group('georeference (CAD-18, CAD-29, FMT-17, UI-34)', () {
+    const kml =
+        '<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><name>edge</name><LineString><coordinates>-47.9,-15.8,0 -47.899,-15.801,0</coordinates></LineString></Placemark></Document></kml>';
+
+    test('undoing an import takes the georeference it brought away', () {
+      final c = fresh();
+      expect(c.project.meta.georef, isNull);
+      c.importFile('field.kml', Uint8List.fromList(utf8.encode(kml)));
+      expect(c.project.meta.georef, isNotNull);
+      expect(c.project.entities, isNotEmpty);
+      c.undo();
+      expect(c.project.meta.georef, isNull, reason: 'the KML that was undone no longer places the project');
+      expect(c.project.entities, isEmpty);
+      c.redo();
+      expect(c.project.meta.georef, isNotNull);
+    });
+
+    test('setting or removing the georeference is an undo step', () {
+      final c = fresh();
+      expect(c.setGeoreference(GeoReference.fromLatLonOrigin(-15.8, -47.9)), isTrue);
+      expect(c.setGeoreference(null), isTrue);
+      expect(c.project.meta.georef, isNull);
+      expect(c.historyEntries.last.label, 'hist.georefRemove');
+      c.undo();
+      expect(c.project.meta.georef, isNotNull);
+    });
+
+    test('pasting between projects placed at different origins keeps the place on the map', () async {
+      Future<void> check(GeoReference from, GeoReference to) async {
+        final w = Workspace(systemClipboard: false);
+        final a = w.current..autosaveEnabled = false;
+        a.setGeoreference(from);
+        a.addEntity(CircleEntity(id: 'well', center: const Pt(100, 50), radius: 2));
+        a.select(['well']);
+        await w.copy();
+        final b = w.addTab()..autosaveEnabled = false;
+        b.setGeoreference(to);
+        expect(await w.paste(), 1);
+        final pasted = b.project.entities.whereType<CircleEntity>().single;
+        final (lat, lon) = to.toLatLon(pasted.center.x, pasted.center.y);
+        final (lat0, lon0) = from.toLatLon(100, 50);
+        expect(lat, closeTo(lat0, 1e-6));
+        expect(lon, closeTo(lon0, 1e-6));
+        expect(w.lastPaste!.placedOnMap, isTrue);
+      }
+
+      // the same UTM zone, origins 200 m apart
+      await check(GeoReference.fromLatLonOrigin(-15.8, -47.9), GeoReference.fromLatLonOrigin(-15.801, -47.902));
+      // across the zone boundary at 48° W
+      await check(GeoReference.fromLatLonOrigin(-15.8, -48.001), GeoReference.fromLatLonOrigin(-15.8, -47.999));
+    });
+
+    test('a cut refused while a design runs copies and deletes nothing', () async {
+      final w = Workspace(systemClipboard: false);
+      final c = w.current..autosaveEnabled = false;
+      loadExampleAction(c, ExampleId.garden);
+      c.addEntity(LineEntity(id: 'l', a: Pt.zero, b: const Pt(1, 0)));
+      c.select(['l']);
+      final held = _HeldRunner();
+      c.designRunner = held;
+      final run = c.runDesign();
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      expect(await w.copy(cut: true), 0);
+      expect(w.clipboard, isNull);
+      expect(c.project.byId('l'), isNotNull);
+      c.cancelDesign();
+      await run;
+    });
+  });
+
+  group('base maps (CAD-24, CAD-35)', () {
+    test('the street map server can be another one; volunteer servers give fewer tiles to the sheets', () {
+      final c = fresh();
+      expect(BaseMapLayer.url(BaseMap.streets, 3, 1, 2), 'https://tile.openstreetmap.org/3/1/2.png');
+      expect(BaseMapLayer.sharedServer(BaseMap.streets), isTrue);
+      c.setStreetsTileUrl('https://osm.example.org/{z}/{x}/{y}.png');
+      expect(BaseMapLayer.url(BaseMap.streets, 3, 1, 2), 'https://osm.example.org/3/1/2.png');
+      expect(BaseMapLayer.sharedServer(BaseMap.streets), isFalse);
+      expect(getPref('basemap.osmUrl'), 'https://osm.example.org/{z}/{x}/{y}.png');
+      c.setStreetsTileUrl('');
+      expect(BaseMapLayer.url(BaseMap.streets, 3, 1, 2), startsWith('https://tile.openstreetmap.org/'));
+      expect(sheetMapMaxTilesShared, lessThan(sheetMapMaxTiles));
+      // the credit of each source links to its copyright and terms
+      for (final m in BaseMap.values) {
+        if (m == BaseMap.none || m == BaseMap.custom) continue;
+        expect(BaseMapLayer.attributionUrl(m), startsWith('https://'), reason: m.name);
+      }
+      expect(BaseMapLayer.attributionUrl(BaseMap.streets), 'https://www.openstreetmap.org/copyright');
+    });
+
+    test('the Google key can be kept for this visit only', () {
+      final c = fresh();
+      c.setGoogleMapsKey('AIza-session', remember: false);
+      expect(c.googleMapsKey, 'AIza-session');
+      expect(getPref('basemap.googleKey'), isNull);
+      expect(fresh().googleMapsKey, 'AIza-session', reason: 'another tab of the page has it');
+      c.setGoogleMapsKey('AIza-kept');
+      expect(getPref('basemap.googleKey'), 'AIza-kept');
+      c.setGoogleMapsKey(null);
+      expect(getPref('basemap.googleKey'), isNull);
     });
   });
 

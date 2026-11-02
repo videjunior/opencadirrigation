@@ -117,6 +117,11 @@ Future<void> openStoredAction(Workspace ws, StoredProject p) async {
 /// Copies (or cuts) the selection of the active tab to the clipboard.
 Future<void> copySelectionAction(Workspace ws, {bool cut = false}) async {
   final c = ws.current;
+  // a cut refused while a design runs has said why already
+  if (cut && c.busy) {
+    c.editAllowed();
+    return;
+  }
   final n = await ws.copy(cut: cut);
   c.notify(n == 0 ? c.t('msg.nothingSelected') : c.t(cut ? 'msg.cut' : 'msg.copied', {'n': '$n'}));
 }
@@ -125,7 +130,8 @@ Future<void> copySelectionAction(Workspace ws, {bool cut = false}) async {
 Future<void> pasteAction(Workspace ws) async {
   final c = ws.current;
   final n = await ws.paste();
-  c.notify(n == 0 ? c.t('msg.clipboardEmpty') : c.t('msg.pasted', {'n': '$n'}));
+  final onMap = n > 0 && (ws.lastPaste?.placedOnMap ?? false);
+  c.notify(n == 0 ? c.t('msg.clipboardEmpty') : '${c.t('msg.pasted', {'n': '$n'})}${onMap ? ' ${c.t('msg.pastedOnMap')}' : ''}');
 }
 
 String _safeName(ProjectController c) {

@@ -14,4 +14,10 @@ const coverageCad = <String, String>{
   'dialog:storage_dialog.storage.zip': 'n/a:pending-ai — an operation that downloads every project kept in the browser as a ZIP of their files',
   // ---- GPS walk
   'menu:gps.walkDiscard': _gps,
+  // ---- base maps
+  'menu:basemap.osm.menu': 'n/a:pending-ai — a setting "view.streets_tile_url" (the XYZ template of the street map server; empty for the OpenStreetMap Foundation\'s)',
+  'dialog:basemap_dialogs.streetsServer': 'n/a:pending-ai — a setting "view.streets_tile_url" (the XYZ template of the street map server; empty for the OpenStreetMap Foundation\'s)',
+  'menu:basemap.terms.menu': 'n/a:pending-ai — an operation that reads the terms of each base map source (credit, allowed use, links) for the assistant to explain them',
+  'dialog:basemap_dialogs.baseMapTerms': 'n/a:pending-ai — an operation that reads the terms of each base map source (credit, allowed use, links) for the assistant to explain them',
+  'dialog:basemap_dialogs.googleMapsKey.remember': 'n/a:the user\'s own Map Tiles API key and where the browser keeps it; the assistant never handles keys',
 };

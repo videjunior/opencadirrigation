@@ -97,6 +97,9 @@ class AppMenuBar extends StatelessWidget {
                       menuChildren: [
                         if (recent.isEmpty) item(t('file.noRecent'), null),
                         for (final p in recent.take(8)) item(p.name.isEmpty ? p.uid : p.name, ws == null ? null : () => openStoredAction(ws!, p), key: Key('recent_${p.uid}')),
+                        // 1.6.0 CAD: what these copies are (kept in this browser only), and all of them at once
+                        const Divider(height: 1),
+                        item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_recent_storage')),
                       ],
                       child: Text(t('file.recent')),
                     ),
@@ -277,6 +280,10 @@ class AppMenuBar extends StatelessWidget {
                         const Divider(height: 1),
                         RadioMenuButton<BaseMap>(value: BaseMap.custom, groupValue: c.baseMap, onChanged: (v) => selectBaseMap(context, c, v ?? BaseMap.none), child: Text(t('view.baseMap.custom'))),
                         item(t('view.baseMap.customUrl'), () => showCustomTilesDialog(context, c), icon: Icons.link, key: const Key('menu_custom_tiles')),
+                        // 1.6.0 CAD
+                        const Divider(height: 1),
+                        item(t('basemap.osm.menu'), () => showStreetsServerDialog(context, c), icon: Icons.dns_outlined, key: const Key('menu_osm_server')),
+                        item(t('basemap.terms.menu'), () => showBaseMapTermsDialog(context, c), icon: Icons.gavel_outlined, key: const Key('menu_map_terms')),
                       ],
                       child: Text(t('view.baseMap')),
                     ),

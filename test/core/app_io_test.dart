@@ -147,7 +147,11 @@ void main() {
       expect(BaseMapLayer.customUrl('https://{s}.t.example/{z}/{x}/{-y}.png?key=k', 5, 3, 7), 'https://b.t.example/5/3/24.png?key=k');
       expect(BaseMapLayer.customUrl('https://{s:xyz}.t.example/{z}/{x}/{y}', 5, 4, 7), 'https://z.t.example/5/4/7');
       expect(BaseMapLayer.isValidTemplate('https://t.example/{z}/{x}/{y}.png'), isTrue);
-      expect(BaseMapLayer.isValidTemplate('http://t.example/{z}/{x}/{-y}.png'), isTrue);
+      // http:// is blocked by the browser on the HTTPS site (mixed content), except on this computer
+      expect(BaseMapLayer.isValidTemplate('http://t.example/{z}/{x}/{-y}.png'), isFalse);
+      expect(BaseMapLayer.isPlainHttp('http://t.example/{z}/{x}/{-y}.png'), isTrue);
+      expect(BaseMapLayer.isValidTemplate('http://localhost:8080/{z}/{x}/{-y}.png'), isTrue);
+      expect(BaseMapLayer.isPlainHttp('http://127.0.0.1/{z}/{x}/{y}.png'), isFalse);
       expect(BaseMapLayer.isValidTemplate('https://t.example/{z}/{x}.png'), isFalse);
       expect(BaseMapLayer.isValidTemplate('t.example/{z}/{x}/{y}.png'), isFalse);
       expect(BaseMapLayer.isValidTemplate(''), isFalse);

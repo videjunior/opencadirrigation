@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/model/geometry.dart';
 import '../state/controller.dart';
+import '../io/links.dart';
 import '../keys/canvas_keys.dart';
 import '../state/workspace.dart';
 import '../tools/tools.dart';
@@ -427,6 +428,13 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
                         size: Size.infinite,
                       ),
                     ),
+                    // the credit of the base map: readable, and a link to the source's copyright and terms
+                    if (c.baseMap != BaseMap.none && c.project.meta.georef != null && basemap.attributionText(c.baseMap).isNotEmpty)
+                      Positioned(
+                        left: 8,
+                        bottom: 30,
+                        child: _AttributionLink(text: basemap.attributionText(c.baseMap), url: BaseMapLayer.attributionUrl(c.baseMap)),
+                      ),
                     // touch-friendly zoom buttons
                     Positioned(
                       right: 8,
@@ -461,6 +469,32 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         width: math.max(28, 32),
         height: 32,
         child: Icon(icon, size: 16, color: Cad.fg70),
+      ),
+    ),
+  );
+}
+
+/// The credit of the base map over the canvas, as the sources ask: plain
+/// to read, and a link to their copyright and terms page.
+class _AttributionLink extends StatelessWidget {
+  const _AttributionLink({required this.text, required this.url});
+  final String text;
+  final String url;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    key: const Key('basemap_credit'),
+    color: Cad.overlay,
+    borderRadius: BorderRadius.circular(3),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(3),
+      onTap: url.isEmpty ? null : () => openExternalLink(url),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 11, color: Cad.fg70, decoration: url.isEmpty ? null : TextDecoration.underline, decorationColor: Cad.fg38),
+        ),
       ),
     ),
   );

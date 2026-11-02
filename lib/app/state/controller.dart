@@ -48,6 +48,7 @@ import '../../core/model/spatial_index.dart';
 import '../../core/model/split.dart';
 import '../../core/model/terrain.dart';
 import '../../core/units.dart';
+import '../canvas/basemap.dart' show BaseMapLayer;
 import '../canvas/camera.dart';
 import '../i18n.dart';
 import '../io/document.dart';
@@ -55,6 +56,7 @@ import '../io/gps.dart';
 import '../io/http.dart';
 import '../io/prefs.dart';
 import '../io/project_store.dart';
+import '../io/storage_info.dart';
 import '../io/wake_lock.dart';
 import '../io/window_locks.dart';
 import '../keys/canvas_keys.dart';
@@ -445,8 +447,15 @@ class ProjectController extends ChangeNotifier {
   String Function()? baseMapAttribution;
 
   /// The user's Google Maps Platform API key (Map Tiles API), kept in the
-  /// browser only; null until the user enters one.
-  String? googleMapsKey = _savedPref('basemap.googleKey');
+  /// browser only (or, when the user chose so, in this page only, gone at
+  /// the next visit); null until the user enters one.
+  String? googleMapsKey = _sessionGoogleKey ?? _savedPref('basemap.googleKey');
+
+  /// A key kept for this visit only (shared by the tabs).
+  static String? _sessionGoogleKey;
+
+  /// Whether the Google key is kept in the browser between visits.
+  bool get googleKeyRemembered => getPref('basemap.googleKey') != null;
 
   /// XYZ tile URL template of the custom base map (`{z}`, `{x}`, `{y}`,
   /// optional `{s}` subdomain and `{-y}` TMS row).
@@ -461,15 +470,36 @@ class ProjectController extends ChangeNotifier {
     return v == null || v.isEmpty ? null : v;
   }
 
-  void setGoogleMapsKey(String? key) {
+  /// Sets the Google key; [remember] keeps it in the browser for the next
+  /// visits (any script of the site can read what the browser keeps), else
+  /// it lasts as long as the page.
+  void setGoogleMapsKey(String? key, {bool remember = true}) {
     final k = key?.trim();
     googleMapsKey = k == null || k.isEmpty ? null : k;
     baseMapEpoch++;
-    if (googleMapsKey == null) {
+    if (googleMapsKey == null || !remember) {
       removePref('basemap.googleKey');
     } else {
       setPref('basemap.googleKey', googleMapsKey!);
     }
+    _sessionGoogleKey = remember ? null : googleMapsKey;
+    notifyListeners();
+  }
+
+  /// The tile server of the street map (empty: the OpenStreetMap
+  /// Foundation's, see [BaseMapLayer.streetsTemplate]), kept in the browser.
+  String get streetsTileUrl => getPref('basemap.osmUrl') ?? '';
+
+  /// Sets the street map server (empty for the default one).
+  void setStreetsTileUrl(String url) {
+    final u = url.trim();
+    if (u.isEmpty) {
+      removePref('basemap.osmUrl');
+    } else {
+      setPref('basemap.osmUrl', u);
+    }
+    BaseMapLayer.streetsTemplate = u;
+    baseMapEpoch++;
     notifyListeners();
   }
 
@@ -1130,6 +1160,11 @@ class ProjectController extends ChangeNotifier {
       if (_storeProblem != null) {
         _storeProblem = null;
         notifyListeners();
+      }
+      // once per browser: these copies are no backup (Safari erases them after a week away)
+      if (!store.synchronous && getPref('store.advised') == null) {
+        setPref('store.advised', '1');
+        notify(t(browserIsSafari ? 'store.adviceSafari' : 'store.advice'));
       }
       if (!o.versionKept && _versionWarned != uid) {
         _versionWarned = uid;
@@ -2722,13 +2757,50 @@ class ProjectController extends ChangeNotifier {
   /// covers that area ("type a coordinate, get the terrain").
   void setGeoreferenceAt(double lat, double lon, {double viewSizeM = 500}) {
     final ref = GeoReference.fromLatLonOrigin(lat, lon);
-    project.meta.georef = ref;
-    dirty = true;
+    if (!setGeoreference(ref)) return;
     if (project.bounds.isEmpty && viewSizeM > 0 && !camera.size.isEmpty) {
       camera.fit(Bounds(-viewSizeM / 2, -viewSizeM / 2, viewSizeM / 2, viewSizeM / 2), padding: 24);
     }
     track('georef');
     notify(t('msg.georefAt', {'lat': lat.toStringAsFixed(5), 'lon': lon.toStringAsFixed(5), 'crs': ref.crsName}));
+  }
+
+  /// Sets the georeference of the project, or removes it ([ref] null), as
+  /// one undo step (the base map, the online DEM and the geographic exports
+  /// follow it; the drawing coordinates and the results stay). False when
+  /// refused (a design running).
+  bool setGeoreference(GeoReference? ref) =>
+      mutate(
+        () {
+          project.meta.georef = ref;
+          return true;
+        },
+        invalidateResults: false,
+        label: ref == null ? 'hist.georefRemove' : 'hist.georef',
+      ) ==
+      true;
+
+  /// An import that georeferences the project sets the georeference before
+  /// the import's undo step is taken (the readers place the drawing with
+  /// it): the first step the import took gets the georeference the project
+  /// had before, [before], so undoing the import takes it away too; an
+  /// import that failed after setting it puts it back at once. [mark] is
+  /// the last undo step before the import.
+  void _georefWithImport(GeoReference? before, _UndoState? mark) {
+    if (identical(project.meta.georef, before)) return;
+    final i = mark == null ? 0 : _undo.indexOf(mark) + 1;
+    if (mark != null && i == 0) return; // the mark was trimmed away: nothing to fix safely
+    if (i >= _undo.length) {
+      project.meta.georef = before;
+      return;
+    }
+    final meta = _undo[i].rest['meta'];
+    if (meta is! Map<String, dynamic>) return;
+    if (before == null) {
+      meta.remove('georef');
+    } else {
+      meta['georef'] = before.toJson();
+    }
   }
 
   // ------------------------------------------------------------ device GPS
@@ -2847,7 +2919,8 @@ class ProjectController extends ChangeNotifier {
   void _onGpsFix(GpsFix f) {
     final first = gpsFix == null;
     gpsFix = f;
-    if (project.meta.georef == null) setGeoreferenceAt(f.lat, f.lon);
+    // (not while a design runs: the next fix sets it)
+    if (project.meta.georef == null && !busy && !_assistantRounds) setGeoreferenceAt(f.lat, f.lon);
     final p = gpsPoint;
     if (p == null) return;
     // the first fix brings the view to the device
@@ -3177,9 +3250,10 @@ class ProjectController extends ChangeNotifier {
   /// Places an imported raster (georeferenced when possible) as an image entity.
   ImageEntity importImage(GeoImage g) {
     ImageEntity e;
+    GeoReference? georef;
     if (g.georeferenced) {
       final (bl, w, h, rot, ref) = placeGeoImage(g, project.meta.georef);
-      project.meta.georef ??= ref;
+      georef = ref;
       e = ImageEntity(id: project.newId(), origin: bl, width: w, height: h, rotationDeg: rot, mime: g.mime, data: g.bytes, source: g.source, name: g.source);
     } else {
       // fit into the current view, centred
@@ -3188,7 +3262,15 @@ class ProjectController extends ChangeNotifier {
       final h = w * g.heightPx / math.max(1, g.widthPx);
       e = ImageEntity(id: project.newId(), origin: Pt(vis.center.x - w / 2, vis.center.y - h / 2), width: w, height: h, mime: g.mime, data: g.bytes, source: g.source, name: g.source);
     }
-    mutate(() => project.entities.insert(0, e), invalidateResults: false, label: 'hist.import|image');
+    mutate(
+      () {
+        // inside the step: undoing the picture takes its georeference away too
+        if (georef != null) project.meta.georef ??= georef;
+        project.entities.insert(0, e);
+      },
+      invalidateResults: false,
+      label: 'hist.import|image',
+    );
     return e;
   }
 
@@ -3317,10 +3399,13 @@ class ProjectController extends ChangeNotifier {
   }
 
   /// The project file as Save writes it (pretty JSON with the results)
-  /// and its compact form for the browser store, without marking anything.
+  /// and its form for the browser store, without marking anything. A large
+  /// project is encoded once (the store compresses the pretty text just as
+  /// well), so saving holds the window half as long.
   (String, String) fileJson() {
     final j = _saveMap();
-    return (encodeJson(j, pretty: true), encodeJson(j));
+    final pretty = encodeJson(j, pretty: true);
+    return (pretty, pretty.length > LocalProjectStore.compressAbove ? pretty : encodeJson(j));
   }
 
   /// The project was written to a file: clean, and a version in the
@@ -3511,6 +3596,7 @@ class ProjectController extends ChangeNotifier {
   /// Imports any supported drawing/GIS/raster file by extension.
   /// Returns a short description of what was imported.
   String importFile(String name, Uint8List bytes) {
+    final geo = project.meta.georef, mark = _undo.isEmpty ? null : _undo.last;
     try {
       return _importFile(name, bytes) + _tinNote();
     } on Error catch (e, st) {
@@ -3518,6 +3604,9 @@ class ProjectController extends ChangeNotifier {
       // errors): tell the user so instead of the raw error
       debugPrint('$e\n$st');
       throw const FormatException('file_corrupt');
+    } finally {
+      // the georeference the import brought goes with its undo step
+      _georefWithImport(geo, mark);
     }
   }
 

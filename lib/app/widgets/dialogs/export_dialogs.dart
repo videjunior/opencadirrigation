@@ -129,11 +129,22 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
           actions: [
             if (g != null)
               TextButton(
-                onPressed: () {
-                  c.project.meta.georef = null;
-                  c.dirty = true;
-                  c.refresh();
-                  Navigator.pop(ctx, false);
+                key: const Key('geo_remove'),
+                onPressed: () async {
+                  // the base map, the online DEM and the geographic exports need it: asked first (and one undo step)
+                  final ok = await showDialog<bool>(
+                    context: ctx,
+                    builder: (q) => AlertDialog(
+                      title: Text(t('geo.remove')),
+                      content: Text(t('geo.removeConfirm')),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(q, false), child: Text(t('cancel'))),
+                        FilledButton(key: const Key('geo_remove_ok'), onPressed: () => Navigator.pop(q, true), child: Text(t('ok'))),
+                      ],
+                    ),
+                  );
+                  if (ok != true || !c.setGeoreference(null)) return;
+                  if (ctx.mounted) Navigator.pop(ctx, false);
                 },
                 child: Text(t('geo.remove')),
               ),
@@ -146,8 +157,8 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
                   setState(() => error = t('geo.invalid'));
                   return;
                 }
-                c.project.meta.georef = ref;
-                c.dirty = true;
+                // one undo step
+                if (!c.setGeoreference(ref)) return;
                 c.notify(t('msg.georefSet', {'crs': ref.crsName}));
                 Navigator.pop(ctx, true);
               },
