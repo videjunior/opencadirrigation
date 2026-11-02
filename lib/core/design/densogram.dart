@@ -117,6 +117,7 @@ class DensogramOptions {
     this.windSpeed = 0,
     this.windTowardsDeg = 0,
     this.windDrift = defaultWindDrift,
+    this.depthHours,
   });
 
   /// Grid spacing (m); 0 = automatic (a quarter of the smallest wetted
@@ -141,6 +142,11 @@ class DensogramOptions {
   double windSpeed;
   double windTowardsDeg;
   double windDrift;
+
+  /// 1.6.0 AGR: hours each sprinkler (by entity id) runs in one event of
+  /// the programme: the map holds the depth applied (mm) instead of the
+  /// rate (mm/h); a sprinkler not listed applies nothing. Null = the rate.
+  Map<String, double>? depthHours;
 }
 
 /// Drift coefficient of [windDisplace] (s/m): a drop thrown r metres in calm
@@ -232,6 +238,7 @@ class Densogram {
     required this.fromResults,
     Int16List? areaOf,
     this.areas = const [],
+    this.depth = false,
   }) : areaOf = areaOf ?? (Int16List(nx * ny)..fillRange(0, nx * ny, -1));
 
   /// Lower-left corner of the grid (world metres) and cell size (m).
@@ -253,6 +260,9 @@ class Densogram {
 
   /// The emitter flows came from the design results.
   final bool fromResults;
+
+  /// 1.6.0 AGR: the cells hold the depth of one event (mm), not a rate.
+  final bool depth;
 
   /// Irrigated area of each cell (index into [areas], −1 = none) and the
   /// uniformity inside each area: zones of different rates (sprays next to
@@ -369,7 +379,11 @@ List<SpraySource> spraySources(Project p, {DesignResults? results, Set<String>? 
 Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions? options}) {
   final o = options ?? DensogramOptions();
   final res = o.useResults ? results : null;
-  final sources = spraySources(p, results: res, valveIds: o.valveIds, measured: o.useMeasured);
+  final hours = o.depthHours;
+  final sources = [
+    for (final s in spraySources(p, results: res, valveIds: o.valveIds, measured: o.useMeasured))
+      if (hours == null || (hours[s.entityId] ?? 0) > 0) s,
+  ];
   final fromResults = res != null && sources.isNotEmpty;
   if (sources.isEmpty) {
     return Densogram(origin: Pt.zero, cell: 1, nx: 0, ny: 0, rate: Float64List(0), inside: Uint8List(0), sources: const [], stats: DensogramStats.empty, masked: false, fromResults: false);
@@ -404,6 +418,7 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
   final rate = Float64List(nx * ny);
   for (final s in sources) {
     final reach = s.radius * (1 + a);
+    final k = hours == null ? 1.0 : hours[s.entityId]!;
     final i0 = math.max(0, ((s.p.x - reach - origin.x) / cell).floor()), i1 = math.min(nx - 1, ((s.p.x + reach - origin.x) / cell).floor());
     final j0 = math.max(0, ((s.p.y - reach - origin.y) / cell).floor()), j1 = math.min(ny - 1, ((s.p.y + reach - origin.y) / cell).floor());
     for (var j = j0; j <= j1; j++) {
@@ -421,7 +436,7 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
         final d = math.sqrt(vx * vx + vy * vy);
         if (d >= s.radius) continue;
         if (!s.fullCircle && d > 1e-9 && !s.covers(math.atan2(vy, vx))) continue;
-        rate[j * nx + i] += _mmh(s.rateAt(d, o.profile)) / stretch;
+        rate[j * nx + i] += _mmh(s.rateAt(d, o.profile)) / stretch * k;
       }
     }
   }
@@ -461,6 +476,7 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
     stats: densogramStats(values, cell * cell, driestWindowMean: driestWindowMean(rate, nx, ny, (k) => inside[k] == 1, (values.length * 0.05).round())),
     masked: areas.isNotEmpty,
     fromResults: fromResults,
+    depth: hours != null,
     areaOf: areaOf,
     areas: [
       for (var a = 0; a < areas.length; a++)

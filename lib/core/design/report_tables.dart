@@ -12,6 +12,7 @@ import '../model/project.dart';
 import '../model/scenario.dart';
 import '../translate.dart';
 import '../units.dart';
+import 'agr_tables.dart';
 import 'agronomy.dart';
 import 'area_requirement.dart';
 import 'area_water.dart';
@@ -824,7 +825,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         Object na(Object v) => row.applicable ? v : '-';
         rows.add([
           name,
-          t(row.cropKey),
+          // 1.6.0 AGR: the name of a user's crop
+          cropNameOf(project, row.cropKey, t),
           t('mon.${row.start.month}'),
           row.cropDays,
           RNum(u.depthFromMm(row.etoMm), 1),
@@ -909,6 +911,9 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
       ),
     );
   }
+  // 1.6.0 AGR: daily water balance, runoff, capacity, programme by station,
+  // fertigation by stage, field evaluations
+  out.addAll(agronomyPlusTables(project, results, labels));
   // ---- construction schedule (available without results)
   final works = scheduleTasks(project, project.proposal);
   if (works.isNotEmpty) {

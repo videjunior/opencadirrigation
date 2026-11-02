@@ -321,6 +321,10 @@ const adviceCodes = [
   'elec_station_current',
   'elec_overcurrent',
   'pivot_pkg_slow_drive',
+  // 1.6.0 AGR: capacity against the peak demand, runoff under the machines
+  'capacity_below_peak',
+  'pivot_capacity_below_peak',
+  'pivot_runoff',
   // 1.6.0 AUT
   'area_self_intersect',
   'pipes_overlap',
