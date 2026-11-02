@@ -1828,6 +1828,8 @@ String renderHostingConfig() {
       'headers': [
         rule('**', {'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': permissionsPolicy}),
         rule('/@(brand|icons|screenshots|og)/**', {'Cache-Control': _monthCache}),
+        // the fallback fonts the site serves (tool/site_fonts.dart): their addresses carry their version
+        rule('/fonts/**', {'Cache-Control': _monthCache}),
         rule('/*.@(png|ico)', {'Cache-Control': _monthCache}),
         rule('/', {'Cache-Control': _revalidate}),
         rule('/*/', {'Cache-Control': _revalidate}),

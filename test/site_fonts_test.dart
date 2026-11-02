@@ -89,6 +89,8 @@ void main() {
     expect(sw, contains('function hostedFont(path)'));
     expect(sw, contains('if (hostedFont(path)) {'));
     expect(sw, isNot(contains("'https://fonts.gstatic.com'")));
+    // the hosting keeps them a month: their addresses carry their version
+    expect(File('hosting/firebase.json').readAsStringSync(), contains('"source": "/fonts/**"'));
     final script = File('tool/build_web.sh').readAsStringSync();
     final step = script.indexOf('dart run tool/site_fonts.dart "\$OUT"');
     expect(step, greaterThan(script.indexOf('flutter build web')));
