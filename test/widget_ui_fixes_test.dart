@@ -143,4 +143,73 @@ void main() {
       await settle(tester);
     });
   });
+
+  group('UI-05 the phone menu has tabs, recent projects and the desktop toggles', () {
+    Future<void> openMenu(WidgetTester tester) async {
+      await tester.tap(find.byKey(const Key('mobile_menu')));
+      await settle(tester);
+    }
+
+    Finder sheetList() => find.descendant(of: find.byKey(const Key('mobile_menu_sheet')), matching: find.byType(Scrollable)).first;
+
+    testWidgets('the open tabs are listed, switched and closed; the recent projects open', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(390, 844));
+      final ws = shell.ws as Workspace;
+      final first = ws.current;
+      first.addEntity(LineEntity(id: first.project.newId(), a: Pt.zero, b: const Pt(25, 0)));
+      first.project.meta.name = 'Horta';
+      first.saveJson(); // kept in this browser: a recent project
+      ws.addTab();
+      await settle(tester);
+      expect(ws.active, 1);
+      await openMenu(tester);
+      expect(find.byKey(const Key('mobile_tab_0')), findsOneWidget);
+      expect(find.byKey(const Key('mobile_tab_1')), findsOneWidget);
+      expect(find.text('Horta'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('mobile_tab_0')));
+      await settle(tester);
+      expect(ws.active, 0, reason: 'back to the first tab without a keyboard');
+      await openMenu(tester);
+      await tester.tap(find.byKey(const Key('mobile_tab_close_1')));
+      await settle(tester);
+      expect(ws.tabs, hasLength(1));
+      // the recent project opens (already open: its tab is selected)
+      ws.addTab();
+      await settle(tester);
+      await openMenu(tester);
+      await tester.tap(find.byKey(const Key('mobile_menu_recent')));
+      await settle(tester);
+      await tester.tap(find.byKey(Key('mobile_recent_${first.project.meta.uid}')));
+      await settle(tester);
+      expect(identical(ws.current, first), isTrue);
+    });
+
+    testWidgets('grid snap, polar tracking, edit grips, autosave and the terrain method', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(390, 844));
+      final ProjectController c = shell.c;
+      Future<void> tapItem(String section, String label) async {
+        await openMenu(tester);
+        await tester.scrollUntilVisible(find.text(section), 200, scrollable: sheetList());
+        await tester.tap(find.text(section));
+        await settle(tester);
+        await tester.scrollUntilVisible(find.text(label), 200, scrollable: sheetList());
+        await tester.ensureVisible(find.text(label));
+        await settle(tester, 1);
+        await tester.tap(find.text(label));
+        await settle(tester);
+      }
+
+      final grid = c.snap.grid, grips = c.showGrips, autosave = c.autosaveEnabled, polar = c.snap.polarStepDeg;
+      await tapItem(c.t('menu.view'), c.t('mob.gridSnap'));
+      expect(c.snap.grid, !grid);
+      await tapItem(c.t('menu.view'), c.t('view.grips'));
+      expect(c.showGrips, !grips);
+      await tapItem(c.t('menu.view'), c.t('mob.polar', {'s': polar > 0 ? '${polar.round()}°' : c.t('mob.off')}));
+      expect(c.snap.polarStepDeg, isNot(polar));
+      await tapItem(c.t('menu.file'), c.t('file.autosave'));
+      expect(c.autosaveEnabled, !autosave);
+      await tapItem(c.t('menu.design'), c.t('terrain.idw'));
+      expect(c.project.params.terrainMethod.name, 'idw');
+    });
+  });
 }

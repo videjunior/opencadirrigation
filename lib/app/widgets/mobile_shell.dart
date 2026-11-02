@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/io/project_export.dart';
 import '../../core/model/entities.dart';
+import '../../core/model/terrain.dart';
 import '../actions.dart';
 import '../i18n.dart';
 import '../shortcuts.dart';
@@ -56,6 +57,7 @@ class MobileShell extends StatefulWidget {
     this.onShowWelcome,
     required this.onCloseTab,
     required this.onDesignCheck,
+    this.onCloseTabAt,
   });
   final ProjectController c;
   final Workspace ws;
@@ -67,6 +69,10 @@ class MobileShell extends StatefulWidget {
   final VoidCallback? onShowWelcome;
   final VoidCallback onCloseTab;
   final VoidCallback onDesignCheck;
+
+  /// Closes the tab at an index (asking first when it has unsaved changes);
+  /// null closes it at once.
+  final void Function(int index)? onCloseTabAt;
 
   @override
   State<MobileShell> createState() => _MobileShellState();
@@ -196,6 +202,45 @@ class _MobileShellState extends State<MobileShell> {
       childrenPadding: const EdgeInsets.only(left: 12),
       children: children,
     );
+    // the open tabs (the phone has no tab bar) and the projects kept in this browser
+    Widget tabRow(int i) {
+      final tab = ws.tabs[i];
+      final on = i == ws.active;
+      final name = tab.project.meta.name.trim().isEmpty ? t('name.newProject') : tab.project.meta.name;
+      return ListTile(
+        key: Key('mobile_tab_$i'),
+        dense: true,
+        selected: on,
+        leading: Icon(on ? Icons.radio_button_checked : Icons.radio_button_unchecked, size: 18),
+        title: Text('${tab.dirty ? '• ' : ''}$name', style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
+        trailing: IconButton(
+          key: Key('mobile_tab_close_$i'),
+          tooltip: t('tab.close'),
+          icon: const Icon(Icons.close, size: 18),
+          onPressed: () {
+            close();
+            final at = widget.onCloseTabAt;
+            if (at != null) {
+              at(i);
+            } else {
+              ws.closeTab(i);
+            }
+          },
+        ),
+        onTap: () {
+          close();
+          ws.select(i);
+        },
+      );
+    }
+
+    final recent = c.store.list();
+    void polarStep() {
+      c.snap.nextPolarStep();
+      c.track('polar');
+      c.refresh();
+    }
+
     _sheet(
       key: const Key('mobile_menu_sheet'),
       ListView(
@@ -209,11 +254,27 @@ class _MobileShellState extends State<MobileShell> {
               decoration: BoxDecoration(color: Cad.fg24, borderRadius: BorderRadius.circular(2)),
             ),
           ),
+          // 1.6.0 UI: tabs and recent projects
+          section(
+            '${t('mob.tabs')} (${ws.tabs.length})',
+            Icons.tab_outlined,
+            [for (var i = 0; i < ws.tabs.length; i++) tabRow(i), row(t('file.newTab'), () => ws.addTab(), icon: Icons.add)],
+            key: const Key('mobile_menu_tabs'),
+            open: ws.tabs.length > 1,
+          ),
+          section(t('file.recent'), Icons.history, [
+            if (recent.isEmpty) row(t('file.noRecent'), null),
+            for (final p in recent.take(8)) row(p.name.isEmpty ? p.uid : p.name, () => openStoredAction(ws, p), icon: Icons.description_outlined, key: Key('mobile_recent_${p.uid}')),
+          ], key: const Key('mobile_menu_recent')),
           section(t('menu.file'), Icons.folder_outlined, [
             row(t('file.new'), () => confirmNew(context, c), icon: Icons.note_add_outlined),
             row(t('file.open'), () => openProjectInTabAction(context, ws), icon: Icons.folder_open),
             row(t('file.save'), () => saveProjectAction(context, c), icon: Icons.save_outlined),
             row(t('file.versions'), () => showVersionsDialog(context, c), icon: Icons.layers_outlined),
+            check(t('file.autosave'), c.autosaveEnabled, (v) {
+              c.autosaveEnabled = v;
+              c.refresh();
+            }),
             for (final ex in exampleGallery) row('${t('file.examples')}: ${t(ex.titleKey)}', () => loadExampleAction(c, ex.id), icon: exampleIcon(ex.id)),
             row(t('file.importDrawing'), () => importDrawingAction(context, c), icon: Icons.upload_file),
             row(t('file.georefImage'), c.selectedEntity == null ? null : () => showImageGeorefDialog(context, c), icon: Icons.image_outlined),
@@ -284,6 +345,15 @@ class _MobileShellState extends State<MobileShell> {
               c.snap.ortho = v;
               c.refresh();
             }),
+            check(t('mob.gridSnap'), c.snap.grid, (v) {
+              c.snap.grid = v;
+              c.refresh();
+            }),
+            row(t('mob.polar', {'s': c.snap.polarStepDeg > 0 ? '${c.snap.polarStepDeg.round()}°' : t('mob.off')}), polarStep, icon: Icons.track_changes, key: const Key('mobile_menu_polar')),
+            check(t('view.grips'), c.showGrips, (v) {
+              c.showGrips = v;
+              c.refresh();
+            }),
             check(t('status.keepLinks'), c.toolSettings.keepConnections, (v) {
               c.toolSettings.keepConnections = v;
               c.refresh();
@@ -315,6 +385,12 @@ class _MobileShellState extends State<MobileShell> {
             row(t('terrain.generateContours'), () => showGenerateContoursDialog(context, c), icon: Icons.gesture),
             row(t('design.dem3d'), () => showDemDialog(context, c), icon: Icons.view_in_ar_outlined),
             row(t('terrain.clearProfile'), c.profilePath == null ? null : c.clearProfile, icon: Icons.close),
+            for (final m in TerrainMethod.values)
+              check(t(m == TerrainMethod.tin ? 'terrain.tin' : 'terrain.idw'), c.project.params.terrainMethod == m, (_) {
+                final edit = c.beginSettingsEdit('hist.params');
+                c.project.params.terrainMethod = m;
+                c.commitSettingsEdit(edit);
+              }),
             row(t('design.check'), widget.onDesignCheck, icon: Icons.fact_check_outlined, key: const Key('mobile_menu_check')),
             row(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, key: const Key('mobile_menu_autofix')),
             row('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, key: const Key('mobile_menu_optimize')),

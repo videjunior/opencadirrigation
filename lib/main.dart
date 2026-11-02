@@ -591,6 +591,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
             onStartTutorial: startTutorial,
             onShowWelcome: showWelcome,
             onCloseTab: () => _closeTab(ws.active),
+            onCloseTabAt: _closeTab,
             onDesignCheck: designCheck,
           ),
           if (tutorial.active)

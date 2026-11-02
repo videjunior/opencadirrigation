@@ -41,4 +41,9 @@ const _ui = <String, (String, String, String)>{
     'Default forgotten: new projects start with the factory catalog',
     'Predeterminado olvidado: los proyectos nuevos empiezan con el catálogo de fábrica',
   ),
+  // ---- UI-05 phone menu: tabs, recent projects and the toggles of the desktop menus
+  'mob.tabs': ('Abas', 'Tabs', 'Pestañas'),
+  'mob.gridSnap': ('Encaixe na grade (F9)', 'Snap to grid (F9)', 'Ajuste a la cuadrícula (F9)'),
+  'mob.polar': ('Rastreamento polar: {s}', 'Polar tracking: {s}', 'Rastreo polar: {s}'),
+  'mob.off': ('desligado', 'off', 'desactivado'),
 };
