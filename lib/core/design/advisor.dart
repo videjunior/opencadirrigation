@@ -322,7 +322,9 @@ AdviceLevel _level(String code) => switch (code) {
   'valve_not_in_flow' ||
   'elec_stations' ||
   'elec_voltage' ||
-  'vih_pressure_deficit' => AdviceLevel.error,
+  'vih_pressure_deficit' ||
+  // 1.6.0 AUT: two valves feeding each other's pipes make both zones wrong
+  'zone_overlap' => AdviceLevel.error,
   'looped_mainline' || 'no_terrain' || 'zone_dead_end' || 'area_no_emitters' || 'no_hydraulics' || 'bom_unpriced' || 'vfd_below_min_speed' || 'pivot_pkg_no_drive' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };

@@ -1,12 +1,23 @@
 // Automatic design, layout geometry and the design assistant: the defects of
 // the sweep of 1 November 2026 (AUT-01 … AUT-30), each with a test that
 // failed before its correction, and the invariants every generator keeps.
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencadirrigation/core/design/advisor.dart';
+import 'package:opencadirrigation/core/design/auto_layout.dart';
 import 'package:opencadirrigation/core/design/block_generator.dart';
+import 'package:opencadirrigation/core/design/design_check.dart';
+import 'package:opencadirrigation/core/design/network_builder.dart';
+import 'package:opencadirrigation/core/design/routing.dart';
 import 'package:opencadirrigation/core/design/tree_rings.dart';
+import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
+import 'package:opencadirrigation/core/units.dart';
+
+List<Pt> rect(double x0, double y0, double x1, double y1) => [Pt(x0, y0), Pt(x1, y0), Pt(x1, y1), Pt(x0, y1)];
 
 /// Length (m) over which the polylines [a] and [b] run on top of each other
 /// (collinear segments sharing a stretch).
@@ -201,5 +212,180 @@ void main() {
         }
       });
     }
+  });
+
+  group('AUT-03 zones routed round the same exclusion stay apart', () {
+    test('two zones bending round one corner of a house do not share the bend', () {
+      const building = [Pt(10, 10), Pt(20, 10), Pt(20, 20), Pt(10, 20)];
+      final zones = [
+        [const Pt(9, 22), const Pt(22, 9)],
+        [const Pt(8, 23), const Pt(23, 8)],
+      ];
+      final r = routeZones(zones, RouteOptions(exclusions: [building], pointOfConnection: const Pt(40, 40)));
+      final vertices = [
+        for (final z in r.zones) {for (final pipe in z.pipes) ...pipe.points},
+      ];
+      for (final a in vertices[0]) {
+        for (final b in vertices[1]) {
+          expect(a.distanceTo(b), greaterThan(0.3), reason: '$a of zone 1 and $b of zone 2');
+        }
+      }
+      final p = Project();
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(40, 40), calculatePressure: true));
+      for (var z = 0; z < zones.length; z++) {
+        for (final h in zones[z]) {
+          p.entities.add(OutletEntity(id: p.newId(), position: h, outletSpecId: 'spray', nozzleId: 's12', headM: 20, zoneName: 'Z$z'));
+        }
+      }
+      p.entities.addAll(r.toEntities(p, zoneNames: ['Z0', 'Z1']));
+      expect(NetworkBuilder(p).build().warnings.where((w) => w.startsWith('zone_overlap')), isEmpty);
+    });
+
+    test('many zones round a dense orchard of tree rings share no vertex', () {
+      final rnd = math.Random(3);
+      final trees = <List<Pt>>[];
+      for (var i = 0; i < 40; i++) {
+        final c = Pt(5 + rnd.nextDouble() * 50, 5 + rnd.nextDouble() * 40);
+        trees.add([for (var k = 0; k < 12; k++) c + Pt.polar(1.2, 2 * math.pi * k / 12)]);
+      }
+      final heads = <Pt>[
+        for (var x = 3.0; x < 60; x += 5)
+          for (var y = 3.0; y < 50; y += 5)
+            if (!trees.any((t) => pointInPolygon(Pt(x, y), t))) Pt(x, y),
+      ];
+      final zones = <List<Pt>>[[], [], [], [], [], []];
+      for (final h in heads) {
+        zones[(h.x / 10).floor().clamp(0, 5)].add(h);
+      }
+      final r = routeZones(zones, RouteOptions(exclusions: trees, pointOfConnection: const Pt(-5, -5)));
+      final owner = <Pt, int>{};
+      for (final z in r.zones) {
+        for (final pipe in z.pipes) {
+          for (final q in pipe.points) {
+            final o = owner[q];
+            expect(o == null || o == z.zone, isTrue, reason: 'vertex $q of zones $o and ${z.zone}');
+            owner[q] = z.zone;
+          }
+        }
+      }
+    });
+
+    test('zones joined without a valve are an error, in the check and the assistant', () {
+      final p = Project();
+      p.entities.add(WaterSupplyEntity(id: p.newId(), position: const Pt(-10, 0), calculatePressure: true));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(-10, 0), const Pt(0, 0), const Pt(0, 10)], scope: HydraulicScope.mainline));
+      p.entities.add(ControlValveEntity(id: p.newId(), position: const Pt(0, 0), zoneName: 'A', valveSpecId: 'ev25'));
+      p.entities.add(ControlValveEntity(id: p.newId(), position: const Pt(0, 10), zoneName: 'B', valveSpecId: 'ev25'));
+      // one zone pipe from each valve, meeting at a shared vertex
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(0, 0), const Pt(10, 5)], scope: HydraulicScope.zone));
+      p.entities.add(PipeEntity(id: p.newId(), points: [const Pt(0, 10), const Pt(10, 5)], scope: HydraulicScope.zone));
+      p.entities.add(OutletEntity(id: p.newId(), position: const Pt(10, 5), outletSpecId: 'spray', nozzleId: 's12', headM: 20));
+      final check = runDesignCheck(p).issues.where((i) => i.code == 'zone_overlap').toList();
+      expect(check, isNotEmpty);
+      expect(check.every((i) => i.severity == CheckSeverity.error), isTrue);
+      final advice = buildAdvice(p).where((a) => a.code == 'zone_overlap').toList();
+      expect(advice, isNotEmpty);
+      expect(advice.every((a) => a.level == AdviceLevel.error), isTrue);
+    });
+  });
+
+  group('AUT-06 routing round many exclusions is quick', () {
+    test('120 tree rings and 200 heads in four zones', () {
+      final rnd = math.Random(7);
+      final trees = <List<Pt>>[];
+      for (var i = 0; i < 120; i++) {
+        final c = Pt(5 + rnd.nextDouble() * 90, 5 + rnd.nextDouble() * 60);
+        trees.add([for (var k = 0; k < 16; k++) c + Pt.polar(1.2, 2 * math.pi * k / 16)]);
+      }
+      final heads = <Pt>[
+        for (var x = 3.0; x < 100; x += 6)
+          for (var y = 3.0; y < 70; y += 6)
+            if (!trees.any((t) => pointInPolygon(Pt(x, y), t))) Pt(x, y),
+      ];
+      final zones = <List<Pt>>[[], [], [], []];
+      for (final h in heads) {
+        zones[(h.x / 25).floor().clamp(0, 3)].add(h);
+      }
+      final sw = Stopwatch()..start();
+      final r = routeZones(zones, RouteOptions(exclusions: trees, pointOfConnection: const Pt(-5, -5)));
+      sw.stop();
+      expect(sw.elapsedMilliseconds, lessThan(4000), reason: 'about 20 s before the exclusions were indexed');
+      expect(r.messages, isEmpty);
+      expect(r.zones, hasLength(4));
+      // every pipe keeps out of the tree rings
+      for (final z in r.zones) {
+        for (final pipe in z.pipes) {
+          for (var i = 1; i < pipe.points.length; i++) {
+            for (final t in trees) {
+              for (var k = 1; k < 10; k++) {
+                final m = Pt.lerp(pipe.points[i - 1], pipe.points[i], k / 10);
+                expect(pointInPolygon(m, t) && !pointOnPolygonBoundary(m, t, tol: 1e-6), isFalse);
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+
+  group('AUT-12 the zone valve for flows outside every range', () {
+    final cat = Catalog.defaultCatalog();
+    test('below every minimum: the smallest valve, not the 6" one', () {
+      for (final q in [0.05, 0.1]) {
+        expect(pickZoneValve(cat, q * m3sPerM3h)?.id, 'ev25', reason: '$q m³/h');
+      }
+    });
+    test('within ranges and above every maximum', () {
+      expect(pickZoneValve(cat, 5 * m3sPerM3h)?.id, 'ev25');
+      expect(pickZoneValve(cat, 20 * m3sPerM3h)?.id, 'ev50');
+      expect(pickZoneValve(cat, 500 * m3sPerM3h)?.id, 'ev150');
+    });
+    test('in a gap between two ranges: the nearer one', () {
+      final c = Catalog.defaultCatalog();
+      for (final v in c.valves) {
+        if (v.kind == ValveKind.control && v.id != 'ev25' && v.id != 'ev100') v.enabled = false;
+      }
+      // ev25 holds 0.2–6 m³/h, ev100 10–140: 6.5 is nearer to ev25, 9.5 to ev100
+      expect(pickZoneValve(c, 6.5 * m3sPerM3h)?.id, 'ev25');
+      expect(pickZoneValve(c, 9.5 * m3sPerM3h)?.id, 'ev100');
+    });
+  });
+
+  group('AUT-18 routes and valves keep to the lot', () {
+    test('a house on the front lot line: zone pipes, valve and mainline inside the lot', () {
+      final cat = Catalog.defaultCatalog();
+      final lot = rect(0, 0, 40, 30);
+      final house = rect(10, -5, 25, 12);
+      final l = layoutLandscape(outline: lot, exclusions: [house], family: cat.outlet('rotor')!);
+      final heads = [for (final h in l.heads) h.position];
+      final r = routeZones([heads], RouteOptions(exclusions: [house], pointOfConnection: const Pt(0, 30), boundary: lot));
+      final region = LayoutRegion(lot);
+      bool out(Pt q) => !region.contains(q) && region.distanceToBoundary(q) > 0.05;
+      for (final z in r.zones) {
+        expect(out(z.valve), isFalse, reason: 'the valve stays on the lot');
+        for (final pipe in z.pipes) {
+          for (var i = 1; i < pipe.points.length; i++) {
+            for (var k = 0; k < 20; k++) {
+              expect(out(Pt.lerp(pipe.points[i - 1], pipe.points[i], (k + 0.5) / 20)), isFalse, reason: 'pipe ${pipe.points}');
+            }
+          }
+        }
+      }
+      final m = routeMainline(const Pt(0, 1), [const Pt(35, 1)], exclusions: [house], boundary: lot);
+      for (final pipe in m) {
+        for (final q in pipe.points) {
+          expect(out(q), isFalse, reason: 'the mainline goes round the back of the house, not the street');
+        }
+      }
+      // without the lot outline it takes the street, as before
+      final street = routeMainline(const Pt(0, 1), [const Pt(35, 1)], exclusions: [house]);
+      expect(street.any((pipe) => pipe.points.any(out)), isTrue);
+    });
+
+    test('a point of connection outside the lot enters it the short way', () {
+      final lot = rect(0, 0, 40, 30);
+      final m = routeMainline(const Pt(-5, 15), [const Pt(30, 15)], boundary: lot);
+      expect(m.single.points, [const Pt(-5, 15), const Pt(30, 15)]);
+    });
   });
 }

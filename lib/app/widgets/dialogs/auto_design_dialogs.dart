@@ -478,7 +478,7 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
       final src = _sourceOf(sources, sourceId);
       routing = routeZones([
         for (final g in groups) [for (final i in g) layout.heads[i].position],
-      ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction));
+      ], RouteOptions(exclusions: sel.others, mainline: src.mainline, pointOfConnection: src.point, placement: placement, direction: layout.direction, boundary: area));
     }
     return _LayoutPlan(family, layout, zoning, routing, groups, names);
   }
@@ -1052,7 +1052,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
         if (res.valve != null) valves.add(res.valve!.position);
       }
       if (mainlineOn && poc != null && valves.isNotEmpty) {
-        for (final m in routeMainline(poc, valves)) {
+        for (final m in routeMainline(poc, valves, boundary: field)) {
           out.add(PipeEntity(id: p.newId(), points: List.of(m.points), scope: HydraulicScope.mainline));
         }
       }

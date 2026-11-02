@@ -80,7 +80,9 @@ DesignCheckReport runDesignCheck(Project project) {
     final code = idx > 0 ? w.substring(0, idx) : w;
     final rest = idx > 0 ? w.substring(idx + 1) : '';
     final ids = rest.isEmpty ? const <String>[] : rest.split(':');
-    issues.add(CheckIssue(code, code.contains('missing') ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
+    // 1.6.0 AUT: zones joined without a valve are an error (the last valve
+    // takes the other zone's nodes and both zones come out wrong)
+    issues.add(CheckIssue(code, code.contains('missing') || code == 'zone_overlap' ? CheckSeverity.error : CheckSeverity.warning, entityIds: ids));
   }
 
   // ---- zones without emitters
