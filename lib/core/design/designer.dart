@@ -2670,64 +2670,101 @@ class Designer {
 
   // ------------------------------------------------------------ surge
 
-  /// Joukowsky surge check of every pipe entity against its pressure class.
+  /// Surge screening of every pipe entity against its pressure class
+  /// (Joukowsky / Michaud; the transient study simulates the line): the
+  /// pressure a closure adds at a point x metres along the water path from
+  /// the supply (from the valve in a zone), the envelope of a closure in T
+  /// seconds, min(a·ΔV/g, 2·x·ΔV/(g·T)) (Michaud 1878: the surge grows from
+  /// nothing at the reflecting supply), over the static pressure there; the
+  /// worst point of the entity counts. The critical time 2L/a takes the
+  /// path to the far end of the entity: the length of one entity of a line
+  /// drawn in pieces made the closure look slow and the surge half of what
+  /// it is.
   List<SurgeResult> checkSurge() {
     results.surge.clear();
     if (!params.checkSurge) return results.surge;
-    final worst = <String, (PipeSegmentResult, String)>{};
-    void consider(PipeSegmentResult p, String ctx) {
-      final cur = worst[p.entityId];
-      if (cur == null || p.velocity > cur.$1.velocity) worst[p.entityId] = (p, ctx);
-    }
-
+    // every analysed segment of every entity, with its context, in one pass
+    // (a search of every segment per entity was quadratic)
+    final segs = <String, List<(PipeSegmentResult, String)>>{};
     for (final z in results.zones.values) {
       for (final p in z.pipes) {
-        consider(p, z.zoneName);
+        (segs[p.entityId] ??= []).add((p, z.zoneName));
       }
     }
     for (final f in results.systemFlows) {
       for (final p in f.pipes) {
-        consider(p, f.name);
+        (segs[p.entityId] ??= []).add((p, f.name));
       }
     }
-    for (final entry in worst.entries) {
-      final (p, ctx) = entry.value;
+    final along = _distancesAlongWater();
+    final closure = params.valveClosureTimeS;
+    for (final entry in segs.entries) {
+      // the fastest flow the entity carries: the velocity a closure stops
+      var (p, ctx) = entry.value.first;
+      for (final (q, c) in entry.value) {
+        if (q.velocity > p.velocity) (p, ctx) = (q, c);
+      }
       final spec = catalog.pipe(p.pipeSpecId);
       if (spec == null) continue; // tapes: not checked
       final e = project.byId(entry.key);
-      final length = e is PolyEntity ? e.length : p.length;
+      final own = e is PolyEntity ? e.length : p.length;
       final a = waveCelerity(diameter: spec.innerDiameter, wallThickness: math.max(spec.wallThicknessMm, 0.5) / 1000, material: spec.material);
       final full = joukowskySurgeHead(celerity: a, velocityChange: p.velocity);
-      final tc = criticalClosureTime(length: math.max(length, 1), celerity: a);
-      final closure = params.valveClosureTimeS;
-      final surge = closure <= 0 || closure < tc ? full : full * tc / closure;
-      var staticMax = math.max(p.pressureStart, p.pressureEnd);
-      for (final z in results.zones.values) {
-        for (final q in z.pipes) {
-          if (q.entityId == entry.key) staticMax = math.max(staticMax, math.max(q.pressureStart, q.pressureEnd));
+      double surgeAt(double x) => closure <= 0 ? full : math.min(full, 2 * x * p.velocity / (gravity * closure));
+      var worstTotal = double.negativeInfinity, staticAt = 0.0, surge = 0.0, far = 0.0;
+      for (final (q, _) in entry.value) {
+        final l = model.linkById(q.linkId);
+        for (final (pressure, node) in [(q.pressureStart, l?.from), (q.pressureEnd, l?.to)]) {
+          // off the trees (a loop): the pipe itself, as before
+          final x = along[node] ?? own;
+          far = math.max(far, x);
+          final s = surgeAt(x);
+          if (pressure + s > worstTotal) {
+            worstTotal = pressure + s;
+            staticAt = pressure;
+            surge = s;
+          }
         }
       }
-      for (final f in results.systemFlows) {
-        for (final q in f.pipes) {
-          if (q.entityId == entry.key) staticMax = math.max(staticMax, math.max(q.pressureStart, q.pressureEnd));
-        }
-      }
+      final length = far > 0 ? far : own;
       final sr = SurgeResult(
+        pathLength: length,
         entityId: entry.key,
         context: ctx,
         pipeName: spec.name,
         velocity: p.velocity,
         celerity: a,
         surgeHead: surge,
-        maxStaticHead: staticMax,
+        maxStaticHead: staticAt,
         rating: _rating(spec),
         closureTime: closure,
-        criticalTime: tc,
+        criticalTime: criticalClosureTime(length: math.max(length, 1), celerity: a),
       );
       results.surge.add(sr);
       if (sr.exceeds) results.messages.add('surge_rating_exceeded:${entry.key}');
     }
     return results.surge;
+  }
+
+  /// Distance (m) of every node along the water path from its source: from
+  /// the supplies along the mainline, from its valve in a zone
+  /// (breadth-first trees, lengths summed along them).
+  Map<String, double> _distancesAlongWater() {
+    final out = <String, double>{};
+    void walk(Iterable<String> roots, Set<String> allowed) {
+      final (parent, _, depth) = _bfs(roots, allowed);
+      final order = parent.keys.toList()..sort((x, y) => depth[x]!.compareTo(depth[y]!));
+      for (final id in order) {
+        final l = parent[id];
+        out[id] = l == null ? 0 : out[l.other(id)]! + l.length;
+      }
+    }
+
+    walk(model.supplyNodes.values, model.mainlineLinks);
+    for (final v in model.valveNodes.entries) {
+      walk([v.value.$2], model.zoneLinks[v.key] ?? const <String>{});
+    }
+    return out;
   }
 
   // ------------------------------------------------------------ machines

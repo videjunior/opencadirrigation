@@ -67,4 +67,6 @@ const _mot = <String, (String, String, String)>{
     'Use pressure-compensating emitters, lay the laterals along the contours, split the zone by elevation bands or fit pressure regulators on the laterals.',
     'Use emisores autocompensantes, ponga las laterales a nivel (siguiendo las curvas), divida el sector por franjas de cota o instale reguladores de presión en las laterales.',
   ),
+  // ---- surge screening over the water path (MOT-10)
+  'rep.surgePath': ('Caminho da onda (triagem; ver estudo de transientes)', 'Wave path (screening; see the transient study)', 'Camino de la onda (estimación; ver el estudio de transitorios)'),
 };

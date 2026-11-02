@@ -709,6 +709,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
             '${t('rep.pTotal')} (${u.pressureLabel})',
             t('rep.pn'),
             t('rep.tCritical'),
+            // 1.6.0 MOT: the path the critical time is taken over
+            '${t('rep.surgePath')} (${u.lengthLabel})',
           ],
           rows: [
             for (final s in r.surge)
@@ -723,6 +725,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
                 RNum(u.pressureFromHead(s.totalHead), 1),
                 RNum(u.pressureFromHead(s.rating), 0),
                 RNum(s.criticalTime, 2),
+                RNum(u.lengthFromSi(s.pathLength), 0),
               ],
           ],
           warn: [for (final s in r.surge) s.exceeds],

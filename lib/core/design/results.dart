@@ -728,6 +728,7 @@ class SurgeResult {
     required this.rating,
     required this.closureTime,
     required this.criticalTime,
+    this.pathLength = 0,
   });
   final String entityId;
   final String context;
@@ -739,6 +740,11 @@ class SurgeResult {
   final double rating;
   final double closureTime;
   final double criticalTime;
+
+  /// Length (m) of the water path the critical time 2L/a is taken over: from
+  /// the supply (or the zone valve) to the farthest point fed through the
+  /// pipe, at least the pipe itself.
+  final double pathLength;
   double get totalHead => maxStaticHead + surgeHead;
   bool get exceeds => rating > 0 && totalHead > rating + 1e-6;
 
@@ -753,6 +759,7 @@ class SurgeResult {
     'pn': rating,
     'tc': closureTime,
     'tcrit': criticalTime,
+    if (pathLength > 0) 'L': pathLength,
   };
   static SurgeResult fromJson(Map<String, dynamic> j) => SurgeResult(
     entityId: j['ent'] as String,
@@ -765,6 +772,7 @@ class SurgeResult {
     rating: _d(j, 'pn'),
     closureTime: _d(j, 'tc'),
     criticalTime: _d(j, 'tcrit'),
+    pathLength: _d(j, 'L'),
   );
 }
 

@@ -11,6 +11,7 @@ import 'package:opencadirrigation/core/design/lp.dart';
 import 'package:opencadirrigation/core/design/lp_sizing.dart';
 import 'package:opencadirrigation/core/design/network_builder.dart';
 import 'package:opencadirrigation/core/hydraulics/network.dart';
+import 'package:opencadirrigation/core/hydraulics/water_hammer.dart';
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
@@ -284,5 +285,56 @@ void main() {
     expect(steep, isNot(contains('cannot_meet_pressure_window')));
     expect(steepPipes.where((n) => n.contains('DN 100')), isEmpty);
     expect(c6, lessThanOrEqualTo(c0 + 1e-6));
+  });
+
+  test('MOT-10: the surge screening of a mainline drawn in pieces runs along the whole water path', () {
+    // 2 000 m of PVC DN100 in four pieces of 500 m, a valve closing in 6 s:
+    // over one piece tc = 2.67 s and the surge at the valve end was cut to
+    // tc/6 of Joukowsky's, on the unsafe side
+    final p = Project();
+    p.params.valveClosureTimeS = 6;
+    p.entities.add(WaterSupplyEntity(id: 'tank', position: Pt.zero, name: 'Tank', calculatePressure: true));
+    for (var i = 0; i < 4; i++) {
+      p.entities.add(PipeEntity(id: 'm$i', points: [Pt(500.0 * i, 0), Pt(500.0 * (i + 1), 0)], scope: HydraulicScope.mainline, name: 'M$i', pipeSpecId: 'pvc100', computerSized: false));
+    }
+    final block = generateBlock(
+      p,
+      BlockOptions(
+        polygon: const [Pt(2001.5, -30), Pt(2121.5, -30), Pt(2121.5, 30), Pt(2001.5, 30)],
+        direction: const Pt(0, 1),
+        lateralSpacing: 4,
+        outletSpecId: 'micro',
+        nozzleId: 'm50',
+        outletSpacing: 3.5,
+        headM: 15,
+        submainPosition: SubmainPosition.start,
+        valveSpecId: 'ev50',
+        valvePosition: ValvePosition.centre,
+        submainStub: 1.5,
+        zoneName: 'Z',
+      ),
+    );
+    p.entities.addAll(block.all);
+    p.entities.add(PipeEntity(id: 'link', points: [const Pt(2000, 0), block.valve!.position], scope: HydraulicScope.mainline, name: 'L', pipeSpecId: 'pvc100', computerSized: false));
+    final r = Designer(p).designAll();
+    for (var i = 0; i < 4; i++) {
+      final s = r.surge.firstWhere((x) => x.entityId == 'm$i');
+      // the far end of piece i lies 500·(i + 1) m from the tank
+      expect(s.pathLength, closeTo(500.0 * (i + 1), 1e-6), reason: 'm$i');
+      expect(s.criticalTime, closeTo(2 * s.pathLength / s.celerity, 1e-9));
+      final joukowsky = joukowskySurgeHead(celerity: s.celerity, velocityChange: s.velocity);
+      // Michaud: 2·x·V/(g·T) from the tank, never above Joukowsky
+      expect(s.surgeHead, lessThanOrEqualTo(math.min(joukowsky, 2 * s.pathLength * s.velocity / (9.80665 * 6)) + 1e-9), reason: 'm$i');
+    }
+    final last = r.surge.firstWhere((x) => x.entityId == 'm3');
+    expect(last.criticalTime, greaterThan(6), reason: 'the closure is faster than 2L/a over the whole line');
+    expect(
+      last.surgeHead,
+      closeTo(joukowskySurgeHead(celerity: last.celerity, velocityChange: last.velocity), 1e-9),
+      reason: 'the full surge at the valve end',
+    );
+    // the first piece, next to the tank, gets the share of its distance
+    final first = r.surge.firstWhere((x) => x.entityId == 'm0');
+    expect(first.surgeHead, lessThan(last.surgeHead));
   });
 }
