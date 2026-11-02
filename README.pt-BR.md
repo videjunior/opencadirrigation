@@ -1463,7 +1463,7 @@ git clone https://github.com/videjunior/opencadirrigation.git
 cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # 1.752 testes: motor, modelo, formatos, interface
+flutter test                       # cerca de 1.900 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
@@ -1494,8 +1494,12 @@ dos relatórios), `analyze` mantém os diâmetros como desenhados, `check` lista
 termina com código 1 quando há um erro, `export` grava qualquer formato de desenho e `bom` mostra a
 lista de materiais, em qualquer um dos 20 idiomas (`--lang`).
 
-Os geradores têm testes de guarda: quando um arquivo gerado diverge da fonte, o teste
-correspondente falha com a instrução de qual comando rodar. Builds para desktop
+As saídas commitadas da maioria dos geradores têm testes de guarda (as páginas do site, o modelo do
+service worker, os exemplos, os catálogos, a versão e a tabela de ferramentas da IA): quando uma
+diverge da fonte, o teste correspondente falha com a instrução de qual comando rodar. Recompile o
+worker de cálculo (`tool/build_worker.sh`) depois de mudar `lib/core` ou a tabela de textos, e os
+subconjuntos de fontes do PDF (`tool/fonts/build_fonts.py`) depois de acrescentar caracteres, onde
+nenhuma guarda avisa. Builds para desktop
 (`flutter run -d macos|windows|linux`) usam o isolate para o cálculo. As pastas `android/` e `ios/`
 são os modelos de projeto que o Flutter gerou; builds nativos para celular nunca foram compilados
 nem testados, e celulares e tablets usam o app web (instalável como PWA).
@@ -1526,7 +1530,8 @@ nem testados, e celulares e tablets usam o app web (instalável como PWA).
 
 ## 16. Testes
 
-`flutter test` roda 1.752 testes em alguns minutos. O que cada grupo garante:
+`flutter test` roda cerca de 1.900 testes em alguns minutos (o número cresce a cada versão). O que
+cada grupo garante:
 
 | Arquivo | Cobertura |
 |---|---|
@@ -1569,6 +1574,16 @@ nem testados, e celulares e tablets usam o app web (instalável como PWA).
 | `core/controller_extra_test.dart` | Abrir arquivo ou exemplo descarta marcas, perfil, verificação e histórico antigos; edições de diálogo como um passo de desfazer (mutações incorporadas, unidades mantêm os resultados); desfazer sem nada a desfazer; grips arrastam fios com os nós de tubo; pintura das novas entidades e do densograma |
 | `core/regressions_test.dart` | Cada defeito corrigido na varredura de 2026-09-22, cada um falhando sem a sua correção: lateral cortada sobre um emissor o mantém uma vez só; curvas geradas continuam geradas; arquivos sem o contador de ids; aspersores de setor espelhados e cabeças de 360° com bocal de setor (também no PDF e na tela); arquivos de levantamento com espaço e vírgula decimal; imagens grandes demais para decodificar; arquivos danificados informados como tal; psi, kPa e bar; CU da grade com aspersores próximos; blocos em talhões em L e em U e fileiras guiadas recortadas em dois; telescopagem desenhada nos dois sentidos; números com separador de milhar, preços e curvas de bomba; espaçamentos 0 e valores NaN que travavam ou impediam salvar; trilhas de GPS no KML |
 | `core/hotkeys_dispatch_test.dart` | O despachante de teclado isolado: teclas do aplicativo, de edição e do canvas, coordenadas digitadas, o que diálogos e menus bloqueiam, cada alias de comando digitado |
+| `core/engine_speed_test.dart` | O motor mais rápido dá exatamente os mesmos resultados: o plano de eliminação do solver de rede bit a bit contra o solver por mapas, e as buscas indexadas de trechos e itens de catálogo acompanhando cada edição das suas listas |
+| `core/hydraulics_extra_test.dart`, `core/pump_devices_test.dart` | Utilitários de atrito (gradientes, número de Reynolds, Blasius contra Colebrook, C de Hazen como rugosidade), perdas localizadas, dispositivos e indicadores dos emissores; cada dispositivo da linha principal do catálogo em série entre um reservatório e uma zona: cada um divide o tubo e informa a sua própria perda, uma redutora só regula acima da regulagem, a bomba segue a curva e as leis de afinidade, uma fonte calculada nunca fica abaixo de zero, altura de sucção |
+| `core/design_extra_test.dart`, `core/area_water_test.dart`, `core/auto_fix_test.dart` | Caminhos do projeto que os outros testes não alcançam (zonas vazias e ausentes, o limite de variação da zona, dispositivos dentro da zona, válvulas inalcançáveis, conexões faltando, turnos em horas fixas, pivôs com Darcy-Weisbach); os defeitos achados na conferência da galeria de exemplos (aspersores no contorno da área, uniformidade com precipitação equilibrada, convergência da lavagem, dias escalonados do programa, pivôs na tabela hídrica); cada correção do assistente de projeto no seu caso e num caso em que não tem nada a fazer |
+| `core/model_extra_test.dart`, `core/io_extra_test.dart`, `core/currency_test.dart` | Casos-limite de geometria, unidades, terreno e TIN, dividir, estender e deslocar em cada tipo de entidade; importadores e exportadores nas entradas que os testes de formatos não alcançam (listas de catálogo, exceções de fuso UTM, transformações de GeoTIFF, variantes de KMZ, codificações de DBF, blocos e curvas de DXF, páginas de relatório em PDF); moedas por idioma e região, câmbios de referência e a conversão de cada preço |
+| `core/basemap_layer_test.dart`, `core/dem_online_test.dart` | Blocos de mapa contra um servidor falso: cache e descarte, um zoom mais grosso em vez de um mapa em branco, o ancestral mais próximo de um bloco que falta, o tilemap do ArcGIS e a sessão do Google Map Tiles; a grade de elevação online, os lotes, os downloads simultâneos com novas tentativas e ritmo, e a conferência do datum dos dados do próprio usuário |
+| `core/region_trace_test.dart` | Contornos de talhões em imagens aéreas sintéticas: fileiras de cultura contornadas até as bordas do talhão, árvores dentro preenchidas e informadas, talhões cortados pela borda da imagem sinalizados, todos os talhões de uma imagem encontrados |
+| `core/ai_api_fixes_test.dart`, `core/ai_transport_io_test.dart`, `core/ai_image_prep_test.dart` | O assistente contra falhas roteirizadas das APIs (pedidos recusados e grandes demais, erros do serviço, tempos esgotados e transmissões interrompidas, cada um com o que é mantido e reenviado); o transporte do desktop contra um servidor na máquina (envio, transmissão, um cancelamento fecha a conexão); imagens anexadas tipadas pelos bytes, endireitadas, reduzidas aos limites do modelo e recodificadas dentro do tamanho |
+| `core/app_logic_test.dart` | Lógica do app sem widgets: aliases de comando, rótulos traduzidos das ações, navegação do tutorial, o observador de rotas, o executor do cálculo sem workers, arquivos do desktop e assets de idioma |
+| `widget_ai_*.dart` (os arquivos não citados acima) | A tela de início do assistente, a ajuda para iniciantes, o comportamento do chat e o Markdown, as mensagens de erro, as marcas no mapa, a voz, as fotos de campo, colar e soltar, as conversas guardadas, `/review`, a prévia da prancha e as imagens que ele envia |
+| `editorial_names_test.dart` | A regra editorial: nenhum produto concorrente em nenhum lugar do repositório e nenhum produto de CAD na interface, no site e na documentação, conferidos pelo SHA-256 para que o teste não cite nenhum |
 | `widget_*.dart` | Interface real: tela inicial e tutorial, galeria, menus e diálogos, painéis, edição no canvas, atalhos, histórico, terreno e layout compacto; gerenciamento com pivôs e turnos automáticos, diálogos fechados por fora, densograma, ferramentas de controlador e fio com a aba Elétrico, cotas de ordenada e de diâmetro, a aba Fios do catálogo, campos numéricos que rejeitam um valor; as propriedades de cada tipo de entidade, edição em lote e os resultados da seleção; a leitura do gráfico de perfil; navegação por roda, trackpad, botão do meio e dois dedos; diálogos de georreferência e de plotagem; menus da linha principal e do celular; o diálogo de turnos; os diálogos de projeto automático, agronomia, máquinas mecanizadas, operação da rede, transientes, importação de PDF, folhas e blocos e vegetação, cada um aplicando num passo de desfazer e cabendo num celular de 390 × 844; o layout da direita para a esquerda do árabe e do urdu, os rótulos condicionais, o indicador do GPS, a ferramenta de linha de quebra e os materiais da seleção |
 | `widget_theme_test.dart` | A paleta escura é o visual original, cor por cor; a paleta clara mantém o contraste WCAG AA dos textos sobre as suas superfícies; Ver → Tema troca no lugar (mesma janela, projeto e seleção), também pelo menu do celular, e as folhas são montadas no tema claro; uma camada branca é desenhada quase preta no canvas claro enquanto as plotagens ficam iguais; a escolha é salva e aplicada na abertura; Seguir o sistema acompanha o brilho da plataforma ao vivo; as imagens para o assistente de IA mantêm o canvas escuro |
 | `web_metadata_test.dart`, `version_test.dart`, `web_offline_test.dart` | Páginas do site geradas, SEO, JSON-LD, manifest, ícones, robots, sitemap, 404, llms.txt; as páginas de entrada carregam o app sob demanda; versão do app coerente com o pubspec.yaml, o gerador e o site; `test/web_offline_test.dart` cobre o gerador do service worker, os templates e o script de build |
@@ -1640,7 +1655,10 @@ tamanho de janela definido; o carregamento de assets (catálogos) usa `rootBundl
   recusada aparece como falha de rede, porque as respostas de erro da OpenAI não trazem cabeçalho
   CORS; as imagens não pedem aprovação, embora baixem tiles do mapa base; posições lidas de imagens
   são aproximadas; as análises que ele roda (transientes, simulação de 24 horas e afins) rodam na
-  thread da interface; as conversas não são salvas (de propósito). Ele foi testado contra
+  thread da interface; as conversas não vão no arquivo do projeto nem nos links de compartilhamento,
+  mas ficam neste navegador (as 12 mais recentes de cada projeto, com as imagens e os anexos
+  pequenos) até que *Guardar as conversas neste navegador* seja desligado, o que também as apaga: num
+  computador compartilhado, desligue-o ou limpe os dados do site. Ele foi testado contra
   imitações programadas das duas APIs, não contra os serviços reais. As respostas podem conter
   erros, como as de qualquer modelo: as alterações passam pela aprovação, pelo desfazer e pelo
   voltar a um ponto da seção 9, e o projeto deve ser conferido.

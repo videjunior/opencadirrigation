@@ -3117,8 +3117,10 @@ cross-origin headers and the browser hides it (the message says so). The assista
 as the model, which is why every figure about the design is read from the program and every change
 can be refused, undone or rewound; a position picked on a picture is as good as the pixel the model
 picks (s metres). Pictures ask for no approval, though they download map tiles; long analyses the
-model asks for run on the interface thread; conversations are kept per tab in memory and are not
-saved with the project, by design (a shared file or link would carry the chat and its pictures); the
+model asks for run on the interface thread; conversations are not saved with the project, by design
+(a shared file or link would carry the chat and its pictures), but they are kept in the browser's
+storage (IndexedDB) by project, the 12 most recent with their pictures and small attachments, until
+the setting that keeps them is turned off, which deletes them; the
 usage is billed by the provider to the account of the key; and the clients have been tested against
 scripted fakes of the two APIs, not against the live services.
 
@@ -3126,7 +3128,7 @@ scripted fakes of the two APIs, not against the live services.
 
 ## 28. Validation
 
-The suite has 1,752 tests (`flutter test`). Those validating the methods against references:
+The suite has about 1,900 tests (`flutter test`). Those validating the methods against references:
 
 | Test | Reference |
 |---|---|

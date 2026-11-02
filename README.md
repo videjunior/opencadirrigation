@@ -1403,7 +1403,7 @@ git clone https://github.com/videjunior/opencadirrigation.git
 cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # development in the browser
-flutter test                       # 1,752 tests: engine, model, formats, interface
+flutter test                       # about 1,900 tests: engine, model, formats, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompiles web/design_worker.js after changing lib/core (the app falls
                                    # back to the interface thread when the file is missing)
@@ -1434,8 +1434,11 @@ report table), `analyze` keeps the sizes as drawn, `check` lists the problems an
 error, `export` writes any drawing format and `bom` prints the bill of materials, in any of the 20
 languages (`--lang`).
 
-The generators have guard tests: when a generated file drifts from its source, the matching test
-fails and says which command to run. Desktop builds (`flutter run -d macos|windows|linux`) use the
+The committed outputs of most generators have guard tests (the site pages, the service worker
+template, the examples, the catalogues, the version and the AI tools table): when one drifts from its
+source, the matching test fails and says which command to run. Rebuild the design worker
+(`tool/build_worker.sh`) after changing `lib/core` or the string table, and the PDF font subsets
+(`tool/fonts/build_fonts.py`) after adding characters, where no guard reminds you. Desktop builds (`flutter run -d macos|windows|linux`) use the
 isolate for the calculation. The `android/` and `ios/` folders are the project templates Flutter
 generated; native mobile builds have not been built or tested, and phones and tablets use the web
 app (installable as a PWA).
@@ -1465,7 +1468,8 @@ app (installable as a PWA).
 
 ## 16. Tests
 
-`flutter test` runs 1,752 tests in a few minutes. What each group guarantees:
+`flutter test` runs about 1,900 tests in a few minutes (the number grows with every version). What each
+group guarantees:
 
 | File | Coverage |
 |---|---|
@@ -1508,6 +1512,16 @@ app (installable as a PWA).
 | `core/controller_extra_test.dart` | Opening a file or an example drops the old marks, profile, check and history; dialog edits as one undo step (mutations folded in, units keep the results); undo with nothing to undo; grips drag wires with pipe nodes; painter for the new entities and the densogram |
 | `core/regressions_test.dart` | Every defect fixed in the 2026-09-22 sweep, each failing without its fix: a lateral cut on an outlet keeps it once; generated contours stay generated; files without the id counter; mirrored part-circle sprinklers and full-circle heads with a part-circle nozzle (plot and canvas too); survey files with spaces and decimal commas; rasters too large to decode; damaged files reported as such; psi, kPa and bar; grid CU with close heads; blocks on L and U fields and guided rows clipped in two; telescoping drawn either way; numbers with thousands separators, prices and pump curves; spacings of 0 and NaN values that used to hang or break the saving; GPS tracks in KML |
 | `core/hotkeys_dispatch_test.dart` | The keyboard dispatcher on its own: application, editing and canvas keys, typed coordinates, what dialogs and menus block, every typed command alias |
+| `core/engine_speed_test.dart` | The faster engine gives the very same results: the elimination plan of the network solver bit for bit against the map-based solver, and the indexed lookups of links and catalogue items following every edit of their lists |
+| `core/hydraulics_extra_test.dart`, `core/pump_devices_test.dart` | Friction helpers (gradients, Reynolds number, Blasius against Colebrook, Hazen C as a roughness), minor losses, devices and emitter flags; every mainline device of the catalogue in series between a tank and a zone: each splits the pipe and reports its own loss, a PRV regulates only above its setting, the pump follows its curve and the affinity laws, a calculated supply never runs below zero, suction lift |
+| `core/design_extra_test.dart`, `core/area_water_test.dart`, `core/auto_fix_test.dart` | Design paths the other tests do not reach (empty and missing zones, the zone variation limit, devices inside a zone, unreachable valves, missing fittings, fixed-hour schedules, Darcy-Weisbach pivots); the defects found by checking the example gallery (heads on an area's outline, matched-precipitation uniformity, flushing convergence, staggered programme days, pivots in the water table); every correction of the design assistant on its case and on a case where it has nothing to do |
+| `core/model_extra_test.dart`, `core/io_extra_test.dart`, `core/currency_test.dart` | Geometry, units, terrain and TIN edge cases, split, extend and offset on every entity type; importers and exporters on the inputs the format tests do not reach (catalogue lists, UTM zone exceptions, GeoTIFF transforms, KMZ variants, DBF encodings, DXF blocks and curves, PDF report pages); currencies by language and region, reference rates and the conversion of every price |
+| `core/basemap_layer_test.dart`, `core/dem_online_test.dart` | Map tiles against a fake server: cache and eviction, a coarser zoom instead of a blank map, the nearest ancestor of a missing tile, the ArcGIS tilemap and the Google Map Tiles session; the online elevation grid, batches, concurrent downloads with retries and pacing, and the datum check of the user's own data |
+| `core/region_trace_test.dart` | Field outlines on synthetic aerial pictures: crop rows traced to the field edges, trees inside filled and reported, fields cut by the picture edge flagged, every field of a picture found |
+| `core/ai_api_fixes_test.dart`, `core/ai_transport_io_test.dart`, `core/ai_image_prep_test.dart` | The assistant against scripted failures of the APIs (refused and oversized requests, service errors, timeouts and dropped streams, each with what is kept and sent again); the desktop transport against a server on the machine (upload, streaming, a cancel closes the connection); attached pictures typed by their bytes, turned upright, scaled into the model limits and re-encoded within the size |
+| `core/app_logic_test.dart` | App logic without widgets: command aliases, translated action labels, tutorial navigation, the route observer, the design runner without workers, desktop files and language assets |
+| `widget_ai_*.dart` (the files not named above) | The assistant's start screen, beginner help, chat behaviour and Markdown, error messages, marks on the map, voice, field photos, paste and drop, saved conversations, `/review`, the sheet preview and the pictures it sends |
+| `editorial_names_test.dart` | The editorial rule: no competing product anywhere in the repository and no CAD product in the interface, the site and the documentation, checked by SHA-256 so that the test names none of them |
 | `widget_*.dart` | Real interface: welcome screen and tutorial, gallery, menus and dialogs, panels, canvas editing, shortcuts, history, terrain and compact layout; management with pivots and automatic flows, dialogs closed outside, densogram, controller and wire tools with the Electrical tab, ordinate and diameter dimensions, the Wires tab of the catalogue, numeric fields that reject a value; the properties of every entity type, batch editing and the results of the selection; the profile chart readout; wheel, trackpad, middle-button and two-finger navigation; georeference and plot dialogs; mainline and phone menus; the system flows dialog; the dialogs of automatic design, agronomy, mechanised machines, network operation, transients, PDF import, sheets and blocks and vegetation, each applying as one undo step and laying out on a 390 × 844 phone; the right-to-left layout of Arabic and Urdu, conditional labels, the GPS chip, the breakline tool and the materials of the selection |
 | `widget_theme_test.dart` | The dark palette is the original look, colour for colour; the light palette keeps WCAG AA contrast for the text on its surfaces; View → Theme switches in place (same shell, project and selection), also from the phone menu, and the sheets build in light; a white layer draws near-black on the light canvas while plots stay unchanged; the choice is saved and applied at start-up; Follow the system tracks the platform brightness live; the pictures for the AI assistant keep the dark canvas |
 | `web_metadata_test.dart`, `version_test.dart`, `web_offline_test.dart` | Generated site pages, SEO, JSON-LD, manifest, icons, robots, sitemap, 404, llms.txt; the entry pages load the app on demand; app version consistent with pubspec.yaml, the generator and the site; `test/web_offline_test.dart` covers the service worker generator, the templates and the build script |
@@ -1573,7 +1587,10 @@ loading (catalogues) uses `rootBundle` and works in `flutter test`.
   network failure, since OpenAI's error answers carry no CORS header; pictures do not ask for
   approval although they download base-map tiles; positions read off pictures are approximate; the
   analyses it runs (transients, 24-hour simulation and the like) run on the interface thread;
-  conversations are not saved (by design). It was tested against scripted fakes of both APIs, not
+  conversations never go into the project file nor into share links, but they stay in this
+  browser (the 12 most recent of each project, with their pictures and small attachments) until
+  *Keep conversations in this browser* is turned off, which also deletes them: on a shared computer,
+  turn it off or clear the site data. It was tested against scripted fakes of both APIs, not
   against the live services. Its answers can be wrong like any model's: changes go through the
   approval, undo and rewind of section 9, and the design should be checked.
 

@@ -3211,16 +3211,17 @@ e o navegador o esconde (a mensagem avisa isso). O assistente é tão confiável
 por isso que todo número sobre o projeto é lido do programa e toda alteração pode ser recusada,
 desfeita ou voltada a um ponto de retorno; uma posição escolhida numa imagem vale o pixel que o modelo
 escolhe (s metros). As imagens não pedem aprovação, embora baixem blocos de mapa; análises longas que
-o modelo pede rodam na thread da interface; as conversas são guardadas por aba na memória e não são
-salvas com o projeto, por decisão de projeto (um arquivo ou link compartilhado levaria a conversa e as
-suas imagens); o uso é cobrado pelo provedor na conta da chave; e os clientes foram testados contra
+o modelo pede rodam na thread da interface; as conversas não são salvas com o projeto, por decisão de
+projeto (um arquivo ou link compartilhado levaria a conversa e as suas imagens), mas ficam guardadas
+no armazenamento do navegador (IndexedDB) por projeto, as 12 mais recentes com as imagens e os anexos
+pequenos, até que a opção que as guarda seja desligada, o que as apaga; o uso é cobrado pelo provedor na conta da chave; e os clientes foram testados contra
 falsos roteirizados das duas APIs, não contra os serviços reais.
 
 ---
 
 ## 28. Validação
 
-A suíte tem 1.752 testes (`flutter test`). Os que validam os métodos contra referências:
+A suíte tem cerca de 1.900 testes (`flutter test`). Os que validam os métodos contra referências:
 
 | Teste | Referência |
 |---|---|
