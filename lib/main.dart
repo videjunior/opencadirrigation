@@ -181,7 +181,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   /// Side panel tab: 0 properties, 1 layers, 2 history.
   int _sideTabIndex = 0;
-  double _reportsHeight = savedReportsHeight() ?? 220;
+  double _reportsHeight = savedReportsHeight() ?? 220.0;
 
   /// The arrangement of the last build (phone, narrow or wide).
   ShellLayout _layout = ShellLayout.wide;
@@ -262,9 +262,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       if (linked) clearAddressFragment();
       final shared = linked ? projectJsonFromLink('#$fragment') : null;
       // 1.6.0 UI (FMT-09): a large project opens only once the user agrees
-      final open = shared != null && (!isLargeSharedProject(shared) || await confirmLargeSharedProject(context, c, shared));
+      final openShared = shared != null && (!isLargeSharedProject(shared) || await confirmLargeSharedProject(context, c, shared));
       if (!mounted) return;
-      if (linked && (shared == null || (open && openJsonInTab(ws, shared, asCopy: true) == null))) c.notify(c.t('share.damaged'));
+      if (linked && (shared == null || (openShared && openJsonInTab(ws, shared, asCopy: true) == null))) c.notify(c.t('share.damaged'));
       final q = Uri.base.queryParameters;
       final example = exampleIdFromName(q['example']) ?? widget.startExample;
       final designLink = q['design'] == '1';
