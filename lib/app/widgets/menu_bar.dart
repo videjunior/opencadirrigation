@@ -21,6 +21,7 @@ import 'dialogs/agb_dialogs.dart';
 import 'dialogs/field_machine_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
+import 'dialogs/deliverables_dialogs.dart'; // 1.6.0 PRB
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
@@ -589,6 +590,22 @@ class AppMenuBar extends StatelessWidget {
                         c.showReports = true;
                         c.refresh();
                       }),
+                    // 1.6.0 PRB: the technical documents
+                    const Divider(height: 1),
+                    SubmenuButton(
+                      onOpen: _menuOpened,
+                      onClose: _menuClosed,
+                      key: const Key('menu_prb_docs'),
+                      leadingIcon: const Icon(Icons.description_outlined, size: 16),
+                      menuChildren: [
+                        item(t('prb.menu.permit'), () => showPermitTableDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_prb_permit')),
+                        item(t('prb.menu.memorial'), () => showMemorialDialog(context, c), icon: Icons.notes, key: const Key('menu_prb_memorial')),
+                        item(t('prb.menu.om'), () => showOmPlanDialog(context, c), icon: Icons.fact_check_outlined, key: const Key('menu_prb_om')),
+                        item(t('prb.menu.budget'), () => showBudgetDialog(context, c), icon: Icons.request_quote_outlined, key: const Key('menu_prb_budget')),
+                        item(t('prb.menu.lcc'), () => showLifeCycleDialog(context, c), icon: Icons.savings_outlined, key: const Key('menu_prb_lcc')),
+                      ],
+                      child: Text(t('prb.menu.docs')),
+                    ),
                   ],
                   child: Text(t('menu.reports')),
                 ),

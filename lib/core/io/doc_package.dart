@@ -74,6 +74,7 @@ import 'fonts/pdf_fonts.dart';
 import 'pdf_sheet.dart';
 import 'plot.dart' show PlotRaster;
 import 'plot_charts.dart' show PlotChart;
+import 'tech_doc_sections.dart' show prbDocumentSections; // 1.6.0 PRB
 
 /// Who a document package is written for.
 enum DocProfile { proposal, permit, installation, memorial, operation }
@@ -270,6 +271,7 @@ List<DocSection> documentSections() {
   for (final s in [
     ...prdDocumentSections,
     // the sections of the other areas join here (see the library comment)
+    ...prbDocumentSections, // 1.6.0 PRB: tech_doc_sections.dart
     ..._registered,
   ]) {
     byId[s.id] = s;

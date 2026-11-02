@@ -186,3 +186,14 @@ export 'io/sheet_grid.dart';
 export 'io/sheet_theme.dart';
 export 'io/title_block_sheet.dart';
 export 'model/title_block.dart';
+
+// 1.6.0 PRB: the technical documents (permit table, memorial, operation and
+// maintenance plan, budget by compositions, life-cycle cost)
+export 'design/budget.dart';
+export 'design/life_cycle.dart';
+export 'design/memorial.dart';
+export 'design/om_plan.dart';
+export 'design/permit.dart';
+export 'io/tech_doc.dart';
+export 'io/tech_doc_sections.dart';
+export 'model/deliverables.dart';

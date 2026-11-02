@@ -291,6 +291,11 @@ Iterable<String> pdfTexts(ProjectController c, {bool reports = false}) sync* {
   for (final k in I18n.keys) {
     if (k.startsWith('prd.')) yield c.t(k);
   }
+  // 1.6.0 PRB: the technical documents, also as sections of the packages
+  for (final k in I18n.keys) {
+    if (k.startsWith('prb.')) yield c.t(k);
+  }
+  yield* c.project.deliverables.texts;
   if (reports && c.results != null) {
     for (final tb in c.reportTables()) {
       yield tb.title;

@@ -39,6 +39,7 @@ import 'dialogs/welcome_dialog.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
 import 'dialogs/blocks_dialogs.dart';
+import 'dialogs/deliverables_dialogs.dart'; // 1.6.0 PRB
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
@@ -516,6 +517,12 @@ class _MobileShellState extends State<MobileShell> {
                 c.reportTab = i;
                 _openReports();
               }),
+            // 1.6.0 PRB: the technical documents
+            row(t('prb.menu.permit'), () => showPermitTableDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('mobile_menu_prb_permit')),
+            row(t('prb.menu.memorial'), () => showMemorialDialog(context, c), icon: Icons.notes, key: const Key('mobile_menu_prb_memorial')),
+            row(t('prb.menu.om'), () => showOmPlanDialog(context, c), icon: Icons.fact_check_outlined, key: const Key('mobile_menu_prb_om')),
+            row(t('prb.menu.budget'), () => showBudgetDialog(context, c), icon: Icons.request_quote_outlined, key: const Key('mobile_menu_prb_budget')),
+            row(t('prb.menu.lcc'), () => showLifeCycleDialog(context, c), icon: Icons.savings_outlined, key: const Key('mobile_menu_prb_lcc')),
           ]),
           section(t('menu.tools'), Icons.calculate_outlined, [
             row(t('tools.lateral'), () => showLateralCalculator(context, c), icon: Icons.calculate_outlined),

@@ -12,6 +12,7 @@ import 'agb_settings.dart';
 import 'blocks.dart';
 import 'catalog.dart';
 import 'currency.dart';
+import 'deliverables.dart'; // 1.6.0 PRB
 import 'entities.dart';
 import 'geometry.dart';
 import 'label_rules.dart';
@@ -447,8 +448,11 @@ class Project {
     int nextId = 1,
     // 1.6.0 AGB
     AgbSettings? agb,
+    // 1.6.0 PRB
+    DeliverableSettings? deliverables,
   }) : meta = meta ?? ProjectMeta(),
        agb = agb ?? AgbSettings(),
+       deliverables = deliverables ?? DeliverableSettings(),
        proposal = proposal ?? ProposalSettings(),
        scenarios = scenarios ?? [],
        labelRules = labelRules ?? [],
@@ -508,6 +512,10 @@ class Project {
   /// User blocks (Edit → Save selection as block, Insert block).
   final BlockLibrary blocks;
 
+  // 1.6.0 PRB: settings of the technical documents (permit table, memorial,
+  // operation and maintenance plan, budget by compositions, life-cycle cost)
+  DeliverableSettings deliverables;
+
   /// Notes the AI assistant keeps about this project (requirements,
   /// decisions, the designer's preferences); read at the start of a task.
   String aiNotes;
@@ -536,6 +544,7 @@ class Project {
     scaleCatalogPrices(catalog, factor);
     params.powerCostPerKwh *= factor;
     proposal.scalePrices(factor);
+    deliverables.scalePrices(factor); // 1.6.0 PRB
     for (final e in entities) {
       switch (e) {
         case PivotEntity p:
@@ -759,6 +768,7 @@ class Project {
     if (aiNotes.isNotEmpty) 'aiNotes': aiNotes,
     // 1.6.0 AGB
     if (!agb.isDefault) 'agb': agb.toJson(),
+    if (!deliverables.isDefault) 'deliverables': deliverables.toJson(), // 1.6.0 PRB
     'nextId': _nextId,
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
     if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
@@ -873,6 +883,9 @@ class Project {
       agb = AgbSettings();
       rep.skip('agb');
     }
+    // 1.6.0 PRB
+    final deliverables = DeliverableSettings.fromJson(object('deliverables'));
+    if (j['deliverables'] != null && j['deliverables'] is! Map) rep.skip('deliverables');
     final p = Project(
       meta: ProjectMeta.fromJson(object('meta'), report: rep),
       params: params,
@@ -888,12 +901,13 @@ class Project {
       aiNotes: j['aiNotes'] is String ? j['aiNotes'] as String : '',
       nextId: next,
       agb: agb,
+      deliverables: deliverables, // 1.6.0 PRB
     )..currentLayer = j['currentLayer'] is String ? j['currentLayer'] as String : Layers.drawing;
     p.unreadable.addAll(aside);
     _companionKeys.forEach(j.containsKey);
     var unread = j.unread;
     // sections that failed as a whole stay in the file as they were
-    for (final k in ['proposal', 'climate', 'blocks', 'agb']) {
+    for (final k in ['proposal', 'climate', 'blocks', 'agb', 'deliverables']) {
       if (rep.skipped.containsKey(k) && migrated[k] != null) (unread ??= {})[k] = migrated[k];
     }
     p.extra = unread;

@@ -977,8 +977,8 @@ class ProjectController extends ChangeNotifier {
       'meta' => jsonEncode({...(j['meta'] as Map<String, dynamic>)}..remove('modified')),
       _ => jsonEncode(j[k]),
     };
-    // 1.6.0 AGB: 'agb' (pump house, solar, water quality, two-wire settings)
-    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules', 'agb'];
+    // 1.6.0 AGB: 'agb' (pump house, solar, water quality, two-wire settings); 1.6.0 PRB: 'deliverables'
+    const sections = ['meta', 'units', 'params', 'catalog', 'layers', 'systemFlows', 'currentLayer', 'proposal', 'labelRules', 'agb', 'deliverables'];
     final changed = [
       for (final k in sections)
         if (part(before, k) != part(now, k)) k,

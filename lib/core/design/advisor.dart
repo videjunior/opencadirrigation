@@ -339,6 +339,8 @@ const adviceCodes = [
   'valve_pressure_excess',
   // 1.6.0 MOT+
   'air_valve_missing',
+  // 1.6.0 PRB
+  'supply_no_meter',
 ];
 
 AdviceLevel _level(String code) => switch (code) {
@@ -381,6 +383,8 @@ AdviceLevel _level(String code) => switch (code) {
   'valve_pressure_excess' => AdviceLevel.info,
   // 1.6.0 MOT+: advice on a high point of the mainline (AWWA M51)
   'air_valve_missing' => AdviceLevel.info,
+  // 1.6.0 PRB: a requirement of the water permit, not of the hydraulics
+  'supply_no_meter' => AdviceLevel.info,
   _ => AdviceLevel.warning,
 };
 
