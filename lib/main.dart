@@ -58,6 +58,14 @@ import 'core/io/project_export.dart';
 import 'core/io/share_link.dart';
 import 'core/model/entities.dart';
 import 'core/model/geometry.dart';
+import 'app/project_name.dart'; // 1.6.0 UI
+import 'app/ui_prefs.dart'; // 1.6.0 UI
+import 'app/widgets/dialogs/command_palette.dart'; // 1.6.0 UI
+import 'app/widgets/dialogs/help_dialog.dart'; // 1.6.0 UI
+import 'app/widgets/dialogs/shared_link_dialog.dart'; // 1.6.0 UI
+import 'app/widgets/dialogs/whats_new_dialog.dart'; // 1.6.0 UI
+import 'app/widgets/side_dock.dart'; // 1.6.0 UI
+import 'app/widgets/fields.dart' show localizeUi; // 1.6.0 UI
 
 Future<void> main() async {
   // The exact build goes to the console at start-up (also shown in the
@@ -123,9 +131,12 @@ class IrrigationCadApp extends StatelessWidget {
         themeAnimationStyle: AnimationStyle.noAnimation,
         // Arabic and Urdu read right to left: menus, panels and dialogs mirror
         // (the drawing itself keeps its coordinates)
-        builder: (context, child) => ValueListenableBuilder<String>(
-          valueListenable: uiLanguage,
-          builder: (context, lang, _) => Directionality(textDirection: rtlLanguages.contains(lang) ? TextDirection.rtl : TextDirection.ltr, child: child ?? const SizedBox()),
+        // (1.6.0 UI: drawn at the interface size of View → Interface)
+        builder: (context, child) => UiScaled(
+          child: ValueListenableBuilder<String>(
+            valueListenable: uiLanguage,
+            builder: (context, lang, _) => Directionality(textDirection: rtlLanguages.contains(lang) ? TextDirection.rtl : TextDirection.ltr, child: child ?? const SizedBox()),
+          ),
         ),
         home: AppShell(autoTutorial: autoTutorial, offerRecovery: offerRecovery, askAi: askAi, startExample: startExample),
       ),
@@ -170,7 +181,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   /// Side panel tab: 0 properties, 1 layers, 2 history.
   int _sideTabIndex = 0;
-  double _reportsHeight = 220;
+  double _reportsHeight = savedReportsHeight() ?? 220;
 
   /// The arrangement of the last build (phone, narrow or wide).
   ShellLayout _layout = ShellLayout.wide;
@@ -195,6 +206,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     lastPointerKind.value = null;
     startPointerKindTracking();
     lastPointerKind.addListener(_onPointerKind);
+    // 1.6.0 UI: focus mode, the side panel folded or widened
+    for (final n in <Listenable>[uiFocusMode, uiSideFolded, uiSideWidth, uiScale, uiHighContrast]) {
+      n.addListener(_onUiPrefs);
+    }
     // unsaved projects, and conversations with the assistant that are not kept
     // in this browser as they are now (keeping off, a turn running, a save not done)
     setUnloadGuard(() => ws.tabs.any((t) => t.dirty) || AiAssistant.live.any((a) => a.unsavedConversation));
@@ -235,6 +250,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       var recovered = 0;
       if (widget.offerRecovery && mounted) recovered = await showRecoveryDialog(context, ws);
       if (!mounted) return;
+      // 1.6.0 UI (SIT-07): once after an update of the web app, what changed
+      if (kIsWeb && shouldShowWhatsNew(c)) await showWhatsNewDialog(context, c, afterUpdate: true);
+      if (!mounted) return;
       // a project shared by link (#p=…) opens in a tab of its own, as a copy
       // (the link carries the uid of whoever sent it); the address loses it
       // first, so a link that cannot be opened is not tried again when the
@@ -243,7 +261,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final linked = fragment.startsWith('p=');
       if (linked) clearAddressFragment();
       final shared = linked ? projectJsonFromLink('#$fragment') : null;
-      if (linked && (shared == null || openJsonInTab(ws, shared, asCopy: true) == null)) c.notify(c.t('share.damaged'));
+      // 1.6.0 UI (FMT-09): a large project opens only once the user agrees
+      final open = shared != null && (!isLargeSharedProject(shared) || await confirmLargeSharedProject(context, c, shared));
+      if (!mounted) return;
+      if (linked && (shared == null || (open && openJsonInTab(ws, shared, asCopy: true) == null))) c.notify(c.t('share.damaged'));
       final q = Uri.base.queryParameters;
       final example = exampleIdFromName(q['example']) ?? widget.startExample;
       final designLink = q['design'] == '1';
@@ -303,6 +324,9 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     ws.removeListener(_onWorkspace);
     tutorial.removeListener(_onTutorial);
     lastPointerKind.removeListener(_onPointerKind);
+    for (final n in <Listenable>[uiFocusMode, uiSideFolded, uiSideWidth, uiScale, uiHighContrast]) {
+      n.removeListener(_onUiPrefs);
+    }
     stopPointerKindTracking();
     _nativeKeys.dispose();
     AiFileDrop.instance.uninstall();
@@ -319,6 +343,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     if (mounted) setState(() {});
   }
 
+  void _onUiPrefs() {
+    if (mounted) setState(() {});
+  }
+
   void _onPointerKind() {
     // (the pointer is pressed during a frame's input handling: rebuild after it)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -332,6 +360,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   /// so the steps find what they talk about and their "Show me" demos never
   /// change the user's work.
   void startTutorial({int startAt = 0}) {
+    setFocusMode(false); // 1.6.0 UI
     final cur = c;
     final target = cur.project.entities.isEmpty && !cur.dirty ? cur : ws.addTab();
     loadExampleAction(target);
@@ -525,6 +554,16 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   @override
   void quickSelect() => showQuickSelectDialog(context, c);
 
+  // 1.6.0 UI: Ctrl+K, Ctrl+Alt+F and F1
+  @override
+  void commandPalette() => _afterFieldCommit(() => showCommandPalette(context, c, runAlias: typeCommand));
+
+  @override
+  void toggleFocusMode() => setFocusMode(!uiFocusMode.value);
+
+  @override
+  void help() => showHelpDialog(context, c);
+
   @override
   void clipboard(CadAction action) {
     switch (action) {
@@ -550,7 +589,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       if (tab.messageSeq != last && tab.lastMessage != null) {
         _lastSeqByTab[tab.tabId] = tab.messageSeq;
         // every message is kept (Help → Recent messages), also those of the other tabs
-        logMessage(tab.project.meta.name.trim().isEmpty ? tab.t('name.newProject') : tab.project.meta.name, tab.lastMessage!);
+        logMessage(projectTitle(tab.t, tab.project.meta.name), tab.lastMessage!);
         if (!identical(tab, c)) continue;
         _snack(tab.lastMessage!);
       }
@@ -574,7 +613,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         ..showSnackBar(
           compact
               ? SnackBar(
-                  content: Text(msg, style: const TextStyle(fontSize: 12)),
+                  content: Text(localizeUi(msg), style: const TextStyle(fontSize: 12)), // 1.6.0 UI: numbers in the notation of the language
                   duration: Duration(milliseconds: long ? 6000 : 3500),
                   persist: false,
                   action: more,
@@ -582,7 +621,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                   margin: const EdgeInsets.fromLTRB(12, 0, 72, 100),
                 )
               : SnackBar(
-                  content: Text(msg),
+                  content: Text(localizeUi(msg)),
                   duration: Duration(seconds: long ? 8 : 6),
                   persist: false,
                   action: more,
@@ -637,6 +676,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
 
   @override
   void showSideTab(int index) {
+    // 1.6.0 UI: a folded side panel unfolds for it (not kept)
+    if (_layout == ShellLayout.wide && uiSideFolded.value) uiSideFolded.value = false;
     // narrow windows: the panel the tutorial (or a menu) asks for comes out of its drawer
     final open = _layout == ShellLayout.narrow && !_sideOpen;
     if (_sideTabIndex == index && !open) return;
@@ -654,6 +695,19 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     hotkeys.setCommand(alias.toUpperCase());
     hotkeys.runCommand();
   }
+
+  // 1.6.0 UI: the AI chapter of the tutorial watches the assistant and writes in its box (never sends)
+  @override
+  bool get assistantShown => AiAssistant.panelOpen.value || AiAssistant.peek(c) != null;
+
+  @override
+  void showAssistant({String? prompt}) => showAiAssistantDialog(context, c, prompt: prompt);
+
+  @override
+  void openPalette() => commandPalette();
+
+  @override
+  void openManual() => showHelpDialog(context, c);
 
   /// A command line typed without a keyboard (the ⌨ field of touch
   /// screens): an alias, a point or a distance, run as Enter would.
@@ -707,6 +761,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       );
     }
     final narrow = layout == ShellLayout.narrow;
+    // 1.6.0 UI: focus mode leaves the drawing board alone
+    final focus = uiFocusMode.value;
     final height = MediaQuery.sizeOf(context).height;
     // the reports never take more than half of what is left for the drawing
     final reportsHeight = _reportsHeight.clamp(120.0, math.max(120.0, (height - 140) * 0.5)).toDouble();
@@ -721,6 +777,16 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
               _sideTab(t('props.title'), _sideTabIndex == 0, () => showSideTab(0)),
               _sideTab(t('view.layers'), _sideTabIndex == 1, () => showSideTab(1)),
               _sideTab(t('hist.title'), _sideTabIndex == 2, () => showSideTab(2), key: const Key('side_tab_history')),
+              // 1.6.0 UI: the "?" of the tab shown, and the panel folds away
+              HelpButton(c: c, topic: const ['properties', 'layers', 'history'][_sideTabIndex.clamp(0, 2)], panel: true),
+              if (!narrow)
+                IconButton(
+                  key: const Key('side_fold'),
+                  tooltip: t('ui.sideClose'),
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.chevron_right, size: 18),
+                  onPressed: () => setSideFolded(true),
+                ),
               if (narrow)
                 IconButton(
                   key: const Key('side_drawer_close'),
@@ -746,17 +812,18 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
         children: [
           Column(
             children: [
-              SizedBox(
-                height: _barHeight(context, 36),
-                child: AppMenuBar(c: c, ws: ws, onStartTutorial: startTutorial, onShowWelcome: showWelcome, onCloseTab: () => _closeTab(ws.active)),
-              ),
-              ProjectTabBar(ws: ws, onClose: _closeTab, onAdd: () => ws.addTab()),
-              const Divider(height: 1),
+              if (!focus) ...[
+                SizedBox(
+                  height: _barHeight(context, 36),
+                  child: AppMenuBar(c: c, ws: ws, onStartTutorial: startTutorial, onShowWelcome: showWelcome, onCloseTab: () => _closeTab(ws.active), onCommand: typeCommand),
+                ),
+                ProjectTabBar(ws: ws, onClose: _closeTab, onAdd: () => ws.addTab()),
+                const Divider(height: 1),
+              ],
               Expanded(
                 child: Row(
                   children: [
-                    ToolPalette(c: c),
-                    const VerticalDivider(width: 1),
+                    if (!focus) ...[ToolPalette(c: c), const VerticalDivider(width: 1)],
                     Expanded(
                       child: Column(
                         children: [
@@ -788,8 +855,23 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                                       child: const Icon(Icons.keyboard_outlined),
                                     ),
                                   ),
+                                // 1.6.0 UI: the way out of focus mode
+                                if (focus)
+                                  PositionedDirectional(
+                                    start: 8,
+                                    top: 8,
+                                    child: FloatingActionButton.small(
+                                      key: const Key('focus_exit'),
+                                      heroTag: null,
+                                      tooltip: t('uiv.focusExit'),
+                                      backgroundColor: Cad.overlayStrong,
+                                      foregroundColor: Cad.fg,
+                                      onPressed: () => setFocusMode(false),
+                                      child: const Icon(Icons.fullscreen_exit),
+                                    ),
+                                  ),
                                 // narrow windows: the side panel is a drawer over the drawing
-                                if (narrow && !_sideOpen)
+                                if (narrow && !_sideOpen && !focus)
                                   PositionedDirectional(
                                     end: 0,
                                     top: 8,
@@ -811,10 +893,11 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                             ),
                           ),
                           if (_commandOpen) CommandEntry(c: c, onRun: typeCommandLine, onClose: () => setState(() => _commandOpen = false)),
-                          if (c.showReports) ...[
+                          if (c.showReports && !focus) ...[
                             GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onVerticalDragUpdate: (d) => setState(() => _reportsHeight = (reportsHeight - d.delta.dy).clamp(120, 600).toDouble()),
+                              onVerticalDragEnd: (_) => saveReportsHeight(_reportsHeight), // 1.6.0 UI
                               child: MouseRegion(
                                 cursor: SystemMouseCursors.resizeRow,
                                 child: SizedBox(
@@ -828,7 +911,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                               height: reportsHeight,
                               child: ReportsPanel(c: c),
                             ),
-                          ] else
+                          ] else if (!focus)
                             SizedBox(
                               key: TutorialTargets.reportsBar,
                               height: _barHeight(context, 22),
@@ -845,7 +928,8 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                         ],
                       ),
                     ),
-                    if (!narrow) ...[const VerticalDivider(width: 1), SizedBox(key: TutorialTargets.sidePanel, width: 300, child: sidePanel)],
+                    // 1.6.0 UI: docked at the width the user gave it, or folded into a strip
+                    if (!narrow && !focus) SideDock(c: c, panelKey: TutorialTargets.sidePanel, child: sidePanel),
                     // the AI assistant, docked so the drawing stays in view while it works
                     // (narrow windows open it in a sheet instead: see assistantDocks)
                     if (!narrow)
@@ -883,11 +967,13 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
                   ],
                 ),
               ),
-              const Divider(height: 1),
-              KeyedSubtree(
-                key: TutorialTargets.statusBar,
-                child: StatusBar(c: c, status: _status, hint: t('hint.${_hintFor(c.activeTool)}')),
-              ),
+              if (!focus) ...[
+                const Divider(height: 1),
+                KeyedSubtree(
+                  key: TutorialTargets.statusBar,
+                  child: StatusBar(c: c, status: _status, hint: t('hint.${_hintFor(c.activeTool)}')),
+                ),
+              ],
             ],
           ),
           if (tutorial.active)

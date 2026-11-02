@@ -71,6 +71,13 @@ class _Actions implements HotkeyActions {
   void clipboard(CadAction action) => calls.add('clip:${action.name}');
   @override
   void quickSelect() => calls.add('quickSelect');
+  // 1.6.0 UI
+  @override
+  void commandPalette() => calls.add('palette');
+  @override
+  void toggleFocusMode() => calls.add('focus');
+  @override
+  void help() => calls.add('help');
 }
 
 class _Canvas implements CanvasKeyTarget {
@@ -475,6 +482,22 @@ void main() {
     expect(const HotkeyEvent('Meta').isModifier, isTrue);
     expect(const HotkeyEvent('F1').char, isNull);
     expect(const HotkeyEvent('a', meta: true).toString(), contains('meta'));
+  });
+
+  test('1.6.0 UI: Ctrl+K opens the command palette, Ctrl+Alt+F focus mode and F1 the manual; a dialog blocks them', () {
+    expect(press('k', ctrl: true), isTrue);
+    expect(press('k', meta: true), isTrue);
+    expect(press('f', ctrl: true, alt: true, code: 'KeyF'), isTrue);
+    expect(press('F1'), isTrue);
+    expect(a.calls, ['palette', 'palette', 'focus', 'help']);
+    a.calls.clear();
+    a.modalOpen = true;
+    expect(press('k', ctrl: true), isTrue, reason: 'kept from the browser (its search in the address bar)');
+    expect(press('F1'), isTrue, reason: 'kept from the browser (its help page)');
+    expect(press('f', ctrl: true, alt: true, code: 'KeyF'), isTrue);
+    expect(a.calls, isEmpty);
+    expect(Hotkeys.reservedByBrowser(const HotkeyEvent('k', ctrl: true)), isTrue);
+    expect(Hotkeys.reservedByBrowser(const HotkeyEvent('F1')), isTrue);
   });
 }
 

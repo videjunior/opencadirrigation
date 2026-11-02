@@ -34,13 +34,22 @@ import 'dialogs/welcome_dialog.dart';
 import 'advice_panel.dart';
 import 'message_log.dart';
 import 'reports_panel.dart';
+import '../project_name.dart'; // 1.6.0 UI
+import 'dialogs/command_palette.dart'; // 1.6.0 UI
+import 'dialogs/feedback_dialog.dart'; // 1.6.0 UI
+import 'dialogs/help_dialog.dart'; // 1.6.0 UI
+import 'dialogs/whats_new_dialog.dart'; // 1.6.0 UI
+import 'interface_menu.dart'; // 1.6.0 UI
 
 class AppMenuBar extends StatelessWidget {
-  const AppMenuBar({super.key, required this.c, this.ws, this.onStartTutorial, this.onShowWelcome, this.onCloseTab});
+  const AppMenuBar({super.key, required this.c, this.ws, this.onStartTutorial, this.onShowWelcome, this.onCloseTab, this.onCommand});
 
   /// Number of open menus (the keyboard dispatcher leaves arrows, Enter and
   /// Esc to an open menu).
   static final ValueNotifier<int> openMenus = ValueNotifier<int>(0);
+
+  /// The menu bar on the screen (1.6.0 UI: the command palette reads its items).
+  static final GlobalKey barKey = GlobalKey(debugLabel: 'menuBar');
   final ProjectController c;
 
   /// Tabs and clipboard (null when the bar is used standalone).
@@ -50,6 +59,9 @@ class AppMenuBar extends StatelessWidget {
   /// Help → Welcome and example gallery.
   final VoidCallback? onShowWelcome;
   final VoidCallback? onCloseTab;
+
+  /// Runs a typed command as the keyboard would (1.6.0 UI: the palette's commands).
+  final void Function(String alias)? onCommand;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +112,7 @@ class AppMenuBar extends StatelessWidget {
                       leadingIcon: const Icon(Icons.history, size: 16),
                       menuChildren: [
                         if (recent.isEmpty) item(t('file.noRecent'), null),
-                        for (final p in recent.take(8)) item(p.name.isEmpty ? p.uid : p.name, ws == null ? null : () => openStoredAction(ws!, p), key: Key('recent_${p.uid}')),
+                        for (final p in recent.take(8)) item(storedProjectLabel(t, p), ws == null ? null : () => openStoredAction(ws!, p), key: Key('recent_${p.uid}')),
                         // 1.6.0 CAD: what these copies are (kept in this browser only), and all of them at once
                         const Divider(height: 1),
                         item(t('file.storage'), () => showStorageDialog(context, c), icon: Icons.storage_outlined, key: const Key('menu_recent_storage')),
@@ -352,6 +364,8 @@ class AppMenuBar extends StatelessWidget {
                       ],
                       child: Text(t('view.theme')),
                     ),
+                    // 1.6.0 UI: the size and the contrast of the interface, focus mode, the side panel
+                    interfaceMenu(c, onOpen: _menuOpened, onClose: _menuClosed),
                   ],
                   child: Text(t('menu.view')),
                 ),
@@ -584,6 +598,10 @@ class AppMenuBar extends StatelessWidget {
                     item(t('help.shortcuts'), () => showShortcutsDialog(context, c), icon: Icons.keyboard_outlined),
                     // 1.6.0 UI
                     item(t('ui.messagesMenu'), () => showMessageLogDialog(context, c), icon: Icons.notes_outlined, key: const Key('menu_messages')),
+                    item(t('pal.menu'), () => showCommandPalette(context, c, runAlias: onCommand), icon: Icons.search, shortcut: 'Ctrl+K', key: const Key('menu_palette')),
+                    item(t('help.manual'), () => showHelpDialog(context, c), icon: Icons.menu_book_outlined, shortcut: 'F1', key: const Key('menu_manual')),
+                    item(t('new.menu'), () => showWhatsNewDialog(context, c), icon: Icons.new_releases_outlined, key: const Key('menu_whats_new')),
+                    item(t('fb.menu'), () => showFeedbackDialog(context, c), icon: Icons.bug_report_outlined, key: const Key('menu_feedback')),
                     item(t('help.about'), () => showAboutDialogApp(context, c), icon: Icons.info_outline),
                   ],
                   child: Text(t('menu.help')),
@@ -649,6 +667,7 @@ Widget _fitMenus(BuildContext context, double width, List<SubmenuButton> menus) 
     }
   }
   return MenuBar(
+    key: AppMenuBar.barKey,
     style: MenuStyle(backgroundColor: WidgetStatePropertyAll(Cad.menu), elevation: const WidgetStatePropertyAll(0)),
     children: [
       ...menus.take(fit),

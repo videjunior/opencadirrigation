@@ -16,6 +16,7 @@ import 'advice_panel.dart';
 import 'fields.dart' show localizeUi;
 import 'hgl_chart.dart';
 import 'profile_chart.dart';
+import 'dialogs/help_dialog.dart' show HelpButton; // 1.6.0 UI
 
 const reportTabKeys = [
   'reports.zone',
@@ -108,6 +109,7 @@ class ReportsPanel extends StatelessWidget {
                     ),
                   ),
                 ),
+                HelpButton(c: c, topic: 'reports', panel: true), // 1.6.0 UI
                 IconButton(
                   key: const Key('reports_close'),
                   tooltip: t('ui.reportsClose'),

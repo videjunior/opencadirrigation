@@ -31,6 +31,7 @@ import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
+import 'help_dialog.dart' show helpTitle; // 1.6.0 UI
 
 /// Opens the automatic design dialog named [name] (`autoLayout`, `template`,
 /// `fieldBlocks`, `treeRings`, `pivotFit`), for command aliases.
@@ -69,20 +70,21 @@ Widget _switch(String label, bool value, ValueChanged<bool>? onChanged, {Key? ke
 Widget _pct(String label, double fraction, ValueChanged<double> onChanged) => NumField(label: label, value: fraction * 100, decimals: 0, onChanged: (v) => onChanged((v < 0 ? 0 : v) / 100));
 
 /// A number with the decimals its size calls for (1234 · 12.3 · 1.23).
-String _n(double v) => fmt(v, v.abs() >= 100 ? 0 : (v.abs() >= 10 ? 1 : 2));
+String _n(double v) => fmtUi(v, v.abs() >= 100 ? 0 : (v.abs() >= 10 ? 1 : 2));
 
-/// A number without trailing zeros (34.4, 12.8, 0), for lists typed back.
+/// A number without trailing zeros (34.4, 12.8, 0), for lists typed back
+/// (1.6.0 UI: in the notation of the language, "34,4" in Portuguese).
 String _compact(double v) {
-  final s = fmt(v, 2);
-  return s.contains('.') ? s.replaceFirst(RegExp(r'\.?0+$'), '') : s;
+  final s = fmtUi(v, 2);
+  return s.contains(RegExp(r'[.,]')) ? s.replaceFirst(RegExp(r'[.,]?0+$'), '') : s;
 }
 
 String _len(Units u, double m) => '${_n(u.lengthFromSi(m))} ${u.lengthLabel}';
 String _flow(Units u, double q) => '${_n(u.flowFromSi(q))} ${u.flowLabel}';
-String _head(Units u, double h) => '${fmt(u.pressureFromHead(h), 1)} ${u.pressureLabel}';
-String _rate(Units u, double mmH) => '${fmt(u.depthFromMm(mmH), u.length == LengthUnit.ft ? 2 : 1)} ${u.depthRateLabel}';
-String _hectares(Units u, double m2) => '${fmt(u.areaFromSi(m2), 2)} ${u.areaLabel}';
-String _surface(Units u, double m2) => u.length == LengthUnit.ft ? '${fmt(m2 / (metersPerFoot * metersPerFoot), 0)} ft² (${_hectares(u, m2)})' : '${fmt(m2, 0)} m² (${_hectares(u, m2)})';
+String _head(Units u, double h) => '${fmtUi(u.pressureFromHead(h), 1)} ${u.pressureLabel}';
+String _rate(Units u, double mmH) => '${fmtUi(u.depthFromMm(mmH), u.length == LengthUnit.ft ? 2 : 1)} ${u.depthRateLabel}';
+String _hectares(Units u, double m2) => '${fmtUi(u.areaFromSi(m2), 2)} ${u.areaLabel}';
+String _surface(Units u, double m2) => u.length == LengthUnit.ft ? '${fmtUi(m2 / (metersPerFoot * metersPerFoot), 0)} ft² (${_hectares(u, m2)})' : '${fmtUi(m2, 0)} m² (${_hectares(u, m2)})';
 
 Color _grade(double v, double good, double fair) => v >= good ? Cad.ok : (v >= fair ? Cad.warning : Cad.unconnected);
 
@@ -443,11 +445,11 @@ List<Widget> _layoutSummary(ProjectController c, OutletSpec family, LandscapeLay
     if (l.heads.isNotEmpty) KV(t('autolay.grossRate'), _rate(u, l.grossRateMmH)),
     if (m != null && m.heads > 0) ...[
       KV(t('dens.mean'), _rate(u, m.meanRateMmH)),
-      KV('CU (Christiansen)', '${fmt(m.cu, 1)} %', color: _grade(m.cu, 84, 75)),
-      KV('DU (${t('dens.lowQuarter')})', '${fmt(m.du, 1)} %', color: _grade(m.du, 75, 65)),
-      KV(t('dens.sc'), m.sc.isFinite ? fmt(m.sc, 2) : '∞', color: m.sc <= 1.3 ? Cad.ok : (m.sc <= 1.5 ? Cad.warning : Cad.unconnected)),
-      KV(t('dens.dry'), '${fmt(m.dryPct, 1)} %', color: m.dryPct <= 2 ? null : Cad.warning),
-      KV(t('autolay.overspray'), '${fmt(m.oversprayPct, 1)} %', color: m.oversprayPct <= 10 ? null : Cad.warning),
+      KV('CU (Christiansen)', '${fmtUi(m.cu, 1)} %', color: _grade(m.cu, 84, 75)),
+      KV('DU (${t('dens.lowQuarter')})', '${fmtUi(m.du, 1)} %', color: _grade(m.du, 75, 65)),
+      KV(t('dens.sc'), m.sc.isFinite ? fmtUi(m.sc, 2) : '∞', color: m.sc <= 1.3 ? Cad.ok : (m.sc <= 1.5 ? Cad.warning : Cad.unconnected)),
+      KV(t('dens.dry'), '${fmtUi(m.dryPct, 1)} %', color: m.dryPct <= 2 ? null : Cad.warning),
+      KV(t('autolay.overspray'), '${fmtUi(m.oversprayPct, 1)} %', color: m.oversprayPct <= 10 ? null : Cad.warning),
     ],
   ];
 }
@@ -814,7 +816,7 @@ Future<void> showAutoLayoutDialog(BuildContext context, ProjectController c) {
           ],
         ];
         return AlertDialog(
-          title: Text(t('autolay.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('autolay.title'), style: const TextStyle(fontSize: 15), topic: 'auto'), // 1.6.0 UI
           content: _body(ctx, inputs, summary),
           actions: _actions(ctx, c, const Key('al_generate'), plan == null || plan.layout.heads.isEmpty ? null : () => generate(ctx)),
         );
@@ -1019,7 +1021,7 @@ Future<void> showTemplateDialog(BuildContext context, ProjectController c) {
           if (l != null && family != null) ...[KV(t('rep.area'), _surface(u, l.region.area)), ..._layoutSummary(c, family, l), _messageBlock(_messages(c, l.messages, count: (n) => _headCount(c, n)))],
         ];
         return AlertDialog(
-          title: Text(t('tpl.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('tpl.title'), style: const TextStyle(fontSize: 15), topic: 'auto'), // 1.6.0 UI
           content: _body(ctx, inputs, summary),
           actions: _actions(ctx, c, const Key('tpl_generate'), l == null || l.heads.isEmpty ? null : () => generate(ctx)),
         );
@@ -1386,7 +1388,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
                   ),
                   for (var i = 0; i < math.min(blocks.length, 30); i++)
                     TableRow(
-                      children: [_cell(plan.names[i]), _cell(fmt(u.areaFromSi(blocks[i].area), 2)), _cell(_n(u.flowFromSi(blocks[i].flow))), _cell(_n(u.lengthFromSi(blocks[i].lateralLength)))],
+                      children: [_cell(plan.names[i]), _cell(fmtUi(u.areaFromSi(blocks[i].area), 2)), _cell(_n(u.flowFromSi(blocks[i].flow))), _cell(_n(u.lengthFromSi(blocks[i].lateralLength)))],
                     ),
                 ],
               ),
@@ -1396,7 +1398,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
           ],
         ];
         return AlertDialog(
-          title: Text(t('subdiv.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('subdiv.title'), style: const TextStyle(fontSize: 15), topic: 'auto'), // 1.6.0 UI
           content: _body(ctx, inputs, summary),
           actions: _actions(ctx, c, const Key('fs_generate'), plan == null || blocks.isEmpty ? null : () => generate(ctx)),
         );
@@ -1664,7 +1666,7 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
           ],
         ];
         return AlertDialog(
-          title: Text(t('rings.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('rings.title'), style: const TextStyle(fontSize: 15), topic: 'auto'), // 1.6.0 UI
           content: _body(ctx, inputs, summary),
           actions: _actions(ctx, c, const Key('tr_generate'), r == null || r.trees.isEmpty ? null : () => generate(ctx)),
         );
@@ -1815,16 +1817,16 @@ Future<void> showPivotFitDialog(BuildContext context, ProjectController c) {
             if (fit.spans != null) ...[
               KV(t('pfit.machine'), _machine(c, fit.spans!)),
               KV(t('pfit.radius'), _len(u, fit.irrigatedRadius)),
-              if (!fit.fullCircle) KV(t('pfit.sectorValue'), '${fmt(fit.sectorStartDeg, 0)}° + ${fmt(fit.sectorSweepDeg, 0)}°'),
+              if (!fit.fullCircle) KV(t('pfit.sectorValue'), '${fmtUi(fit.sectorStartDeg, 0)}° + ${fmtUi(fit.sectorSweepDeg, 0)}°'),
               KV(t('pfit.area'), _hectares(u, fit.area)),
             ],
             KV(t('pfit.fieldArea'), _hectares(u, fit.fieldArea)),
-            KV(t('pfit.coverage'), '${fmt(fit.coverage * 100, 1)} %'),
+            KV(t('pfit.coverage'), '${fmtUi(fit.coverage * 100, 1)} %'),
             _messageBlock(_messages(c, fit.messages)),
           ],
         ];
         return AlertDialog(
-          title: Text(t('pfit.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('pfit.title'), style: const TextStyle(fontSize: 15), topic: 'auto'), // 1.6.0 UI
           content: _body(ctx, inputs, summary),
           actions: _actions(ctx, c, const Key('pf_generate'), fit == null || fit.spans == null ? null : () => generate(ctx)),
         );

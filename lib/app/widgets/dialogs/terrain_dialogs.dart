@@ -11,9 +11,9 @@ import '../../../core/io/dem_online.dart';
 import '../../../core/io/geo.dart' show parseLatLon;
 import '../../../core/io/project_export.dart' show GeoReferenceMissing;
 import '../../../core/model/entities.dart';
-import '../../../core/units.dart';
 import '../../state/controller.dart';
 import '../../theme.dart';
+import 'help_dialog.dart' show helpTitle; // 1.6.0 UI
 import '../advice_panel.dart';
 import '../fields.dart';
 import 'export_dialogs.dart';
@@ -39,14 +39,14 @@ Future<void> showElevationDialog(BuildContext context, ProjectController c, Enti
   final s = c.toolSettings;
   final isContour = e is ContourEntity;
   final initial = isContour ? e.elevation : (e as SpotHeightEntity).elevation;
-  final ctl = TextEditingController(text: fmt(initial, 2));
-  final intervalCtl = TextEditingController(text: fmt(s.contourInterval, 2));
+  final ctl = TextEditingController(text: fmtUi(initial, 2));
+  final intervalCtl = TextEditingController(text: fmtUi(s.contourInterval, 2));
   var autoInc = s.contourAutoIncrement;
   var ask = s.askElevation;
   void apply(BuildContext ctx) {
-    final z = parseNumber(ctl.text);
+    final z = parseUiNumber(ctl.text);
     if (z == null) return;
-    final interval = parseNumber(intervalCtl.text) ?? s.contourInterval;
+    final interval = parseUiNumber(intervalCtl.text) ?? s.contourInterval;
     c.mutate(() {
       if (e is ContourEntity) e.elevation = z;
       if (e is SpotHeightEntity) e.elevation = z;
@@ -179,7 +179,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
         }
 
         return AlertDialog(
-          title: Text(t('dem.online.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('dem.online.title'), style: const TextStyle(fontSize: 15), topic: 'terrain'), // 1.6.0 UI
           content: ScrollSizedBox(
             width: dialogWidth(ctx, 460),
             child: Column(
@@ -253,7 +253,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
                     onChanged: (v) => setState(() => replace = v),
                   ),
                   if (own.isNotEmpty) ...[
-                    Text(t('dem.online.existing', {'n': '${own.spots}', 'm': '${own.contours}', 'a': fmt(own.lo, 1), 'b': fmt(own.hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                    Text(t('dem.online.existing', {'n': '${own.spots}', 'm': '${own.contours}', 'a': fmtUi(own.lo, 1), 'b': fmtUi(own.hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
                     SwitchListTile(
                       key: const Key('dem_replace_existing'),
                       dense: true,
@@ -267,7 +267,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
                   Text(
                     b.isEmpty
                         ? t('dem.online.empty')
-                        : t('dem.online.extent', {'w': fmt(b.width, 0), 'h': fmt(b.height, 0), 'n': '$n', 'r': '$requests'}) +
+                        : t('dem.online.extent', {'w': fmtUi(b.width, 0), 'h': fmtUi(b.height, 0), 'n': '$n', 'r': '$requests'}) +
                               (eta.inSeconds >= 10 ? ' · ${t('dem.online.estimate', {'t': etaText()})}' : ''),
                     style: TextStyle(fontSize: 11.5, color: Cad.fg70),
                   ),
@@ -343,7 +343,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
                               content: SizedBox(
                                 width: dialogWidth(d, 420),
                                 child: Text(
-                                  t('dem.online.mismatch', {'a': fmt(res.ownRange.$1, 1), 'b': fmt(res.ownRange.$2, 1), 'c': fmt(res.range.$1, 1), 'd': fmt(res.range.$2, 1)}),
+                                  t('dem.online.mismatch', {'a': fmtUi(res.ownRange.$1, 1), 'b': fmtUi(res.ownRange.$2, 1), 'c': fmtUi(res.range.$1, 1), 'd': fmtUi(res.range.$2, 1)}),
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
@@ -359,7 +359,7 @@ Future<void> showOnlineDemDialog(BuildContext context, ProjectController c) {
                         if (contours && count > 0) {
                           final interval = contourInterval > 0 ? contourInterval : c.autoContourInterval();
                           final drawn = c.generateContours(interval);
-                          c.notify(t('dem.online.doneContours', {'n': '$count', 's': source.attribution, 'c': '$drawn', 'i': fmt(interval, 2)}) + noData);
+                          c.notify(t('dem.online.doneContours', {'n': '$count', 's': source.attribution, 'c': '$drawn', 'i': fmtUi(interval, 2)}) + noData);
                         } else {
                           c.notify(t('dem.online.done', {'n': '$count', 's': source.attribution}) + noData);
                         }
@@ -400,7 +400,7 @@ Future<void> showGenerateContoursDialog(BuildContext context, ProjectController 
       builder: (ctx, setState) {
         final preview = interval > 0 ? terrain.generateContours(interval) : const <(double, List<Object>)>[];
         return AlertDialog(
-          title: Text(t('cgen.title'), style: const TextStyle(fontSize: 15)),
+          title: helpTitle(c, t('cgen.title'), style: const TextStyle(fontSize: 15), topic: 'terrain'), // 1.6.0 UI
           content: SizedBox(
             width: dialogWidth(ctx, 420),
             child: Column(
@@ -409,7 +409,7 @@ Future<void> showGenerateContoursDialog(BuildContext context, ProjectController 
               children: [
                 Text(t('cgen.explain'), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
                 const SizedBox(height: 8),
-                Text(t('terrain.stats', {'n': '${terrain.sampleCount}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: const TextStyle(fontSize: 11.5)),
+                Text(t('terrain.stats', {'n': '${terrain.sampleCount}', 'a': fmtUi(lo, 1), 'b': fmtUi(hi, 1)}), style: const TextStyle(fontSize: 11.5)),
                 NumField(label: t('cgen.interval'), value: interval, onChanged: (v) => setState(() => interval = v <= 0 ? interval : v)),
                 SwitchListTile(
                   dense: true,
@@ -418,7 +418,7 @@ Future<void> showGenerateContoursDialog(BuildContext context, ProjectController 
                   value: replace,
                   onChanged: (v) => setState(() => replace = v),
                 ),
-                Text(t('cgen.preview', {'n': '${preview.length}', 'a': fmt(lo, 1), 'b': fmt(hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
+                Text(t('cgen.preview', {'n': '${preview.length}', 'a': fmtUi(lo, 1), 'b': fmtUi(hi, 1)}), style: TextStyle(fontSize: 11.5, color: Cad.fg70)),
               ],
             ),
           ),
@@ -448,7 +448,7 @@ Future<void> showDesignCheckDialog(BuildContext context, ProjectController c) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text(t('check.title'), style: const TextStyle(fontSize: 15)),
+      title: helpTitle(c, t('check.title'), style: const TextStyle(fontSize: 15), topic: 'check'), // 1.6.0 UI
       content: SizedBox(
         width: dialogWidth(ctx, 620),
         height: 460,

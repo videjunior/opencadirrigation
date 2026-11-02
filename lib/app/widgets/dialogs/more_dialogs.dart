@@ -23,6 +23,8 @@ import '../dem_view.dart';
 import '../fields.dart';
 import 'catalog_packs_dialog.dart';
 import '../../theme.dart';
+import '../../project_name.dart'; // 1.6.0 UI
+import 'help_dialog.dart' show helpTitle; // 1.6.0 UI
 
 Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<T>(
   context: context,
@@ -30,7 +32,7 @@ Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Wid
     final compact = MediaQuery.sizeOf(ctx).width < 700;
     // the content always scrolls (see the dialogs.dart helper)
     return AlertDialog(
-      title: Text(title, style: const TextStyle(fontSize: 15)),
+      title: helpTitle(c, title, style: const TextStyle(fontSize: 15)), // 1.6.0 UI: its "?" when the manual explains it
       content: SizedBox(
         width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width,
         child: body is ScrollBody ? body : ScrollBody(child: body),
@@ -184,9 +186,9 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
                 ),
               Text(
                 t('pump.duty', {
-                  'q': '${fmt(u.flowFromSi(duty.flow), 1)} ${u.flowLabel}',
-                  'h': '${fmt(u.pressureFromHead(dutyHead), 1)} ${u.pressureLabel}',
-                  's': '${fmt(u.pressureFromHead(stat), 1)} ${u.pressureLabel}',
+                  'q': '${fmtUi(u.flowFromSi(duty.flow), 1)} ${u.flowLabel}',
+                  'h': '${fmtUi(u.pressureFromHead(dutyHead), 1)} ${u.pressureLabel}',
+                  's': '${fmtUi(u.pressureFromHead(stat), 1)} ${u.pressureLabel}',
                 }),
                 style: const TextStyle(fontSize: 12),
               ),
@@ -218,26 +220,26 @@ Future<void> showPumpSelectionDialog(BuildContext context, ProjectController c) 
                             cells: [
                               DataCell(Text(k.spec.name)),
                               DataCell(Text('${k.parallelCount}')),
-                              DataCell(Text(fmt(u.pressureFromHead(k.headAtDuty), 1))),
+                              DataCell(Text(fmtUi(u.pressureFromHead(k.headAtDuty), 1))),
                               DataCell(
                                 Text(
                                   k.suitable
-                                      ? '+${fmt(u.pressureFromHead(k.margin), 1)}'
-                                      : (!k.suctionOk ? t('pump.suction') : (k.inRange ? fmt(u.pressureFromHead(k.margin), 1) : t('pump.unsuitable'))),
+                                      ? '+${fmtUi(u.pressureFromHead(k.margin), 1)}'
+                                      : (!k.suctionOk ? t('pump.suction') : (k.inRange ? fmtUi(u.pressureFromHead(k.margin), 1) : t('pump.unsuitable'))),
                                 ),
                               ),
-                              DataCell(Text(k.operatingFlow > 0 ? '${fmt(u.flowFromSi(k.operatingFlow), 1)} ${u.flowLabel} @ ${fmt(u.pressureFromHead(k.operatingHead), 1)}' : '—')),
-                              DataCell(Text(fmt(k.shaftPowerKw * k.parallelCount, 1))),
+                              DataCell(Text(k.operatingFlow > 0 ? '${fmtUi(u.flowFromSi(k.operatingFlow), 1)} ${u.flowLabel} @ ${fmtUi(u.pressureFromHead(k.operatingHead), 1)}' : '—')),
+                              DataCell(Text(fmtUi(k.shaftPowerKw * k.parallelCount, 1))),
                               DataCell(
                                 Builder(
                                   builder: (_) {
                                     final m = standardMotor(k.shaftPowerKw);
-                                    return Text(m == null ? '—' : '${fmt(m.$1, m.$1 < 10 ? 1 : 0)} kW · ${fmt(m.$2, m.$2 < 10 ? 1 : 0)} cv${k.parallelCount > 1 ? ' ×${k.parallelCount}' : ''}');
+                                    return Text(m == null ? '—' : '${fmtUi(m.$1, m.$1 < 10 ? 1 : 0)} kW · ${fmtUi(m.$2, m.$2 < 10 ? 1 : 0)} cv${k.parallelCount > 1 ? ' ×${k.parallelCount}' : ''}');
                                   },
                                 ),
                               ),
-                              DataCell(Text(fmt(k.annualEnergy * k.parallelCount, 0))),
-                              DataCell(Text(fmt(k.spec.cost * k.parallelCount, 0))),
+                              DataCell(Text(fmtUi(k.annualEnergy * k.parallelCount, 0))),
+                              DataCell(Text(fmtUi(k.spec.cost * k.parallelCount, 0))),
                               DataCell(
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -358,7 +360,7 @@ Future<int> showRecoveryDialog(BuildContext context, Workspace ws) async {
                     controlAffinity: ListTileControlAffinity.leading,
                     value: picked.contains(p.uid),
                     onChanged: (v) => setState(() => v == true ? picked.add(p.uid) : picked.remove(p.uid)),
-                    title: Text(t('rec.item', {'name': p.name, 'when': _when(p.savedAt), 'kb': (p.bytes / 1024).toStringAsFixed(0)}), style: const TextStyle(fontSize: 11.5)),
+                    title: Text(t('rec.item', {'name': projectTitle(t, p.name), 'when': _when(p.savedAt), 'kb': (p.bytes / 1024).toStringAsFixed(0)}), style: const TextStyle(fontSize: 11.5)),
                     subtitle: c.store.versions(p.uid).isEmpty ? null : Text(t('rec.hasVersions', {'n': '${c.store.versions(p.uid).length}'}), style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
                   ),
                 const SizedBox(height: 4),
@@ -441,7 +443,7 @@ Future<void> showVersionsDialog(BuildContext context, ProjectController c) {
   return _show(
     context,
     c,
-    t('ver.title', {'name': c.project.meta.name}),
+    t('ver.title', {'name': projectTitle(t, c.project.meta.name)}),
     SizedBox(
       height: 320,
       child: Column(
@@ -956,7 +958,7 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   }),
                 ),
                 _cell(p.name, (x) => p.name = x),
-                _cell(p.points.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2, 1)}').join(', '), (x) {
+                _cell(p.points.map((pt) => '${fmtUi(pt.$1 / m3sPerM3h, 1)}@${fmtUi(pt.$2, 1)}').join(', '), (x) {
                   final pts = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
                   if (pts.length >= 2) {
                     p.points = pts;
@@ -964,13 +966,13 @@ Future<void> showCatalogEditorDialog(BuildContext context, ProjectController c) 
                   }
                 }),
                 _num(p.efficiency, (x) => p.efficiency = x),
-                _cell(p.efficiencyPoints.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2 * 100, 0)}').join(', '), (x) {
+                _cell(p.efficiencyPoints.map((pt) => '${fmtUi(pt.$1 / m3sPerM3h, 1)}@${fmtUi(pt.$2 * 100, 0)}').join(', '), (x) {
                   p.efficiencyPoints = [
                     for (final (q, e) in CatalogIo.parseCurvePoints(x))
                       if (e > 0) (q * m3sPerM3h, e > 1 ? e / 100 : e),
                   ];
                 }),
-                _cell(p.npshPoints.map((pt) => '${fmt(pt.$1 / m3sPerM3h, 1)}@${fmt(pt.$2, 1)}').join(', '), (x) {
+                _cell(p.npshPoints.map((pt) => '${fmtUi(pt.$1 / m3sPerM3h, 1)}@${fmtUi(pt.$2, 1)}').join(', '), (x) {
                   p.npshPoints = [for (final (q, h) in CatalogIo.parseCurvePoints(x)) (q * m3sPerM3h, h)];
                 }),
                 _num(p.powerKw, (x) => p.powerKw = x),
@@ -1294,15 +1296,15 @@ Future<EmitterCurve?> showNozzleFitDialog(BuildContext context, ProjectControlle
                   if (!ok)
                     Text(t('cat.fitNeedRows'), style: TextStyle(fontSize: 12, color: Cad.attention))
                   else ...[
-                    KV('q = k·Hˣ', 'k ${fmt(fit.curve.k / m3sPerLph, 4)} L/h·m⁻ˣ   x ${fmt(fit.curve.x, 3)}'),
+                    KV('q = k·Hˣ', 'k ${fmtUi(fit.curve.k / m3sPerLph, 4)} L/h·m⁻ˣ   x ${fmtUi(fit.curve.x, 3)}'),
                     KV(
-                      t('cat.fitAtDefault', {'p': '${fmt(u.pressureFromHead(nozzle.defaultHeadM), 2)} ${u.pressureLabel}'}),
-                      '${fmt(fu.flowFromSi(fit.curve.flow(nozzle.defaultHeadM)), 2)} ${fu.flowLabel}',
+                      t('cat.fitAtDefault', {'p': '${fmtUi(u.pressureFromHead(nozzle.defaultHeadM), 2)} ${u.pressureLabel}'}),
+                      '${fmtUi(fu.flowFromSi(fit.curve.flow(nozzle.defaultHeadM)), 2)} ${fu.flowLabel}',
                     ),
-                    KV(t('cat.fitFlowError'), '${fmt(fit.maxFlowError * 100, 1)} %', color: fit.maxFlowError > 0.05 ? Cad.caution : null),
+                    KV(t('cat.fitFlowError'), '${fmtUi(fit.maxFlowError * 100, 1)} %', color: fit.maxFlowError > 0.05 ? Cad.caution : null),
                     if (fit.radiusRows > 0) ...[
-                      KV('R = a·Hᵇ', 'a ${fmt(fit.curve.radiusA, 3)}   b ${fmt(fit.curve.radiusB, 3)}'),
-                      KV(t('cat.fitRadiusError'), '${fmt(fit.maxRadiusError * 100, 1)} %', color: fit.maxRadiusError > 0.08 ? Cad.caution : null),
+                      KV('R = a·Hᵇ', 'a ${fmtUi(fit.curve.radiusA, 3)}   b ${fmtUi(fit.curve.radiusB, 3)}'),
+                      KV(t('cat.fitRadiusError'), '${fmtUi(fit.maxRadiusError * 100, 1)} %', color: fit.maxRadiusError > 0.08 ? Cad.caution : null),
                     ] else
                       Text(t('cat.fitKeepRadius'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
                   ],
@@ -1379,7 +1381,7 @@ Future<void> showDeviceOnLateralsDialog(BuildContext context, ProjectController 
 Future<List<(double, double)>?> showNozzleProfileDialog(BuildContext context, ProjectController c, NozzleSpec nozzle) {
   final t = c.t;
   final u = c.project.params.units;
-  var text = nozzle.profile.isEmpty ? '' : [for (final (x, y) in nozzle.profile) '${fmt(u.lengthFromSi(x * nozzle.curve.radius(nozzle.defaultHeadM)), 2)}\t${fmt(y, 3)}'].join('\n');
+  var text = nozzle.profile.isEmpty ? '' : [for (final (x, y) in nozzle.profile) '${fmtUi(u.lengthFromSi(x * nozzle.curve.radius(nozzle.defaultHeadM)), 2)}\t${fmtUi(y, 3)}'].join('\n');
   final field = TextEditingController(text: text);
   return showDialog<List<(double, double)>>(
     context: context,

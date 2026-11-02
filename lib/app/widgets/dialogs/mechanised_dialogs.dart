@@ -27,6 +27,7 @@ import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
+import '../../project_name.dart'; // 1.6.0 UI
 
 /// Writes a file the dialog produces (the prescription CSV): the browser
 /// download or the desktop file dialog. A test replaces it to read the text.
@@ -284,15 +285,15 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
   }
 
   // ---- formatting in the display units
-  String _q(double q, {bool small = false}) => '${fmt(u.flowFromSi(q), flowDecimals(u, small: small))} ${u.flowLabel}';
-  String _qn(double q, {bool small = false}) => fmt(u.flowFromSi(q), flowDecimals(u, small: small));
-  String _p(double h) => '${fmt(u.pressureFromHead(h), _pressureDecimals(u))} ${u.pressureLabel}';
-  String _pn(double h) => fmt(u.pressureFromHead(h), _pressureDecimals(u));
-  String _len(double m, [int d = 1]) => '${fmt(u.lengthFromSi(m), d)} ${u.lengthLabel}';
-  String _lenN(double m, [int d = 1]) => fmt(u.lengthFromSi(m), d);
-  String _depth(double mm) => '${fmt(u.depthFromMm(mm), u.depthLabel == 'in' ? 2 : 1)} ${u.depthLabel}';
-  String _depthN(double mm) => fmt(u.depthFromMm(mm), u.depthLabel == 'in' ? 2 : 1);
-  String _area(double m2) => '${fmt(u.areaFromSi(m2), 2)} ${u.areaLabel}';
+  String _q(double q, {bool small = false}) => '${fmtUi(u.flowFromSi(q), flowDecimals(u, small: small))} ${u.flowLabel}';
+  String _qn(double q, {bool small = false}) => fmtUi(u.flowFromSi(q), flowDecimals(u, small: small));
+  String _p(double h) => '${fmtUi(u.pressureFromHead(h), _pressureDecimals(u))} ${u.pressureLabel}';
+  String _pn(double h) => fmtUi(u.pressureFromHead(h), _pressureDecimals(u));
+  String _len(double m, [int d = 1]) => '${fmtUi(u.lengthFromSi(m), d)} ${u.lengthLabel}';
+  String _lenN(double m, [int d = 1]) => fmtUi(u.lengthFromSi(m), d);
+  String _depth(double mm) => '${fmtUi(u.depthFromMm(mm), u.depthLabel == 'in' ? 2 : 1)} ${u.depthLabel}';
+  String _depthN(double mm) => fmtUi(u.depthFromMm(mm), u.depthLabel == 'in' ? 2 : 1);
+  String _area(double m2) => '${fmtUi(u.areaFromSi(m2), 2)} ${u.areaLabel}';
   String _withUnit(String key, String unit) => '${t(key)} ($unit)';
 
   String _shapeLabel(Entity e) {
@@ -381,7 +382,7 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
     final available = c.results?.pivots[p.id]?.availableHead ?? 0;
     String nozzleOf(String id, int number, double mm) => id.isNotEmpty
         ? (sprinkler?.nozzles.where((n) => n.id == id).firstOrNull?.name ?? id)
-        : (number > 0 ? '#$number (${fmt(u.diameterFromSi(mm / 1000), u.diameter == DiameterUnit.inch ? 3 : 2)} ${u.diameterLabel})' : '-');
+        : (number > 0 ? '#$number (${fmtUi(u.diameterFromSi(mm / 1000), u.diameter == DiameterUnit.inch ? 3 : 2)} ${u.diameterLabel})' : '-');
     return [
       _hintText(t('mech.dialogHint')),
       SwitchListTile(
@@ -490,7 +491,7 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
           t('mech.gunFlow'),
           '${_q(pk.endGunFlow)}${pk.gunNozzle.isNotEmpty ? ' · ${gunSpec?.nozzles.where((n) => n.id == pk.gunNozzle).firstOrNull?.name ?? pk.gunNozzle}' : ''}${pk.gunRadiusM > 0 ? ' · R ${_len(pk.gunRadiusM)}' : ''}',
         ),
-      if (pk.boosterHeadM > 0 || m.endGunBooster) KV(t('mech.booster'), '${_p(pk.boosterHeadM)} · ${fmt(pk.boosterPowerKw, 2)} kW'),
+      if (pk.boosterHeadM > 0 || m.endGunBooster) KV(t('mech.booster'), '${_p(pk.boosterHeadM)} · ${fmtUi(pk.boosterPowerKw, 2)} kW'),
       if (pk.spans.isNotEmpty) ...[
         SectionTitle(t('reports.pivotSpans')),
         resultTable(
@@ -515,10 +516,10 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
                 '${s.outlets}',
                 _qn(s.requiredFlow),
                 _qn(s.deliveredFlow),
-                fmt(u.diameterFromSi(s.pipeInnerMm / 1000), u.diameter == DiameterUnit.inch ? 2 : 0),
+                fmtUi(u.diameterFromSi(s.pipeInnerMm / 1000), u.diameter == DiameterUnit.inch ? 2 : 0),
                 _pn(s.pressureStartM),
                 _pn(s.pressureEndM),
-                fmt(u.pressureFromHead(s.frictionLossM), 2),
+                fmtUi(u.pressureFromHead(s.frictionLossM), 2),
               ],
           ],
           key: const Key('mech_spans_table'),
@@ -617,23 +618,23 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
         NumField(key: const Key('mech_timer_min'), label: t('mech.minTimer'), value: m.minTimerPct, decimals: 0, onChanged: (v) => _set(() => m.minTimerPct = v.clamp(1.0, 100.0).toDouble())),
       ]),
       SectionTitle(t('mech.summary')),
-      KV(t('mech.speed100'), pk.speedAt100MPerMin > 0 ? '${fmt(u.lengthFromSi(pk.speedAt100MPerMin), 2)} $speedUnit' : '-', color: pk.speedAt100MPerMin > 0 ? null : Cad.warning),
+      KV(t('mech.speed100'), pk.speedAt100MPerMin > 0 ? '${fmtUi(u.lengthFromSi(pk.speedAt100MPerMin), 2)} $speedUnit' : '-', color: pk.speedAt100MPerMin > 0 ? null : Cad.warning),
       if (pk.speedAt100MPerMin > 0 && pk.hoursAt100 > 0) ...[
-        KV('${t(hours)} (100 %)', '${fmt(pk.hoursAt100, 1)} h'),
+        KV('${t(hours)} (100 %)', '${fmtUi(pk.hoursAt100, 1)} h'),
         KV('${t('mech.depth')} (100 %)', _depth(pk.depthAt100Mm)),
         if (setting < 100) ...[
-          KV('${t(hours)} (${fmt(setting, 0)} %)', '${fmt(pk.hoursAt100 * 100 / setting, 1)} h'),
-          KV('${t('mech.depth')} (${fmt(setting, 0)} %)', _depth(pk.depthAtTimer(setting))),
+          KV('${t(hours)} (${fmtUi(setting, 0)} %)', '${fmtUi(pk.hoursAt100 * 100 / setting, 1)} h'),
+          KV('${t('mech.depth')} (${fmtUi(setting, 0)} %)', _depth(pk.depthAtTimer(setting))),
         ],
         if (p.grossDepthMm > 0)
-          KV(t('mech.timerForDepth', {'d': _depth(p.grossDepthMm)}), '${fmt(pk.timerForDepth(p.grossDepthMm), 0)} %', color: p.grossDepthMm < pk.depthAt100Mm - 1e-9 ? Cad.warning : null),
+          KV(t('mech.timerForDepth', {'d': _depth(p.grossDepthMm)}), '${fmtUi(pk.timerForDepth(p.grossDepthMm), 0)} %', color: p.grossDepthMm < pk.depthAt100Mm - 1e-9 ? Cad.warning : null),
         if (pk.speedForCycleMPerMin > 0)
-          KV(t('mech.speedForCycle'), '${fmt(u.lengthFromSi(pk.speedForCycleMPerMin), 2)} $speedUnit', color: pk.speedForCycleMPerMin > pk.speedAt100MPerMin + 1e-9 ? Cad.warning : null),
+          KV(t('mech.speedForCycle'), '${fmtUi(u.lengthFromSi(pk.speedForCycleMPerMin), 2)} $speedUnit', color: pk.speedForCycleMPerMin > pk.speedAt100MPerMin + 1e-9 ? Cad.warning : null),
         SectionTitle(t('reports.pivotTimer')),
         resultTable(
           ['${t('mech.timer')} (%)', '${t(hours)} (h)', '${t('mech.depth')} (${u.depthLabel})', '${t('mech.speed')} ($speedUnit)'],
           [
-            for (final row in pk.timer) [fmt(row.timerPct, 0), fmt(row.hours, 1), _depthN(row.depthMm), fmt(u.lengthFromSi(row.speedMPerMin), 2)],
+            for (final row in pk.timer) [fmtUi(row.timerPct, 0), fmtUi(row.hours, 1), _depthN(row.depthMm), fmtUi(u.lengthFromSi(row.speedMPerMin), 2)],
           ],
           bold: [for (final row in pk.timer) (row.timerPct - setting).abs() < 1e-9],
           key: const Key('mech_timer_chart'),
@@ -731,7 +732,7 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
               KV(t('mech.minFlow'), _q(a.minFlow)),
               // a ratio of many times the tower speed is the tip jumping from one
               // stretch of the guide to another between two machine positions
-              KV(t('mech.tipSpeed'), fmt(a.maxTipSpeedRatio, 2), color: a.maxTipSpeedRatio > 5 ? Cad.warning : null),
+              KV(t('mech.tipSpeed'), fmtUi(a.maxTipSpeedRatio, 2), color: a.maxTipSpeedRatio > 5 ? Cad.warning : null),
               KV(t('mech.shortfall'), _len(a.maxShortfallM), color: a.maxShortfallM > 0.5 ? Cad.warning : null),
               KV(t('mech.overrun'), _len(a.maxOverrunM), color: a.maxOverrunM > 0.5 ? Cad.warning : null),
             ],
@@ -758,7 +759,7 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
         resultTable(
           [t('mech.bank'), '${t('mech.bankStart')} (${u.lengthLabel})', '${t('mech.bankEnd')} (${u.lengthLabel})', '${t('mech.qDesign')} (${u.flowLabel})', '${t('mech.onTime')} (%)'],
           [
-            for (final b in a.banks) ['${b.index + 1}', _lenN(b.startM), _lenN(b.endM), _qn(b.designFlow), fmt(b.onFraction * 100, 0)],
+            for (final b in a.banks) ['${b.index + 1}', _lenN(b.startM), _lenN(b.endM), _qn(b.designFlow), fmtUi(b.onFraction * 100, 0)],
           ],
           key: const Key('mech_banks_table'),
         ),
@@ -770,7 +771,7 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
 
   double _defaultDepth(double d100) => ((d100 > 0 ? d100 : p.grossDepthMm) * 10).round() / 10;
 
-  String get _edgesText => m.vriBankEdgesM.map((e) => fmt(u.lengthFromSi(e), 1)).join('; ');
+  String get _edgesText => m.vriBankEdgesM.map((e) => fmtUi(u.lengthFromSi(e), 1)).join('; ');
 
   List<Widget> _vri(MechanisedResult r) {
     if (p.kind != PivotKind.pivot) return [Text(t('mech.vriPivotOnly'), style: _hint)];
@@ -844,12 +845,12 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
           [
             for (final row in v.rows)
               [
-                fmt(row.startDeg, 1),
-                fmt(row.endDeg, 1),
-                fmt(row.timerPct, 0),
+                fmtUi(row.startDeg, 1),
+                fmtUi(row.endDeg, 1),
+                fmtUi(row.timerPct, 0),
                 _depthN(row.depthMm),
                 _depthN(row.targetMm),
-                if (v.bankEdgesM.length > 2) row.bankDutyPct.map((d) => fmt(d, 0)).join(' / '),
+                if (v.bankEdgesM.length > 2) row.bankDutyPct.map((d) => fmtUi(d, 0)).join(' / '),
               ],
           ],
           warn: [for (final row in v.rows) row.limit != 0],
@@ -966,7 +967,7 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
 
   Future<void> _saveCsv(VriResult v) {
     String safe(String s) => s.trim().replaceAll(RegExp(r'[\\/:*?"<>|\s]+'), '_');
-    return mechanisedFileSaver('${safe(c.project.meta.name)}_${safe(_pivotName)}_vri.csv', v.toCsv(compass: _compass), mime: 'text/csv');
+    return mechanisedFileSaver('${safe(projectFileStem(c.t, c.project.meta.name))}_${safe(_pivotName)}_vri.csv', v.toCsv(compass: _compass), mime: 'text/csv');
   }
 
   // ---------------------------------------------------------------- electrical
@@ -995,17 +996,17 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
         )
       else ...[
         SectionTitle(t('mech.summary')),
-        KV(t('mech.spanCable'), '${fmt(e.cableMm2, 1)} mm²'),
-        if (m.supplyCableM > 0) KV(t('mech.supplyCable'), '${fmt(e.supplyCableMm2, 1)} mm² · ${_len(m.supplyCableM, 0)}'),
-        KV(t('mech.motorCurrent'), '${fmt(e.motorCurrentA, 2)} A'),
-        KV(t('mech.connected'), '${fmt(e.connectedKw, 2)} kW'),
-        KV(t('mech.runningCurrent'), '${fmt(e.runningCurrentA, 1)} A · ${fmt(e.runningKva, 1)} kVA'),
-        KV(t('mech.dropRun'), '${fmt(e.maxRunningDropPct, 2)} %', color: runDrop ? Cad.warning : Cad.ok),
-        KV(t('mech.dropStart'), '${fmt(e.maxStartingDropPct, 2)} %', color: startDrop ? Cad.warning : Cad.ok),
-        if (e.boosterMotorKw > 0) KV(t('mech.booster'), '${fmt(e.boosterShaftKw, 2)} → ${fmt(e.boosterMotorKw, 2)} kW · ${fmt(e.boosterCurrentA, 1)} A'),
-        KV(t('mech.startingKva'), '${fmt(e.largestStartingKva, 1)} kVA'),
-        KV(t('mech.generator'), '${fmt(e.generatorKva, 1)} kVA (≥ ${fmt(e.generatorKvaRequired, 1)} kVA)'),
-        KV(t('mech.averagePower'), '${fmt(e.averagePowerKw, 2)} kW (${fmt(m.timerPct, 0)} %)'),
+        KV(t('mech.spanCable'), '${fmtUi(e.cableMm2, 1)} mm²'),
+        if (m.supplyCableM > 0) KV(t('mech.supplyCable'), '${fmtUi(e.supplyCableMm2, 1)} mm² · ${_len(m.supplyCableM, 0)}'),
+        KV(t('mech.motorCurrent'), '${fmtUi(e.motorCurrentA, 2)} A'),
+        KV(t('mech.connected'), '${fmtUi(e.connectedKw, 2)} kW'),
+        KV(t('mech.runningCurrent'), '${fmtUi(e.runningCurrentA, 1)} A · ${fmtUi(e.runningKva, 1)} kVA'),
+        KV(t('mech.dropRun'), '${fmtUi(e.maxRunningDropPct, 2)} %', color: runDrop ? Cad.warning : Cad.ok),
+        KV(t('mech.dropStart'), '${fmtUi(e.maxStartingDropPct, 2)} %', color: startDrop ? Cad.warning : Cad.ok),
+        if (e.boosterMotorKw > 0) KV(t('mech.booster'), '${fmtUi(e.boosterShaftKw, 2)} → ${fmtUi(e.boosterMotorKw, 2)} kW · ${fmtUi(e.boosterCurrentA, 1)} A'),
+        KV(t('mech.startingKva'), '${fmtUi(e.largestStartingKva, 1)} kVA'),
+        KV(t('mech.generator'), '${fmtUi(e.generatorKva, 1)} kVA (≥ ${fmtUi(e.generatorKvaRequired, 1)} kVA)'),
+        KV(t('mech.averagePower'), '${fmtUi(e.averagePowerKw, 2)} kW (${fmtUi(m.timerPct, 0)} %)'),
         SectionTitle(t('mech.towers')),
         resultTable(
           [
@@ -1023,10 +1024,10 @@ class _PivotMachineDialogState extends State<_PivotMachineDialog> {
                 tw.arm ? '${tw.index} (${t('mech.armTower')})' : '${tw.index}',
                 _lenN(tw.radiusM, 0),
                 _lenN(tw.cableM, 0),
-                fmt(tw.spanCurrentA, 1),
-                fmt(tw.volts, 0),
-                fmt(tw.runningDropPct, 2),
-                fmt(tw.startingDropPct, 2),
+                fmtUi(tw.spanCurrentA, 1),
+                fmtUi(tw.volts, 0),
+                fmtUi(tw.runningDropPct, 2),
+                fmtUi(tw.startingDropPct, 2),
               ],
           ],
           key: const Key('mech_towers_table'),

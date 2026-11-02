@@ -33,6 +33,8 @@ import '../../state/controller.dart';
 import '../../version.dart';
 import '../../site_links.dart'; // 1.6.0 SIT
 import '../fields.dart';
+import '../../project_name.dart'; // 1.6.0 UI
+import 'help_dialog.dart' show helpTitle; // 1.6.0 UI
 
 Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Widget body, {List<Widget>? actions, double width = 520}) => showDialog<T>(
   context: context,
@@ -43,7 +45,7 @@ Future<T?> _show<T>(BuildContext context, ProjectController c, String title, Wid
     // asks it for intrinsic heights, which fields built on LayoutBuilder
     // cannot give, so the scroll view is the content's own
     return AlertDialog(
-      title: Text(title, style: const TextStyle(fontSize: 15)),
+      title: helpTitle(c, title, style: const TextStyle(fontSize: 15)), // 1.6.0 UI: its "?" when the manual explains it
       content: SizedBox(
         width: compact ? MediaQuery.sizeOf(ctx).width - 48 : width,
         child: body is ScrollBody ? body : ScrollBody(child: body),
@@ -261,24 +263,24 @@ Future<void> showProposalDialog(BuildContext context, ProjectController c) {
                 )
               else ...[
                 SectionTitle(t('reports.proposal')),
-                KV(t('proposal.materialsCost'), '$cur ${fmt(q.materialsCost, 2)}'),
-                KV(t('proposal.materials'), '$cur ${fmt(q.materialsSale, 2)}'),
-                if (q.labour != 0) KV(t('proposal.labour', {'p': fmt(s.labourPct, 1)}), '$cur ${fmt(q.labour, 2)}'),
-                if (q.trenchCost != 0 || q.trenchVolume > 0) KV(t('proposal.trench', {'v': fmt(q.trenchVolume, 1)}), '$cur ${fmt(q.trenchCost, 2)}'),
-                if (q.extras != 0) KV(t('proposal.extra'), '$cur ${fmt(q.extras, 2)}'),
-                if (q.discount != 0) KV(t('proposal.discount', {'p': fmt(s.discountPct, 1)}), '− $cur ${fmt(q.discount, 2)}'),
-                if (q.taxes != 0) KV(t('proposal.taxes', {'p': fmt(s.taxPct, 1)}), '$cur ${fmt(q.taxes, 2)}'),
-                if (q.freight != 0) KV(t('proposal.freight'), '$cur ${fmt(q.freight, 2)}'),
-                KV(t('proposal.total'), '$cur ${fmt(q.total, 2)}', color: Cad.positive),
+                KV(t('proposal.materialsCost'), '$cur ${fmtUi(q.materialsCost, 2)}'),
+                KV(t('proposal.materials'), '$cur ${fmtUi(q.materialsSale, 2)}'),
+                if (q.labour != 0) KV(t('proposal.labour', {'p': fmtUi(s.labourPct, 1)}), '$cur ${fmtUi(q.labour, 2)}'),
+                if (q.trenchCost != 0 || q.trenchVolume > 0) KV(t('proposal.trench', {'v': fmtUi(q.trenchVolume, 1)}), '$cur ${fmtUi(q.trenchCost, 2)}'),
+                if (q.extras != 0) KV(t('proposal.extra'), '$cur ${fmtUi(q.extras, 2)}'),
+                if (q.discount != 0) KV(t('proposal.discount', {'p': fmtUi(s.discountPct, 1)}), '− $cur ${fmtUi(q.discount, 2)}'),
+                if (q.taxes != 0) KV(t('proposal.taxes', {'p': fmtUi(s.taxPct, 1)}), '$cur ${fmtUi(q.taxes, 2)}'),
+                if (q.freight != 0) KV(t('proposal.freight'), '$cur ${fmtUi(q.freight, 2)}'),
+                KV(t('proposal.total'), '$cur ${fmtUi(q.total, 2)}', color: Cad.positive),
                 if (q.unpriced > 0) Text(t('proposal.unpriced', {'n': '${q.unpriced}'}), style: TextStyle(fontSize: 11, color: Cad.attention)),
                 if (s.annualBenefit > 0)
                   ...() {
                     final pb = Payback(total: q.total, annualBenefit: s.annualBenefit, annualCost: r!.annualEnergyCost, years: c.project.params.termYears, rate: c.project.params.interestRate);
                     final irr = pb.irr;
                     return [
-                      KV(t('proposal.payback'), pb.simpleYears.isFinite ? fmt(pb.simpleYears, 1) : '—'),
-                      KV(t('proposal.npv', {'n': '${pb.years}', 'r': fmt(pb.rate * 100, 1)}), '$cur ${fmt(pb.npv, 2)}', color: pb.npv >= 0 ? Cad.positive : Cad.attention),
-                      KV(t('proposal.irr'), irr == null ? '—' : '${fmt(irr * 100, 1)} %'),
+                      KV(t('proposal.payback'), pb.simpleYears.isFinite ? fmtUi(pb.simpleYears, 1) : '—'),
+                      KV(t('proposal.npv', {'n': '${pb.years}', 'r': fmtUi(pb.rate * 100, 1)}), '$cur ${fmtUi(pb.npv, 2)}', color: pb.npv >= 0 ? Cad.positive : Cad.attention),
+                      KV(t('proposal.irr'), irr == null ? '—' : '${fmtUi(irr * 100, 1)} %'),
                     ];
                   }(),
               ],
@@ -748,8 +750,8 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                   value: keepStart,
                   onChanged: (v) => setState(() => keepStart = v),
                 ),
-                for (final f in flows) Text(t('mgmt.perFlow', {'name': f.name, 'h': fmt(prog.perFlowHours[f.id] ?? 0, 2)}), style: const TextStyle(fontSize: 11.5)),
-                Text(t('mgmt.maxDaily', {'h': fmt(prog.maxDailyHours, 1)}), style: TextStyle(fontSize: 11.5, color: prog.maxDailyHours > 24 ? Cad.caution : Cad.fg70)),
+                for (final f in flows) Text(t('mgmt.perFlow', {'name': f.name, 'h': fmtUi(prog.perFlowHours[f.id] ?? 0, 2)}), style: const TextStyle(fontSize: 11.5)),
+                Text(t('mgmt.maxDaily', {'h': fmtUi(prog.maxDailyHours, 1)}), style: TextStyle(fontSize: 11.5, color: prog.maxDailyHours > 24 ? Cad.caution : Cad.fg70)),
                 for (final w in prog.warnings) Text(c.t.warning(w), style: TextStyle(fontSize: 11, color: Cad.caution)),
                 Wrap(
                   spacing: 8,
@@ -767,7 +769,7 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                       child: Text(t('mgmt.apply')),
                     ),
                     OutlinedButton(
-                      onPressed: prog.entries.isEmpty ? null : () => saveTextFile('${project.meta.name}_schedule.csv', controllerProgramCsv(prog, t: c.t.call), mime: 'text/csv'),
+                      onPressed: prog.entries.isEmpty ? null : () => saveTextFile('${projectFileStem(c.t, project.meta.name)}_schedule.csv', controllerProgramCsv(prog, t: c.t.call), mime: 'text/csv'),
                       child: Text(t('mgmt.export')),
                     ),
                   ],
@@ -797,7 +799,7 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
                                 DataCell(Text(e.zones.join(' + '))),
                                 DataCell(Text(hhmm(e.startHour))),
                                 DataCell(Text(hhmm(e.endHour))),
-                                DataCell(Text(fmt(e.durationHours, 2))),
+                                DataCell(Text(fmtUi(e.durationHours, 2))),
                               ],
                             ),
                         ],
@@ -809,7 +811,7 @@ Future<void> showManagementDialog(BuildContext context, ProjectController c) {
             ),
           );
         }
-        String q(double v) => '${fmt(u.flowFromSi(v), 1)} ${u.flowLabel}';
+        String q(double v) => '${fmtUi(u.flowFromSi(v), 1)} ${u.flowLabel}';
         Widget autoPanel() {
           final cap = auto.maxFlow > 0 ? auto.maxFlow : suppliesDesignFlow(project);
           return Container(
@@ -1314,10 +1316,10 @@ Future<void> showAutoheadDialog(BuildContext context, ProjectController c, List<
             const SizedBox(height: 8),
             Text(
               t('dlg.gridSummary', {
-                'r': fmt(radius, 1),
-                's': fmt(spacing, 1),
-                'pr': fmt(precipitationMmPerHour(precipitationRate(flow: nz?.curve.flow(headM) ?? 0, spacingAlong: spacing, spacingBetween: between)), 1),
-                'cu': fmt(gridOverlapCU(radius: radius, spacingAlong: spacing, spacingBetween: between, triangular: pattern == GridPattern.triangular), 0),
+                'r': fmtUi(radius, 1),
+                's': fmtUi(spacing, 1),
+                'pr': fmtUi(precipitationMmPerHour(precipitationRate(flow: nz?.curve.flow(headM) ?? 0, spacingAlong: spacing, spacingBetween: between)), 1),
+                'cu': fmtUi(gridOverlapCU(radius: radius, spacingAlong: spacing, spacingBetween: between, triangular: pattern == GridPattern.triangular), 0),
               }),
               style: TextStyle(fontSize: 11.5, color: Cad.fg70),
             ),
@@ -1629,15 +1631,15 @@ Future<void> showLateralCalculator(BuildContext context, ProjectController c) {
               ]),
               SectionTitle(t('dlg.results')),
               KV(t('dlg.emittersCount'), '${spec.outletCount}'),
-              KV(t('dlg.inletFlow'), '${fmt(u.flowFromSi(res.inletFlow), 1)} ${u.flowLabel}'),
-              KV(t('dlg.totalLoss'), '${fmt(u.pressureFromHead(res.frictionLoss), 2)} ${u.pressureLabel}'),
-              KV(t('dlg.endPressure'), '${fmt(u.pressureFromHead(res.endPressure), 2)} ${u.pressureLabel}'),
-              KV(t('dlg.pMinMax'), '${fmt(u.pressureFromHead(res.minPressure), 2)} (${fmt(res.minPressureDistance, 0)} m) / ${fmt(u.pressureFromHead(res.maxPressure), 2)} ${u.pressureLabel}'),
-              KV(t('dlg.pVariation'), '${fmt(res.pressureVariationPct, 1)} %'),
-              KV(t('dlg.maxVelocity'), '${fmt(u.velocityFromSi(res.maxVelocity), 2)} ${u.velocityLabel}'),
-              KV(t('dlg.uniformity4'), '${fmt(res.uniformity.cu, 1)} / ${fmt(res.uniformity.du, 1)} / ${fmt(res.uniformity.eu, 1)} / ${fmt(res.uniformity.us, 1)} %'),
-              KV(t('dlg.qvar'), '${fmt(res.uniformity.qvar, 1)} %'),
-              KV(t('dlg.maxLength'), '${fmt(u.lengthFromSi(maxLen), 1)} ${u.lengthLabel}'),
+              KV(t('dlg.inletFlow'), '${fmtUi(u.flowFromSi(res.inletFlow), 1)} ${u.flowLabel}'),
+              KV(t('dlg.totalLoss'), '${fmtUi(u.pressureFromHead(res.frictionLoss), 2)} ${u.pressureLabel}'),
+              KV(t('dlg.endPressure'), '${fmtUi(u.pressureFromHead(res.endPressure), 2)} ${u.pressureLabel}'),
+              KV(t('dlg.pMinMax'), '${fmtUi(u.pressureFromHead(res.minPressure), 2)} (${fmtUi(res.minPressureDistance, 0)} m) / ${fmtUi(u.pressureFromHead(res.maxPressure), 2)} ${u.pressureLabel}'),
+              KV(t('dlg.pVariation'), '${fmtUi(res.pressureVariationPct, 1)} %'),
+              KV(t('dlg.maxVelocity'), '${fmtUi(u.velocityFromSi(res.maxVelocity), 2)} ${u.velocityLabel}'),
+              KV(t('dlg.uniformity4'), '${fmtUi(res.uniformity.cu, 1)} / ${fmtUi(res.uniformity.du, 1)} / ${fmtUi(res.uniformity.eu, 1)} / ${fmtUi(res.uniformity.us, 1)} %'),
+              KV(t('dlg.qvar'), '${fmtUi(res.uniformity.qvar, 1)} %'),
+              KV(t('dlg.maxLength'), '${fmtUi(u.lengthFromSi(maxLen), 1)} ${u.lengthLabel}'),
             ],
           ),
         );
@@ -1703,22 +1705,22 @@ Future<void> showPumpCalculator(BuildContext context, ProjectController c) {
             if (op == null)
               Text(t('dlg.pumpCannot'), style: TextStyle(color: Cad.caution))
             else ...[
-              KV(t('dlg.flow'), '${fmt(u.flowFromSi(op.$1), 2)} ${u.flowLabel}'),
-              KV(t('dlg.head'), '${fmt(u.pressureFromHead(op.$2), 2)} ${u.pressureLabel}'),
-              KV(t('dlg.velocityMain'), '${fmt(u.velocityFromSi(velocity(flow: op.$1, diameter: pipe.innerDiameter)), 2)} ${u.velocityLabel}'),
-              KV(t('dlg.hydraulicPower'), '${fmt(hydraulicPower(flow: op.$1, head: op.$2) / 1000, 2)} kW'),
+              KV(t('dlg.flow'), '${fmtUi(u.flowFromSi(op.$1), 2)} ${u.flowLabel}'),
+              KV(t('dlg.head'), '${fmtUi(u.pressureFromHead(op.$2), 2)} ${u.pressureLabel}'),
+              KV(t('dlg.velocityMain'), '${fmtUi(u.velocityFromSi(velocity(flow: op.$1, diameter: pipe.innerDiameter)), 2)} ${u.velocityLabel}'),
+              KV(t('dlg.hydraulicPower'), '${fmtUi(hydraulicPower(flow: op.$1, head: op.$2) / 1000, 2)} kW'),
               KV(
-                t('dlg.shaftPower', {'e': fmt(pump.efficiency * 100, 0)}),
-                '${fmt(shaftPower(flow: op.$1, head: op.$2, efficiency: pump.efficiency) / 1000, 2)} kW (${fmt(shaftPower(flow: op.$1, head: op.$2, efficiency: pump.efficiency) / 735.5, 1)} cv)',
+                t('dlg.shaftPower', {'e': fmtUi(pump.efficiency * 100, 0)}),
+                '${fmtUi(shaftPower(flow: op.$1, head: op.$2, efficiency: pump.efficiency) / 1000, 2)} kW (${fmtUi(shaftPower(flow: op.$1, head: op.$2, efficiency: pump.efficiency) / 735.5, 1)} cv)',
               ),
               KV(
                 t('dlg.annualEnergy'),
-                '${fmt(shaftPower(flow: op.$1, head: op.$2, efficiency: pump.efficiency) / 1000 * hours, 0)} kWh → ${c.project.params.currency} ${fmt(annualEnergyCost(flow: op.$1, head: op.$2, hoursPerYear: hours, costPerKwh: c.project.params.powerCostPerKwh, pumpEfficiency: pump.efficiency), 0)}',
+                '${fmtUi(shaftPower(flow: op.$1, head: op.$2, efficiency: pump.efficiency) / 1000 * hours, 0)} kWh → ${c.project.params.currency} ${fmtUi(annualEnergyCost(flow: op.$1, head: op.$2, hoursPerYear: hours, costPerKwh: c.project.params.powerCostPerKwh, pumpEfficiency: pump.efficiency), 0)}',
               ),
             ],
             KV(
               t('dlg.shutoffRunout'),
-              '${fmt(u.pressureFromHead(curve.shutoffHead), 1)} ${u.pressureLabel} / ${curve.runoutFlow.isFinite ? fmt(u.flowFromSi(curve.runoutFlow), 1) : '∞'} ${u.flowLabel}',
+              '${fmtUi(u.pressureFromHead(curve.shutoffHead), 1)} ${u.pressureLabel} / ${curve.runoutFlow.isFinite ? fmtUi(u.flowFromSi(curve.runoutFlow), 1) : '∞'} ${u.flowLabel}',
             ),
           ],
         );
@@ -1775,16 +1777,16 @@ Future<void> showHammerCalculator(BuildContext context, ProjectController c) {
               NumField(label: '${t('dlg.staticPressure')} (${u.pressureLabel})', value: u.pressureFromHead(staticP), onChanged: (v) => setState(() => staticP = u.pressureToHead(v))),
             ]),
             SectionTitle(t('dlg.resultJoukowsky')),
-            KV(t('dlg.celerity'), '${fmt(u.velocityFromSi(a), 0)} ${u.velocityLabel}'),
-            KV(t('dlg.maxSurge'), '${fmt(u.pressureFromHead(dh), 1)} ${u.pressureLabel}'),
-            KV(t('dlg.criticalTime'), '${fmt(tc, 2)} s'),
-            KV(t('dlg.estSurge', {'s': fmt(closure, 1)}), '${fmt(u.pressureFromHead(effective), 1)} ${u.pressureLabel}'),
+            KV(t('dlg.celerity'), '${fmtUi(u.velocityFromSi(a), 0)} ${u.velocityLabel}'),
+            KV(t('dlg.maxSurge'), '${fmtUi(u.pressureFromHead(dh), 1)} ${u.pressureLabel}'),
+            KV(t('dlg.criticalTime'), '${fmtUi(tc, 2)} s'),
+            KV(t('dlg.estSurge', {'s': fmtUi(closure, 1)}), '${fmtUi(u.pressureFromHead(effective), 1)} ${u.pressureLabel}'),
             KV(
               t('dlg.totalPressure'),
-              '${fmt(u.pressureFromHead(staticP + effective), 1)} ${u.pressureLabel}',
+              '${fmtUi(u.pressureFromHead(staticP + effective), 1)} ${u.pressureLabel}',
               color: staticP + effective > pipe.ratingAt(c.project.params.waterTempC) ? Cad.caution : Cad.okAlt,
             ),
-            KV(t('dlg.pipeClass'), '${fmt(u.pressureFromHead(pipe.ratingAt(c.project.params.waterTempC)), 0)} ${u.pressureLabel}'),
+            KV(t('dlg.pipeClass'), '${fmtUi(u.pressureFromHead(pipe.ratingAt(c.project.params.waterTempC)), 0)} ${u.pressureLabel}'),
           ],
         );
       },
@@ -2103,7 +2105,7 @@ Future<void> showSelectionBomDialog(BuildContext context, ProjectController c) {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                t('bomSel.unsized', {'m': fmt(unsized, 1)}),
+                t('bomSel.unsized', {'m': fmtUi(unsized, 1)}),
                 key: const Key('bom_sel_unsized'),
                 style: TextStyle(fontSize: 12, color: Cad.warning),
               ),
