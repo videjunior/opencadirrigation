@@ -61,6 +61,12 @@ abstract class AgentTool {
   /// "ask", free in "apply automatically").
   bool mustConfirm(Map<String, dynamic> input) => effectOf(input) == ToolEffect.export;
 
+  /// The input the call runs with, fixed when the call is planned: what it
+  /// would otherwise read from the user's screen as it runs (the selection)
+  /// taken now, so the approval card shows exactly what runs, whatever the
+  /// user clicks while the card waits. [input] by default.
+  Map<String, dynamic> bind(Map<String, dynamic> input) => input;
+
   Future<ToolOutput> run(Map<String, dynamic> input);
 
   /// The tool as every provider describes it (the order of a conversation's
@@ -70,7 +76,7 @@ abstract class AgentTool {
 
 /// A tool made of closures.
 class FnTool extends AgentTool {
-  FnTool({required this.name, required this.description, required this.inputSchema, this.effect = ToolEffect.read, this.effectFor, this.summary, this.confirm, required this.handler});
+  FnTool({required this.name, required this.description, required this.inputSchema, this.effect = ToolEffect.read, this.effectFor, this.summary, this.confirm, this.binder, required this.handler});
   @override
   final String name;
   @override
@@ -88,6 +94,9 @@ class FnTool extends AgentTool {
 
   /// Calls to confirm even when changes apply automatically.
   final bool Function(Map<String, dynamic> input)? confirm;
+
+  /// [bind] of a call (the input as it is when null).
+  final Map<String, dynamic> Function(Map<String, dynamic> input)? binder;
   final Future<ToolOutput> Function(Map<String, dynamic> input) handler;
 
   @override
@@ -96,6 +105,8 @@ class FnTool extends AgentTool {
   String describe(Map<String, dynamic> input) => summary?.call(input) ?? name;
   @override
   bool mustConfirm(Map<String, dynamic> input) => effectOf(input) == ToolEffect.export || (confirm?.call(input) ?? false);
+  @override
+  Map<String, dynamic> bind(Map<String, dynamic> input) => binder?.call(input) ?? input;
   @override
   Future<ToolOutput> run(Map<String, dynamic> input) => handler(input);
 }
@@ -273,13 +284,36 @@ class AgentTurn {
     this.error,
     this.compactions = 0,
     this.history,
+    this.models = const [],
+    this.prefixDrops = 0,
+    this.effortDeclined = false,
+    this.lightened = false,
   });
+
+  /// The models that answered, in order, each once (a server-side fallback
+  /// may answer for the model asked for, and then go on for a while).
+  final List<String> models;
+
+  /// Thinking blocks the API dropped because the conversation before them
+  /// had changed ([AiReply.prefixDrops]): it should not happen, and costs
+  /// the cache of the conversation from there on.
+  final int prefixDrops;
+
+  /// The API turned down the effort message given with the question: the
+  /// turn ran with that effort as the request's own instead.
+  final bool effortDeclined;
+
+  /// A round of results was too large or had a picture the API refused:
+  /// it went again without its pictures.
+  final bool lightened;
 
   /// Entries to append to the conversation, in the provider's format: the
   /// question and everything the model and the tools added, ending in a
-  /// valid state (every tool call answered) that the API accepted (when it
-  /// refused a request, what that request added is left out). Empty when
-  /// nothing came back, so the question can be asked again.
+  /// valid state (every tool call answered). When the API refused a request,
+  /// what that request added is left out — except a round of tools that ran
+  /// (they may have changed the project, so the conversation must say so),
+  /// kept without its pictures. Empty when nothing came back and nothing
+  /// ran, so the question can be asked again.
   final List<Map<String, dynamic>> messages;
 
   /// The conversation before the turn as the client rewrote it so that the
@@ -325,8 +359,19 @@ class AgentStatus {
 }
 
 class AgentEvents {
-  const AgentEvents({this.onText, this.onCall, this.onStatus, this.approve, this.onUsage, this.steer, this.afterRound, this.onCompacted});
+  const AgentEvents({this.onText, this.onCall, this.onStatus, this.approve, this.onUsage, this.steer, this.afterRound, this.onCompacted, this.onProgress, this.onModel});
   final void Function(String delta)? onText;
+
+  /// The turn so far, as entries a conversation could end with (every tool
+  /// call answered: those still to run as not run), after each change and
+  /// each round: kept, it brings the conversation back as far as it went
+  /// should the page close in the middle of the turn. [changed]: a change
+  /// ran since the last call.
+  final void Function(List<Map<String, dynamic>> messages, {required bool changed})? onProgress;
+
+  /// The model that served an answer, when it is not the one asked for (a
+  /// server-side fallback).
+  final void Function(String model)? onModel;
 
   /// A call was added or changed state.
   final void Function(AgentToolCall call)? onCall;
@@ -356,6 +401,14 @@ class AgentLoop {
   final List<AgentTool> tools;
   final int maxResultChars;
 
+  /// Least output limit of a request under a spending cap (see [run]): an
+  /// answer this long still fits a round of tool calls.
+  static const minCappedOutput = 16000;
+
+  /// What a picture or a PDF left out of a round of results says to the
+  /// model.
+  static const leftOut = '[A picture was left out: the request was too large, or the API refused it. Take a smaller one (view_snapshot with a smaller size or region) if you need it.]';
+
   /// The tools in a fixed order (part of the cached prefix of every request
   /// of a conversation).
   List<AiToolSpec> get specs => [for (final t in tools) t.spec];
@@ -364,21 +417,26 @@ class AgentLoop {
 
   /// Runs one user message [user] (in the provider's format, see
   /// [AiClient.userMessage]) after [history]: at most [maxSteps] requests
-  /// to the model, and no new request once [costCap] US$ are spent.
-  /// [permissionNow], when given, is asked at every call (the user may
-  /// approve a plan or change the mode while the turn runs).
+  /// to the model, and no new request once [costCap] US$ are spent; each
+  /// request may write no more than what is left of the cap buys (at least
+  /// [minCappedOutput] tokens). [extra] entries follow the message (an
+  /// effort message, [AiClient.effortMessage]). [permissionNow], when
+  /// given, is asked at every call (the user may approve a plan or change
+  /// the mode while the turn runs).
   Future<AgentTurn> run({
     required AiModel model,
     AiEffort effort = AiEffort.medium,
     required String system,
     required List<Map<String, dynamic>> history,
     required Map<String, dynamic> user,
+    List<Map<String, dynamic>> extra = const [],
     AgentPermission permission = AgentPermission.ask,
     AgentPermission Function()? permissionNow,
     int maxSteps = 30,
     double? costCap,
     int? taskBudget,
     int? compactAt,
+    bool longCache = false,
     required AiCancel cancel,
     AgentEvents events = const AgentEvents(),
   }) async {
@@ -388,7 +446,9 @@ class AgentLoop {
     // recovery (AgentTurn.history)
     var past = history;
     var rewrote = false;
-    final kept = <Map<String, dynamic>>[user];
+    final kept = <Map<String, dynamic>>[user, ...extra];
+    var requestEffort = effort;
+    var effortDeclined = false;
     // entries of [kept] in the input of the last request the API accepted:
     // a request it refuses takes back what came after them
     var accepted = 0;
@@ -396,39 +456,70 @@ class AgentLoop {
     // the results made so far
     var open = const <AiToolCall>[];
     var results = <AiToolResult>[];
+    // the last round of results put in [kept]: where, and what it was made
+    // of (to send it again without its pictures)
+    var roundAt = -1;
+    var roundResults = <AiToolResult>[];
+    var roundUser = <AiPart>[];
+    String? roundNote;
+    var lightened = false;
     final calls = <AgentToolCall>[];
     final text = StringBuffer();
     var usage = AiUsage.zero;
     var cost = 0.0;
     var steps = 0;
     var compactions = 0;
+    var prefixDrops = 0;
+    final models = <String>[];
     var warnedBudget = false;
     final stopped = Completer<Approval>();
     cancel.onCancel(() {
       if (!stopped.isCompleted) stopped.complete(Approval.stop);
     });
 
+    // the calls of [open] without a result yet, answered as not run
+    List<AiToolResult> closing(String why) {
+      final done = {for (final r in results) r.id};
+      return [
+        ...results,
+        for (final u in open)
+          if (!done.contains(u.id)) _error(u.id, why),
+      ];
+    }
+
+    void progress({required bool changed}) {
+      final f = events.onProgress;
+      if (f == null) return;
+      try {
+        f([...kept, if (open.isNotEmpty) ...api.toolResults(closing('Not run: the request ended early. Call it again if it is still needed.'))], changed: changed);
+      } catch (_) {
+        // keeping a copy is no reason to stop
+      }
+    }
+
+    void spend(AiUsage u, AiModel at) {
+      if (u.isZero) return;
+      usage += u;
+      cost += u.cost(at);
+      events.onUsage?.call(usage, cost);
+    }
+
     AgentTurn end(AgentStop stop, [AiError? e]) {
       if (open.isNotEmpty) {
         // a round the turn did not finish: every call still gets an answer,
         // so the conversation stays one the API takes
-        final done = {for (final r in results) r.id};
         final why = switch (stop) {
           AgentStop.cancelled => 'Not run: the user stopped the assistant.',
           AgentStop.done => 'Not run: your answer ended before this call could run. Call it again if it is still needed.',
           _ => 'Not run: the request ended early${e == null ? '' : ' (${e.kind.name})'}. Call it again if it is still needed.',
         };
-        kept.addAll(
-          api.toolResults([
-            ...results,
-            for (final u in open)
-              if (!done.contains(u.id)) _error(u.id, why),
-          ]),
-        );
+        kept.addAll(api.toolResults(closing(why)));
         open = const [];
       }
+      // only the question (and its effort message) left: nothing came back
+      final asked = effortDeclined ? 1 : 1 + extra.length;
       return AgentTurn(
-        messages: kept.length > 1 ? kept : const [],
+        messages: kept.length > asked ? kept : const [],
         text: text.toString(),
         usage: usage,
         cost: cost,
@@ -438,7 +529,27 @@ class AgentLoop {
         error: e,
         compactions: compactions,
         history: rewrote ? past : null,
+        models: models,
+        prefixDrops: prefixDrops,
+        effortDeclined: effortDeclined,
+        lightened: lightened,
       );
+    }
+
+    // the last round of results without its pictures (and without the
+    // pictures of what the user wrote with it); false when it had none
+    bool lighten() {
+      if (roundAt < 0 || roundAt >= kept.length) return false;
+      final pictures = roundResults.any((r) => r.output.images.isNotEmpty) || roundUser.any((p) => p is AiImagePart || p is AiPdfPart);
+      if (!pictures) return false;
+      final light = [for (final r in roundResults) r.output.images.isEmpty ? r : AiToolResult(r.id, ToolOutput('${r.output.text}\n$leftOut'.trim(), isError: r.output.isError))];
+      final user = [for (final p in roundUser) p is AiImagePart || p is AiPdfPart ? const AiTextPart(leftOut) : p];
+      kept
+        ..removeRange(roundAt, kept.length)
+        ..addAll(api.toolResults(light, user: user, note: roundNote));
+      roundResults = light;
+      roundUser = user;
+      return true;
     }
 
     try {
@@ -449,10 +560,28 @@ class AgentLoop {
         events.onStatus?.call(const AgentStatus.thinking());
         var fresh = true;
         var note = '';
+        // under a cap, an answer may write only what is left of it buys
+        int? maxTokens;
+        if (costCap != null) {
+          final left = costCap - cost;
+          final price = model.output * (model.longAbove > 0 ? model.longOutput : 1);
+          final room = left <= 0 ? 0 : (left / price * 1e6).floor();
+          if (room < model.maxOutput) maxTokens = room < minCappedOutput ? minCappedOutput : room;
+        }
         final AiReply reply;
         try {
           reply = await api.send(
-            AiRequest(model: model, system: system, history: [...past, ...kept], tools: defs, effort: effort, taskBudget: taskBudget, compactAt: compactAt),
+            AiRequest(
+              model: model,
+              system: system,
+              history: [...past, ...kept],
+              tools: defs,
+              effort: requestEffort,
+              taskBudget: taskBudget,
+              compactAt: compactAt,
+              maxTokens: maxTokens,
+              longCache: longCache,
+            ),
             cancel: cancel,
             listener: AiStreamListener(
               onText: (s) {
@@ -472,11 +601,31 @@ class AgentLoop {
             onRetry: (wait, _, e) => events.onStatus?.call(AgentStatus.retry(wait, reason: e.kind)),
           );
         } on AiError catch (e) {
-          // the API refused what this request added: back to what it last accepted
+          // attempts that broke off were billed all the same
+          spend(e.usage, model);
+          if (e.refusedContent && accepted == 0 && extra.isNotEmpty && !effortDeclined && (e.message.contains('effort') || e.message.contains('output_config'))) {
+            // the effort message was turned down: the effort goes as the request's own
+            requestEffort = effortAfter(extra, requestEffort);
+            kept.removeRange(1, kept.length);
+            effortDeclined = true;
+            continue;
+          }
           if (e.refusedContent && kept.length > accepted) {
-            kept.removeRange(accepted, kept.length);
-            open = const [];
-            results = [];
+            if (accepted == 0) {
+              // nothing ran: the question can be asked again
+              kept.removeRange(accepted, kept.length);
+              open = const [];
+              results = [];
+            } else if (!lightened && lighten()) {
+              // a round of results too large, or with a picture the API refused: again without the pictures
+              lightened = true;
+              continue;
+            } else {
+              // the tools of the last round ran (the project may have changed): the round stays, lightened
+              lighten();
+              open = const [];
+              results = [];
+            }
           }
           return end(e.kind == AiErrorKind.cancelled ? AgentStop.cancelled : AgentStop.error, e);
         }
@@ -491,12 +640,19 @@ class AgentLoop {
         usage += reply.usage;
         cost += reply.cost(model);
         events.onUsage?.call(usage, cost);
+        prefixDrops += reply.prefixDrops;
+        if (reply.model.isNotEmpty && !models.contains(reply.model)) {
+          models.add(reply.model);
+          if (!identical(AiModel.served(reply.model, model), model)) events.onModel?.call(reply.model);
+        }
         // a declined answer is discarded, as is a tool call cut by the length limit
         if (reply.stop == AiStop.refusal) {
           return end(AgentStop.error, AiError(AiErrorKind.refusal, category: reply.category, message: reply.explanation, recommendedModel: reply.recommendedModel));
         }
         final uses = reply.calls;
-        if (uses.isNotEmpty && reply.stop == AiStop.maxTokens) return end(AgentStop.error, AiError(AiErrorKind.truncated));
+        // the output limit the cap set ended the answer: the task stops at the cap
+        final capped = maxTokens != null && reply.stop == AiStop.maxTokens;
+        if (uses.isNotEmpty && reply.stop == AiStop.maxTokens) return capped ? end(AgentStop.budget) : end(AgentStop.error, AiError(AiErrorKind.truncated));
         if (uses.isNotEmpty && reply.stop == AiStop.contextWindow) return end(AgentStop.error, AiError(AiErrorKind.contextWindow));
         if (reply.items.isNotEmpty) {
           kept.addAll(reply.items);
@@ -511,16 +667,18 @@ class AgentLoop {
         if (reply.stop == AiStop.contextWindow) return end(AgentStop.error, AiError(AiErrorKind.contextWindow));
         // the server paused a long turn of its own: the same conversation again, no new message
         if (reply.stop == AiStop.pause && uses.isEmpty) continue;
-        if (uses.isEmpty || (reply.stop != AiStop.tool && reply.stop != AiStop.pause)) return end(reply.stop == AiStop.maxTokens ? AgentStop.maxTokens : AgentStop.done);
+        if (uses.isEmpty || (reply.stop != AiStop.tool && reply.stop != AiStop.pause)) {
+          return end(reply.stop == AiStop.maxTokens ? (capped ? AgentStop.budget : AgentStop.maxTokens) : AgentStop.done);
+        }
 
         final round = <AgentToolCall>[];
         var lastChange = -1;
         var stop = false;
+        var changed = false;
         final last = steps >= maxSteps;
         for (final u in uses) {
           final id = u.id;
           final name = u.name;
-          final input = u.input;
           if (stop || cancel.cancelled) {
             results.add(_error(id, 'Not run: the user stopped the assistant.'));
             continue;
@@ -535,7 +693,16 @@ class AgentLoop {
             continue;
           }
           final raw = u.invalidRaw;
-          final problem = raw != null ? null : schemaProblem(tool.inputSchema, input);
+          final problem = raw != null ? null : schemaProblem(tool.inputSchema, u.input);
+          // what the call reads of the screen (the selection) is fixed now: the card shows what runs
+          var input = u.input;
+          if (problem == null && raw == null) {
+            try {
+              input = tool.bind(u.input);
+            } catch (_) {
+              input = u.input;
+            }
+          }
           String summary;
           try {
             summary = problem == null && raw == null ? tool.describe(input) : name;
@@ -584,7 +751,13 @@ class AgentLoop {
               results.add(_error(id, 'Refused: plan mode. Explore with the read tools, then present your plan with present_plan; changes are allowed once the user approves it.'));
               continue;
             }
-            if (mode != AgentPermission.auto || tool.mustConfirm(input)) {
+            var confirm = true;
+            try {
+              confirm = tool.mustConfirm(input);
+            } catch (_) {
+              // a call whose confirmation cannot be told is confirmed
+            }
+            if (mode != AgentPermission.auto || confirm) {
               call.state = ToolCallState.waiting;
               events.onCall?.call(call);
               events.onStatus?.call(AgentStatus.approval(name));
@@ -618,15 +791,20 @@ class AgentLoop {
             finish(ToolCallState.failed, '$e');
             results.add(_error(id, 'The tool failed: $e'));
           }
+          if (effect != ToolEffect.read && call.state != ToolCallState.failed) {
+            // kept as far as it went: should the page close now, the change is in the conversation
+            changed = true;
+            progress(changed: true);
+          }
           if (cancel.cancelled) stop = true;
         }
         final going = !stop && !cancel.cancelled && !last;
         if (going && lastChange >= 0 && events.afterRound != null) {
           try {
-            final extra = await events.afterRound!(round);
-            if (extra != null) {
+            final picture = await events.afterRound!(round);
+            if (picture != null) {
               final r = results[lastChange];
-              results[lastChange] = AiToolResult(r.id, ToolOutput('${r.output.text}\n${extra.text}'.trim(), images: [...r.output.images, ...extra.images], isError: r.output.isError));
+              results[lastChange] = AiToolResult(r.id, ToolOutput('${r.output.text}\n${picture.text}'.trim(), images: [...r.output.images, ...picture.images], isError: r.output.isError));
             }
           } catch (_) {
             // a picture that cannot be made is no reason to stop
@@ -639,9 +817,14 @@ class AgentLoop {
         ];
         if (notes.length > 1 || notes.any((n) => n.startsWith('Spending'))) warnedBudget = true;
         final steering = going ? (events.steer?.call() ?? const <AiPart>[]) : const <AiPart>[];
-        kept.addAll(api.toolResults(results, user: [for (final p in steering) p is AiTextPart ? AiTextPart('$steeringPrefix${p.text}') : p], note: notes.isEmpty ? null : notes.join('\n')));
+        roundAt = kept.length;
+        roundResults = results;
+        roundUser = [for (final p in steering) p is AiTextPart ? AiTextPart('$steeringPrefix${p.text}') : p];
+        roundNote = notes.isEmpty ? null : notes.join('\n');
+        kept.addAll(api.toolResults(roundResults, user: roundUser, note: roundNote));
         open = const [];
         results = [];
+        progress(changed: changed);
         if (stop || cancel.cancelled) return end(AgentStop.cancelled);
         if (last) return end(AgentStop.stepLimit);
       }

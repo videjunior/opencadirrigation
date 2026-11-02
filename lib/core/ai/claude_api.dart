@@ -67,6 +67,75 @@ List<Map<String, dynamic>> stripThinking(List<Map<String, dynamic>> messages, {(
   ];
 }
 
+/// Whether block [b] may carry a cache breakpoint (thinking blocks may not).
+bool _cacheable(Object? b) => b is Map && const {'text', 'image', 'tool_use', 'tool_result', 'document'}.contains(b['type']);
+
+/// The blocks of [messages] where the cache looks back from: a run of
+/// tool_use blocks, or of tool_result blocks, is one position, any other
+/// block one. Each position is given by its last block (message index,
+/// block index), the last position first.
+List<(int, int)> cachePositions(List<Map<String, dynamic>> messages) {
+  final out = <(int, int)>[];
+  String? run;
+  for (var i = messages.length - 1; i >= 0; i--) {
+    final c = messages[i]['content'];
+    if (c is! List) {
+      out.add((i, -1));
+      run = null;
+      continue;
+    }
+    for (var j = c.length - 1; j >= 0; j--) {
+      final b = c[j];
+      final type = b is Map ? b['type'] : null;
+      if ((type == 'tool_use' || type == 'tool_result') && type == run) continue;
+      run = type == 'tool_use' || type == 'tool_result' ? type as String : null;
+      out.add((i, j));
+    }
+  }
+  return out;
+}
+
+/// [messages] with cache breakpoints of [marker] inside the newest content:
+/// the cache finds the entry of the request before only within 20
+/// positions ([cachePositions]) of a breakpoint, and an answer with many
+/// tool calls between progress notes adds more than that (every request
+/// would then write the whole conversation again). Within the last two
+/// messages (what a request adds to the one before it: the model's answer
+/// and the results), one breakpoint 15 positions from the end when they
+/// hold more than 20, a second one 30 from the end when they hold more than
+/// 35. [atEnd] also marks the last block (a request without automatic
+/// caching). The messages given are not changed: the marked ones are
+/// copies (a breakpoint is not part of what the cache or the thinking
+/// signatures compare).
+List<Map<String, dynamic>> withCacheMarkers(List<Map<String, dynamic>> messages, Map<String, Object?> marker, {bool atEnd = false}) {
+  if (messages.isEmpty) return messages;
+  final from = messages.length >= 2 ? messages.length - 2 : 0;
+  final positions = cachePositions(messages);
+  final recent = positions.where((p) => p.$1 >= from).length;
+  final targets = <(int, int)>[if (atEnd) positions.first, if (recent > 20) positions[15], if (recent > 35) positions[30]];
+  if (targets.isEmpty) return messages;
+  final out = [...messages];
+  for (final (i0, j0) in targets) {
+    // the nearest block towards the end that takes a breakpoint
+    var (i, j) = (i0, j0);
+    while (i < out.length) {
+      final c = out[i]['content'];
+      if (c is List && j >= 0 && j < c.length && _cacheable(c[j])) break;
+      if (c is List && j + 1 < c.length) {
+        j++;
+      } else {
+        i++;
+        j = 0;
+      }
+    }
+    if (i >= out.length) continue;
+    final c = [...out[i]['content'] as List];
+    c[j] = {...c[j] as Map<String, dynamic>, 'cache_control': marker};
+    out[i] = {...out[i], 'content': c};
+  }
+  return out;
+}
+
 /// Client of the Messages API.
 class AnthropicClient extends AiHttpClient {
   AnthropicClient({required super.apiKey, required super.transport, this.browser = false, super.sleep, super.maxRetries});
@@ -78,6 +147,20 @@ class AnthropicClient extends AiHttpClient {
   static const compactionBeta = 'compact-2026-01-12';
   static const contextEditingBeta = 'context-management-2025-06-27';
   static const displayBeta = 'thinking-display-updates-2026-08-18';
+
+  /// `thinking.block_binding` and the `input_transformations` of answers.
+  static const bindingBeta = 'thinking-binding-controls-2026-08-01';
+
+  /// Effort-only system messages ([effortMessage]).
+  static const effortBeta = 'mid-conversation-output-config-2026-07-01';
+
+  /// What the summary of a compaction keeps: the conversation is replaced
+  /// by it, and the model goes on from it alone (its earlier thinking is not
+  /// part of the summarizer's input).
+  static const compactionInstructions =
+      'Summarize the conversation so far so that the work can go on from the summary alone; the conversation itself will be gone. '
+      'Keep, exactly as written in it: the ids, names and coordinates (metres) of the items being worked on or referred to; the decisions and the answers the user gave, and their requirements and preferences; what the user asked for and what is still to do (the to-do list and its state); the last figures of the project as the tools reported them (flows, pressures, sizes, costs, messages) with their units; files and pictures attached and what they showed; what was declined or refused, so it is not tried again. '
+      'Leave out greetings, repetition and reasoning that led nowhere. Write it as notes under short headings, in the language of the conversation.';
 
   /// Old tool results are cleared on the server past this many input
   /// tokens (pictures above all), the last [keepToolUses] kept.
@@ -115,6 +198,23 @@ class AnthropicClient extends AiHttpClient {
   /// The model's notes between tool calls come back as text.
   bool _updates(AiRequest r) => r.model.progressUpdates && offers(r.model, 'display');
 
+  /// A thinking block the conversation before it no longer matches (an
+  /// edit of the history, a conversation brought back by a later version of
+  /// the app whose tool descriptions changed) is dropped, with every later
+  /// one, and the answer says so ([AiReply.transformations]), instead of
+  /// the request being refused.
+  bool _binding(AiRequest r) => offers(r.model, 'block_binding');
+
+  /// The summary of a compaction keeps what [compactionInstructions] says.
+  bool _instructions(AiRequest r) => _compact(r) && offers(r.model, 'compaction_instructions');
+
+  /// The conversation holds effort messages ([effortMessage]).
+  static bool _effortMessages(AiRequest r) => r.history.any((m) => effortOfMessage(m) != null);
+
+  /// The request body is near the size the API takes: compaction is asked
+  /// for now (the old turns, their pictures above all, leave the body).
+  static const compactBytes = 20000000;
+
   @override
   List<String> optionalFields(AiRequest r) => [
     if (_fallback(r)) 'fallbacks',
@@ -122,12 +222,19 @@ class AnthropicClient extends AiHttpClient {
     if (_clear(r)) 'clear_tool_uses',
     if (_compact(r)) 'context_management',
     if (_updates(r)) 'display',
+    if (_binding(r)) 'block_binding',
+    if (_instructions(r)) 'compaction_instructions',
   ];
 
-  /// A complaint about context management drops the clearing first, then
-  /// compaction; a beta the account does not have drops its field.
+  /// A complaint about context management drops the summary's instructions
+  /// first, then the clearing, then compaction; a beta the account does not
+  /// have drops its field.
   @override
   String? declinedField(AiRequest r, String message) {
+    // a thinking block refused names the binding setting as the way out: no field is at fault ([recover])
+    if (_signature.hasMatch(message)) return null;
+    if (_binding(r) && (message.contains('block_binding') || message.contains(bindingBeta) || message.contains('prefix_mismatch_behavior'))) return 'block_binding';
+    if (_instructions(r) && message.contains('instructions')) return 'compaction_instructions';
     const about = ['clear_tool_uses', 'context_management', 'context-management', 'exclude_tools'];
     if (_clear(r) && about.any(message.contains)) return 'clear_tool_uses';
     if (_updates(r) && (message.contains('display') || message.contains(displayBeta))) return 'display';
@@ -138,8 +245,33 @@ class AnthropicClient extends AiHttpClient {
     return super.declinedField(r, message);
   }
 
+  /// The models that take [effortMessage] (until the API turned one down
+  /// in this session).
+  bool takesEffortMessages(AiModel m) => m.perMessageEffort && offers(m, 'effort_message');
+
+  @override
+  Map<String, dynamic>? effortMessage(AiModel m, AiEffort e) => takesEffortMessages(m)
+      ? {
+          'role': 'system',
+          'content': <Object?>[],
+          'output_config': {'effort': e.name},
+        }
+      : null;
+
+  /// Whether [e] is the API turning down an effort message (the model, or
+  /// the account, does not take them).
+  static bool refusesEffortMessage(AiError e) => e.kind == AiErrorKind.invalidRequest && (e.message.contains(effortBeta) || e.message.contains('per-turn effort'));
+
   Map<String, String> headers(AiRequest r) {
-    final betas = [if (_fallback(r)) fallbackBeta, if (_budget(r)) taskBudgetBeta, if (_clear(r)) contextEditingBeta, if (_compact(r)) compactionBeta, if (_updates(r)) displayBeta];
+    final betas = [
+      if (_fallback(r)) fallbackBeta,
+      if (_budget(r)) taskBudgetBeta,
+      if (_clear(r)) contextEditingBeta,
+      if (_compact(r)) compactionBeta,
+      if (_updates(r)) displayBeta,
+      if (_binding(r)) bindingBeta,
+      if (_effortMessages(r)) effortBeta,
+    ];
     return {
       'content-type': 'application/json',
       'x-api-key': apiKey.trim(),
@@ -149,53 +281,148 @@ class AnthropicClient extends AiHttpClient {
     };
   }
 
+  /// The cache breakpoint of [r]: five minutes, or an hour for a
+  /// [AiRequest.longCache] request (every breakpoint of a request alike:
+  /// the longer ones must come first).
+  static Map<String, Object?> _marker(AiRequest r) => r.longCache ? const {'type': 'ephemeral', 'ttl': '1h'} : const {'type': 'ephemeral'};
+
+  /// The `thinking` setting: adaptive, with the notes between tool calls as
+  /// text and the dropping of blocks the conversation no longer matches.
+  /// Thinking is always on for Claude Fable 5.1, so it gets the setting only
+  /// for one of these.
+  Map<String, Object?>? _thinking(AiRequest r) {
+    final extra = <String, Object?>{
+      if (_updates(r)) 'display': 'updates',
+      if (_binding(r)) 'block_binding': const {'prefix_mismatch_behavior': 'drop_block'},
+    };
+    if (extra.isEmpty && r.model.alwaysThinks) return null;
+    return {'type': 'adaptive', ...extra};
+  }
+
   /// The request body. The tools and the system prompt are cached by the
   /// breakpoint at the end of the system prompt, the growing conversation
-  /// by automatic caching.
-  Map<String, Object?> body(AiRequest r) => {
-    'model': r.model.id,
-    'max_tokens': r.outputTokens,
-    'stream': true,
-    'system': [
-      {
-        'type': 'text',
-        'text': r.system,
-        'cache_control': {'type': 'ephemeral'},
+  /// by automatic caching (and the breakpoints of [withCacheMarkers] inside
+  /// an answer with many tool calls). [compactNow]: the body is near the
+  /// size the API takes, so the server is asked to compact the conversation
+  /// at its least threshold, without first clearing old tool results (which
+  /// would keep the token count under it while the body stays as large).
+  Map<String, Object?> body(AiRequest r, {bool compactNow = false}) {
+    final marker = _marker(r);
+    final thinking = _thinking(r);
+    return {
+      'model': r.model.id,
+      'max_tokens': r.outputTokens,
+      'stream': true,
+      'system': [
+        {'type': 'text', 'text': r.system, 'cache_control': marker},
+      ],
+      if (r.tools.isNotEmpty) 'tools': [for (final s in r.tools) AnthropicFormat.tool(s)],
+      'messages': withCacheMarkers(sinceCompaction(r.history), marker),
+      'thinking': ?thinking,
+      'output_config': {
+        'effort': r.effort.name,
+        if (_budget(r)) 'task_budget': {'type': 'tokens', 'total': r.taskBudget! < minTaskBudget ? minTaskBudget : r.taskBudget},
       },
+      'cache_control': marker,
+      if (_fallback(r)) 'fallbacks': 'default',
+      if (_compact(r)) 'context_management': _contextManagement(r, compactNow: compactNow),
+    };
+  }
+
+  Map<String, Object?> _contextManagement(AiRequest r, {bool compactNow = false, bool compaction = true}) => {
+    'edits': [
+      if (_clear(r) && !compactNow)
+        {
+          'type': 'clear_tool_uses_20250919',
+          'trigger': {'type': 'input_tokens', 'value': clearAt},
+          'keep': {'type': 'tool_uses', 'value': keepToolUses},
+          'clear_at_least': {'type': 'input_tokens', 'value': 10000},
+          'exclude_tools': [
+            for (final n in keptTools)
+              if (r.tools.any((t) => t.name == n)) n,
+          ],
+        },
+      if (compaction)
+        {
+          'type': 'compact_20260112',
+          'trigger': {'type': 'input_tokens', 'value': compactNow || r.compactAt! < minCompactAt ? minCompactAt : r.compactAt},
+          if (_instructions(r)) 'instructions': compactionInstructions,
+        },
     ],
-    if (r.tools.isNotEmpty) 'tools': [for (final s in r.tools) AnthropicFormat.tool(s)],
-    'messages': sinceCompaction(r.history),
-    // adaptive thinking with the notes between tool calls as text; thinking
-    // is always on for Claude Fable 5.1, which takes no other setting (an
-    // explicit adaptive one included), so without the notes it gets none
-    if (_updates(r)) 'thinking': {'type': 'adaptive', 'display': 'updates'} else if (!r.model.alwaysThinks) 'thinking': {'type': 'adaptive'},
-    'output_config': {
-      'effort': r.effort.name,
-      if (_budget(r)) 'task_budget': {'type': 'tokens', 'total': r.taskBudget! < minTaskBudget ? minTaskBudget : r.taskBudget},
-    },
-    'cache_control': {'type': 'ephemeral'},
-    if (_fallback(r)) 'fallbacks': 'default',
-    if (_compact(r))
-      'context_management': {
-        'edits': [
-          if (_clear(r))
-            {
-              'type': 'clear_tool_uses_20250919',
-              'trigger': {'type': 'input_tokens', 'value': clearAt},
-              'keep': {'type': 'tool_uses', 'value': keepToolUses},
-              'clear_at_least': {'type': 'input_tokens', 'value': 10000},
-              'exclude_tools': [
-                for (final n in keptTools)
-                  if (r.tools.any((t) => t.name == n)) n,
-              ],
-            },
-          {
-            'type': 'compact_20260112',
-            'trigger': {'type': 'input_tokens', 'value': r.compactAt! < minCompactAt ? minCompactAt : r.compactAt},
-          },
-        ],
-      },
   };
+
+  /// Keeps the cached conversation of [r] (its system prompt, tools and
+  /// [AiRequest.history]) alive for another five minutes while the user
+  /// pauses: the same request with `max_tokens` 0 and no stream (the API
+  /// only reads it, and bills a cache read instead of the write of the
+  /// whole conversation that the next message would cost once the cache
+  /// expired). The breakpoint goes on the last block of the history, which
+  /// a placeholder message follows (a request may not end with the model's
+  /// answer). Returns the tokens billed; never throws (a failed keep-alive
+  /// costs nothing more), except for [AiErrorKind.auth] and the like, which
+  /// say the next ones would fail too.
+  Future<AiUsage> keepWarm(AiRequest r, {required AiCancel cancel}) async {
+    if (apiKey.trim().isEmpty) throw AiError(AiErrorKind.noKey);
+    final marker = _marker(r);
+    final thinking = _thinking(r);
+    final b = {
+      'model': r.model.id,
+      'max_tokens': 0,
+      'system': [
+        {'type': 'text', 'text': r.system, 'cache_control': marker},
+      ],
+      if (r.tools.isNotEmpty) 'tools': [for (final s in r.tools) AnthropicFormat.tool(s)],
+      'messages': [
+        ...withCacheMarkers(sinceCompaction(r.history), marker, atEnd: true),
+        AnthropicFormat.user(const [AiTextPart(keepWarmText)]),
+      ],
+      'thinking': ?thinking,
+      'output_config': {'effort': r.effort.name},
+      // the same clearing of old tool results as the requests (it shapes
+      // what is cached), never a compaction
+      if (_clear(r)) 'context_management': _contextManagement(r, compaction: false),
+    };
+    final json = jsonEncode(b);
+    AiHttpClient.checkSize(json);
+    final h = headers(r)..update('anthropic-beta', (v) => v.split(',').where((x) => x != compactionBeta && x != fallbackBeta && x != taskBudgetBeta).join(','), ifAbsent: () => '');
+    if (h['anthropic-beta']!.isEmpty) h.remove('anthropic-beta');
+    final one = cancel.child();
+    try {
+      final res = await open(AiHttpRequest(endpoint, h, json), r.model, one);
+      final text = await readAll(res.body, r.model, one);
+      if (res.status < 200 || res.status >= 300) {
+        final e = _httpError(r.model, res.status, text, res.headers);
+        if (const {AiErrorKind.auth, AiErrorKind.permission, AiErrorKind.billing, AiErrorKind.credit, AiErrorKind.spendLimit, AiErrorKind.notFound}.contains(e.kind)) throw e;
+        return AiUsage.zero;
+      }
+      final j = jsonDecode(text);
+      return j is Map ? _usageOf(j['usage']).$1 : AiUsage.zero;
+    } on AiError catch (e) {
+      if (e.kind == AiErrorKind.auth || e.kind == AiErrorKind.permission || e.kind == AiErrorKind.noKey) rethrow;
+      return AiUsage.zero;
+    } catch (_) {
+      return AiUsage.zero;
+    } finally {
+      one.release();
+      one.cancel();
+    }
+  }
+
+  /// The placeholder message of [keepWarm] (read, never answered).
+  static const keepWarmText = 'Cache keep-alive while the user pauses; no answer is produced.';
+
+  /// Tokens of a `usage` object and its one-hour cache writes apart.
+  static (AiUsage, Map<String, dynamic>) _usageOf(Object? u) {
+    if (u is! Map) return (AiUsage.zero, const {});
+    int v(Map m, String k) => m[k] is num ? (m[k] as num).toInt() : 0;
+    final written = v(u, 'cache_creation_input_tokens');
+    final by = u['cache_creation'];
+    final hour = by is Map ? v(by, 'ephemeral_1h_input_tokens') : 0;
+    return (
+      AiUsage(input: v(u, 'input_tokens'), output: v(u, 'output_tokens'), cacheWrite: written - hour < 0 ? 0 : written - hour, cacheWriteHour: hour, cacheRead: v(u, 'cache_read_input_tokens')),
+      Map<String, dynamic>.from(u),
+    );
+  }
 
   @override
   Map<String, dynamic> userMessage(List<AiPart> parts) => AnthropicFormat.user(parts);
@@ -234,7 +461,9 @@ class AnthropicClient extends AiHttpClient {
 
   @override
   Future<AiReply> attempt(AiRequest r, AiCancel cancel, AiStreamListener listener) async {
-    final json = jsonEncode(body(r));
+    var json = jsonEncode(body(r));
+    // near the size the API takes: the old turns and their pictures go into a summary now
+    if (_compact(r) && json.length * 3 > compactBytes && AiHttpClient.utf8Length(json) > compactBytes) json = jsonEncode(body(r, compactNow: true));
     AiHttpClient.checkSize(json);
     final req = AiHttpRequest(endpoint, headers(r), json);
     final res = await open(req, r.model, cancel);
@@ -263,7 +492,8 @@ class AnthropicClient extends AiHttpClient {
       sse.close();
       return acc.finish();
     } on AiError catch (e) {
-      final x = e.withRequestId(id);
+      // the input of an answer that broke off was billed all the same
+      final x = e.withRequestId(id).withUsage(acc.billedSoFar);
       throw acc.sawText ? x.withPartial() : x;
     }
   }
@@ -365,12 +595,28 @@ class _Accumulator {
   bool _stopped = false;
   bool sawText = false;
 
+  /// `input_transformations` of the message (the last list given).
+  List<Map<String, dynamic>> _transformations = const [];
+
   static String? _str(Object? o) => o is String ? o : null;
   static int? _index(Map e) => e['index'] is num ? (e['index'] as num).toInt() : null;
 
   void _mergeUsage(Object? u) {
     if (u is Map) _usage = {..._usage, ...Map<String, dynamic>.from(u)};
   }
+
+  void _transform(Object? t) {
+    if (t is List) {
+      _transformations = [
+        for (final x in t)
+          if (x is Map) Map<String, dynamic>.from(x),
+      ];
+    }
+  }
+
+  /// The tokens reported so far (the input, from the start of the stream):
+  /// what an answer that breaks off is billed at least.
+  AiUsage get billedSoFar => _billing().$1;
 
   void _details(Object? d) {
     if (d is! Map) return;
@@ -399,6 +645,7 @@ class _Accumulator {
     _stopReason = _str(m['stop_reason']) ?? 'end_turn';
     _details(m['stop_details']);
     _mergeUsage(m['usage']);
+    _transform(m['input_transformations']);
     _stopped = true;
   }
 
@@ -410,6 +657,7 @@ class _Accumulator {
         if (m is Map) {
           _model = _str(m['model']) ?? _model;
           _mergeUsage(m['usage']);
+          _transform(m['input_transformations']);
         }
       case 'content_block_start':
         final i = _index(e);
@@ -476,6 +724,8 @@ class _Accumulator {
         }
         _details(e['stop_details']);
         _mergeUsage(e['usage']);
+        // again after a fallback in the middle of the answer
+        _transform(e['input_transformations']);
       case 'message_stop':
         _stopped = true;
       case 'error':
@@ -491,8 +741,7 @@ class _Accumulator {
   /// are those of the attempt that produced the message (the fallback
   /// model's when one served it); the others come from `usage.iterations`.
   (AiUsage, List<(String, AiUsage)>) _billing() {
-    int v(Map u, String k) => u[k] is num ? (u[k] as num).toInt() : 0;
-    AiUsage of(Map u) => AiUsage(input: v(u, 'input_tokens'), output: v(u, 'output_tokens'), cacheWrite: v(u, 'cache_creation_input_tokens'), cacheRead: v(u, 'cache_read_input_tokens'));
+    AiUsage of(Map u) => AnthropicClient._usageOf(u).$1;
     final top = of(_usage);
     final its = [
       if (_usage['iterations'] is List)
@@ -546,6 +795,7 @@ class _Accumulator {
       explanation: _explanation ?? '',
       recommendedModel: _recommended,
       compacted: compacted,
+      transformations: _transformations,
     );
   }
 }

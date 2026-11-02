@@ -64,13 +64,17 @@ void main() {
     expect(req.headers['x-api-key'], key);
     expect(req.headers['anthropic-version'], '2026-10-21');
     expect(req.headers['anthropic-dangerous-direct-browser-access'], 'true');
-    expect(req.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,thinking-display-updates-2026-08-18');
+    expect(req.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01');
     expect(req.headers['content-type'], 'application/json');
     final b = f.bodies.single;
     expect(b['model'], 'claude-opus-5-5');
     expect(b['stream'], isTrue);
     expect(b['max_tokens'], 128000, reason: 'the most the model takes when streaming');
-    expect(b['thinking'], {'type': 'adaptive', 'display': 'updates'});
+    expect(b['thinking'], {
+      'type': 'adaptive',
+      'display': 'updates',
+      'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
+    }, reason: 'a thinking block the conversation before it no longer matches is dropped, and the answer says so');
     expect(b['output_config'], {'effort': 'high'});
     expect(b['cache_control'], {'type': 'ephemeral'});
     expect((b['system'] as List).single, {
@@ -100,12 +104,19 @@ void main() {
       );
       final b = f.bodies.single;
       expect(b['model'], 'claude-fable-5-1');
-      expect(b['thinking'], {'type': 'adaptive', 'display': 'updates'}, reason: 'adaptive (or nothing) is all Claude Fable 5.1 takes; display "updates" returns its notes');
+      expect(b['thinking'], {
+        'type': 'adaptive',
+        'display': 'updates',
+        'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
+      }, reason: 'adaptive (or nothing) is all Claude Fable 5.1 takes; display "updates" returns its notes');
       expect(b['max_tokens'], 128000);
       expect(b['output_config'], {'effort': e.name});
       expect(b['fallbacks'], 'default');
       expect(b.containsKey('tool_choice'), isFalse);
-      expect(f.requests.single.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18');
+      expect(
+        f.requests.single.headers['anthropic-beta'],
+        'server-side-fallback-2026-07-01,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01',
+      );
     }
     expect(AiModel.fable51.input, 10);
     expect(AiModel.fable51.output, 50);
@@ -137,18 +148,25 @@ void main() {
         {
           'type': 'compact_20260112',
           'trigger': {'type': 'input_tokens', 'value': 50000},
+          'instructions': AnthropicClient.compactionInstructions,
         },
       ],
     });
-    expect(f.requests.first.headers['anthropic-beta'], 'server-side-fallback-2026-07-01,task-budgets-2026-03-13,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18');
+    expect(
+      f.requests.first.headers['anthropic-beta'],
+      'server-side-fallback-2026-07-01,task-budgets-2026-03-13,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01',
+    );
     await api(f).send(
       AiRequest(model: AiModel.haiku55, system: 's', history: [user('q')]),
       cancel: AiCancel(),
     );
     expect(f.requests.last.headers.containsKey('anthropic-dangerous-direct-browser-access'), isFalse);
-    expect(f.requests.last.headers.containsKey('anthropic-beta'), isFalse);
+    expect(f.requests.last.headers['anthropic-beta'], 'thinking-binding-controls-2026-08-01');
     expect(f.bodies.last.containsKey('fallbacks'), isFalse);
-    expect(f.bodies.last['thinking'], {'type': 'adaptive'}, reason: 'Claude Haiku 5.5 writes no notes between tool calls');
+    expect(f.bodies.last['thinking'], {
+      'type': 'adaptive',
+      'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
+    }, reason: 'Claude Haiku 5.5 writes no notes between tool calls');
     expect(f.bodies.last['model'], 'claude-haiku-5-5');
   });
 
@@ -162,7 +180,7 @@ void main() {
     expect(f.calls, 2);
     expect((f.bodies[0]['output_config'] as Map).containsKey('task_budget'), isTrue);
     expect((f.bodies[1]['output_config'] as Map).containsKey('task_budget'), isFalse);
-    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,thinking-display-updates-2026-08-18');
+    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01');
   });
 
   test('old tool results are cleared on the server, never the notes or the answers; a rejected combination drops the clearing first', () async {
@@ -178,7 +196,7 @@ void main() {
     expect(first.first['exclude_tools'], ['get_notes', 'ask_user'], reason: 'only the tools of the request, never a picture tool');
     final second = ((f.bodies[1]['context_management'] as Map)['edits'] as List).cast<Map>();
     expect(second.map((e) => e['type']), ['compact_20260112'], reason: 'compaction stays');
-    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,compact-2026-01-12,thinking-display-updates-2026-08-18');
+    expect(f.requests[1].headers['anthropic-beta'], 'server-side-fallback-2026-07-01,compact-2026-01-12,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01');
   });
 
   test('a turn runs the tools the model asks for and keeps a history the API accepts', () async {

@@ -68,6 +68,7 @@ class AiModel {
     this.maxOutput = 64000,
     this.progressUpdates = false,
     this.highResVision = false,
+    this.perMessageEffort = false,
   });
 
   final AiProvider provider;
@@ -124,9 +125,27 @@ class AiModel {
   /// (1568 px, about 1.15 megapixels), which every provider reads unscaled.
   final bool highResVision;
 
+  /// Anthropic: the effort can change from one message to the next through
+  /// an effort-only system message in the conversation (beta), which keeps
+  /// the cached conversation; changing the request's own effort rewrites it.
+  final bool perMessageEffort;
+
+  /// US$ per million tokens written to the one-hour cache (Anthropic: twice
+  /// the input price; the five-minute cache costs [cacheWrite]).
+  double get cacheWriteHour => input * 2;
+
+  /// Input tokens above which the server summarises the older turns: below
+  /// the price step of [longAbove] when the model has one (every request
+  /// past it would cost [longInput] × as much), otherwise 150 000 (Anthropic)
+  /// or 200 000 (OpenAI).
+  int get compactAt {
+    final base = provider == AiProvider.anthropic ? 150000 : 200000;
+    return longAbove > 0 && longAbove - 10000 < base ? longAbove - 10000 : base;
+  }
+
   // Anthropic (Claude API list prices; cache writes 1.25 × input for the
-  // five-minute cache). Task budgets are left off Claude Fable 5.1 until
-  // Anthropic confirms them for it.
+  // five-minute cache, 2 × for the one-hour cache). Task budgets are left off
+  // Claude Fable 5.1 until Anthropic confirms them for it.
   static const fable51 = AiModel(
     AiProvider.anthropic,
     'claude-fable-5-1',
@@ -141,6 +160,7 @@ class AiModel {
     longTurns: true,
     needsRetention: true,
     maxOutput: 128000,
+    perMessageEffort: true,
     progressUpdates: true,
     highResVision: true,
   );
@@ -156,6 +176,7 @@ class AiModel {
     serverFallback: true,
     taskBudget: true,
     maxOutput: 128000,
+    perMessageEffort: true,
     progressUpdates: true,
     highResVision: true,
   );
@@ -171,6 +192,7 @@ class AiModel {
     serverFallback: true,
     taskBudget: true,
     maxOutput: 128000,
+    perMessageEffort: true,
     progressUpdates: true,
     highResVision: true,
   );
@@ -188,6 +210,7 @@ class AiModel {
     longOutput: 5,
     taskBudget: true,
     maxOutput: 128000,
+    perMessageEffort: true,
   );
 
   // Models a refused request may fall back to on the server (priced only).
@@ -298,23 +321,29 @@ class AiModel {
 
 /// Tokens of one or more requests.
 class AiUsage {
-  const AiUsage({this.input = 0, this.output = 0, this.cacheWrite = 0, this.cacheRead = 0});
+  const AiUsage({this.input = 0, this.output = 0, this.cacheWrite = 0, this.cacheRead = 0, this.cacheWriteHour = 0});
   static const zero = AiUsage();
 
   /// Input tokens neither read from nor written to the cache.
   final int input;
-  final int output, cacheWrite, cacheRead;
+
+  /// [cacheWrite]: tokens written to the five-minute cache; [cacheWriteHour]
+  /// to the one-hour cache (Anthropic), priced higher.
+  final int output, cacheWrite, cacheRead, cacheWriteHour;
 
   /// Every input token.
-  int get totalInput => input + cacheWrite + cacheRead;
+  int get totalInput => input + cacheWrite + cacheWriteHour + cacheRead;
 
-  AiUsage operator +(AiUsage o) => AiUsage(input: input + o.input, output: output + o.output, cacheWrite: cacheWrite + o.cacheWrite, cacheRead: cacheRead + o.cacheRead);
+  bool get isZero => totalInput == 0 && output == 0;
+
+  AiUsage operator +(AiUsage o) =>
+      AiUsage(input: input + o.input, output: output + o.output, cacheWrite: cacheWrite + o.cacheWrite, cacheRead: cacheRead + o.cacheRead, cacheWriteHour: cacheWriteHour + o.cacheWriteHour);
 
   /// Estimated cost at [m]'s list prices (US$).
   double cost(AiModel m) {
     final long = m.longAbove > 0 && totalInput > m.longAbove;
     final fi = long ? m.longInput : 1.0, fo = long ? m.longOutput : 1.0;
-    return ((input * m.input + cacheWrite * m.cacheWrite + cacheRead * m.cacheRead) * fi + output * m.output * fo) / 1e6;
+    return ((input * m.input + cacheWrite * m.cacheWrite + cacheWriteHour * m.cacheWriteHour + cacheRead * m.cacheRead) * fi + output * m.output * fo) / 1e6;
   }
 }
 
@@ -358,8 +387,13 @@ enum AiErrorKind {
 /// A failed request. [message] is the provider's own text when it gave one
 /// (never the key).
 class AiError implements Exception {
-  AiError(this.kind, {this.status, this.message = '', this.retryAfter, this.requestId, this.category, this.recommendedModel, this.size, this.limit, this.partial = false});
+  AiError(this.kind, {this.status, this.message = '', this.retryAfter, this.requestId, this.category, this.recommendedModel, this.size, this.limit, this.partial = false, this.usage = AiUsage.zero});
   final AiErrorKind kind;
+
+  /// Tokens the provider billed for attempts that did not finish (the input
+  /// a streamed answer reported before it broke off, was cancelled or was
+  /// tried again): they count in the meter and the spending cap.
+  final AiUsage usage;
   final int? status;
   final String message;
 
@@ -403,7 +437,7 @@ class AiError implements Exception {
     };
   }
 
-  AiError _copy({bool? partial, String? requestId}) => AiError(
+  AiError _copy({bool? partial, String? requestId, AiUsage? usage}) => AiError(
     kind,
     status: status,
     message: message,
@@ -414,12 +448,16 @@ class AiError implements Exception {
     size: size,
     limit: limit,
     partial: partial ?? this.partial,
+    usage: usage ?? this.usage,
   );
 
   AiError withPartial() => _copy(partial: true);
 
   /// This error with the request's id when it had none.
   AiError withRequestId(String? id) => id == null || requestId != null ? this : _copy(requestId: id);
+
+  /// This error with [u] more billed tokens (see [usage]).
+  AiError withUsage(AiUsage u) => u.isZero ? this : _copy(usage: usage + u);
 
   @override
   String toString() => 'AiError(${kind.name}${status == null ? '' : ', $status'}${message.isEmpty ? '' : ': $message'})';
@@ -604,7 +642,19 @@ class AiReply {
     this.recommendedModel,
     this.compacted = false,
     this.history,
+    this.transformations = const [],
   });
+
+  /// What the API did to the request before the model read it (Anthropic
+  /// `input_transformations`): thinking blocks it dropped, each with the
+  /// position (`path`) and why (`reason`: `prefix_binding_mismatch` — the
+  /// conversation before the block changed —, `model_binding_mismatch` — a
+  /// block of another model).
+  final List<Map<String, dynamic>> transformations;
+
+  /// Thinking blocks dropped because the conversation before them changed
+  /// (an edit of the history, which also costs the cache).
+  int get prefixDrops => transformations.where((t) => t['type'] == 'thinking_dropped' && t['reason'] == 'prefix_binding_mismatch').length;
 
   /// What goes back into the history, in the provider's format, unchanged
   /// (Anthropic thinking blocks with their signatures, OpenAI reasoning
@@ -655,31 +705,67 @@ class AiReply {
     return c;
   }
 
-  AiReply withHistory(List<Map<String, dynamic>> h) => AiReply(
+  AiReply _copy({List<Map<String, dynamic>>? history, AiUsage? usage, List<(String, AiUsage)>? billed}) => AiReply(
     items: items,
     text: text,
     calls: calls,
     stop: stop,
     model: model,
-    usage: usage,
-    billed: billed,
+    usage: usage ?? this.usage,
+    billed: billed ?? this.billed,
     category: category,
     explanation: explanation,
     recommendedModel: recommendedModel,
     compacted: compacted,
-    history: h,
+    history: history ?? this.history,
+    transformations: transformations,
   );
+
+  AiReply withHistory(List<Map<String, dynamic>> h) => _copy(history: h);
+
+  /// This answer with the tokens of earlier attempts of the same request
+  /// that did not finish ([spent], billed at [requested]'s prices) counted
+  /// in it.
+  AiReply withSpent(AiUsage spent, String requested) => spent.isZero
+      ? this
+      : _copy(
+          usage: usage + spent,
+          billed: [
+            (requested, spent),
+            ...(billed.isEmpty ? [(model, usage)] : billed),
+          ],
+        );
 }
 
 /// One request. [history] is in the provider's own format and only ever
 /// grows (earlier entries are sent byte for byte as they were).
 class AiRequest {
-  const AiRequest({required this.model, required this.system, required this.history, this.tools = const [], this.effort = AiEffort.medium, this.maxTokens, this.taskBudget, this.compactAt});
+  const AiRequest({
+    required this.model,
+    required this.system,
+    required this.history,
+    this.tools = const [],
+    this.effort = AiEffort.medium,
+    this.maxTokens,
+    this.taskBudget,
+    this.compactAt,
+    this.longCache = false,
+  });
   final AiModel model;
   final String system;
   final List<Map<String, dynamic>> history;
   final List<AiToolSpec> tools;
+
+  /// The effort of the request itself (Anthropic: the conversation's first;
+  /// a later change goes as an effort message in [history], see
+  /// [AiClient.effortMessage]).
   final AiEffort effort;
+
+  /// Anthropic: the conversation is cached for an hour instead of five
+  /// minutes (a step may think for longer than five minutes, so the next
+  /// one would find the cache gone), at twice the input price per token
+  /// written ([AiModel.cacheWriteHour]).
+  final bool longCache;
 
   /// Output tokens one answer may take; null: the model's
   /// [AiModel.maxOutput].
@@ -698,7 +784,11 @@ class AiRequest {
 
   /// The same request over [h].
   AiRequest withHistory(List<Map<String, dynamic>> h) =>
-      AiRequest(model: model, system: system, history: h, tools: tools, effort: effort, maxTokens: maxTokens, taskBudget: taskBudget, compactAt: compactAt);
+      AiRequest(model: model, system: system, history: h, tools: tools, effort: effort, maxTokens: maxTokens, taskBudget: taskBudget, compactAt: compactAt, longCache: longCache);
+
+  /// The same request with another output limit.
+  AiRequest withMaxTokens(int? n) =>
+      AiRequest(model: model, system: system, history: history, tools: tools, effort: effort, maxTokens: n, taskBudget: taskBudget, compactAt: compactAt, longCache: longCache);
 }
 
 /// One provider's API.
@@ -713,10 +803,35 @@ abstract class AiClient {
   /// this API's format.
   List<Map<String, dynamic>> toolResults(List<AiToolResult> results, {List<AiPart> user = const [], String? note});
 
+  /// An entry for the conversation, placed right after a user message, that
+  /// sets the effort [e] of the model's answers from that message on while
+  /// the cached conversation stays as it is (changing the request's own
+  /// effort would rewrite it); null where [m] cannot take one.
+  Map<String, dynamic>? effortMessage(AiModel m, AiEffort e);
+
   /// Sends [r] and gathers the streamed answer; transient failures are
   /// retried unless part of the answer arrived ([onRetry] says when, and
   /// after what).
   Future<AiReply> send(AiRequest r, {required AiCancel cancel, AiStreamListener listener = const AiStreamListener(), void Function(Duration wait, int attempt, AiError error)? onRetry});
+}
+
+/// The effort an effort message of [AiClient.effortMessage] sets, or null
+/// when [m] is not one.
+AiEffort? effortOfMessage(Map<String, dynamic> m) {
+  if (m['role'] != 'system') return null;
+  final c = m['content'], o = m['output_config'];
+  if (c is! List || c.isNotEmpty || o is! Map) return null;
+  return AiEffort.values.where((e) => e.name == o['effort']).firstOrNull;
+}
+
+/// The effort the model answers with after [history], which started at
+/// [start] (the request's own effort): the last effort message's, if any.
+AiEffort effortAfter(List<Map<String, dynamic>> history, AiEffort start) {
+  for (var i = history.length - 1; i >= 0; i--) {
+    final e = effortOfMessage(history[i]);
+    if (e != null) return e;
+  }
+  return start;
 }
 
 /// The HTTP side every client shares: one key and transport, timeouts,
@@ -777,19 +892,25 @@ abstract class AiHttpClient implements AiClient {
   AiRequest? recover(AiRequest r, AiError e, int tries) => null;
 
   @override
+  Map<String, dynamic>? effortMessage(AiModel m, AiEffort e) => null;
+
+  @override
   Future<AiReply> send(AiRequest r, {required AiCancel cancel, AiStreamListener listener = const AiStreamListener(), void Function(Duration wait, int attempt, AiError error)? onRetry}) async {
     if (apiKey.trim().isEmpty) throw AiError(AiErrorKind.noKey);
     var req = r;
     var recoveries = 0;
+    // tokens billed for attempts that did not finish (counted in the reply,
+    // or in the error that ends the request)
+    var spent = AiUsage.zero;
     for (var n = 0; ; n++) {
-      if (cancel.cancelled) throw AiError(AiErrorKind.cancelled);
+      if (cancel.cancelled) throw AiError(AiErrorKind.cancelled, usage: spent);
       // each attempt has a token of its own: a timeout stops that attempt
       // and its HTTP exchange, while the task (and the retry) goes on
       final one = cancel.child();
       AiError e;
       try {
         final reply = await attempt(req, one, listener);
-        return identical(req, r) ? reply : reply.withHistory(req.history);
+        return (identical(req, r) ? reply : reply.withHistory(req.history)).withSpent(spent, r.model.id);
       } on AiError catch (x) {
         e = x;
       } catch (x) {
@@ -797,10 +918,24 @@ abstract class AiHttpClient implements AiClient {
       } finally {
         one.release();
       }
+      spent += e.usage;
+      e = AiError(
+        e.kind,
+        status: e.status,
+        message: e.message,
+        retryAfter: e.retryAfter,
+        requestId: e.requestId,
+        category: e.category,
+        recommendedModel: e.recommendedModel,
+        size: e.size,
+        limit: e.limit,
+        partial: e.partial,
+        usage: spent,
+      );
       // whatever still runs of the failed attempt stops: a stream left
       // after an idle timeout, an upload, an answer nobody reads
       one.cancel();
-      if (cancel.cancelled) throw AiError(AiErrorKind.cancelled);
+      if (cancel.cancelled) throw AiError(AiErrorKind.cancelled, usage: spent);
       if (e.kind == AiErrorKind.invalidRequest && !e.partial) {
         // an optional field this model does not take: the same request
         // without it, at once
@@ -821,7 +956,11 @@ abstract class AiHttpClient implements AiClient {
       final wait = backoff(e, n);
       if (!e.retryable || e.partial || n >= maxRetries || wait == null) throw e;
       onRetry?.call(wait, n + 1, e);
-      await _wait(wait, cancel);
+      try {
+        await _wait(wait, cancel);
+      } on AiError catch (x) {
+        throw x.withUsage(spent);
+      }
     }
   }
 
