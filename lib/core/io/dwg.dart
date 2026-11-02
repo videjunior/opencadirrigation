@@ -2285,7 +2285,7 @@ class DwgReader {
     final facetres = r.readBD();
     r.readBD(); // CMLSCALE
     final celtscale = r.readBD();
-    if (!fine(ltscale, 1e-12, 1e12) || !fine(textsize, 0, 1e12) || !fine(facetres, 0, 100) || !fine(celtscale, 1e-12, 1e12)) return null;
+    if (!fine(ltscale, 0, 1e12) || !fine(textsize, 0, 1e12) || !fine(facetres, 0, 100) || !fine(celtscale, 0, 1e12)) return null;
     tv(); // MENU
     for (var i = 0; i < 4; i++) {
       r.readBL(); // TDUCREATE TDUUPDATE (days, milliseconds)
