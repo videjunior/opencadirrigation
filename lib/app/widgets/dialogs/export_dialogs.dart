@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../core/io/datum.dart' show GeodeticDatum, projectDatumLabel, projectDatums;
 import '../../../core/io/details.dart' show DetailContext, detailTitleKey;
 import '../../../core/io/geo.dart';
 import '../../../core/io/pdf_sheet.dart';
@@ -28,6 +29,8 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
   final east = TextEditingController(text: g?.originEasting.toStringAsFixed(2) ?? '');
   final north = TextEditingController(text: g?.originNorthing.toStringAsFixed(2) ?? '');
   var northern = g?.north ?? false;
+  // 1.6.0 PRD: the datum the coordinates are named on (null: by the site)
+  GeodeticDatum? datum = g?.datum;
   String? error;
   return showDialog<bool>(
     context: context,
@@ -38,7 +41,7 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
           if (useUtm) {
             final z = int.tryParse(zone.text.trim()), e = num(east), n = num(north);
             if (z == null || z < 1 || z > 60 || e == null || n == null) return null;
-            return GeoReference(zone: z, north: northern, originEasting: e, originNorthing: n);
+            return GeoReference(zone: z, north: northern, originEasting: e, originNorthing: n, datum: datum);
           }
           var la = num(lat), lo = num(lon);
           if (la == null || lo == null) {
@@ -50,7 +53,7 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
             }
           }
           if (la == null || lo == null || la.abs() > 84 || lo.abs() > 180) return null;
-          return GeoReference.fromLatLonOrigin(la, lo);
+          return GeoReference.fromLatLonOrigin(la, lo).withDatum(datum);
         }
 
         Widget field(TextEditingController tc, String label, {String? suffix}) => Padding(
@@ -118,6 +121,23 @@ Future<bool?> showGeoreferenceDialog(BuildContext context, ProjectController c) 
                     ],
                   ),
                 ],
+                // 1.6.0 PRD: the datum named on the sheets and in the files
+                DropdownButtonFormField<GeodeticDatum?>(
+                  key: const Key('geo_datum'),
+                  isExpanded: true,
+                  initialValue: datum,
+                  decoration: InputDecoration(labelText: t('prd.geo.datum'), isDense: true),
+                  style: TextStyle(fontSize: 12, color: Cad.fg),
+                  items: [
+                    DropdownMenuItem<GeodeticDatum?>(value: null, child: Text(t('prd.geo.datumAuto'), style: const TextStyle(fontSize: 12))),
+                    for (final d in projectDatums) DropdownMenuItem<GeodeticDatum?>(value: d, child: Text(projectDatumLabel(d), style: const TextStyle(fontSize: 12))),
+                  ],
+                  onChanged: (v) => setState(() => datum = v),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(t('prd.geo.datumHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                ),
                 if (error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
@@ -192,6 +212,9 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
   final details = {...o.details};
   final detailCtx = raster ? null : DetailContext.of(c.project, c.results);
   final chartsAvailable = c.results != null || c.profilePath != null || c.project.entities.any((e) => e is PumpEntity && c.project.catalog.pump(e.pumpSpecId) != null);
+  // 1.6.0 PRD: the coordinate grid needs a georeference for its geographic part; the terrain sheets need terrain data
+  final georef = c.project.meta.georef != null;
+  final terrain = !raster && !c.project.buildTerrain().isEmpty;
   return showDialog<SheetOptions>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -211,7 +234,7 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
           // "500", or the whole ratio typed ("1:500", "1/500")
           final s = parseNumber(scaleCtl.text.split(RegExp(r'[:/]')).last);
           var res = fit || s == null || s <= 0 ? o.copyWith(clearScale: true) : o.copyWith(scale: s);
-          if (raster) return res.copyWith(split: SheetSplit.single, windows: const [], details: const [], charts: false, includeReports: false, clearProfilePath: true);
+          if (raster) return res.copyWith(split: SheetSplit.single, windows: const [], details: const [], charts: false, includeReports: false, clearProfilePath: true, themes: const []);
           res = res.copyWith(
             windows: withView && view != null ? [SheetWindow(bounds: view, title: t('sheet.view'))] : const [],
             details: [
@@ -225,7 +248,7 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
           return res;
         }
 
-        final extra = raster ? 0 : (o.split == SheetSplit.zones ? zoneCount : (o.split == SheetSplit.areas ? areaCount : 0)) + (withView && view != null ? 1 : 0);
+        final extra = raster ? 0 : (o.split == SheetSplit.zones ? zoneCount : (o.split == SheetSplit.areas ? areaCount : 0)) + (withView && view != null ? 1 : 0) + (terrain ? o.themes.length : 0);
         final sheetsTotal = 1 + extra + (raster ? 0 : builder.detailSheets(o.copyWith(details: details.toList())).length);
         final page = <Widget>[
           Row(
@@ -325,6 +348,24 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
               padding: const EdgeInsets.only(left: 40),
               child: Text(t('plot.baseMapHint'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
             ),
+          // 1.6.0 PRD: the coordinate grid
+          const SizedBox(height: 4),
+          DropdownButtonFormField<SheetGrid>(
+            key: const Key('plot_grid'),
+            isExpanded: true,
+            initialValue: o.grid,
+            decoration: InputDecoration(labelText: t('prd.plot.grid'), isDense: true),
+            style: TextStyle(fontSize: 12, color: Cad.fg),
+            items: [
+              for (final gr in SheetGrid.values)
+                DropdownMenuItem(
+                  value: gr,
+                  enabled: georef || !gr.hasGeographic,
+                  child: Text(t(gr == SheetGrid.utm && !georef ? 'prd.plot.grid.local' : 'prd.plot.grid.${gr.name}'), style: const TextStyle(fontSize: 12)),
+                ),
+            ],
+            onChanged: (v) => setState(() => o = o.copyWith(grid: v)),
+          ),
         ];
         final sheets = raster
             ? const <Widget>[]
@@ -390,6 +431,20 @@ Future<SheetOptions?> showPlotDialog(BuildContext context, ProjectController c, 
                   enabled: chartsAvailable,
                   key: const Key('plot_charts'),
                 ),
+                // 1.6.0 PRD: the thematic sheets of the terrain
+                for (final th in SheetTheme.values)
+                  check(
+                    t('prd.plot.theme.${th.name}'),
+                    terrain && o.themes.contains(th),
+                    (v) => setState(() => o = o.copyWith(themes: [for (final x in SheetTheme.values) if (x == th ? v : o.themes.contains(x)) x])),
+                    enabled: terrain,
+                    key: Key('plot_theme_${th.name}'),
+                  ),
+                if (!terrain)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40),
+                    child: Text(t('prd.plot.themeNoTerrain'), style: TextStyle(fontSize: 11, color: Cad.fg54)),
+                  ),
                 Padding(
                   padding: const EdgeInsets.only(left: 4, top: 2),
                   child: Text(
