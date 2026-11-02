@@ -18,6 +18,8 @@ import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/units.dart';
 
+import '../support/external_tools.dart';
+
 /// The AutoCAD 2000 exports with native entities (DXF and DWG, see
 /// `cad_export.dart`, `dxf_r2000.dart`, `dwg_writer.dart`): the file
 /// structure, every entity type, the round trip through our readers, the
@@ -438,10 +440,7 @@ void main() {
     });
 
     test('LibreDWG reads it and converts it to DXF (skipped when it is not installed)', () async {
-      if ((await Process.run('which', ['dwgread'])).exitCode != 0) {
-        markTestSkipped('dwgread not installed');
-        return;
-      }
+      if (!await hasTool('dwgread')) return;
       final dir = Directory.systemTemp.createTempSync('oci_cad');
       addTearDown(() => dir.deleteSync(recursive: true));
       final f = File('${dir.path}/everything.dwg')..writeAsBytesSync(bytes);
@@ -532,10 +531,7 @@ void main() {
     }
 
     test('LibreDWG reads every example DWG (skipped when it is not installed)', () async {
-      if ((await Process.run('which', ['dwgread'])).exitCode != 0) {
-        markTestSkipped('dwgread not installed');
-        return;
-      }
+      if (!await hasTool('dwgread')) return;
       final dir = Directory.systemTemp.createTempSync('oci_cad_ex');
       addTearDown(() => dir.deleteSync(recursive: true));
       for (final id in ExampleId.values) {
