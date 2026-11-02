@@ -103,8 +103,8 @@ void main() {
 
   test('errors inside the job come back as DesignJobException', () async {
     final bad = DesignRequest(project: {'format': 'nonsense'}, lang: 'pt');
-    await expectLater(InThreadDesignRunner().run(bad), throwsA(isA<DesignJobException>().having((e) => e.message, 'message', contains('Not an OpenCADIrrigation project'))));
-    await expectLater(IsolateDesignRunner().run(bad), throwsA(isA<DesignJobException>().having((e) => e.message, 'message', contains('Not an OpenCADIrrigation project'))));
+    await expectLater(InThreadDesignRunner().run(bad), throwsA(isA<DesignJobException>().having((e) => e.message, 'message', contains('project_format'))));
+    await expectLater(IsolateDesignRunner().run(bad), throwsA(isA<DesignJobException>().having((e) => e.message, 'message', contains('project_format'))));
   });
 
   test('isolate runner designs off the main isolate and streams progress', () async {
