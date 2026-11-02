@@ -75,11 +75,14 @@ void main() {
       expect(held.excess, isFalse);
     });
 
-    test('a sustaining pilot throttles the zone to keep the mainline before it', () {
+    test('a sustaining pilot throttles the zone rather than let the mainline before it fall below its setting', () {
       final free = opOf(Designer(opProject(supplyHead: 10)).designAll());
-      final kept = opOf(Designer(opProject(supplyHead: 10, onValve: (v) => (v..pilot = ValvePilot.sustaining).pilotSustainM = 9.8)).designAll());
-      expect(kept.availableHead, greaterThanOrEqualTo(9.8 - 0.02));
-      expect(kept.flow, lessThan(free.flow));
+      // set above what the supply can ever give: the valve stays shut and
+      // the mainline keeps the pressure of the supply
+      final kept = opOf(Designer(opProject(supplyHead: 10, onValve: (v) => (v..pilot = ValvePilot.sustaining).pilotSustainM = 12)).designAll());
+      expect(free.flow, greaterThan(0));
+      expect(kept.flow, lessThan(0.01 * free.flow));
+      expect(kept.availableHead, closeTo(10, 0.05));
     });
 
     test('off by default: no operation, no table; on, the results keep it and the report shows it', () {
