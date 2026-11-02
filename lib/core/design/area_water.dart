@@ -257,13 +257,20 @@ RequirementInput? requirementInputOf(Project p, AreaEntity a, {double applicatio
 /// the interval and the net depth per event of the row of the planting
 /// month (the wetting interval and the infiltrated depth of FAO-56 eqs.
 /// 59–61 and Annex 7, through [kcIniFromWetting]; coarse soils by Figure 30a,
-/// the others by Figure 30b); null without that row.
+/// the others by Figure 30b); null without that row. Kc ini is the mean of
+/// the initial stage, so the interval is at most the length of the stage:
+/// a soil that holds more than the stage uses is wetted once, at planting,
+/// for the whole stage.
 double? wettingKcIni(RequirementInput input, DateTime planting, SoilTexture? texture) {
   final row = irrigationRequirement(input).monthly.where((r) => r.start.month == planting.month && r.cropDays > 0).firstOrNull;
   if (row == null || row.etoMmDay <= 0) return null;
+  // 1.6.0: without the bound a deep soil drove Kc ini and the interval down
+  // together (maize rooted 1 m deep in 140 mm/m: 3260 days, Kc ini 0.006)
+  final initial = input.cycles.isEmpty ? 0.0 : input.cycles.first.curve.stages.initial;
+  final interval = row.intervalDays.toDouble();
   return kcIniFromWetting(
     etoMmDay: row.etoMmDay,
-    wettingIntervalDays: row.intervalDays.toDouble(),
+    wettingIntervalDays: initial > 0 ? math.min(interval, initial) : interval,
     infiltrationDepthMm: math.max(row.netPerEventMm, 1.0),
     texture: texture == SoilTexture.sand || texture == SoilTexture.loamySand ? SoilWettingTexture.coarse : SoilWettingTexture.mediumFine,
   );
