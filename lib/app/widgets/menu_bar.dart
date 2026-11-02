@@ -10,6 +10,7 @@ import '../shortcuts.dart';
 import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../theme.dart';
+import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
@@ -25,6 +26,7 @@ import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
+import 'dialogs/selection_dialogs.dart';
 import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
@@ -207,6 +209,38 @@ class AppMenuBar extends StatelessWidget {
                         item(t('edit.array'), c.selection.isEmpty ? null : () => showArrayDialog(context, c), shortcut: 'ARRAY ⏎', key: const Key('menu_array')),
                       ],
                       child: Text(t('edit.transform')),
+                    ),
+                    // 1.6.0 EDT: editing by base point, selection filters
+                    const Divider(height: 1),
+                    tool(ToolId.move),
+                    tool(ToolId.copy),
+                    SubmenuButton(
+                      onOpen: _menuOpened,
+                      onClose: _menuClosed,
+                      key: const Key('menu_select'),
+                      leadingIcon: const Icon(Icons.select_all, size: 16),
+                      menuChildren: [
+                        item(t('sel.similar'), c.selection.isEmpty ? null : c.selectSimilar, shortcut: 'SIMILAR ⏎', key: const Key('menu_select_similar')),
+                        item(t('sel.quick'), () => showQuickSelectDialog(context, c), shortcut: 'QSELECT ⏎', key: const Key('menu_quick_select')),
+                        item(t('sel.layer'), c.selectOnLayer, shortcut: 'SELLAYER ⏎', key: const Key('menu_select_layer')),
+                        tool(ToolId.lasso),
+                        tool(ToolId.fence),
+                      ],
+                      child: Text(t('sel.menu')),
+                    ),
+                    SubmenuButton(
+                      onOpen: _menuOpened,
+                      onClose: _menuClosed,
+                      key: const Key('menu_geometry'),
+                      leadingIcon: const Icon(Icons.architecture, size: 16),
+                      menuChildren: [
+                        for (final id in [ToolId.stretch, ToolId.fillet, ToolId.chamfer, ToolId.breakTwo]) tool(id),
+                        const Divider(height: 1),
+                        item(t('edt.join'), c.selection.isEmpty ? null : c.joinSelected, shortcut: 'JOIN ⏎', key: const Key('menu_join')),
+                        item(t('edt.explode'), c.selection.isEmpty ? null : c.explodeSelected, shortcut: 'X ⏎', key: const Key('menu_explode')),
+                        item(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, shortcut: 'TOAREA ⏎', key: const Key('menu_to_area')),
+                      ],
+                      child: Text(t('edt.geometry')),
                     ),
                   ],
                   child: Text(t('menu.edit')),

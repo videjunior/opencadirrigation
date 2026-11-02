@@ -5,7 +5,8 @@ library;
 import '../../core/model/geometry.dart';
 
 abstract class CanvasKeyTarget {
-  /// 'Escape', 'Enter' or 'Backspace' to the active tool, then repaint.
+  /// 'Escape', 'Enter' or 'Backspace' to the active tool, then repaint;
+  /// 'Cancel' drops what the tool has in progress (Esc may keep it).
   void toolKey(String key);
 
   /// No polyline in progress.
@@ -25,4 +26,9 @@ abstract class CanvasKeyTarget {
 
   /// Gives the active tool [p] as if it had been clicked there.
   void feedPoint(Pt p);
+
+  /// Gives the active tool the text typed on the command line before it is
+  /// read as a point or an alias (an option, the value of its step); true
+  /// when the tool took it.
+  bool toolInput(String text);
 }

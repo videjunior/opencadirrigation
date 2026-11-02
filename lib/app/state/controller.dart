@@ -118,7 +118,17 @@ enum ToolId {
   insertBlock,
   // the user's marks for the AI assistant (ai_marks.dart): no project items
   aiMarkPoint,
-  aiMarkLine;
+  aiMarkLine,
+  // 1.6.0 EDT: move and copy by base point, lasso and fence selection,
+  // stretch, fillet, chamfer and break at two points (edit_tools.dart)
+  move,
+  copy,
+  lasso,
+  fence,
+  stretch,
+  fillet,
+  chamfer,
+  breakTwo;
 
   /// One of the tools that mark the drawing for the AI assistant.
   bool get isAiMark => this == aiMarkPoint || this == aiMarkLine;
@@ -1494,15 +1504,16 @@ class ProjectController extends ChangeNotifier {
     return out;
   }
 
-  /// Linear entities used as cutting/boundary edges: the selection when it
-  /// holds any (other than [exclude]), else the visible linear entities
-  /// [near] gives (the spatial index around the edited entity), else every
-  /// visible one.
+  /// Entities used as cutting/boundary edges (lines, polylines with their
+  /// closing side, circles, arcs, splines along their curve): the selection
+  /// when it holds any (other than [exclude]), else the visible ones [near]
+  /// gives (the spatial index around the edited entity), else every visible
+  /// one.
   List<Entity> _boundaries(String exclude, {Iterable<Entity> Function()? near}) {
-    final sel = selection.isEmpty ? const <Entity>[] : project.entities.where((e) => selection.contains(e.id) && e.id != exclude && e.linearPoints != null).toList();
+    final sel = selection.isEmpty ? const <Entity>[] : project.entities.where((e) => selection.contains(e.id) && e.id != exclude && CutEdge.supports(e)).toList();
     if (sel.isNotEmpty) return sel;
     final candidates = near == null ? visibleEntities() : near();
-    return candidates.where((e) => e.id != exclude && e.linearPoints != null).toList();
+    return candidates.where((e) => e.id != exclude && CutEdge.supports(e)).toList();
   }
 
   /// Visible entities along the ray from [from] towards [dir] across the
@@ -1531,8 +1542,7 @@ class ProjectController extends ChangeNotifier {
     final pts = target.linearPoints!;
     final cuts = <double>[];
     for (final b in boundaries) {
-      final bp = b.linearPoints!;
-      for (final p in polylineIntersections(pts, bp, closedA: target.isClosedShape, closedB: b.isClosedShape)) {
+      for (final p in CutEdge.of(b)?.crossings(pts, closedPts: target.isClosedShape) ?? const <Pt>[]) {
         cuts.add(polylineStationOf(pts, p).$1);
       }
     }
@@ -1572,9 +1582,9 @@ class ProjectController extends ChangeNotifier {
     // the end nearest to the click, and the direction it extends in
     final atEnd = pts.last.distanceTo(world) <= pts.first.distanceTo(world);
     final tip = atEnd ? pts.last : pts.first, before = atEnd ? pts[pts.length - 2] : pts[1];
-    final b = _boundaries(id, near: () => _alongRay(tip, tip - before)).map((x) => x.linearPoints!).toList();
+    final edges = [for (final x in _boundaries(id, near: () => _alongRay(tip, tip - before))) ?CutEdge.of(x)];
     final copy = e.clone();
-    if (!extendLinearEntity(copy, world, b)) return false;
+    if (!extendLinearEntity(copy, world, const [], edges: edges)) return false;
     final done = mutate(
       () {
         final idx = project.entities.indexOf(e);

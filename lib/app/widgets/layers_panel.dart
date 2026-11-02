@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/model/entities.dart';
 import '../state/controller.dart';
 import '../theme.dart';
+import '../tools/edit_commands.dart';
 
 /// Layer list: visibility, lock, colour, current layer, add / rename / delete.
 class LayersPanel extends StatelessWidget {
@@ -91,6 +92,18 @@ class LayersPanel extends StatelessWidget {
                             t.has('layer.${l.name}') ? '${t('layer.${l.name}')} · ${l.name}' : l.name,
                             style: TextStyle(fontSize: 11, color: l.visible ? Cad.fg : Cad.fg38),
                             overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // 1.6.0 EDT: select the items of the layer (CAD-25)
+                        InkWell(
+                          key: Key('layer_select_${l.name}'),
+                          onTap: () => c.selectOnLayer(l.name),
+                          child: Tooltip(
+                            message: t('sel.onLayer'),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(Icons.select_all, size: 13, color: Cad.fg38),
+                            ),
                           ),
                         ),
                         Text('${counts[l.name] ?? 0}', style: TextStyle(fontSize: 10, color: Cad.fg38)),

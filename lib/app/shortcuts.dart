@@ -1,11 +1,11 @@
-/// Keyboard shortcuts and AutoCAD-style command aliases.
+/// Keyboard shortcuts and command aliases, as in the programs of CAD.
 ///
 /// With the drawing focused, letters typed on the canvas build a command
 /// (shown in the status bar); Enter or Space runs it, Esc clears it. The
-/// aliases follow AutoCAD where an equivalent exists (L, PL, C, A, SPL, H,
-/// T, D, DAN, DRA, LE, ME, Z/ZE, E, CO, RO, MI, SC, O, TR, EX, AR, U…) and
-/// add irrigation tools (ZP, MP, SL, DT, O, V, WS, PU, B, AH, CUT…).
-/// Portuguese/Spanish spellings are accepted too.
+/// aliases are the usual ones of CAD programs where an equivalent exists
+/// (L, PL, C, A, SPL, H, T, D, DAN, DRA, LE, ME, Z/ZE, E, M, CO, RO, MI,
+/// SC, O, TR, EX, AR, U…) and add irrigation tools (ZP, MP, SL, DT, O, V,
+/// WS, PU, B, AH, CUT…). Portuguese/Spanish spellings are accepted too.
 library;
 
 import 'i18n.dart';
@@ -58,6 +58,13 @@ enum CadAction {
   insertBlock,
   saveBlock,
   assistant,
+  // 1.6.0 EDT: selection filters and geometry edits of the selection
+  selectSimilar,
+  quickSelect,
+  selectLayer,
+  join,
+  explode,
+  toArea,
 }
 
 /// Command alias → [ToolId] or [CadAction].
@@ -100,7 +107,8 @@ const commandAliases = <String, Object>{
   'CUT': ToolId.cutPipe, 'CUTPIPE': ToolId.cutPipe, 'CORTAR': ToolId.cutPipe, 'BR': ToolId.cutPipe,
   'ARRAY': CadAction.array, 'ARR': CadAction.array, 'MATRIZ': CadAction.array,
   'E': CadAction.erase, 'ERASE': CadAction.erase, 'DEL': CadAction.erase, 'APAGAR': CadAction.erase,
-  'CO': CadAction.copy, 'CP': CadAction.copy, 'COPY': CadAction.copy, 'COPIAR': CadAction.copy,
+  // the clipboard (Ctrl+C); CO, CP, COPY and COPIAR are the Copy tool (1.6.0)
+  'COPYCLIP': CadAction.copy, 'CLIPCOPY': CadAction.copy,
   'RECORTAR': CadAction.cut, 'CLIPCUT': CadAction.cut,
   'PA': CadAction.paste, 'PASTE': CadAction.paste, 'COLAR': CadAction.paste, 'PEGAR': CadAction.paste,
   'U': CadAction.undo, 'UNDO': CadAction.undo,
@@ -166,6 +174,21 @@ const commandAliases = <String, Object>{
   'REP': CadAction.reports, 'REPORTS': CadAction.reports, 'RELATORIOS': CadAction.reports,
   'SAVE': CadAction.save, 'QSAVE': CadAction.save, 'SALVAR': CadAction.save,
   'OPEN': CadAction.open, 'ABRIR': CadAction.open,
+  // 1.6.0 EDT: editing by base point, selection filters and geometry edits
+  'M': ToolId.move, 'MOVE': ToolId.move, 'MOVER': ToolId.move,
+  'CO': ToolId.copy, 'CP': ToolId.copy, 'COPY': ToolId.copy, 'COPIAR': ToolId.copy,
+  'SELECTSIMILAR': CadAction.selectSimilar, 'SIMILAR': CadAction.selectSimilar, 'SEMELHANTES': CadAction.selectSimilar, 'SIMILARES': CadAction.selectSimilar,
+  'QSELECT': CadAction.quickSelect, 'QS': CadAction.quickSelect, 'FILTER': CadAction.quickSelect, 'FILTRO': CadAction.quickSelect,
+  'SELLAYER': CadAction.selectLayer, 'LAYSEL': CadAction.selectLayer, 'SELCAMADA': CadAction.selectLayer, 'SELCAPA': CadAction.selectLayer,
+  'LASSO': ToolId.lasso, 'WP': ToolId.lasso, 'LACO': ToolId.lasso, 'LAZO': ToolId.lasso,
+  'FENCE': ToolId.fence, 'FEN': ToolId.fence, 'CERCA': ToolId.fence, 'CERCO': ToolId.fence,
+  'JOIN': CadAction.join, 'JO': CadAction.join, 'UNIR': CadAction.join, 'JUNTAR': CadAction.join,
+  'X': CadAction.explode, 'EXPLODE': CadAction.explode, 'EXPLODIR': CadAction.explode, 'DESCOMPOR': CadAction.explode, 'DESCOMPONER': CadAction.explode,
+  'TOAREA': CadAction.toArea, 'CONVAREA': CadAction.toArea, 'PARAAREA': CadAction.toArea, 'ENAREA': CadAction.toArea,
+  'STRETCH': ToolId.stretch, 'STR': ToolId.stretch, 'ESTICAR': ToolId.stretch, 'ESTIRAR': ToolId.stretch,
+  'FILLET': ToolId.fillet, 'FIL': ToolId.fillet, 'CONCORDAR': ToolId.fillet, 'CONCORDANCIA': ToolId.fillet, 'EMPALME': ToolId.fillet,
+  'CHA': ToolId.chamfer, 'CHAMFER': ToolId.chamfer, 'CHANFRO': ToolId.chamfer, 'CHANFRAR': ToolId.chamfer, 'CHAFLAN': ToolId.chamfer,
+  'BREAK': ToolId.breakTwo, 'BK': ToolId.breakTwo, 'QUEBRAR': ToolId.breakTwo, 'PARTIR': ToolId.breakTwo, 'ROMPER': ToolId.breakTwo,
 };
 
 /// Preferred (shortest) alias of a tool, for tooltips and menus.
@@ -230,6 +253,13 @@ String actionLabelKey(CadAction a) => switch (a) {
   CadAction.eps => 'eps.menu',
   CadAction.insertBlock => 'blk.insert',
   CadAction.saveBlock => 'blk.save',
+  // 1.6.0 EDT
+  CadAction.selectSimilar => 'sel.similar',
+  CadAction.quickSelect => 'sel.quick',
+  CadAction.selectLayer => 'sel.layer',
+  CadAction.join => 'edt.join',
+  CadAction.explode => 'edt.explode',
+  CadAction.toArea => 'edt.toArea',
 };
 
 /// " → Linha ⏎" for a typed alias that matches a command, else "".
@@ -268,7 +298,7 @@ const shortcutGroups = <ShortcutGroup>[
     ('Ctrl+X', 'edit.clipCut'),
     ('Ctrl+V', 'edit.paste'),
     ('Ctrl+D', 'edit.copy'),
-    ('Del', 'edit.delete'),
+    ('Del  /  ⌫', 'edit.delete'),
     ('Esc', 'sc.cancel'),
     ('Enter', 'sc.finish'),
     ('Backspace', 'sc.undoPoint'),
@@ -329,7 +359,21 @@ const shortcutGroups = <ShortcutGroup>[
     ('WBLOCK · SB', 'blk.save'),
     ('INSERT · IB', 'blk.insert'),
     ('E · ERASE', 'edit.delete'),
-    ('CO · CP · COPY', 'edit.clipCopy'),
+    ('M · MOVE', 'tool.move'),
+    ('CO · CP · COPY', 'tool.copy'),
+    ('COPYCLIP', 'edit.clipCopy'),
+    ('SIMILAR · SELECTSIMILAR', 'sel.similar'),
+    ('QSELECT · QS', 'sel.quick'),
+    ('SELLAYER', 'sel.layer'),
+    ('LASSO · WP', 'tool.lasso'),
+    ('FENCE · FEN', 'tool.fence'),
+    ('STRETCH · STR', 'tool.stretch'),
+    ('FILLET · FIL', 'tool.fillet'),
+    ('CHA · CHAMFER', 'tool.chamfer'),
+    ('BREAK · BK', 'tool.breakTwo'),
+    ('JOIN · JO', 'edt.join'),
+    ('X · EXPLODE', 'edt.explode'),
+    ('TOAREA', 'edt.toArea'),
     ('CLIPCUT', 'edit.clipCut'),
     ('PA · PASTE', 'edit.paste'),
     ('U · UNDO  /  REDO', 'edit.undo'),

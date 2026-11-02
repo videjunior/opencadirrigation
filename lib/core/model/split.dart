@@ -130,10 +130,113 @@ List<Entity> trimLinearEntity(Entity e, double at, List<double> cuts, String Fun
   return out;
 }
 
+/// An edge a trim cuts at or an extension stops at: the path an entity is
+/// drawn with — a spline's curve rather than its fit points, an arc's
+/// polyline — with the closing side of a closed shape, or a circle.
+class CutEdge {
+  CutEdge.path(this.points, {this.closed = false}) : center = null, radius = 0, startRad = 0, sweepRad = 0;
+  CutEdge.circle(Pt this.center, this.radius) : points = const [], closed = true, startRad = 0, sweepRad = 2 * math.pi;
+
+  /// An arc of the circle: from [startRad], [sweepRad] counter-clockwise
+  /// (clockwise when negative).
+  CutEdge.arc(Pt this.center, this.radius, this.startRad, this.sweepRad) : points = const [], closed = false;
+
+  /// The drawn path (empty for a circle or an arc).
+  final List<Pt> points;
+
+  /// The path goes back from its last point to the first.
+  final bool closed;
+
+  /// Centre and radius of a circle or arc edge.
+  final Pt? center;
+  final double radius;
+
+  /// Start angle and sweep of an arc edge (2π for a circle).
+  final double startRad, sweepRad;
+
+  /// Whether [e] has an outline to cut at (see [of]).
+  static bool supports(Entity e) => e is CircleEntity || e.linearPoints != null;
+
+  /// The edge of [e], or null for an item without an outline.
+  static CutEdge? of(Entity e) {
+    if (e is CircleEntity) return e.radius > 0 ? CutEdge.circle(e.center, e.radius) : null;
+    if (e is ArcEntity) return e.radius > 0 && e.sweepRad != 0 ? CutEdge.arc(e.center, e.radius, e.startRad, e.sweepRad) : null;
+    if (e is SplineEntity) return e.points.length >= 2 ? CutEdge.path(e.curve()) : null;
+    final pts = e.linearPoints;
+    return pts == null || pts.length < 2 ? null : CutEdge.path(pts, closed: e.isClosedShape);
+  }
+
+  /// The segments of the path, the closing one included.
+  List<(Pt, Pt)> get segments => [for (var i = 1; i < points.length; i++) (points[i - 1], points[i]), if (closed && points.length > 2) (points.last, points.first)];
+
+  /// Where the polyline [pts] (closed when [closedPts]) crosses this edge.
+  List<Pt> crossings(List<Pt> pts, {bool closedPts = false}) {
+    final c = center;
+    if (c == null) return polylineIntersections(pts, points, closedA: closedPts, closedB: closed);
+    final out = <Pt>[];
+    final n = pts.length;
+    for (var i = 1; i < n + (closedPts && n > 2 ? 1 : 0); i++) {
+      final a = pts[i - 1], b = pts[i % n];
+      for (final s in _circleParams(a, b - a, c, radius)) {
+        if (s >= -1e-9 && s <= 1 + 1e-9 && _onArc(a + (b - a) * s)) out.add(a + (b - a) * s);
+      }
+    }
+    return out;
+  }
+
+  /// Distance from [origin] along the unit direction [dir] to the first
+  /// point of this edge ahead of it, or null when the ray misses.
+  double? rayHit(Pt origin, Pt dir) {
+    double? best;
+    void take(double t) {
+      if (t > 1e-6 && (best == null || t < best!)) best = t;
+    }
+
+    final c = center;
+    if (c != null) {
+      for (final t in _circleParams(origin, dir, c, radius)) {
+        if (_onArc(origin + dir * t)) take(t);
+      }
+      return best;
+    }
+    for (final (a, b) in segments) {
+      final p = lineIntersection(origin, origin + dir, a, b);
+      if (p == null) continue;
+      // within the boundary segment and ahead of the end
+      final (cp, _) = closestPointOnSegment(p, a, b);
+      if (cp.distanceTo(p) > 1e-6) continue;
+      take((p - origin).dot(dir));
+    }
+    return best;
+  }
+
+  /// Whether [q], a point of the circle, lies on the arc of this edge.
+  bool _onArc(Pt q) {
+    final sweep = sweepRad.abs();
+    if (sweep >= 2 * math.pi - 1e-12) return true;
+    var rel = ((q - center!).angle - startRad) % (2 * math.pi);
+    if (rel < 0) rel += 2 * math.pi;
+    const eps = 1e-9;
+    return sweepRad >= 0 ? rel <= sweep + eps || rel >= 2 * math.pi - eps : rel <= eps || 2 * math.pi - rel <= sweep + eps;
+  }
+
+  /// Parameters s where a + d·s lies on the circle (centre [c], radius [r]).
+  static List<double> _circleParams(Pt a, Pt d, Pt c, double r) {
+    final f = a - c;
+    final qa = d.dot(d), qb = 2 * f.dot(d), qc = f.dot(f) - r * r;
+    if (qa < 1e-24) return const [];
+    final disc = qb * qb - 4 * qa * qc;
+    if (disc < 0) return const [];
+    final sq = math.sqrt(disc);
+    return [(-qb - sq) / (2 * qa), (-qb + sq) / (2 * qa)];
+  }
+}
+
 /// Extends the end of a linear entity nearest to [near] until it meets one
-/// of the [boundaries] polylines along its last segment direction. Returns
-/// true when an intersection was found and the entity was modified.
-bool extendLinearEntity(Entity e, Pt near, List<List<Pt>> boundaries) {
+/// of the [boundaries] polylines (open paths) or of the [edges] along its
+/// last segment direction. Returns true when an intersection was found and
+/// the entity was modified.
+bool extendLinearEntity(Entity e, Pt near, List<List<Pt>> boundaries, {List<CutEdge> edges = const []}) {
   final pts = e.linearPoints;
   if (pts == null || pts.length < 2) return false;
   final atStart = near.distanceTo(pts.first) < near.distanceTo(pts.last);
@@ -143,18 +246,11 @@ bool extendLinearEntity(Entity e, Pt near, List<List<Pt>> boundaries) {
   if (dir.length == 0) return false;
   Pt? best;
   var bestT = double.infinity;
-  for (final b in boundaries) {
-    for (var i = 1; i < b.length; i++) {
-      final p = lineIntersection(end, end + dir, b[i - 1], b[i]);
-      if (p == null) continue;
-      // must be within the boundary segment and ahead of the end
-      final (cp, _) = closestPointOnSegment(p, b[i - 1], b[i]);
-      if (cp.distanceTo(p) > 1e-6) continue;
-      final t = (p - end).dot(dir);
-      if (t > 1e-6 && t < bestT) {
-        bestT = t;
-        best = p;
-      }
+  for (final edge in [for (final b in boundaries) CutEdge.path(b), ...edges]) {
+    final t = edge.rayHit(end, dir);
+    if (t != null && t < bestT) {
+      bestT = t;
+      best = end + dir * t;
     }
   }
   if (best == null) return false;

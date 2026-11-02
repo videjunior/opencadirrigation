@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
@@ -9,6 +10,8 @@ import '../state/controller.dart';
 import '../io/links.dart';
 import '../keys/canvas_keys.dart';
 import '../state/workspace.dart';
+import '../tools/context_menu.dart';
+import '../tools/edit_commands.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'painter.dart';
@@ -74,6 +77,19 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   bool _touchGesture = false;
   bool _touchDrawPending = false;
 
+  // 1.6.0 EDT: a finger held still (CAD-17): dragged afterwards, it opens a
+  // selection window where a plain drag pans
+  static const holdDelay = Duration(milliseconds: 500);
+  Timer? _holdTimer;
+  Offset? _holdAt;
+  bool _held = false;
+
+  void _endHold() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+    _held = false;
+  }
+
   ProjectController get c => widget.controller;
 
   @override
@@ -109,14 +125,18 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     PaintingBinding.instance.systemFonts.removeListener(_redraw);
     basemap.dispose();
     _scene.dispose();
+    _endHold();
     super.dispose();
   }
 
   void _onController() {
     if (_tool.id != c.activeTool) {
-      _tool.cancel();
+      final old = _tool;
       _tool = createTool(c.activeTool, c, widget.host);
       _snap = null;
+      // 1.6.0 EDT: the old tool keeps a polyline in progress (CAD-10); the
+      // new one is in place first, as keeping it notifies again
+      old.leave();
     }
     _redraw();
   }
@@ -170,6 +190,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         if (_touchDrawPending) {
           _touchDrawPending = false;
         }
+        _endHold();
         if (_dragging) {
           _tool.cancel();
           _dragging = false;
@@ -183,20 +204,51 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       // single finger: behaves as the primary button, but the tap is only
       // committed on pointer up so a pinch can still cancel it
       _touchDrawPending = true;
+      _endHold();
+      _holdAt = e.localPosition;
+      _holdTimer = Timer(holdDelay, () {
+        if (!mounted || !_touchDrawPending || _touches.length != 1) return;
+        _touchDrawPending = false;
+        _held = true;
+        HapticFeedback.selectionClick();
+      });
       return;
     }
-    if (e.buttons == kMiddleMouseButton || e.buttons == kSecondaryMouseButton || _spaceDown || c.activeTool == ToolId.pan) {
+    // 1.6.0 EDT: the buttons by bit (a pen touching with its side button
+    // pressed has two); the right button — the pen's side button — taps
+    // the menu of the drawing and drags the view (CAD-34)
+    final b = e.buttons;
+    if ((b & kSecondaryButton) != 0) {
+      _secondaryAt = e.localPosition;
+      _secondaryMoved = false;
       _panning = true;
       return;
     }
-    if (e.buttons == kPrimaryMouseButton) {
+    if ((b & kTertiaryButton) != 0 || _spaceDown || c.activeTool == ToolId.pan) {
+      _panning = true;
+      return;
+    }
+    if ((b & kPrimaryButton) != 0) {
       _primaryDown(e.localPosition);
     }
   }
 
+  // 1.6.0 EDT: a press of the right button, until it moves (CAD-34)
+  Offset? _secondaryAt;
+  bool _secondaryMoved = false;
+
+  /// A finger lands farther from the last tap than a mouse does: a double
+  /// tap allows this much (a double click 6 px).
+  static const doubleTapSlopPx = 24.0;
+
+  void _openMenu(Offset global) {
+    if (!mounted) return;
+    showCanvasContextMenu(context, c, this, global);
+  }
+
   void _primaryDown(Offset local, {bool touch = false}) {
     final now = DateTime.now();
-    final isDouble = now.difference(_lastDown).inMilliseconds < 350 && _lastDownPos != null && (_lastDownPos! - local).distance < 6;
+    final isDouble = now.difference(_lastDown).inMilliseconds < (touch ? 400 : 350) && _lastDownPos != null && (_lastDownPos! - local).distance < (touch ? doubleTapSlopPx : 6);
     _lastDown = now;
     _lastDownPos = local;
     final p = _snapped(local);
@@ -204,7 +256,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     if (isDouble) {
       _tool.onDoubleClick(p);
     } else {
-      _tool.onDown(p, shift: keys.isShiftPressed, ctrl: keys.isControlPressed || keys.isMetaPressed);
+      // 1.6.0 EDT: "add to the selection" stands in for Shift on a touch screen
+      _tool.onDown(p, shift: keys.isShiftPressed || c.editSettings.addToSelection, ctrl: keys.isControlPressed || keys.isMetaPressed);
       if (_snap?.locked ?? false) c.track('lock');
     }
     _dragging = true;
@@ -238,6 +291,21 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         _redraw();
         return;
       }
+      if (_held && _holdAt != null && !_dragging) {
+        // 1.6.0 EDT: held still, then dragged: a selection window from where
+        // the finger was held, whatever lies under it (CAD-17)
+        if ((e.localPosition - _holdAt!).distance <= touchDragSlopPx) return;
+        final st = _tool;
+        if (st is! SelectTool) {
+          _held = false;
+          _primaryDown(_holdAt!, touch: true);
+        } else {
+          st.startWindow(_world(_holdAt!), add: c.editSettings.addToSelection);
+          _dragging = true;
+          _dragArmed = true;
+          _dragOrigin = _holdAt;
+        }
+      }
       if (_touchDrawPending && _lastPointer != null) {
         // a finger drag before any tap commits: pan (touch-friendly), unless
         // the select tool is moving a selection
@@ -254,6 +322,11 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
       }
     }
     if (_panning && _lastPointer != null) {
+      // a right press pans only once it leaves the dead zone (a tap opens the menu)
+      if (_secondaryAt != null && !_secondaryMoved) {
+        if ((e.localPosition - _secondaryAt!).distance <= dragSlopPx) return;
+        _secondaryMoved = true;
+      }
       c.camera.panPixels(e.localPosition - _lastPointer!);
       _lastPointer = e.localPosition;
       _redraw();
@@ -299,6 +372,14 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         _pinchCenter = null;
         return;
       }
+      _holdTimer?.cancel();
+      if (_held && !_dragging) {
+        // 1.6.0 EDT: held still and lifted: the menu of the drawing (CAD-17, CAD-34)
+        _held = false;
+        _openMenu(e.position);
+        return;
+      }
+      _held = false;
       if (_touchDrawPending) {
         // simple tap: run the tool's down + up at the tap position
         _touchDrawPending = false;
@@ -307,6 +388,13 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     }
     if (_panning) {
       _panning = false;
+      final tapped = _secondaryAt != null && !_secondaryMoved;
+      _secondaryAt = null;
+      if (tapped) {
+        // 1.6.0 EDT: a right click (no drag): the menu of the drawing (CAD-34)
+        _openMenu(e.position);
+        return;
+      }
       c.track('pan');
       return;
     }
@@ -322,6 +410,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   void _onPointerCancel(PointerCancelEvent e) {
     _touches.remove(e.pointer);
+    _endHold();
+    _secondaryAt = null;
     if (_touches.isEmpty) {
       _touchGesture = false;
       _touchDrawPending = false;
@@ -350,7 +440,12 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   // keys/hotkeys.dart), whatever widget has the focus.
   @override
   void toolKey(String key) {
-    _tool.onKey(key);
+    // 1.6.0 EDT: 'Cancel' (the Cancel button) drops what is in progress
+    if (key == 'Cancel') {
+      _tool.cancel();
+    } else {
+      _tool.onKey(key);
+    }
     _redraw();
   }
 
@@ -370,6 +465,14 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     _tool.onMove(p);
     _updateStatus(p);
     _redraw();
+  }
+
+  // 1.6.0 EDT: options and step values typed on the command line
+  @override
+  bool toolInput(String text) {
+    final taken = _tool.onInput(text);
+    if (taken) _redraw();
+    return taken;
   }
 
   @override

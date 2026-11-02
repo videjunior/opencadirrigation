@@ -12,7 +12,18 @@ class ToolPalette extends StatelessWidget {
 
   /// Tool groups (also used by the mobile tool bar).
   static const groups = <(String, List<(ToolId, IconData)>)>[
-    ('nav', [(ToolId.select, Icons.near_me_outlined), (ToolId.pan, Icons.pan_tool_alt_outlined), (ToolId.measure, Icons.straighten), (ToolId.profile, Icons.show_chart)]),
+    (
+      'nav',
+      [
+        (ToolId.select, Icons.near_me_outlined),
+        (ToolId.pan, Icons.pan_tool_alt_outlined),
+        (ToolId.measure, Icons.straighten),
+        (ToolId.profile, Icons.show_chart),
+        // 1.6.0 EDT
+        (ToolId.lasso, Icons.highlight_alt),
+        (ToolId.fence, Icons.multiline_chart),
+      ],
+    ),
     (
       'draw',
       [
@@ -43,6 +54,13 @@ class ToolPalette extends StatelessWidget {
         (ToolId.extend, Icons.east),
         (ToolId.cutPipe, Icons.carpenter_outlined),
         (ToolId.alignImage, Icons.control_camera),
+        // 1.6.0 EDT
+        (ToolId.move, Icons.open_with),
+        (ToolId.copy, Icons.file_copy_outlined),
+        (ToolId.stretch, Icons.unfold_more_double),
+        (ToolId.fillet, Icons.rounded_corner),
+        (ToolId.chamfer, Icons.signal_cellular_null),
+        (ToolId.breakTwo, Icons.link_off),
       ],
     ),
     ('terrain', [(ToolId.contour, Icons.landscape_outlined), (ToolId.breakline, Icons.show_chart), (ToolId.spot, Icons.add_location_alt_outlined), (ToolId.area, Icons.grass)]),

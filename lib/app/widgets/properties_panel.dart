@@ -19,6 +19,7 @@ import '../state/controller.dart';
 import '../theme.dart';
 import '../tools/tools.dart';
 import 'dialogs/mechanised_dialogs.dart';
+import 'edit_fields.dart';
 import 'fields.dart';
 
 class PropertiesPanel extends StatelessWidget {
@@ -548,6 +549,8 @@ class PropertiesPanel extends StatelessWidget {
       default:
         break;
     }
+    // 1.6.0 EDT: coordinates of the item (X/Y of its position or vertices)
+    items.addAll(coordinateFields(c, e));
     items.addAll(_results(e));
     return ListView(padding: const EdgeInsets.all(8), children: items);
   }
@@ -1448,6 +1451,9 @@ class PropertiesPanel extends StatelessWidget {
             onChanged: (v) => upd(() => s.mirrorKeepSource = v),
           ),
         );
+      // 1.6.0 EDT: the settings of the new editing and selection tools
+      case ToolId.lasso || ToolId.fence || ToolId.fillet || ToolId.chamfer || ToolId.measure:
+        items.addAll(editToolFields(c, tool));
       default:
         items.add(
           Padding(

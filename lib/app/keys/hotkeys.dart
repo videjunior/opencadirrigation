@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 import '../../core/model/entities.dart';
 import '../actions.dart' show feedEnvelopeAction;
 import '../shortcuts.dart';
+import '../tools/edit_commands.dart';
 import '../tools/typed_point.dart';
 import '../state/controller.dart';
 
@@ -163,6 +164,9 @@ abstract class HotkeyActions {
   void insertBlock();
   void saveBlock();
   void clipboard(CadAction action);
+
+  /// Opens the quick-select dialog (QSELECT command).
+  void quickSelect();
 }
 
 /// True when a text field has the keyboard focus (typing must not trigger
@@ -345,7 +349,7 @@ class Hotkeys {
           return true;
         }
         if (c.activeTool == ToolId.select) {
-          // AutoCAD-style: Enter repeats the last drawing command
+          // as in the programs of CAD: Enter repeats the last drawing command
           c.setTool(c.lastTool);
           return true;
         }
@@ -354,6 +358,12 @@ class Hotkeys {
       case 'Backspace':
         if (c.command.isNotEmpty) {
           setCommand(c.command.substring(0, c.command.length - 1));
+          return true;
+        }
+        // the delete key of a Mac laptop sends Backspace: with the
+        // selection tool it erases the selection, as Delete does
+        if (c.activeTool == ToolId.select && c.selection.isNotEmpty) {
+          c.deleteSelected();
           return true;
         }
         k?.toolKey('Backspace');
@@ -430,7 +440,7 @@ class Hotkeys {
     }
     final ch = e.char;
     if (ch != null) {
-      // letters and digits build an AutoCAD-style command
+      // letters and digits build a command, as in the programs of CAD
       if (e.repeat) return true;
       setCommand(c.command + ch.toUpperCase());
       _scheduleAutoRun();
@@ -464,6 +474,13 @@ class Hotkeys {
     final cmd = c.command;
     setCommand('');
     final k = c.keyTarget;
+    // the active tool reads the text first: an option of its own (C closes
+    // a polyline, U takes back its last point) or the value of its step
+    // (the angle of Rotate, the factor of Scale, the distance of Offset)
+    if (_wantsPoint && k != null && cmd.isNotEmpty && k.toolInput(cmd)) {
+      c.track('toolInput');
+      return;
+    }
     if (_wantsPoint && k != null && !commandAliases.containsKey(cmd)) {
       final p = parseTypedPoint(cmd, reference: k.referencePoint, cursor: k.cursorPoint, toSi: c.units.lengthToSi);
       if (p != null) {
@@ -549,6 +566,19 @@ class Hotkeys {
         actions.save();
       case CadAction.open:
         actions.open();
+      // 1.6.0 EDT
+      case CadAction.selectSimilar:
+        c.selectSimilar();
+      case CadAction.quickSelect:
+        actions.quickSelect();
+      case CadAction.selectLayer:
+        c.selectOnLayer();
+      case CadAction.join:
+        c.joinSelected();
+      case CadAction.explode:
+        c.explodeSelected();
+      case CadAction.toArea:
+        c.convertSelectedToArea();
     }
   }
 

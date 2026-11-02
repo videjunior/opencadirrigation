@@ -16,6 +16,7 @@ import '../state/controller.dart';
 import '../state/workspace.dart';
 import '../examples.dart';
 import '../theme.dart';
+import '../tools/edit_commands.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
 import 'ai/ai_panel.dart';
@@ -33,6 +34,7 @@ import 'dialogs/densogram_dialog.dart';
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
+import 'dialogs/selection_dialogs.dart';
 import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/storage_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
@@ -81,7 +83,7 @@ class _MobileShellState extends State<MobileShell> {
   void _toolKey(String key) {
     final k = c.keyTarget;
     k?.toolKey(key);
-    if (key == 'Escape' && c.activeTool != ToolId.select && (k?.toolIdle ?? true)) c.setTool(ToolId.select);
+    if ((key == 'Escape' || key == 'Cancel') && c.activeTool != ToolId.select && (k?.toolIdle ?? true)) c.setTool(ToolId.select);
     k?.redraw();
     c.refresh();
   }
@@ -256,6 +258,16 @@ class _MobileShellState extends State<MobileShell> {
             ),
             row(t('edit.array'), c.selection.isEmpty ? null : () => showArrayDialog(context, c)),
             for (final id in [ToolId.rotate, ToolId.mirror, ToolId.scale, ToolId.offset, ToolId.trim, ToolId.extend, ToolId.cutPipe]) row(toolLabel(t, id), () => c.setTool(id)),
+            // 1.6.0 EDT: editing by base point, selection filters
+            for (final id in [ToolId.move, ToolId.copy]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
+            row(t('sel.similar'), c.selection.isEmpty ? null : c.selectSimilar, icon: Icons.select_all, key: const Key('mobile_menu_select_similar')),
+            row(t('sel.quick'), () => showQuickSelectDialog(context, c), key: const Key('mobile_menu_quick_select')),
+            row(t('sel.layer'), c.selectOnLayer, key: const Key('mobile_menu_select_layer')),
+            for (final id in [ToolId.lasso, ToolId.fence]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
+            for (final id in [ToolId.stretch, ToolId.fillet, ToolId.chamfer, ToolId.breakTwo]) row(toolLabel(t, id), () => c.setTool(id), key: Key('mobile_menu_tool_${id.name}')),
+            row(t('edt.join'), c.selection.isEmpty ? null : c.joinSelected, key: const Key('mobile_menu_join')),
+            row(t('edt.explode'), c.selection.isEmpty ? null : c.explodeSelected, key: const Key('mobile_menu_explode')),
+            row(t('edt.toArea'), c.selection.isEmpty ? null : c.convertSelectedToArea, key: const Key('mobile_menu_to_area')),
           ]),
           section(t('gps.submenu'), Icons.my_location, [
             check(t('gps.menu'), c.gpsActive, (v) => v ? c.startGps() : c.stopGps()),
@@ -477,12 +489,22 @@ class _MobileShellState extends State<MobileShell> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           if (drawing) _fab(const Key('mobile_done'), Icons.check, t('mob.done'), () => _toolKey('Enter'), color: Cad.okFill),
-                          if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Escape')),
+                          // 1.6.0 EDT: Cancel drops the stroke (Esc keeps it, CAD-10)
+                          if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Cancel')),
                           if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
                           _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
                           _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
                           _fab(const Key('mobile_props'), Icons.tune, t('mob.props'), _openProperties, badge: c.selection.isNotEmpty ? '${c.selection.length}' : null),
                           _fab(const Key('mobile_reports'), Icons.table_chart_outlined, t('menu.reports'), _openReports, badge: c.results != null ? '✓' : null),
+                          // 1.6.0 EDT: taps add to the selection, as Shift does (CAD-17)
+                          if (usesAddToSelection(c.activeTool))
+                            _fab(
+                              const Key('mobile_add_select'),
+                              Icons.library_add_check_outlined,
+                              t('sel.addMode'),
+                              () => c.setAddToSelection(!c.editSettings.addToSelection),
+                              color: c.editSettings.addToSelection ? Cad.accentFill : null,
+                            ),
                         ],
                       ),
                     ),

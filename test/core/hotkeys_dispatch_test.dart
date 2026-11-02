@@ -69,6 +69,8 @@ class _Actions implements HotkeyActions {
   void saveBlock() => calls.add('saveBlock');
   @override
   void clipboard(CadAction action) => calls.add('clip:${action.name}');
+  @override
+  void quickSelect() => calls.add('quickSelect');
 }
 
 class _Canvas implements CanvasKeyTarget {
@@ -89,6 +91,15 @@ class _Canvas implements CanvasKeyTarget {
   Pt? cursorPoint;
   @override
   void feedPoint(Pt p) => calls.add('point:${p.x},${p.y}');
+
+  /// The typed texts the tool takes (an option, a step value).
+  Set<String> takes = {};
+  @override
+  bool toolInput(String text) {
+    if (!takes.contains(text)) return false;
+    calls.add('input:$text');
+    return true;
+  }
 }
 
 void main() {
@@ -136,6 +147,34 @@ void main() {
     expect(c.command, '');
   });
 
+  test('the active tool reads the typed text first (an option, a step value), then points and aliases', () {
+    c.setTool(ToolId.rotate);
+    canvas.takes = {'45', 'C'};
+    for (final ch in '45'.split('')) {
+      keys.handle(HotkeyEvent(ch));
+    }
+    keys.handle(const HotkeyEvent('Enter'));
+    expect(canvas.calls, contains('input:45'));
+    expect(canvas.calls.where((x) => x.startsWith('point:')), isEmpty, reason: 'not a distance along the cursor');
+    // an option letter wins over its alias (C would start the circle)
+    c.setTool(ToolId.polyline);
+    c.command = 'C';
+    keys.runCommand();
+    expect(canvas.calls, contains('input:C'));
+    expect(c.activeTool, ToolId.polyline);
+    // what the tool does not take is a point or an alias as before
+    c.command = 'L';
+    keys.runCommand();
+    expect(c.activeTool, ToolId.line);
+    // with the selection tool nothing is offered to the tool
+    c.setTool(ToolId.select);
+    canvas.calls.clear();
+    c.command = 'C';
+    keys.runCommand();
+    expect(canvas.calls, isEmpty);
+    expect(c.activeTool, ToolId.circle);
+  });
+
   test('F10 cycles the polar tracking step', () {
     expect(c.snap.polarStepDeg, 0);
     keys.handle(const HotkeyEvent('F10'));
@@ -154,6 +193,30 @@ void main() {
       press(ch);
     }
   }
+
+  test('Backspace (the delete key of a Mac) erases the selection with the selection tool (CAD-32)', () {
+    final l = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(5, 0));
+    c.addEntity(l);
+    c.setTool(ToolId.select);
+    c.select([l.id]);
+    expect(press('Backspace'), isTrue);
+    expect(c.project.entities, isEmpty);
+    expect(canvas.calls.where((x) => x == 'tool:Backspace'), isEmpty);
+    // while a command is typed it edits the command
+    final m = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(5, 0));
+    c.addEntity(m);
+    c.select([m.id]);
+    typeCommand('lx');
+    press('Backspace');
+    expect(c.command, 'L');
+    expect(c.project.entities.length, 1);
+    press('Escape');
+    // with a drawing tool it takes back the last point
+    c.setTool(ToolId.polyline);
+    press('Backspace');
+    expect(canvas.calls.last, 'tool:Backspace');
+    expect(c.project.entities.length, 1);
+  });
 
   test('application keys: files, tabs, design and reports; blocked under a dialog', () {
     expect(press('s', ctrl: true), isTrue);
@@ -383,6 +446,19 @@ void main() {
           expect(a.calls, ['save']);
         case CadAction.open:
           expect(a.calls, ['open']);
+        case CadAction.selectSimilar:
+          expect(c.selection, {for (final e in c.project.entities.whereType<LineEntity>()) e.id}, reason: '${e.key}: every line of the layer');
+        case CadAction.quickSelect:
+          expect(a.calls, ['quickSelect']);
+        case CadAction.selectLayer:
+          expect(c.selection.length, c.project.entities.where((x) => x.layer == c.project.currentLayer).length, reason: e.key);
+        // a lone line selected: nothing to join, explode or close, and the user is told
+        case CadAction.join:
+          expect(c.lastMessage, c.t('edt.nothingToJoin'), reason: e.key);
+        case CadAction.explode:
+          expect(c.lastMessage, c.t('edt.nothingToExplode'), reason: e.key);
+        case CadAction.toArea:
+          expect(c.lastMessage, c.t('edt.notClosed'), reason: e.key);
       }
     }
   });

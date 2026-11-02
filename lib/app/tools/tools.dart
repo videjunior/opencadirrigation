@@ -7,11 +7,15 @@ import '../../core/design/pivot.dart' show PivotKind;
 
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
+import '../../core/model/split.dart' show CutEdge;
 import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import 'ai_mark_tool.dart';
+import 'edit_commands.dart';
+import 'edit_tools.dart';
 import 'insert_block_tool.dart';
+import 'typed_point.dart';
 
 /// Dialog requests raised by tools and fulfilled by the widget layer.
 abstract class ToolHost {
@@ -61,6 +65,15 @@ abstract class Tool {
 
   /// key: 'Escape', 'Enter', 'Backspace'
   void onKey(String key) {}
+
+  /// Text typed on the command line while this tool is active, read before
+  /// it is taken as a point or a command alias: an option letter or the
+  /// value of the current step (an angle, a factor, a distance). True when
+  /// the tool took it.
+  bool onInput(String text) => false;
+
+  /// The tool is being replaced by another one (see [cancel]).
+  void leave() => cancel();
   void paint(Canvas canvas, Camera cam) {}
   void cancel() {}
 
@@ -209,7 +222,9 @@ class SelectTool extends Tool {
     _pendingInsert = false;
     _grabOffset = null;
     _moveAnchor = null;
-    final grip = _hitGrip(p);
+    // Shift (or "add to the selection") toggles the item under the pointer:
+    // the grip of a selected point item sits right on it and would win
+    final grip = shift ? null : _hitGrip(p);
     if (grip != null) {
       if (ctrl && !grip.midpoint) {
         c.removeVertex(grip.entityId, grip.index);
@@ -247,6 +262,23 @@ class SelectTool extends Tool {
     }
   }
 
+  /// Starts a selection window at [p] whatever lies under it — on a touch
+  /// screen a finger held still and then dragged, where a plain drag pans;
+  /// [add] adds to the selection. The canvas then feeds the drag.
+  void startWindow(Pt p, {bool add = false}) {
+    _shift = add;
+    _downRaw = p;
+    _dragCurrent = p;
+    _dragged = true;
+    _moving = false;
+    _grip = null;
+    _gripPos = null;
+    _windowing = true;
+    _pendingInsert = false;
+    _grabOffset = null;
+    _moveAnchor = null;
+  }
+
   @override
   void onMove(Pt p, {bool dragging = false}) {
     cursor = p;
@@ -281,7 +313,7 @@ class SelectTool extends Tool {
       final a = _downRaw!, b = p;
       if (a.distanceTo(b) > c.snap.tolerancePx / c.camera.scale) {
         final bounds = Bounds(math.min(a.x, b.x), math.min(a.y, b.y), math.max(a.x, b.x), math.max(a.y, b.y));
-        final crossing = b.x < a.x; // right-to-left = crossing (AutoCAD convention)
+        final crossing = b.x < a.x; // right-to-left = crossing, as in the programs of CAD
         final ids = c.pickWindow(bounds, crossing: crossing).map((e) => e.id);
         c.select(ids, add: _shift);
       }
@@ -398,7 +430,15 @@ abstract class PolyTool extends Tool {
   @override
   void onKey(String key) {
     if (key == 'Enter') finish();
-    if (key == 'Escape') cancel();
+    if (key == 'Escape') {
+      // Esc ends the command keeping what was drawn, as in the programs of
+      // CAD; a stroke too short for an item is dropped
+      if (keepsOnLeave && pts.length >= minPoints) {
+        finish();
+      } else {
+        cancel();
+      }
+    }
     if (key == 'Backspace' && pts.isNotEmpty) pts.removeLast();
   }
 
@@ -412,6 +452,59 @@ abstract class PolyTool extends Tool {
 
   @override
   void cancel() => pts.clear();
+
+  /// Esc and a change of tool keep a stroke long enough for its item: the
+  /// tools clicked until Enter whose item needs no dialog.
+  bool get keepsOnLeave => requiredPoints == 0;
+
+  /// The stroke can end as a closed shape (the C option).
+  bool get closable => requiredPoints == 0;
+
+  /// Another tool took over: the stroke in progress is kept (see
+  /// [keepsOnLeave]). The points are taken first, so the edit that keeps
+  /// them finds the tool empty.
+  @override
+  void leave() {
+    if (!keepsOnLeave || pts.length < minPoints) {
+      cancel();
+      return;
+    }
+    final p = List.of(pts);
+    pts.clear();
+    commit(p);
+  }
+
+  /// The options typed while a stroke is in progress win over the command
+  /// aliases of the same letters: C closes the stroke, U takes back its
+  /// last point.
+  @override
+  bool onInput(String text) {
+    if (pts.isEmpty) return false;
+    switch (text) {
+      case 'U':
+        pts.removeLast();
+        return true;
+      case 'C' when closable:
+        if (pts.length < 3) {
+          c.notify(c.t('edt.closeNeeds3'));
+          return true;
+        }
+        if (closes) {
+          finish();
+        } else {
+          final p = List.of(pts);
+          pts.clear();
+          commitClosed(p);
+        }
+        return true;
+    }
+    return false;
+  }
+
+  /// Commits [points] as a closed stroke: the first point again at the end
+  /// (a ring of pipe, a closed contour); a polyline and a spline close
+  /// themselves.
+  void commitClosed(List<Pt> points) => commit([...points, points.first]);
 
   @override
   void paint(Canvas canvas, Camera cam) {
@@ -444,6 +537,8 @@ class PolylineTool extends PolyTool {
   String get hintKey => 'hint.polyline';
   @override
   void commit(List<Pt> points) => c.addEntity(PolylineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points));
+  @override
+  void commitClosed(List<Pt> points) => c.addEntity(PolylineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points, closed: true));
 }
 
 class SplineTool extends PolyTool {
@@ -454,6 +549,8 @@ class SplineTool extends PolyTool {
   String get hintKey => 'hint.spline';
   @override
   void commit(List<Pt> points) => c.addEntity(SplineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points, closed: c.toolSettings.splineClosed));
+  @override
+  void commitClosed(List<Pt> points) => c.addEntity(SplineEntity(id: c.project.newId(), layer: c.drawingLayer, points: points, closed: true));
   @override
   void paint(Canvas canvas, Camera cam) {
     final preview = [...pts, ?cursor];
@@ -705,6 +802,10 @@ class LeaderTool extends PolyTool {
   String get hintKey => 'hint.leader';
   @override
   void commit(List<Pt> points) => host.showLeaderDialog(points);
+  @override
+  bool get keepsOnLeave => false;
+  @override
+  bool get closable => false;
 }
 
 /// Breakline of the terrain: a polyline the triangulation keeps as edges;
@@ -835,6 +936,8 @@ class BlockTool extends PolyTool {
   int get minPoints => 3;
   @override
   void commit(List<Pt> points) => host.showBlockDialog(points);
+  @override
+  bool get keepsOnLeave => false;
 }
 
 class AutoheadTool extends PolyTool {
@@ -849,23 +952,77 @@ class AutoheadTool extends PolyTool {
   int get minPoints => 3;
   @override
   void commit(List<Pt> points) => host.showAutoheadDialog(points);
+  @override
+  bool get keepsOnLeave => false;
 }
 
+/// Measure: two points (distance and direction), several points (the
+/// running length, Enter ends) or an outline (area and perimeter, Enter or
+/// C closes) — the mode in the panel, or typed: D, M, A. The last result
+/// stays on the drawing and in the panel, where it can be copied.
 class MeasureTool extends PolyTool {
   MeasureTool(super.c, super.host);
   @override
   ToolId get id => ToolId.measure;
   @override
   String get hintKey => 'hint.measure';
+
+  MeasureMode get mode => c.editSettings.measureMode;
   @override
-  int get requiredPoints => 2;
+  int get requiredPoints => mode == MeasureMode.distance ? 2 : 0;
+  @override
+  bool get closes => mode == MeasureMode.area;
+  @override
+  int get minPoints => mode == MeasureMode.area ? 3 : 2;
+
   @override
   void commit(List<Pt> points) {
-    final d = points[0].distanceTo(points[1]);
-    final dx = points[1].x - points[0].x, dy = points[1].y - points[0].y;
-    host.setStatus(
-      'Δ = ${c.units.lengthFromSi(d).toStringAsFixed(3)} ${c.units.lengthLabel}  (Δx ${c.units.lengthFromSi(dx).toStringAsFixed(2)}, Δy ${c.units.lengthFromSi(dy).toStringAsFixed(2)}, ${radToDeg(math.atan2(dy, dx)).toStringAsFixed(1)}°)',
-    );
+    final m = Measurement(mode, points);
+    c.editSettings.lastMeasure = m;
+    c.track('measure');
+    host.setStatus(m.text(c));
+    c.refresh();
+  }
+
+  /// D, M and A pick the mode (and drop the points in progress).
+  @override
+  bool onInput(String text) {
+    final next = switch (text) {
+      'D' => MeasureMode.distance,
+      'M' => MeasureMode.path,
+      'A' => MeasureMode.area,
+      _ => null,
+    };
+    if (next == null) return super.onInput(text);
+    pts.clear();
+    c.editSettings.measureMode = next;
+    c.notify(c.t('meas.${next.name}'));
+    return true;
+  }
+
+  @override
+  void paint(Canvas canvas, Camera cam) {
+    final last = c.editSettings.lastMeasure;
+    if (last != null && last.points.length >= 2) {
+      // the last result stays on the drawing
+      final p = Paint()
+        ..color = Cad.preview.withValues(alpha: 0.7)
+        ..strokeWidth = 1.5
+        ..style = PaintingStyle.stroke;
+      drawPolyline(canvas, cam, last.points, p, close: last.mode == MeasureMode.area);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: last.text(c),
+          style: TextStyle(fontSize: 11, color: Cad.preview, backgroundColor: Cad.overlay),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 420);
+      tp.paint(canvas, cam.toScreen(last.points.last) + const Offset(8, 6));
+    }
+    super.paint(canvas, cam);
+    if (mode == MeasureMode.area && pts.length >= 2 && cursor != null) {
+      host.setStatus(Measurement(mode, [...pts, cursor!]).text(c));
+    }
   }
 }
 
@@ -878,6 +1035,10 @@ class ProfileTool extends PolyTool {
   String get hintKey => 'hint.profile';
   @override
   void commit(List<Pt> points) => c.setProfilePath(points);
+
+  /// The profile opens the reports panel: only Enter (or Done) shows it.
+  @override
+  bool get keepsOnLeave => false;
 
   /// Esc with no point started clears the profile shown on the drawing.
   @override
@@ -897,6 +1058,9 @@ abstract class TransformTool extends Tool {
   TransformTool(super.c, super.host);
   final List<Pt> pts = [];
   bool _ctrl = false;
+
+  /// Ctrl (Cmd) was held on the last click.
+  bool get ctrlDown => _ctrl;
   @override
   Pt? get referencePoint => pts.isEmpty ? null : pts.first;
 
@@ -963,8 +1127,20 @@ class RotateTool extends TransformTool {
     c.rotateSelected(points[0], a, copy: copy);
   }
 
+  /// A number typed once the base point is in turns the selection by that
+  /// many degrees counter-clockwise, with or without the reference point.
+  @override
+  bool onInput(String text) {
+    final v = parseTypedValue(text);
+    if (v == null || pts.isEmpty || c.selection.isEmpty) return false;
+    if (v.abs() > 1e-9) c.rotateSelected(pts[0], degToRad(v), copy: ctrlDown || c.toolSettings.copyOnTransform);
+    pts.clear();
+    return true;
+  }
+
   @override
   Affine? preview() {
+    if (pts.length == 1) host.setStatus(c.t('edt.typeAngle'));
     if (pts.length == 2 && cursor != null) {
       final a = _angle([pts[0], pts[1], cursor!]);
       host.setStatus('${radToDeg(a).toStringAsFixed(2)}°');
@@ -996,8 +1172,24 @@ class ScaleTool extends TransformTool {
     c.scaleSelected(points[0], f, copy: copy);
   }
 
+  /// A number typed once the base point is in is the factor itself, with
+  /// or without the reference point.
+  @override
+  bool onInput(String text) {
+    final v = parseTypedValue(text);
+    if (v == null || pts.isEmpty || c.selection.isEmpty) return false;
+    if (v <= 0) {
+      c.notify(c.t('edt.badValue'));
+      return true;
+    }
+    if ((v - 1).abs() > 1e-9) c.scaleSelected(pts[0], v, copy: ctrlDown || c.toolSettings.copyOnTransform);
+    pts.clear();
+    return true;
+  }
+
   @override
   Affine? preview() {
+    if (pts.length == 1) host.setStatus(c.t('edt.typeFactor'));
     if (pts.length == 2 && cursor != null) {
       final f = _factor([pts[0], pts[1], cursor!]);
       host.setStatus('× ${f.toStringAsFixed(3)}');
@@ -1057,11 +1249,26 @@ class OffsetTool extends Tool {
     if (key == 'Escape') cancel();
   }
 
+  /// A number typed at any step is the distance (display unit).
+  @override
+  bool onInput(String text) {
+    final v = parseTypedValue(text);
+    if (v == null) return false;
+    if (v <= 0) {
+      c.notify(c.t('edt.badValue'));
+      return true;
+    }
+    c.toolSettings.offsetDistance = c.units.lengthToSi(v);
+    c.notify(c.t('edt.offsetSet', {'d': fmtLen(c.toolSettings.offsetDistance)}));
+    return true;
+  }
+
   @override
   void cancel() => _target = null;
 
   @override
   void paint(Canvas canvas, Camera cam) {
+    if (_target == null && cursor != null) host.setStatus('${c.t('tool.offset')}: ${fmtLen(c.toolSettings.offsetDistance)} · ${c.t('edt.typeDistance')}');
     if (_target == null || cursor == null) return;
     final e = c.project.byId(_target!);
     if (e == null) return;
@@ -1104,11 +1311,13 @@ class TrimTool extends Tool {
   @override
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
     final hit = c.pick(p, c.snap.tolerancePx / c.camera.scale);
-    if (hit == null || hit.linearPoints == null || hit.isClosedShape) return;
+    if (hit == null) return;
     if (shift) {
-      c.toggleSelect(hit.id);
+      // any outline is an edge: a closed polyline, an area, a circle
+      if (CutEdge.supports(hit)) c.toggleSelect(hit.id);
       return;
     }
+    if (hit.linearPoints == null || hit.isClosedShape) return;
     if (!c.trimAt(hit.id, p)) c.notify(c.t('msg.noIntersection'));
   }
 }
@@ -1126,11 +1335,13 @@ class ExtendTool extends Tool {
   @override
   void onDown(Pt p, {bool shift = false, bool ctrl = false}) {
     final hit = c.pick(p, c.snap.tolerancePx / c.camera.scale);
-    if (hit == null || hit.linearPoints == null || hit.isClosedShape) return;
+    if (hit == null) return;
     if (shift) {
-      c.toggleSelect(hit.id);
+      // any outline is an edge: a closed polyline, an area, a circle
+      if (CutEdge.supports(hit)) c.toggleSelect(hit.id);
       return;
     }
+    if (hit.linearPoints == null || hit.isClosedShape) return;
     if (!c.extendAt(hit.id, p)) c.notify(c.t('msg.noIntersection'));
   }
 }
@@ -1227,6 +1438,8 @@ class RevisionCloudTool extends PolyTool {
   int get minPoints => 3;
   @override
   void commit(List<Pt> points) => host.showRevisionDialog(points);
+  @override
+  bool get keepsOnLeave => false;
 }
 
 class SymbolTool extends PointTool {
@@ -1510,6 +1723,15 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.revisionCloud => RevisionCloudTool(c, host),
   ToolId.insertBlock => InsertBlockTool(c, host, ToolId.insertBlock),
   ToolId.aiMarkPoint || ToolId.aiMarkLine => AiMarkTool(c, host, id),
+  // 1.6.0 EDT
+  ToolId.move => MoveTool(c, host),
+  ToolId.copy => CopyTool(c, host),
+  ToolId.lasso => LassoTool(c, host),
+  ToolId.fence => FenceTool(c, host),
+  ToolId.stretch => StretchTool(c, host),
+  ToolId.fillet => CornerTool(c, host, chamfer: false),
+  ToolId.chamfer => CornerTool(c, host, chamfer: true),
+  ToolId.breakTwo => BreakTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1555,4 +1777,13 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.insertBlock => 'insertBlock',
   ToolId.aiMarkPoint => 'aiMarkPoint',
   ToolId.aiMarkLine => 'aiMarkLine',
+  // 1.6.0 EDT
+  ToolId.move => 'move',
+  ToolId.copy => 'copy',
+  ToolId.lasso => 'lasso',
+  ToolId.fence => 'fence',
+  ToolId.stretch => 'stretch',
+  ToolId.fillet => 'fillet',
+  ToolId.chamfer => 'chamfer',
+  ToolId.breakTwo => 'breakTwo',
 };
