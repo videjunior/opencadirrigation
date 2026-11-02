@@ -103,7 +103,7 @@
   }
   // The app starts by itself for an app address, the installed app and whoever has used it here before.
   function wanted() {
-    if (/[?&](example|tutorial|design|ai|lang|source|app)=/.test(location.search)) return true;
+    if (/[?&](example|tutorial|design|ai|lang|source|app|share)=/.test(location.search)) return true;
     if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
     return usedHere();
   }
@@ -114,13 +114,8 @@
     showBanner(false);
     landing.className += ' oci-starting';
     status.textContent = landing.getAttribute('data-loading');
-    // The engine and the app code come from this site and are fetched while the loader runs;
-    // the fallback fonts (other scripts, symbols) come from fonts.gstatic.com.
-    var engine = document.createElement('link');
-    engine.rel = 'preconnect';
-    engine.href = 'https://fonts.gstatic.com';
-    engine.crossOrigin = '';
-    document.head.appendChild(engine);
+    // The engine, the app code and the fonts (those of other scripts and the symbols too,
+    // under fonts/) come from this site and are fetched while the loader runs.
     var code = document.createElement('link');
     code.rel = 'preload';
     code.as = 'script';

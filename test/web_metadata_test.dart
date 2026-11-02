@@ -413,7 +413,7 @@ void main() {
     expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="pt" href="${site}pt/"/>'));
     expect(sitemap, contains('<xhtml:link rel="alternate" hreflang="zh" href="${site}zh/"/>'));
     expect(sitemap, contains('<loc>${site}privacy/</loc>'));
-    expect(sitemap, isNot(contains('<loc>${site}de/privacy/</loc>')), reason: 'a page still in English is not offered as the German one');
+    expect(sitemap, contains('<loc>${site}de/privacy/</loc>'), reason: 'every language has its own legal pages since 1.6.0');
     final notFound = File('web/404.html').readAsStringSync();
     expect(notFound, contains('noindex'));
     for (final l in siteLanguages) {
@@ -455,10 +455,11 @@ void main() {
           expect(page, contains('href="${l.url}"'), reason: '${l.code}: back to its entry page');
         }
       }
+      // since 1.6.0 every language has its own text (tool/site/<code>.dart)
       expect([
         for (final l in siteLanguages)
           if (hasLegalText(l.code)) l.code,
-      ], unorderedEquals(['pt', 'en', 'es']));
+      ], unorderedEquals([for (final l in siteLanguages) l.code]));
     });
 
     test('the privacy policy names the controller, the contact, what is collected and the rights; the terms the licence and the responsibility', () {

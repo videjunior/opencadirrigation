@@ -236,8 +236,8 @@ void main() {
           expect([for (final m in RegExp(r'<a href="([^"]+)"').allMatches(nav)) m.group(1)], urls, reason: '$code/$stem');
           expect(nav, contains('<a href="${urls[i]}" aria-current="page">'), reason: '$code/$stem');
           expect('aria-current'.allMatches(nav).length, 1, reason: '$code/$stem');
-          expect(html.contains('rel="prev"'), i > 0, reason: '$code/$stem');
-          expect(html.contains('rel="next"'), i + 1 < urls.length, reason: '$code/$stem');
+          expect(html.contains('<a rel="prev"'), i > 0, reason: '$code/$stem');
+          expect(html.contains('<a rel="next"'), i + 1 < urls.length, reason: '$code/$stem');
           if (i > 0) expect(html, contains('<a rel="prev" href="${urls[i - 1]}">'), reason: '$code/$stem');
           if (i + 1 < urls.length) expect(html, contains('<a rel="next" href="${urls[i + 1]}">'), reason: '$code/$stem');
         }

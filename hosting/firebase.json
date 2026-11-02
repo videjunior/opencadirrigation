@@ -1,6 +1,9 @@
 {
   "hosting": {
     "public": "public",
+    "predeploy": [
+      "test -f public/sw.js && test -d public/fonts && ! grep -q __OCI_ public/sw.js public/offline.js public/flutter_bootstrap.js"
+    ],
     "ignore": [
       "firebase.json",
       "**/.DS_Store",
@@ -58,6 +61,15 @@
         ]
       },
       {
+        "source": "/fonts/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=2592000"
+          }
+        ]
+      },
+      {
         "source": "/*.@(png|ico)",
         "headers": [
           {
@@ -95,6 +107,24 @@
       },
       {
         "source": "**/manifest.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/manual/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/*/manual/**",
         "headers": [
           {
             "key": "Cache-Control",

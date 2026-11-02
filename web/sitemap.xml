@@ -661,13 +661,84 @@
     <image:image><image:loc>https://opencadirrigation.com/screenshots/design-1440x900.png</image:loc></image:image>
   </url>
   <url>
+    <loc>https://opencadirrigation.com/id/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/de/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
     <loc>https://opencadirrigation.com/privacy/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
   </url>
   <url>
@@ -675,9 +746,107 @@
     <lastmod>2026-11-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/fr/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ha/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/sw/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
   </url>
   <url>
@@ -685,19 +854,431 @@
     <lastmod>2026-11-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/vi/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/tr/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ru/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ar/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ur/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/hi/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/mr/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/bn/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pa/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/te/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/zh/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ja/privacy/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/privacy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/id/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/de/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
   </url>
   <url>
     <loc>https://opencadirrigation.com/terms/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
   </url>
   <url>
@@ -705,9 +1286,107 @@
     <lastmod>2026-11-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/fr/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ha/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/sw/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
   </url>
   <url>
@@ -715,9 +1394,790 @@
     <lastmod>2026-11-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/vi/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/tr/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ru/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ar/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ur/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/hi/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/mr/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/bn/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pa/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/te/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/zh/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/ja/terms/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="https://opencadirrigation.com/id/terms/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://opencadirrigation.com/de/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://opencadirrigation.com/es/terms/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://opencadirrigation.com/fr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ha" href="https://opencadirrigation.com/ha/terms/"/>
+    <xhtml:link rel="alternate" hreflang="sw" href="https://opencadirrigation.com/sw/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/terms/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://opencadirrigation.com/vi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://opencadirrigation.com/tr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://opencadirrigation.com/ru/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://opencadirrigation.com/ar/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://opencadirrigation.com/ur/terms/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://opencadirrigation.com/hi/terms/"/>
+    <xhtml:link rel="alternate" hreflang="mr" href="https://opencadirrigation.com/mr/terms/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://opencadirrigation.com/bn/terms/"/>
+    <xhtml:link rel="alternate" hreflang="pa" href="https://opencadirrigation.com/pa/terms/"/>
+    <xhtml:link rel="alternate" hreflang="te" href="https://opencadirrigation.com/te/terms/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://opencadirrigation.com/zh/terms/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://opencadirrigation.com/ja/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/terms/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/getting-started/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/getting-started/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/getting-started/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/getting-started/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/getting-started/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/workflow/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/workflow/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/workflow/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/workflow/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/workflow/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/interface/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/interface/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/interface/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/interface/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/interface/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/drawing/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/drawing/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/drawing/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/drawing/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/drawing/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/hydraulic-network/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/hydraulic-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/hydraulic-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/hydraulic-network/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/hydraulic-network/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/catalogue/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/catalogue/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/catalogue/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/catalogue/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/catalogue/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/terrain/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/terrain/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/terrain/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/terrain/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/terrain/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/calculation/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/calculation/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/calculation/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/calculation/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/calculation/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/agronomy/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/agronomy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/agronomy/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/agronomy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/agronomy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/power-water-machines/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/power-water-machines/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/power-water-machines/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/power-water-machines/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/power-water-machines/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/ai-assistant/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/ai-assistant/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/ai-assistant/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/ai-assistant/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/ai-assistant/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/reports-and-export/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/reports-and-export/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/reports-and-export/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/reports-and-export/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/reports-and-export/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/technical-documents/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/technical-documents/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/technical-documents/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/technical-documents/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/technical-documents/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/file-formats/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/file-formats/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/file-formats/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/file-formats/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/file-formats/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/privacy-and-network/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/privacy-and-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/privacy-and-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/privacy-and-network/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/privacy-and-network/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/languages-and-site/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/languages-and-site/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/languages-and-site/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/languages-and-site/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/languages-and-site/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/architecture/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/architecture/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/architecture/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/architecture/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/architecture/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/development/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/development/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/development/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/development/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/development/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/limitations/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/limitations/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/limitations/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/limitations/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/limitations/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/references/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/references/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/references/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/references/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/references/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/manual/licence/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/licence/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/licence/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/licence/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/licence/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/getting-started/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/getting-started/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/getting-started/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/getting-started/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/getting-started/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/workflow/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/workflow/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/workflow/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/workflow/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/workflow/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/interface/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/interface/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/interface/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/interface/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/interface/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/drawing/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/drawing/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/drawing/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/drawing/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/drawing/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/hydraulic-network/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/hydraulic-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/hydraulic-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/hydraulic-network/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/hydraulic-network/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/catalogue/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/catalogue/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/catalogue/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/catalogue/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/catalogue/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/terrain/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/terrain/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/terrain/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/terrain/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/terrain/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/calculation/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/calculation/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/calculation/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/calculation/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/calculation/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/agronomy/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/agronomy/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/agronomy/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/agronomy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/agronomy/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/power-water-machines/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/power-water-machines/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/power-water-machines/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/power-water-machines/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/power-water-machines/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/ai-assistant/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/ai-assistant/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/ai-assistant/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/ai-assistant/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/ai-assistant/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/reports-and-export/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/reports-and-export/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/reports-and-export/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/reports-and-export/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/reports-and-export/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/technical-documents/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/technical-documents/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/technical-documents/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/technical-documents/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/technical-documents/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/file-formats/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/file-formats/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/file-formats/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/file-formats/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/file-formats/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/privacy-and-network/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/privacy-and-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/privacy-and-network/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/privacy-and-network/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/privacy-and-network/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/languages-and-site/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/languages-and-site/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/languages-and-site/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/languages-and-site/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/languages-and-site/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/architecture/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/architecture/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/architecture/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/architecture/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/architecture/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/development/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/development/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/development/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/development/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/development/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/limitations/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/limitations/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/limitations/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/limitations/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/limitations/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/references/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/references/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/references/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/references/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/references/"/>
+  </url>
+  <url>
+    <loc>https://opencadirrigation.com/pt/manual/licence/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/licence/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://opencadirrigation.com/pt/manual/licence/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://opencadirrigation.com/pt/manual/licence/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://opencadirrigation.com/manual/licence/"/>
   </url>
 </urlset>
