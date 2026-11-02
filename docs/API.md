@@ -31,7 +31,8 @@ import 'package:opencadirrigation/core/api.dart';
 ```
 
 `lib/core/api.dart` exports every library of `lib/core` except the internals of the PDF text shaping (`io/fonts/*` but
-`pdf_fonts.dart`) and the sparse matrix solver (`hydraulics/sparse_solver.dart`); `test/core/api_exports_test.dart` fails
+`pdf_fonts.dart`), the sparse matrix solver (`hydraulics/sparse_solver.dart`) and the tables of the East Asian code
+pages (`io/codepages_cjk_data.dart`, loaded on demand by `codepages.dart`); `test/core/api_exports_test.dart` fails
 when a library is missing from it. Importing the individual libraries (`core/model/project.dart`,
 `core/design/designer.dart`, …) works as well and is what the app does. The engine does no input or output of its own:
 readers take strings or bytes, writers return them, and the caller decides where they come from and go.
