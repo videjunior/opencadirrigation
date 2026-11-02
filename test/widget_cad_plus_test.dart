@@ -12,6 +12,7 @@ import 'package:opencadirrigation/app/tools/insert_block_tool.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/blocks_dialogs.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/cad_plus_dialogs.dart';
+import 'package:opencadirrigation/app/widgets/layout_mode.dart';
 import 'package:opencadirrigation/core/model/blocks.dart';
 import 'package:opencadirrigation/core/model/dim_style.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
@@ -58,6 +59,12 @@ void main() {
 
   testWidgets('a double click on a text edits it in place: Enter keeps it (one undo step), Esc leaves it', (tester) async {
     final c = await pumpShell(tester);
+    // a desktop with a mouse from the start: the layout follows the pointer
+    // (UI-06) and the test platform counts as a touch screen until the first
+    // click, so that click would shrink the palette and move the drawing
+    // under the second one
+    lastPointerKind.value = PointerDeviceKind.mouse;
+    addTearDown(() => lastPointerKind.value = null);
     final t = TextEntity(id: c.project.newId(), position: const Pt(20, 0), text: 'Pump', height: 2);
     c.addEntity(t);
     await settle(tester, 1);
