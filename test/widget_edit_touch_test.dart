@@ -110,6 +110,77 @@ void main() {
     expect(c.selection, {items[0].id, items[1].id});
   });
 
+  testWidgets('a finger double tap 15 px apart ends a polyline instead of adding a vertex (CAD-34)', (tester) async {
+    final c = await pumpShell(tester);
+    c.setTool(ToolId.polyline);
+    await settle(tester, 1);
+    for (final p in [Pt.zero, const Pt(10, 0), const Pt(20, 0)]) {
+      await tap(tester, c, p);
+    }
+    // 1.5 m = 15 px at 10 px/m from the last tap
+    await tap(tester, c, const Pt(21.5, 0));
+    final pl = c.project.entities.whereType<PolylineEntity>().single;
+    expect(pl.points, [Pt.zero, const Pt(10, 0), const Pt(20, 0)]);
+  });
+
+  testWidgets('a right click opens the menu of the drawing; a right drag pans (CAD-34)', (tester) async {
+    final c = await pumpShell(tester);
+    final items = addItems(c);
+    c.select([items[0].id]);
+    await settle(tester, 1);
+    final at = global(tester, c, const Pt(30, 10));
+    var g = await tester.startGesture(at, kind: PointerDeviceKind.mouse, buttons: kSecondaryMouseButton);
+    await g.up();
+    await settle(tester, 2);
+    expect(find.byKey(const Key('ctx_delete')), findsOneWidget);
+    expect(find.byKey(const Key('ctx_repeat')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ctx_delete')));
+    await settle(tester, 2);
+    expect(c.project.entities.length, 2);
+    // a right drag pans and opens nothing
+    final center = c.camera.center;
+    g = await tester.startGesture(at, kind: PointerDeviceKind.mouse, buttons: kSecondaryMouseButton);
+    for (var i = 1; i <= 4; i++) {
+      await g.moveTo(at + Offset(15.0 * i, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await g.up();
+    await settle(tester, 2);
+    expect(c.camera.center, isNot(center));
+    expect(find.byKey(const Key('ctx_zoomAll')), findsNothing);
+  });
+
+  testWidgets('a pen touching with its side button pressed opens the menu (CAD-34)', (tester) async {
+    final c = await pumpShell(tester);
+    c.setTool(ToolId.polyline);
+    await settle(tester, 1);
+    final g = await tester.startGesture(global(tester, c, const Pt(5, 5)), kind: PointerDeviceKind.stylus, buttons: kPrimaryButton | kPrimaryStylusButton);
+    await g.up();
+    await settle(tester, 2);
+    expect(find.byKey(const Key('ctx_leave')), findsOneWidget, reason: 'nothing drawn yet: back to selecting');
+    await tester.tap(find.byKey(const Key('ctx_leave')));
+    await settle(tester, 2);
+    expect(c.activeTool, ToolId.select);
+    expect(c.project.entities, isEmpty, reason: 'the side button drew no vertex');
+  });
+
+  testWidgets('a finger held still opens the menu: Finish ends the polyline in progress (CAD-34)', (tester) async {
+    final c = await pumpShell(tester);
+    c.setTool(ToolId.polyline);
+    await settle(tester, 1);
+    await tap(tester, c, Pt.zero);
+    await tap(tester, c, const Pt(10, 0));
+    final g = await tester.startGesture(global(tester, c, const Pt(10, 8)), kind: PointerDeviceKind.touch);
+    await tester.pump(const Duration(milliseconds: 650));
+    await g.up();
+    await settle(tester, 2);
+    expect(find.byKey(const Key('ctx_finish')), findsOneWidget);
+    expect(find.byKey(const Key('ctx_undoPoint')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ctx_finish')));
+    await settle(tester, 2);
+    expect(c.project.entities.whereType<PolylineEntity>().single.points, [Pt.zero, const Pt(10, 0)], reason: 'the held finger added no vertex');
+  });
+
   testWidgets('the phone shows the add-to-selection button with the tools that use it (CAD-17)', (tester) async {
     final c = await pumpShell(tester, size: const Size(390, 844));
     expect(find.byKey(const Key('mobile_add_select')), findsOneWidget);

@@ -54,4 +54,7 @@ const coverageEdt = <String, String>{
   'panel:tools.measureMode': 'tool:measure',
   'panel:tools.measureResult': 'tool:measure',
   'panel:tools.measureCopy': 'tool:measure',
+  // ---- the menu of the drawing: right button, pen side button, finger held (CAD-34)
+  'panel:canvas.contextMenu': 'tool:run_command',
+  'panel:canvas.contextMenu.zoomSelection': 'tool:zoom_to',
 };

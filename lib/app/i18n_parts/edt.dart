@@ -186,4 +186,10 @@ const _edt = <String, (String, String, String)>{
     'Type D (distance), M (several points) or A (area) to change the mode; Enter ends the modes of several points',
     'Escriba D (distancia), M (varios puntos) o A (área) para cambiar el modo; Intro termina los modos de varios puntos',
   ),
+  // ---- the menu of the drawing (CAD-34)
+  'ctx.undoPoint': ('Desfazer o último ponto', 'Take back the last point', 'Deshacer el último punto'),
+  'ctx.leaveTool': ('Voltar a selecionar', 'Back to selecting', 'Volver a seleccionar'),
+  'ctx.repeat': ('Repetir: {tool}', 'Repeat: {tool}', 'Repetir: {tool}'),
+  'ctx.zoomSelection': ('Zoom na seleção', 'Zoom to the selection', 'Zoom a la selección'),
+  'ctx.deselect': ('Limpar a seleção', 'Clear the selection', 'Quitar la selección'),
 };
