@@ -1422,7 +1422,7 @@
   "file.examples": "Beispiele",
   "help.welcome": "Willkommen und Beispielgalerie…",
   "welcome.title": "Willkommen bei OpenCADIrrigation",
-  "welcome.body": "CAD für die Auslegung von Druckbewässerungsanlagen, direkt im Browser. Beginnen Sie mit einem fertigen Beispiel oder mit dem interaktiven Tutorial: Es beginnt damit, Ihre Fläche auf der Satellitenkarte zu finden und das Gelände aus dem Internet zu laden, und führt dann in 76 kurzen Schritten weiter, in denen Sie selbst navigieren, zeichnen, das Netz aufbauen und es auslegen; jeder Schritt erkennt, wenn Sie ihn erledigt haben, und geht weiter. Es dauert etwa 20 Minuten und kann jederzeit übersprungen werden (Hilfe → Interaktives Tutorial öffnet es wieder).",
+  "welcome.body": "CAD für die Auslegung von Druckbewässerungsanlagen, direkt im Browser. Beginnen Sie mit einem fertigen Beispiel oder mit dem interaktiven Tutorial: Es beginnt damit, Ihre Fläche auf der Satellitenkarte zu finden und das Gelände aus dem Internet zu laden, und führt dann in 80 kurzen Schritten weiter, in denen Sie selbst navigieren, zeichnen, das Netz aufbauen und es auslegen; jeder Schritt erkennt, wenn Sie ihn erledigt haben, und geht weiter. Es dauert etwa 20 Minuten und kann jederzeit übersprungen werden (Hilfe → Interaktives Tutorial öffnet es wieder).",
   "welcome.examples": "Mit einem Beispiel beginnen",
   "welcome.examplesHint": "Jedes Projekt öffnet sich bereit zur Auslegung: F5 oder ▶ drücken und Zonen, Drücke, Rohrgrößen und Stückliste sehen. Datei → Beispiele öffnet jedes davon erneut.",
   "welcome.tutorial": "Tutorial starten",

@@ -6,7 +6,7 @@
    no OpenStreetMap, ou coordenadas; o projeto é georreferenciado ali, no mapa de satélite) e **se
    você quer projetar com o assistente de IA**.
 2. Desenhe a área, deixe o assistente projetar ou abra um exemplo pronto: Ajuda → Boas-vindas e
-   galeria de exemplos (com o **tutorial interativo**, 76 passos) ou Arquivo → Exemplos.
+   galeria de exemplos (com o **tutorial interativo**, 80 passos) ou Arquivo → Exemplos.
 3. Pressione **F5** (ou o botão ▶ no canto superior direito). O cálculo roda fora da thread da
    interface; um cartão de progresso mostra a etapa atual (zona a zona, linha principal, lavagem,
    golpe de aríete, materiais). A tela continua utilizável durante o cálculo.

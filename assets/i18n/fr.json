@@ -1422,7 +1422,7 @@
   "file.examples": "Exemples",
   "help.welcome": "Bienvenue et galerie d’exemples…",
   "welcome.title": "Bienvenue dans OpenCADIrrigation",
-  "welcome.body": "CAO pour le projet d’irrigation sous pression, directement dans le navigateur. Partez d’un exemple prêt ou suivez le tutoriel interactif : il commence par localiser votre parcelle sur la carte satellite et télécharger le relief depuis Internet, puis continue en 76 courtes étapes où vous naviguez, dessinez, montez le réseau et le dimensionnez vous-même ; chaque étape reconnaît quand vous l’avez accomplie et passe à la suivante. Cela prend environ 20 minutes et peut être passé à tout moment (Aide → Tutoriel interactif le rouvre).",
+  "welcome.body": "CAO pour le projet d’irrigation sous pression, directement dans le navigateur. Partez d’un exemple prêt ou suivez le tutoriel interactif : il commence par localiser votre parcelle sur la carte satellite et télécharger le relief depuis Internet, puis continue en 80 courtes étapes où vous naviguez, dessinez, montez le réseau et le dimensionnez vous-même ; chaque étape reconnaît quand vous l’avez accomplie et passe à la suivante. Cela prend environ 20 minutes et peut être passé à tout moment (Aide → Tutoriel interactif le rouvre).",
   "welcome.examples": "Partir d’un exemple",
   "welcome.examplesHint": "Chaque projet s’ouvre prêt à calculer : appuyez sur F5 ou ▶ et voyez les zones, pressions, diamètres et la nomenclature. Fichier → Exemples rouvre n’importe lequel.",
   "welcome.tutorial": "Démarrer le tutoriel",

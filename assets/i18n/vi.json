@@ -1422,7 +1422,7 @@
   "file.examples": "Ví dụ",
   "help.welcome": "Chào mừng và thư viện ví dụ…",
   "welcome.title": "Chào mừng đến với OpenCADIrrigation",
-  "welcome.body": "CAD thiết kế tưới có áp, ngay trong trình duyệt. Bắt đầu từ một ví dụ có sẵn hoặc làm theo hướng dẫn tương tác: hướng dẫn bắt đầu bằng việc xác định vị trí khu đất của bạn trên bản đồ vệ tinh và tải địa hình từ internet, sau đó tiếp tục với 76 bước ngắn, trong đó bạn tự điều hướng, vẽ, dựng mạng lưới và thiết kế; mỗi bước tự nhận biết khi bạn hoàn thành và chuyển sang bước tiếp theo. Mất khoảng 20 phút và có thể bỏ qua bất cứ lúc nào (mở lại bằng Trợ giúp → Hướng dẫn tương tác).",
+  "welcome.body": "CAD thiết kế tưới có áp, ngay trong trình duyệt. Bắt đầu từ một ví dụ có sẵn hoặc làm theo hướng dẫn tương tác: hướng dẫn bắt đầu bằng việc xác định vị trí khu đất của bạn trên bản đồ vệ tinh và tải địa hình từ internet, sau đó tiếp tục với 80 bước ngắn, trong đó bạn tự điều hướng, vẽ, dựng mạng lưới và thiết kế; mỗi bước tự nhận biết khi bạn hoàn thành và chuyển sang bước tiếp theo. Mất khoảng 20 phút và có thể bỏ qua bất cứ lúc nào (mở lại bằng Trợ giúp → Hướng dẫn tương tác).",
   "welcome.examples": "Bắt đầu từ ví dụ",
   "welcome.examplesHint": "Mỗi dự án mở ra sẵn sàng để thiết kế: nhấn F5 hoặc ▶ và xem khu vực, áp suất, cỡ ống và bảng kê vật tư. Tệp → Ví dụ mở lại bất kỳ ví dụ nào.",
   "welcome.tutorial": "Bắt đầu hướng dẫn",

@@ -1422,7 +1422,7 @@
   "file.examples": "Contoh",
   "help.welcome": "Selamat datang dan galeri contoh…",
   "welcome.title": "Selamat datang di OpenCADIrrigation",
-  "welcome.body": "CAD untuk desain irigasi bertekanan, langsung di browser. Mulai dari contoh yang sudah jadi atau ikuti tutorial interaktif: tutorial dimulai dengan menemukan lokasi lahan Anda di peta satelit dan mengunduh medan dari internet, lalu berlanjut dalam 76 langkah singkat yang membuat Anda sendiri bernavigasi, menggambar, membangun jaringan, dan mendesainnya; setiap langkah mengenali saat Anda menyelesaikannya dan berlanjut sendiri. Butuh sekitar 20 menit dan dapat dilewati kapan saja (Bantuan → Tutorial interaktif membukanya kembali).",
+  "welcome.body": "CAD untuk desain irigasi bertekanan, langsung di browser. Mulai dari contoh yang sudah jadi atau ikuti tutorial interaktif: tutorial dimulai dengan menemukan lokasi lahan Anda di peta satelit dan mengunduh medan dari internet, lalu berlanjut dalam 80 langkah singkat yang membuat Anda sendiri bernavigasi, menggambar, membangun jaringan, dan mendesainnya; setiap langkah mengenali saat Anda menyelesaikannya dan berlanjut sendiri. Butuh sekitar 20 menit dan dapat dilewati kapan saja (Bantuan → Tutorial interaktif membukanya kembali).",
   "welcome.examples": "Mulai dari contoh",
   "welcome.examplesHint": "Setiap proyek terbuka siap didesain: tekan F5 atau ▶ dan lihat zona, tekanan, ukuran pipa, dan daftar material. Berkas → Contoh membuka kembali salah satunya.",
   "welcome.tutorial": "Mulai tutorial",

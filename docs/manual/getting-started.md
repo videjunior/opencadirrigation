@@ -6,7 +6,7 @@
    found on OpenStreetMap, or coordinates; the project is georeferenced there, on the satellite map)
    and **whether to design with the AI assistant**.
 2. Draw the area, let the assistant design it, or open a ready example: Help → Welcome and example
-   gallery (with the **interactive tutorial**, 76 steps) or File → Examples.
+   gallery (with the **interactive tutorial**, 80 steps) or File → Examples.
 3. Press **F5** (or the ▶ button at the top right). The calculation runs off the interface thread;
    a progress card shows the current step (zone by zone, mainline, flushing, water hammer,
    materials). The screen stays usable while it runs.

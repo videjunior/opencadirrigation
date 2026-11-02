@@ -1422,7 +1422,7 @@
   "file.examples": "Örnekler",
   "help.welcome": "Hoş geldiniz ve örnek galerisi…",
   "welcome.title": "OpenCADIrrigation’a hoş geldiniz",
-  "welcome.body": "Basınçlı sulama tasarımı için CAD, doğrudan tarayıcıda. Hazır bir örnekle başlayın ya da etkileşimli eğitimi izleyin: eğitim, alanınızı uydu haritasında bulup araziyi internetten indirerek başlar, ardından gezindiğiniz, çizdiğiniz, ağı kurduğunuz ve tasarımı kendiniz yaptığınız 76 kısa adımla devam eder; her adım tamamladığınızı anlar ve kendiliğinden ilerler. Yaklaşık 20 dakika sürer ve istediğiniz an atlanabilir (Yardım → Etkileşimli eğitim ile yeniden açılır).",
+  "welcome.body": "Basınçlı sulama tasarımı için CAD, doğrudan tarayıcıda. Hazır bir örnekle başlayın ya da etkileşimli eğitimi izleyin: eğitim, alanınızı uydu haritasında bulup araziyi internetten indirerek başlar, ardından gezindiğiniz, çizdiğiniz, ağı kurduğunuz ve tasarımı kendiniz yaptığınız 80 kısa adımla devam eder; her adım tamamladığınızı anlar ve kendiliğinden ilerler. Yaklaşık 20 dakika sürer ve istediğiniz an atlanabilir (Yardım → Etkileşimli eğitim ile yeniden açılır).",
   "welcome.examples": "Bir örnekle başlayın",
   "welcome.examplesHint": "Her proje tasarlanmaya hazır açılır: F5 veya ▶’ye basın; bölgeleri, basınçları, boru çaplarını ve malzeme listesini görün. Dosya → Örnekler herhangi birini yeniden açar.",
   "welcome.tutorial": "Eğitimi başlat",

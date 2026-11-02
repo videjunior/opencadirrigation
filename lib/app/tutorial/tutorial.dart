@@ -1567,6 +1567,48 @@ List<TutorialStep> buildTutorialSteps(String lang) {
         'Archivo → Ejemplos abre 15 proyectos listos para diseñar: huerto, jardín, campo de fútbol, hortalizas en goteo, pivote central y sectorial, lateral de avance, invernadero, vivero, cafetal en curvas de nivel, banano, caña con goteo subterráneo, goteo por gravedad, pastura y hoyo de golf. Ayuda → Bienvenida y galería de ejemplos muestra la misma galería con descripciones. Archivo → Proyectos recientes reabre lo guardado en este navegador, y Ayuda → Acerca de muestra la versión del programa.',
       ),
     ),
+    // 1.6.0 SIT: the AI assistant (SIT-23); the steps explain, nothing goes to any AI service
+    TutorialStep(
+      id: 'aiOpen',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Abrir o assistente de IA', 'Open the AI assistant', 'Abrir el asistente de IA'),
+      target: TutorialTargets.statusBar,
+      body: t(
+        'O assistente de IA é opcional e trabalha no projeto aberto com as mesmas ferramentas dos menus: distribui aspersores e gotejamento, traça tubos, dimensiona, corrige avisos e escreve o memorial. Abra-o em Projeto → Assistente de IA, pelo comando AI, pelo botão do robô na barra de status ou pelo endereço ?ai=1; o painel fica ao lado do desenho (embaixo, no celular). Nada é enviado antes de você clicar em Enviar.',
+        'The AI assistant is optional and works on the open project with the same tools as the menus: it lays out sprinklers and drip, routes pipes, sizes, fixes warnings and writes the report. Open it with Design → AI assistant, the AI command, the robot button in the status bar or the address ?ai=1; the panel sits beside the drawing (at the bottom on a phone). Nothing is sent before you press Send.',
+        'El asistente de IA es opcional y trabaja en el proyecto abierto con las mismas herramientas que los menús: distribuye aspersores y goteo, traza tuberías, dimensiona, corrige avisos y redacta la memoria. Ábralo en Diseño → Asistente de IA, con el comando AI, con el botón del robot en la barra de estado o con la dirección ?ai=1; el panel queda junto al dibujo (abajo, en el móvil). No se envía nada antes de pulsar Enviar.',
+      ),
+    ),
+    TutorialStep(
+      id: 'aiKey',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Chave, modelo e modo', 'Key, model and mode', 'Clave, modelo y modo'),
+      body: t(
+        'Nas configurações do assistente, escolha um modelo Claude (Anthropic) ou GPT (OpenAI) e cole a sua própria chave de API: ela fica só na memória, a não ser que você marque Lembrar a chave neste dispositivo, e cada pedido vai direto do navegador ao provedor, que cobra o uso na sua conta. O modo diz o que ele pode fazer: somente leitura, planejar primeiro, perguntar antes de cada alteração (o padrão) ou aplicar as alterações automaticamente; um limite de passos e um teto de gasto encerram uma tarefa longa.',
+        'In the assistant\'s settings, choose a Claude (Anthropic) or GPT (OpenAI) model and paste your own API key: it stays in memory only, unless you tick Remember the key on this device, and every request goes straight from the browser to the provider, which bills your account. The mode says what it may do: read only, plan first, ask before each change (the default) or apply changes automatically; a step limit and a spending cap end a long task.',
+        'En los ajustes del asistente, elija un modelo Claude (Anthropic) o GPT (OpenAI) y pegue su propia clave de API: queda solo en la memoria, a menos que marque Recordar la clave en este dispositivo, y cada petición va directamente del navegador al proveedor, que factura el uso en su cuenta. El modo indica lo que puede hacer: solo lectura, planificar primero, preguntar antes de cada cambio (por defecto) o aplicar los cambios automáticamente; un límite de pasos y un tope de gasto terminan una tarea larga.',
+      ),
+    ),
+    TutorialStep(
+      id: 'aiAsk',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Pedir, aprovar e desfazer', 'Ask, approve and undo', 'Pedir, aprobar y deshacer'),
+      body: t(
+        'Escreva o que você quer com as suas palavras, por exemplo "distribua os aspersores do gramado e dimensione". Ele mostra o plano e pede aprovação a cada alteração (Aplicar ou Pular); você pode escrever enquanto ele trabalha e pará-lo a qualquer momento. Cada resposta se desfaz com um clique, e cada mensagem tem Voltar a este ponto. Um modelo pode errar: confira o trabalho dele como o de um colega.',
+        'Write what you want in your own words, for example "lay out the lawn heads and size the zones". It shows its plan and asks for approval of each change (Apply or Skip); you can type while it works and stop it at any time. Every answer is undone in one click, and every message has Rewind to here. A model can be wrong: check its work as you would a colleague\'s.',
+        'Escriba lo que quiere con sus propias palabras, por ejemplo "distribuye los aspersores del césped y dimensiona". Muestra el plan y pide aprobación para cada cambio (Aplicar u Omitir); puede escribir mientras trabaja y detenerlo en cualquier momento. Cada respuesta se deshace con un clic, y cada mensaje tiene Volver a este punto. Un modelo puede equivocarse: revise su trabajo como el de un colega.',
+      ),
+    ),
+    TutorialStep(
+      id: 'aiReview',
+      chapter: t('Assistente de IA', 'AI assistant', 'Asistente de IA'),
+      title: t('Revisão, marcas e voz', 'Review, marks and voice', 'Revisión, marcas y voz'),
+      body: t(
+        '/review faz uma revisão do projeto inteiro sem alterar nada e responde com uma lista de verificação. Marcar ponto e Marcar linha mostram ao assistente onde você quer algo no desenho; o microfone dita a mensagem; arquivos, desenhos, folhas de dados em PDF e fotos de campo com GPS podem ser anexados, colados ou soltos no painel. As conversas ficam neste navegador (as 12 mais recentes de cada projeto) e nunca vão no arquivo do projeto.',
+        '/review reviews the whole design without changing anything and answers with a checklist. Mark a point and Mark a line show the assistant where you want something on the drawing; the microphone dictates the message; files, drawings, PDF data sheets and field photos with GPS can be attached, pasted or dropped on the panel. Conversations stay in this browser (the 12 most recent of each project) and never go into the project file.',
+        '/review revisa todo el diseño sin cambiar nada y responde con una lista de verificación. Marcar punto y Marcar línea muestran al asistente dónde quiere algo en el dibujo; el micrófono dicta el mensaje; archivos, dibujos, fichas técnicas en PDF y fotos de campo con GPS pueden adjuntarse, pegarse o soltarse en el panel. Las conversaciones quedan en este navegador (las 12 más recientes de cada proyecto) y nunca van al archivo del proyecto.',
+      ),
+    ),
     TutorialStep(
       id: 'shortcuts',
       chapter: chFiles,
