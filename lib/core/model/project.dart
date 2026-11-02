@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import '../hydraulics/friction.dart';
 import '../io/geo.dart';
 import '../units.dart';
+import 'agronomy_plan.dart';
 import 'blocks.dart';
 import 'catalog.dart';
 import 'currency.dart';
@@ -415,7 +416,10 @@ class Project {
     BlockLibrary? blocks,
     this.aiNotes = '',
     int nextId = 1,
+    // 1.6.0 AGR
+    AgronomyPlan? agronomy,
   }) : meta = meta ?? ProjectMeta(),
+       agronomy = agronomy ?? AgronomyPlan(),
        proposal = proposal ?? ProposalSettings(),
        scenarios = scenarios ?? [],
        labelRules = labelRules ?? [],
@@ -482,6 +486,10 @@ class Project {
   /// Monthly climate normals of the site (Design → Site climate), for the
   /// crop water requirement and solar pumping.
   SiteClimate? climate;
+
+  // 1.6.0 AGR: the user's crops, the programme settings, the water balance
+  // and fertigation of the areas, the field evaluations
+  AgronomyPlan agronomy;
   int _nextId;
 
   static List<Layer> defaultLayers() => [for (final n in Layers.all) Layer(name: n, color: Layers.defaultColors[n] ?? 0xFFFFFFFF)];
@@ -720,6 +728,8 @@ class Project {
     if (labelRules.isNotEmpty) 'labelRules': [for (final r in labelRules) r.toJson()],
     if (blocks.isNotEmpty) 'blocks': blocks.toJson(),
     if (aiNotes.isNotEmpty) 'aiNotes': aiNotes,
+    // 1.6.0 AGR
+    if (!agronomy.isDefault) 'agronomy': agronomy.toJson(),
     'nextId': _nextId,
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
     if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
@@ -826,6 +836,13 @@ class Project {
       blocks = BlockLibrary();
       rep.skip('blocks');
     }
+    // 1.6.0 AGR
+    AgronomyPlan? agronomy;
+    try {
+      agronomy = AgronomyPlan.fromJson(object('agronomy'), report: rep);
+    } catch (_) {
+      rep.skip('agronomy');
+    }
     final p = Project(
       meta: ProjectMeta.fromJson(object('meta'), report: rep),
       params: params,
@@ -840,12 +857,13 @@ class Project {
       blocks: blocks,
       aiNotes: j['aiNotes'] is String ? j['aiNotes'] as String : '',
       nextId: next,
+      agronomy: agronomy,
     )..currentLayer = j['currentLayer'] is String ? j['currentLayer'] as String : Layers.drawing;
     p.unreadable.addAll(aside);
     _companionKeys.forEach(j.containsKey);
     var unread = j.unread;
     // sections that failed as a whole stay in the file as they were
-    for (final k in ['proposal', 'climate', 'blocks']) {
+    for (final k in ['proposal', 'climate', 'blocks', 'agronomy']) {
       if (rep.skipped.containsKey(k) && migrated[k] != null) (unread ??= {})[k] = migrated[k];
     }
     p.extra = unread;

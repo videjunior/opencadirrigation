@@ -5,8 +5,108 @@
 /// service or typed in, with their provenance.
 library;
 
+import 'dart:math' as math;
+
 import '../design/climate.dart' show minRelativeHumidityPct;
 import '../design/irrigation_requirement.dart';
+
+// 1.6.0 AGR
+
+/// Daily ETo and rain of the site (the days of a weather station file or of
+/// a download), kept for the daily soil water balance (FAO-56 chapter 8):
+/// [etoMm] and [rainMm] hold one value a day from [start] (UTC midnight),
+/// NaN where the day has none. At most [maxDays] are kept (the latest).
+class DailyClimate {
+  factory DailyClimate({required DateTime start, required List<double> etoMm, required List<double> rainMm, String source = ''}) {
+    final n = math.min(etoMm.length, rainMm.length);
+    final cut = math.max(0, n - maxDays);
+    final first = DateTime.utc(start.year, start.month, start.day).add(Duration(days: cut));
+    return DailyClimate._(first, List.unmodifiable(etoMm.sublist(cut, n)), List.unmodifiable(rainMm.sublist(cut, n)), source);
+  }
+  DailyClimate._(this.start, this.etoMm, this.rainMm, this.source);
+
+  /// About forty years.
+  static const maxDays = 14700;
+  final DateTime start;
+  final List<double> etoMm;
+  final List<double> rainMm;
+
+  /// Where the days come from (`inmet`, `openMeteo`, `nasaPower`…).
+  final String source;
+
+  int get length => math.min(etoMm.length, rainMm.length);
+  DateTime dateAt(int i) => start.add(Duration(days: i));
+
+  /// From days in any order (date, ETo, rain; null = none): one value a day
+  /// from the first to the last date, the gaps NaN.
+  static DailyClimate? fromDays(Iterable<(DateTime, double?, double?)> days, {String source = ''}) {
+    final byDay = <int, (double?, double?)>{};
+    DateTime? first, last;
+    for (final (d, e, r) in days) {
+      final u = DateTime.utc(d.year, d.month, d.day);
+      byDay[u.millisecondsSinceEpoch ~/ 86400000] = (e, r);
+      if (first == null || u.isBefore(first)) first = u;
+      if (last == null || u.isAfter(last)) last = u;
+    }
+    if (first == null || last == null) return null;
+    final n = last.difference(first).inDays + 1;
+    final eto = List<double>.filled(n, double.nan), rain = List<double>.filled(n, double.nan);
+    final k0 = first.millisecondsSinceEpoch ~/ 86400000;
+    byDay.forEach((k, v) {
+      final e = v.$1, r = v.$2;
+      if (e != null && e.isFinite && e >= 0) eto[k - k0] = e;
+      if (r != null && r.isFinite && r >= 0) rain[k - k0] = r;
+    });
+    return DailyClimate(start: first, etoMm: eto, rainMm: rain, source: source);
+  }
+
+  /// Years of the series with at least 90 % of their days holding ETo and
+  /// rain.
+  List<int> get completeYears {
+    final count = <int, int>{};
+    for (var i = 0; i < length; i++) {
+      if (etoMm[i].isFinite && rainMm[i].isFinite) count.update(dateAt(i).year, (v) => v + 1, ifAbsent: () => 1);
+    }
+    return [
+      for (final e in count.entries)
+        if (e.value >= 0.9 * (DateTime.utc(e.key + 1).difference(DateTime.utc(e.key)).inDays)) e.key,
+    ]..sort();
+  }
+
+  /// The days of [year] and of the next year (a season planted late in the
+  /// year runs into it), as (date, ETo, rain); a missing ETo takes the
+  /// month's value of [fill] (else 0) and missing rain is none. Empty when
+  /// the series has no day of [year].
+  List<(DateTime, double, double)> yearDays(int year, {List<double>? fill}) {
+    final out = <(DateTime, double, double)>[];
+    final from = DateTime.utc(year), to = DateTime.utc(year + 2);
+    for (var i = 0; i < length; i++) {
+      final d = dateAt(i);
+      if (d.isBefore(from) || !d.isBefore(to)) continue;
+      final e = etoMm[i].isFinite ? etoMm[i] : (fill != null && fill.length == 12 ? fill[d.month - 1] : 0.0);
+      out.add((d, e, rainMm[i].isFinite ? rainMm[i] : 0.0));
+    }
+    return out.isNotEmpty && out.first.$1.year == year ? out : const [];
+  }
+
+  static double? _round(double v, int k) => v.isFinite ? double.parse(v.toStringAsFixed(k)) : null;
+
+  Map<String, dynamic> toJson() => {
+    'd0': '${start.year.toString().padLeft(4, '0')}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}',
+    'eto': [for (var i = 0; i < length; i++) _round(etoMm[i], 2)],
+    'p': [for (var i = 0; i < length; i++) _round(rainMm[i], 1)],
+    if (source.isNotEmpty) 'src': source,
+  };
+
+  static DailyClimate? fromJson(Object? v) {
+    if (v is! Map) return null;
+    final d0 = DateTime.tryParse('${v['d0']}');
+    final eto = v['eto'], rain = v['p'];
+    if (d0 == null || eto is! List || rain is! List) return null;
+    List<double> values(List l) => [for (final x in l) x is num && x.isFinite ? x.toDouble() : double.nan];
+    return DailyClimate(start: d0, etoMm: values(eto), rainMm: values(rain), source: v['src'] is String ? v['src'] as String : '');
+  }
+}
 
 class SiteClimate {
   SiteClimate({
@@ -23,6 +123,7 @@ class SiteClimate {
     this.longitudeDeg = 0,
     this.retrieved = '',
     this.attribution = '',
+    this.daily,
   });
 
   /// Twelve monthly values, January first.
@@ -60,6 +161,10 @@ class SiteClimate {
   /// Credit the data service asks for.
   final String attribution;
 
+  /// 1.6.0 AGR: the daily ETo and rain behind the normals, for the daily
+  /// soil water balance (null when typed by hand).
+  final DailyClimate? daily;
+
   ClimateNormals get normals => ClimateNormals(etoMmDay: etoMmDay, rainMm: rainMm, dependableRainMm: dependableRainMm);
 
   SiteClimate copyWith({
@@ -84,6 +189,7 @@ class SiteClimate {
     longitudeDeg: longitudeDeg,
     retrieved: retrieved,
     attribution: attribution,
+    daily: daily,
   );
 
   Map<String, dynamic> toJson() => {
@@ -100,6 +206,7 @@ class SiteClimate {
     'lon': longitudeDeg,
     if (retrieved.isNotEmpty) 'at': retrieved,
     if (attribution.isNotEmpty) 'credit': attribution,
+    if (daily != null) 'daily': daily!.toJson(),
   };
 
   static List<double>? _months(Object? v) {
@@ -125,6 +232,7 @@ class SiteClimate {
       longitudeDeg: (j['lon'] as num?)?.toDouble() ?? 0,
       retrieved: j['at'] as String? ?? '',
       attribution: j['credit'] as String? ?? '',
+      daily: DailyClimate.fromJson(j['daily']),
     );
   }
 }
