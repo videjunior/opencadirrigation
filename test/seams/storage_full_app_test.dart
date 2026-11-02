@@ -115,6 +115,8 @@ void main() {
     expect(c.storeProblem, c.t('store.err.full'));
     expect(c.unsavedInBrowser, isTrue);
     expect(find.byKey(const Key('store_problem_chip')), findsOneWidget, reason: 'the status bar says so until a copy is kept');
+    // (the message on screen, "Project loaded" of the example, slides away first)
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(c.t('store.err.full')), findsWidgets, reason: 'and the message said it once');
     // what the browser keeps: the last copy that fitted (the recovery offers it), the other project's work
     expect(entitiesKept(await store.load(uid)), keptBefore);
@@ -129,8 +131,11 @@ void main() {
     await tester.pump();
     expect(c.messageSeq, seq);
     // the message goes after its time (it would cover the status bar); the chip stays
-    await tester.pump(const Duration(seconds: 8));
-    await tester.pump(const Duration(milliseconds: 500));
+    // (frame by frame: its time runs from the end of its entrance)
+    for (var i = 0; i < 45; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(find.text(c.t('store.err.full')), findsNothing);
     expect(find.byKey(const Key('store_problem_chip')), findsOneWidget);
 
     // 4. the chip opens the storage dialog: the problem, with Save at hand
@@ -141,6 +146,7 @@ void main() {
     expect(find.byKey(const Key('storage_save_file')), findsOneWidget);
     expect(find.textContaining(c.t('storage.thisTab')), findsOneWidget, reason: 'the copy of this tab is listed');
     await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.text(c.t('close'))));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byKey(const Key('storage_problem')), findsNothing);
 
