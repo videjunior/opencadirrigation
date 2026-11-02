@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:opencadirrigation/app/canvas/painter.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
@@ -34,7 +35,7 @@ void main() {
     // the images come from one machine and run on others (CI is Linux):
     // anti-aliasing may differ in a few edge pixels, a real change does not
     final base = goldenFileComparator as LocalFileComparator;
-    goldenFileComparator = TolerantGoldenComparator(base.basedir.resolve('golden_test.dart'), tolerance: 0.01);
+    goldenFileComparator = TolerantGoldenComparator(base.basedir.resolve('golden_test.dart'), tolerance: 0.005);
   });
 
   setUp(() => setPref('lang', 'en'));
@@ -152,23 +153,41 @@ ProjectController denseProject() {
   return c;
 }
 
-/// A [LocalFileComparator] that takes an image differing from the golden in
-/// at most [tolerance] of its pixels (anti-aliasing of another platform).
+/// A [LocalFileComparator] that takes an image whose pixels differ from the
+/// golden by little (another platform's anti-aliasing moves the colour of
+/// edge pixels by a few levels) or in at most [tolerance] of the pixels.
 class TolerantGoldenComparator extends LocalFileComparator {
   TolerantGoldenComparator(super.testFile, {required this.tolerance});
 
-  /// Fraction of the pixels (0–1) allowed to differ.
+  /// Fraction of the pixels (0–1) allowed to differ by more than [levels].
   final double tolerance;
+
+  /// Difference of a channel (0–255) taken as the same colour.
+  static const levels = 24;
 
   @override
   Future<bool> compare(Uint8List imageBytes, Uri golden) async {
-    final result = await GoldenFileComparator.compareLists(imageBytes, await getGoldenBytes(golden));
-    if (result.passed || result.diffPercent <= tolerance) {
+    final goldenBytes = await getGoldenBytes(golden);
+    final result = await GoldenFileComparator.compareLists(imageBytes, goldenBytes);
+    if (result.passed || _close(imageBytes, Uint8List.fromList(goldenBytes))) {
       result.dispose();
       return true;
     }
     final error = await generateFailureOutput(result, golden, basedir);
     result.dispose();
     throw FlutterError(error);
+  }
+
+  bool _close(Uint8List a, Uint8List b) {
+    final x = img.decodePng(a), y = img.decodePng(b);
+    if (x == null || y == null || x.width != y.width || x.height != y.height) return false;
+    var off = 0;
+    for (var j = 0; j < x.height; j++) {
+      for (var i = 0; i < x.width; i++) {
+        final p = x.getPixel(i, j), q = y.getPixel(i, j);
+        if ((p.r - q.r).abs() > levels || (p.g - q.g).abs() > levels || (p.b - q.b).abs() > levels || (p.a - q.a).abs() > levels) off++;
+      }
+    }
+    return off <= tolerance * x.width * x.height;
   }
 }
