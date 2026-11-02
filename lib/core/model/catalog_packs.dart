@@ -34,14 +34,17 @@ class CatalogPack {
   String get description => meta.description;
   int get itemCount => catalog.itemCount;
 
-  /// True when every item of the pack is already in [target].
+  /// True when every item of the pack (its wires and financing codes
+  /// included) is already in [target].
   bool isMergedInto(Catalog target) =>
       catalog.pipes.every((p) => target.pipe(p.id) != null) &&
       catalog.outlets.every((o) => target.outlet(o.id) != null) &&
       catalog.tapes.every((x) => target.tape(x.id) != null) &&
       catalog.valves.every((v) => target.valve(v.id) != null) &&
       catalog.pumps.every((p) => target.pump(p.id) != null) &&
-      catalog.fittings.every((f) => target.fitting(f.id) != null);
+      catalog.fittings.every((f) => target.fitting(f.id) != null) &&
+      catalog.wires.every((w) => target.wire(w.id) != null) &&
+      catalog.finame.keys.every(target.finame.containsKey);
 
   static CatalogPack fromFile(CatalogPackFile f, {String origin = ''}) => CatalogPack(meta: f.meta, catalog: f.catalog, origin: origin);
 
@@ -50,12 +53,19 @@ class CatalogPack {
       fromFile(CatalogIo.parsePack(text, fallbackId: fallbackId ?? CatalogPackMeta.idFrom(origin.isEmpty ? 'pack' : origin.split('/').last)), origin: origin);
 }
 
-/// Adds the items of [pack] that [target] does not have yet (by id). Returns
+/// Adds the items of [pack] that [target] does not have yet (by id), with
+/// their financing codes (FINAME) when [target] has none for them. Returns
 /// the number of items added.
 int mergeCatalogPack(Catalog target, Catalog pack) {
   var n = 0;
   bool has(String id) =>
-      target.pipe(id) != null || target.outlet(id) != null || target.tape(id) != null || target.valve(id) != null || target.pump(id) != null || target.fittings.any((f) => f.id == id);
+      target.pipe(id) != null ||
+      target.outlet(id) != null ||
+      target.tape(id) != null ||
+      target.valve(id) != null ||
+      target.pump(id) != null ||
+      target.fittings.any((f) => f.id == id) ||
+      target.wire(id) != null;
   for (final p in pack.pipes) {
     if (has(p.id)) continue;
     target.pipes.add(p);
@@ -85,6 +95,14 @@ int mergeCatalogPack(Catalog target, Catalog pack) {
     if (has(f.id)) continue;
     target.fittings.add(f);
     n++;
+  }
+  for (final w in pack.wires) {
+    if (has(w.id)) continue;
+    target.wires.add(w);
+    n++;
+  }
+  for (final e in pack.finame.entries) {
+    target.finame.putIfAbsent(e.key, () => e.value);
   }
   return n;
 }

@@ -63,6 +63,30 @@ const _mod = <String, (String, String, String)>{
   // ---- a nozzle the catalogue item no longer has (MOD-15)
   'check.nozzle_missing': ('Bocal que não existe mais no item do catálogo', 'Nozzle no longer in the catalogue item', 'Boquilla que ya no existe en el elemento del catálogo'),
   'warn.nozzle_missing': ('Bocal que não existe mais no item do catálogo', 'Nozzle no longer in the catalogue item', 'Boquilla que ya no existe en el elemento del catálogo'),
+  // ---- catalogue import (MOD-06, MOD-09, MOD-10, MOD-18)
+  'cat.pnAsk.title': ('Unidade da coluna PN', 'Unit of the PN column', 'Unidad de la columna PN'),
+  'cat.pnAsk.body': (
+    '{n} linha(s) têm PN de até 25 sem unidade. Pela ISO, PN 10 é 10 bar (102 m); nos tubos de irrigação brasileiros, PN 40, 60 e 80 são metros de coluna d\'água. Como ler esses valores?',
+    '{n} row(s) have a PN of at most 25 without a unit. By ISO, PN 10 is 10 bar (102 m); Brazilian irrigation pipes give PN 40, 60 and 80 in metres of head. How should these values be read?',
+    '{n} fila(s) tienen PN de hasta 25 sin unidad. Según ISO, PN 10 es 10 bar (102 m); los tubos de riego brasileños dan PN 40, 60 y 80 en metros de columna de agua. ¿Cómo leer esos valores?',
+  ),
+  'cat.pnAsk.bar': ('Em bar', 'In bar', 'En bar'),
+  'cat.pnAsk.m': ('Em metros', 'In metres', 'En metros'),
+  'cat.importInUse': (
+    '{n} item(ns) substituído(s) estão em uso no desenho ({v}): confira diâmetros, curvas e preços.',
+    '{n} replaced item(s) are used in the drawing ({v}): check their diameters, curves and prices.',
+    '{n} elemento(s) sustituido(s) se usan en el dibujo ({v}): revise diámetros, curvas y precios.',
+  ),
+  'cat.importSkipped': (
+    '{n} linha(s) sem diâmetro, curva ou seção ficaram de fora (linhas {v}).',
+    '{n} row(s) without a diameter, curve or section were left out (rows {v}).',
+    '{n} fila(s) sin diámetro, curva o sección quedaron fuera (filas {v}).',
+  ),
+  'cat.importUnits': (
+    'Válvulas: kv = coeficiente de vazão (m³/h com 1 bar de perda), kcoef = K de K·v²/2g, k e n = a lei h = k·Q^n (Q em m³/s). Classe: ratingM em metros; pn em bar até 25 e em metros acima; uma unidade na célula (bar, psi, kPa, MPa, m) vale mais. Sem coluna id, a mesma linha importada de novo substitui o seu item, nunca outro.',
+    'Valves: kv = flow coefficient (m³/h at 1 bar of loss), kcoef = K of K·v²/2g, k and n = the law h = k·Q^n (Q in m³/s). Class: ratingM in metres; pn in bar up to 25 and in metres above; a unit in the cell (bar, psi, kPa, MPa, m) wins. Without an id column, the same row imported again replaces its own item, never another one.',
+    'Válvulas: kv = coeficiente de caudal (m³/h con 1 bar de pérdida), kcoef = K de K·v²/2g, k y n = la ley h = k·Q^n (Q en m³/s). Clase: ratingM en metros; pn en bar hasta 25 y en metros arriba; una unidad en la celda (bar, psi, kPa, MPa, m) prevalece. Sin columna id, la misma fila importada de nuevo sustituye su propio elemento, nunca otro.',
+  ),
   // ---- the motor of a pump at its duty point (MOD-16)
   'warn.pump_motor_overload': (
     'Bomba acima da potência do motor, mesmo com o fator de serviço',

@@ -5,10 +5,12 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 import '../../../core/io/catalog_io.dart';
+import '../../../core/model/catalog.dart';
 import '../../../core/model/catalog_packs.dart';
 import '../../../core/model/currency.dart';
 import '../../io/catalog_packs.dart';
@@ -226,4 +228,73 @@ Future<void> showExportCatalogPackDialog(BuildContext context, ProjectController
       },
     ),
   );
+}
+
+/// The Import of the catalogue editor (1.6.0 MOD). A manufacturer pack
+/// (`.oci.cat`, or JSON in that format) is added as in the packs dialog:
+/// existing ids are kept and the prices converted to the project currency.
+/// A CSV, text table, Excel workbook or catalogue JSON is merged by
+/// [CatalogImportResult.mergeInto] (an item without an id in the file never
+/// replaces another one), after asking how to read a PN column without
+/// units that may be in bar; the replaced items in use and the rows left out
+/// are reported.
+Future<void> importCatalogFile(BuildContext context, ProjectController c, Catalog cat, CatalogGroup tab, {required String name, required Uint8List bytes}) async {
+  final t = c.t;
+  final lower = name.toLowerCase();
+  try {
+    final text = lower.endsWith('.xlsx') ? null : utf8.decode(bytes, allowMalformed: true);
+    if (text != null && (lower.endsWith('.cat') || _isPackText(text))) {
+      final pack = CatalogPack.parse(text, origin: name);
+      final r = addCatalogPack(cat, pack, projectCurrency: c.project.params.currencyCode);
+      c.notify(
+        [
+          t('cat.packAdded', {'n': '${r.added}', 'b': pack.brand}),
+          if (r.converted) t('cat.packConverted', {'from': r.from, 'to': r.to, 'r': fmtRate(r.rate!)}),
+          if (r.unknownCurrency) t('cat.packNoCurrency'),
+        ].join(' '),
+      );
+      return;
+    }
+    final table = lower.endsWith('.csv') || lower.endsWith('.txt');
+    CatalogImportResult read(bool? pnInBar) => text == null ? CatalogIo.parseXlsx(bytes, pnInBar: pnInBar) : CatalogIo.parse(text, group: table ? tab : null, pnInBar: pnInBar);
+    var r = read(null);
+    if (r.pnAsBar > 0) {
+      if (!context.mounted) return;
+      final bar = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(t('cat.pnAsk.title'), style: const TextStyle(fontSize: 15)),
+          content: Text(t('cat.pnAsk.body', {'n': '${r.pnAsBar}'})),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t('cancel'))),
+            TextButton(key: const Key('cat_pn_m'), onPressed: () => Navigator.pop(ctx, false), child: Text(t('cat.pnAsk.m'))),
+            FilledButton(key: const Key('cat_pn_bar'), onPressed: () => Navigator.pop(ctx, true), child: Text(t('cat.pnAsk.bar'))),
+          ],
+        ),
+      );
+      if (bar == null) return;
+      r = read(bar);
+    }
+    final m = r.mergeInto(cat, used: c.project.catalogIdsInUse);
+    c.notify(
+      [
+        t('msg.catalogImported', {'n': '${m.total}'}),
+        if (m.replacedInUse.isNotEmpty) t('cat.importInUse', {'n': '${m.replacedInUse.length}', 'v': m.replacedInUse.take(5).join(', ')}),
+        if (r.skippedRows.isNotEmpty) t('cat.importSkipped', {'n': '${r.skippedRows.length}', 'v': r.skippedRows.take(8).join(', ')}),
+      ].join(' '),
+    );
+  } catch (e) {
+    c.notify(t('msg.error', {'e': c.describeError(e)}));
+  }
+}
+
+bool _isPackText(String text) {
+  final s = text.trimLeft();
+  if (!s.startsWith('{')) return false;
+  try {
+    final j = jsonDecode(s);
+    return j is Map<String, dynamic> && CatalogIo.isPackJson(j);
+  } on FormatException {
+    return false;
+  }
 }

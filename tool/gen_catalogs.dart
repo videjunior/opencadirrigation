@@ -97,4 +97,5 @@ Set<String> _ids(Catalog c) => {
   ...c.valves.map((e) => e.id),
   ...c.pumps.map((e) => e.id),
   ...c.fittings.map((e) => e.id),
+  ...c.wires.map((e) => e.id),
 };

@@ -599,6 +599,24 @@ class Project {
 
   Iterable<T> ofType<T extends Entity>() => entities.whereType<T>();
 
+  /// Catalogue ids the entities use: pipes, emitters, tapes, valves and
+  /// devices, pumps, and the pipe, sprinklers, regulators and end gun of
+  /// the pivots.
+  Set<String> get catalogIdsInUse => {
+    for (final e in entities)
+      ...switch (e) {
+        PipeEntity x => [?x.pipeSpecId],
+        SpraylineEntity x => [?x.pipeSpecId, x.outletSpecId],
+        TapeEntity x => [x.tapeSpecId],
+        OutletEntity x => [x.outletSpecId],
+        ControlValveEntity x => [?x.valveSpecId],
+        MiscHydraulicEntity x => [?x.valveSpecId],
+        PumpEntity x => [?x.pumpSpecId],
+        PivotEntity x => [?x.pipeSpecId, ?x.sprinklerSpecId, ?x.regulatorSpecId, ?x.machine.endGunSpecId],
+        _ => const <String>[],
+      },
+  };
+
   /// Whether the head [o] waters the area [poly] ([watersArea] with the arc
   /// its nozzle really covers).
   bool outletWatersArea(OutletEntity o, List<Pt> poly) {
