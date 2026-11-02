@@ -22,9 +22,14 @@
 ///   drip (Keller & Bliesner 1990, max ECe = zero-yield ECe of FAO-29
 ///   Table 4); gross = net/(Ea·(1 − LR)), or, by the reasoning of FAO-29
 ///   Example 3 (application losses already leach), max(net/Ea, net/(1 − LR));
+///   when the water is too saline for the crop (5·ECe ≤ ECw) no leaching
+///   fraction can keep the yield potential: the gross depth and the volume
+///   of those rows are not applicable and stay out of the totals;
 /// - TAW = AWC·Zr (FAO-56 eq. 82), RAW = p·TAW (eq. 83) with p adjusted to
 ///   ETc (Table 22 note 2), times the wetted fraction Pw for localized
-///   irrigation; maximum interval = RAW / net daily depth.
+///   irrigation; maximum interval = RAW / daily ETc,loc (the depletion of
+///   a dry spell: the mean effective rain lowers the number of events and
+///   the volume, not the interval), the depth per event refills it.
 ///
 /// Depths are over the whole area of the irrigated area (mm = L/m²), and the
 /// application rate is the system flow over that area (mm/h).
@@ -356,6 +361,11 @@ class RequirementRow {
   /// Irrigation events in the period (net depth / net per event).
   final double events;
 
+  /// False when the water is too saline for the crop (`req_leaching_infeasible`):
+  /// gross depth, hours and volumes are then not applicable (zero) and
+  /// stay out of the totals.
+  bool get applicable => !warnings.contains('req_leaching_infeasible');
+
   /// Gross volume of the period and of a mean crop day (m³), and the flow
   /// for the operating hours (m³/h; null without them).
   final double volumeM3;
@@ -390,6 +400,7 @@ class RequirementTotals {
     required this.peakGrossMmDay,
     required this.peakDailyVolumeM3,
     this.peakFlowM3h,
+    this.notApplicableRows = 0,
   });
   final double etoMm;
   final double etcMm;
@@ -408,11 +419,16 @@ class RequirementTotals {
   final double peakDailyVolumeM3;
   final double? peakFlowM3h;
 
+  /// Rows whose gross depth is not applicable (water too saline for the
+  /// crop): the gross and volume totals leave them out.
+  final int notApplicableRows;
+
   static RequirementTotals of(Iterable<RequirementRow> rows) {
     var eto = 0.0, etc = 0.0, etcLoc = 0.0, rain = 0.0, pe = 0.0, net = 0.0, gross = 0.0, vol = 0.0;
-    var days = 0;
+    var days = 0, na = 0;
     RequirementRow? peak;
     for (final r in rows) {
+      if (!r.applicable) na++;
       eto += r.etoMm;
       etc += r.etcMm;
       etcLoc += r.etcLocMm;
@@ -439,6 +455,7 @@ class RequirementTotals {
       peakGrossMmDay: peak?.grossMmDay ?? 0,
       peakDailyVolumeM3: peak?.dailyVolumeM3 ?? 0,
       peakFlowM3h: peak?.flowM3h,
+      notApplicableRows: na,
     );
   }
 }
@@ -459,7 +476,8 @@ class RequirementTable {
   final List<RequirementTotals> cycleTotals;
   final RequirementTotals areaTotals;
 
-  /// Area-level message codes (`req_cycles_overlap`, `req_no_cycles`).
+  /// Area-level message codes (`req_cycles_overlap`, `req_no_cycles`,
+  /// `req_leaching_infeasible` when some rows are not applicable).
   final List<String> warnings;
 }
 
@@ -554,6 +572,7 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
     final net = math.max(etcLoc + extra - pe, 0.0);
     // leaching
     var lr = 0.0;
+    var feasible = true;
     if (input.ecwDsM > 0) {
       final double? ece;
       if (input.leachingFormula == LeachingFormula.highFrequencyDrip) {
@@ -565,7 +584,9 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
       final v = ece == null ? null : leachingRequirement(ecwDsM: input.ecwDsM, eceDsM: ece, formula: input.leachingFormula);
       if (v == null) {
         rowWarnings.add(ece == null ? 'req_salt_tolerance_unknown' : 'req_leaching_infeasible');
-        lr = ece == null ? 0 : 0.9;
+        // no leaching fraction keeps the yield potential: the gross depth
+        // is not applicable (it used to be inflated by LR = 0.9)
+        feasible = ece == null;
       } else {
         lr = v;
       }
@@ -575,15 +596,17 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
       LeachingRule.multiplicative => 1 / (ea * (1 - lr)),
       LeachingRule.lossesLeach => math.max(1 / ea, 1 / (1 - lr)),
     };
-    final gross = net * factor;
+    final gross = feasible ? net * factor : 0.0;
     // soil water
     final zr = c.rootDepthM ?? input.rootDepthM;
     final taw = input.awcMmPerM * math.max(zr, 0.0);
     final pTab = c.depletionFraction ?? input.depletionFraction;
     final p = input.adjustDepletionToEtc ? adjustDepletionFraction(pTab, etc / n) : pTab.clamp(0.05, 0.95);
     final raw = p * taw * input.wettedFraction.clamp(0.01, 1.0);
-    final netDay = net / n;
-    final maxInterval = netDay > 0 ? raw / netDay : double.infinity;
+    // the interval follows what the crop depletes on a dry day (ETc,loc and
+    // the paddy water): a dry spell empties the RAW in RAW / ETc,loc days
+    final demandDay = (etcLoc + extra) / n;
+    final maxInterval = demandDay > 0 ? raw / demandDay : double.infinity;
     int interval;
     if (input.fixedIntervalDays != null) {
       interval = math.max(1, input.fixedIntervalDays!);
@@ -592,8 +615,8 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
       interval = maxInterval.isFinite ? math.max(1, maxInterval.floor()) : n;
       if (maxInterval < 1) rowWarnings.add('req_interval_exceeds_raw');
     }
-    final netEvent = netDay * interval;
-    final grossEvent = netEvent * factor;
+    final netEvent = demandDay * interval;
+    final grossEvent = feasible ? netEvent * factor : 0.0;
     final rate = input.applicationRateMmH;
     if (rate <= 0) rowWarnings.add('req_no_application_rate');
     final dailyVolume = gross / n * input.areaM2 / 1000;
@@ -624,7 +647,7 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
       intervalDays: interval,
       netPerEventMm: netEvent,
       grossPerEventMm: grossEvent,
-      hoursPerEvent: rate > 0 ? grossEvent / rate : null,
+      hoursPerEvent: rate > 0 && feasible ? grossEvent / rate : null,
       events: netEvent > 0 ? net / netEvent : 0,
       volumeM3: gross * input.areaM2 / 1000,
       dailyVolumeM3: dailyVolume,
@@ -651,5 +674,6 @@ RequirementTable irrigationRequirement(RequirementInput input, {List<Requirement
       if (r != null) periodRows.add(r);
     }
   }
+  if (monthly.any((r) => !r.applicable)) warnings.add('req_leaching_infeasible');
   return RequirementTable(areaId: input.areaId, monthly: monthly, periods: periodRows, cycleTotals: cycleTotals, areaTotals: RequirementTotals.of(monthly), warnings: warnings);
 }

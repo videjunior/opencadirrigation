@@ -12,6 +12,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/terrain.dart';
 import 'corner_arm.dart';
+import 'area_water.dart' show soilRateLimitMmH;
 import 'pivot.dart';
 import 'pivot_electrical.dart';
 import 'pivot_package.dart';
@@ -42,18 +43,36 @@ PivotSpec pivotSpecOf(Project project, PivotEntity p) {
     hoursPerCycle: p.hoursPerCycle,
     wettedWidthM: p.wettedWidthM,
     machineLossM: p.machineLossM,
-    maxAppRateMmH: p.maxAppRateMmH,
+    maxAppRateMmH: machineRateLimitMmH(project, p),
     sectorDeg: p.sectorDeg,
     maxVelocity: math.max(params.maxMainlineVelocity, 3.0),
     sprinklerSpacingM: p.sprinklerSpacingM,
   );
 }
 
+/// Soil intake limit (mm/h) machine [p] is checked against: typed on the
+/// machine, else the largest sprinkler application rate of the soil and
+/// slope of the area under its pivot point (NEH 15-11 Table 11-4; 0 = no
+/// soil known, no check).
+double machineRateLimitMmH(Project project, PivotEntity p) {
+  if (p.maxAppRateMmH > 0) return p.maxAppRateMmH;
+  for (final a in project.entities.whereType<AreaEntity>()) {
+    if (a.points.length < 3 || !pointInPolygon(p.center, a.points)) continue;
+    final limit = soilRateLimitMmH(a);
+    if (limit != null) return limit;
+  }
+  return 0;
+}
+
 /// The package data of [p] with its machine data, the inlet at
-/// [availableInletHeadM] (0 = the head the package needs).
+/// [availableInletHeadM] (0 = the head the package needs). A pivot with a
+/// corner arm waters only to the hinge at its last regular tower: no
+/// overhang span and no end throw (the arm waters beyond it, see
+/// [analyzeMechanised]).
 PivotPackageSpec pivotPackageSpecOf(PivotSpec spec, PivotEntity p, {double availableInletHeadM = 0}) {
   final m = p.machine;
   final n = spec.towerCount;
+  final toHinge = hasCornerArm(p);
   PivotSpanDef span(double len, {bool overhang = false}) => PivotSpanDef(
     lengthM: len,
     pipeInnerMm: spec.pipeInnerMm,
@@ -63,7 +82,7 @@ PivotPackageSpec pivotPackageSpecOf(PivotSpec spec, PivotEntity p, {double avail
     overhang: overhang,
     archM: overhang ? 0 : m.spanArchM,
   );
-  final spans = n == 0 ? [span(spec.lengthM)] : [for (var i = 0; i < n; i++) span(spec.spanLengthM), if (spec.overhangM > 1e-6) span(spec.overhangM, overhang: true)];
+  final spans = n == 0 ? [span(spec.lengthM)] : [for (var i = 0; i < n; i++) span(spec.spanLengthM), if (spec.overhangM > 1e-6 && !toHinge) span(spec.overhangM, overhang: true)];
   final gun = switch (m.endGun) {
     'none' => EndGunUse.none,
     'fullCircle' => EndGunUse.fullCircle,
@@ -73,7 +92,7 @@ PivotPackageSpec pivotPackageSpecOf(PivotSpec spec, PivotEntity p, {double avail
   return PivotPackageSpec(
     spans: spans,
     kind: spec.kind,
-    endThrowM: spec.endThrowM,
+    endThrowM: toHinge ? 0 : spec.endThrowM,
     endGun: gun,
     endGunFlow: spec.endGunFlow,
     endGunPressureM: spec.endGunPressureM,
@@ -98,6 +117,10 @@ PivotPackageSpec pivotPackageSpecOf(PivotSpec spec, PivotEntity p, {double avail
     timerSettings: {...defaultTimerSettings, if (m.timerPct > 0 && m.timerPct <= 100) m.timerPct}.toList()..sort((a, b) => b.compareTo(a)),
   );
 }
+
+/// Whether pivot [p] carries a corner arm (a centre pivot with an arm length
+/// and a guide path).
+bool hasCornerArm(PivotEntity p) => p.kind == PivotKind.pivot && p.machine.hasCornerArm;
 
 /// Closed outline of entity [id] of [project] (an area, closed polyline,
 /// hatch or cloud), or null.
@@ -161,7 +184,7 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
   final sector = p.kind == PivotKind.pivot && p.sectorDeg < 360 - 1e-6;
   final startDeg = sector ? p.angleDeg - p.sectorDeg / 2 : 0.0, sweepDeg = sector ? p.sectorDeg : 360.0;
   CornerArmResult? arm;
-  if (m.hasCornerArm && p.kind == PivotKind.pivot) {
+  if (hasCornerArm(p)) {
     final boundary = closedOutlineOf(project, m.guidePathId);
     final path = boundary == null ? const <Pt>[] : (m.guideOffsetM.abs() > 1e-9 ? guidancePathFromBoundary(boundary, m.guideOffsetM) : boundary);
     arm = analyzeCornerArm(
@@ -171,7 +194,7 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
         armLengthM: m.cornerArmLengthM,
         guidePath: path,
         armOverhangM: m.cornerArmOverhangM,
-        tipThrowM: p.endThrowM,
+        tipThrowM: m.cornerArmThrowM ?? p.endThrowM,
         maxArmAngleDeg: m.cornerArmMaxDeg,
         clockwise: m.clockwise,
         startDeg: startDeg,
@@ -212,6 +235,9 @@ MechanisedResult analyzeMechanised(Project project, PivotEntity p, {Terrain? ter
     elec = designPivotElectrical(
       PivotElectricalSpec(
         towerRadiiM: towers.isEmpty ? [spec.lengthM] : towers,
+        linear: p.kind == PivotKind.linear,
+        // the drive tower of the arm at its tip, the arm extended
+        armTowerRadiiM: arm == null ? const [] : [pkg.lastTowerRadiusM + m.cornerArmLengthM],
         motorKw: m.towerMotorKw,
         voltage: m.voltage,
         supplyCableM: m.supplyCableM,

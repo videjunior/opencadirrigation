@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -79,5 +80,50 @@ void main() {
     expect(back.gates.length, 3);
     expect(back.gates[1].areaMm2, closeTo(r.gates[1].areaMm2, 1e-9));
     expect(back.minInletHeadM, closeTo(r.minInletHeadM, 1e-12));
+  });
+
+  group('fixed holes (AGR-23)', () {
+    test('a 22.2 mm hole where 20 mm would do delivers about 23 % more', () {
+      // one gate right at the inlet of a wide pipe: 0.85 L/s at 1 m needs 20.0 mm
+      const spec = GatedPipeSpec(outlets: 1, outletSpacingM: 0.02, targetFlow: 0.00085, pipeInnerMm: 2000, inletHeadM: 1);
+      final adjustable = designGatedPipe(spec);
+      expect(adjustable.gates.single.diameterMm, closeTo(20.0, 0.05));
+      expect(adjustable.gates.single.holeMm, 22.2);
+      expect(adjustable.gates.single.deliveredFlow, closeTo(0.00085, 1e-15));
+      final fixed = designGatedPipe(GatedPipeSpec(outlets: 1, outletSpacingM: 0.02, targetFlow: 0.00085, pipeInnerMm: 2000, inletHeadM: 1, fixedHoles: true));
+      // q = Cd·A·√(2gh) of the full hole (USBR Water Measurement Manual ch. 13)
+      final full = 0.61 * math.pi / 4 * 0.0222 * 0.0222 * math.sqrt(2 * gravity * 1);
+      expect(fixed.fixedHoles, isTrue);
+      expect(fixed.gates.single.deliveredFlow, closeTo(full, full * 1e-6));
+      expect(fixed.gates.single.deliveredFlow / 0.00085 - 1, closeTo(0.23, 0.01));
+      expect(fixed.deliveredTotalFlow, closeTo(full, full * 1e-6));
+    });
+
+    test('the flows, the friction and the heads agree along the pipe', () {
+      const base = GatedPipeSpec(outlets: 60, outletSpacingM: 0.76, targetFlow: 0.001, pipeInnerMm: 200, hazenC: 150, slope: 0.001, inletHeadM: 0.6);
+      final adj = designGatedPipe(base);
+      final r = designGatedPipe(const GatedPipeSpec(outlets: 60, outletSpacingM: 0.76, targetFlow: 0.001, pipeInnerMm: 200, hazenC: 150, slope: 0.001, inletHeadM: 0.6, fixedHoles: true));
+      // every gate passes its full hole at its own head
+      var downstream = r.gates.fold(0.0, (s, g) => s + g.deliveredFlow);
+      expect(r.deliveredTotalFlow, closeTo(downstream, 1e-12));
+      var head = 0.6, x = 0.0;
+      for (final g in r.gates) {
+        final len = g.distanceM - x;
+        head += 0.001 * len - hazenWilliamsLoss(flow: downstream, diameter: 0.2, length: len, c: 150);
+        expect(g.headM, closeTo(head, 1e-6), reason: 'gate ${g.index}');
+        final a = math.pi / 4 * math.pow(g.holeMm / 1000, 2);
+        expect(g.deliveredFlow, closeTo(0.61 * a * math.sqrt(2 * gravity * g.headM), 1e-8), reason: 'gate ${g.index}');
+        downstream -= g.deliveredFlow;
+        x = g.distanceM;
+      }
+      // the holes are the next standard size up: more water than the targets, unevenly
+      expect(r.deliveredTotalFlow, greaterThan(adj.totalFlow));
+      expect(r.flowCu, lessThan(100));
+      expect(r.minOverMeanFlow, lessThan(1));
+      final back = GatedPipeResult.fromJson(jsonDecode(jsonEncode(r.toJson())) as Map<String, dynamic>);
+      expect(back.fixedHoles, isTrue);
+      expect(back.flowCu, closeTo(r.flowCu, 1e-12));
+      expect(back.gates.first.deliveredFlow, closeTo(r.gates.first.deliveredFlow, 1e-15));
+    });
   });
 }

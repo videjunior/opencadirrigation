@@ -41,6 +41,7 @@ class PivotMachine {
     this.cornerArmOverhangM = 0,
     this.cornerArmMaxDeg = 120,
     this.cornerArmBanks = 4,
+    this.cornerArmThrowM,
     this.guidePathId,
     this.guideOffsetM = 0,
     this.clockwise = false,
@@ -91,6 +92,11 @@ class PivotMachine {
   /// inwards by [guideOffsetM]; [clockwise] is the direction of travel.
   double cornerArmLengthM, cornerArmOverhangM, cornerArmMaxDeg;
   int cornerArmBanks;
+
+  /// Throw of the last sprinkler of the corner arm beyond its tip (m; null =
+  /// the end throw of the machine). With an arm the main machine waters only
+  /// to the hinge at its last tower: its own throw and overhang do not count.
+  double? cornerArmThrowM;
   String? guidePathId;
   double guideOffsetM;
   bool clockwise;
@@ -139,6 +145,7 @@ class PivotMachine {
     if (cornerArmOverhangM > 0) 'cao': cornerArmOverhangM,
     if (cornerArmMaxDeg != 120) 'camax': cornerArmMaxDeg,
     if (cornerArmBanks != 4) 'cab': cornerArmBanks,
+    if (cornerArmThrowM != null) 'cat': cornerArmThrowM,
     if (guidePathId != null) 'gpath': guidePathId,
     if (guideOffsetM != 0) 'goff': guideOffsetM,
     if (clockwise) 'cw': true,
@@ -182,6 +189,7 @@ class PivotMachine {
       cornerArmOverhangM: d('cao', 0),
       cornerArmMaxDeg: d('camax', 120),
       cornerArmBanks: (j['cab'] as num?)?.toInt() ?? 4,
+      cornerArmThrowM: (j['cat'] as num?)?.toDouble(),
       guidePathId: j['gpath'] as String?,
       guideOffsetM: d('goff', 0),
       clockwise: j['cw'] as bool? ?? false,

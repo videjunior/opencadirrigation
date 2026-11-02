@@ -145,4 +145,57 @@ void main() {
     expect(typical.suctionCapacity.isNaN, isTrue);
     expect(jsonEncode(typical.toJson()), contains('"cap":null'));
   });
+
+  group('travel along lumped laterals (AGR-16)', () {
+    // a dripline of 1.6 L/h emitters, 14.2 mm bore, as one node per emitter
+    // and lumped as the network builder does (at most 100 nodes a lateral,
+    // at the centroid of each group)
+    FertigationTravel dripline(List<double> pos, List<int> count, {bool lumps = false}) {
+      const q = 1.6 / 3.6e6, d = 0.0142;
+      final net = HydraulicNetwork()..addNode(HNode(id: 'n0'));
+      final links = <String, LinkResult>{};
+      var left = count.fold(0, (a, b) => a + b) * q;
+      var x = 0.0;
+      for (var i = 0; i < pos.length; i++) {
+        net.addNode(HNode(id: 'n${i + 1}'));
+        net.addLink(HLink(id: 'l$i', from: 'n$i', to: 'n${i + 1}', diameter: d, length: pos[i] - x));
+        links['l$i'] = LinkResult(flow: left, velocity: 0, headLoss: 0, status: LinkStatus.open);
+        left -= count[i] * q;
+        x = pos[i];
+      }
+      final res = NetworkResult(converged: true, iterations: 0, nodes: const {}, links: links, warnings: const [], relativeFlowError: 0);
+      return fertigationTravel(
+        net,
+        res,
+        'n0',
+        outlets: [for (var i = 0; i < pos.length; i++) 'n${i + 1}'],
+        emittersAt: lumps ? {for (var i = 0; i < pos.length; i++) 'n${i + 1}': count[i]} : const {},
+      );
+    }
+
+    for (final (len, s, before) in [(100.0, 0.3, 0.12), (200.0, 0.3, 0.26), (300.0, 0.4, -0.24)]) {
+      test('${len.toStringAsFixed(0)} m at ${s.toStringAsFixed(1)} m: the lumped network gives the time of the real emitters', () {
+        final n = (len / s).floor();
+        final exact = [for (var i = 0; i < n; i++) s / 2 + i * s];
+        final te = dripline(exact, List.filled(n, 1)).farthestArrival;
+        // the exact plug-flow time to the last emitter: A·s/q·(1/N + … + 1/1) after the first half spacing
+        const area = math.pi * 0.0142 * 0.0142 / 4, q = 1.6 / 3.6e6;
+        var sum = area * s / 2 / (n * q);
+        for (var j = n - 1; j >= 1; j--) {
+          sum += area * s / (j * q);
+        }
+        expect(te, closeTo(sum, sum * 1e-9));
+        final k = (n / 100).ceil();
+        final lp = <double>[], lc = <int>[];
+        for (var i = 0; i < n; i += k) {
+          final end = math.min(i + k, n);
+          lp.add([for (var j = i; j < end; j++) exact[j]].reduce((a, b) => a + b) / (end - i));
+          lc.add(end - i);
+        }
+        // the lumped links alone were off by +12 %, +26 % and −24 %
+        expect(dripline(lp, lc).farthestArrival / te - 1, closeTo(before, 0.01));
+        expect(dripline(lp, lc, lumps: true).farthestArrival, closeTo(te, te * 0.005));
+      });
+    }
+  });
 }

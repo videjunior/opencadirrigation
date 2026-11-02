@@ -25,6 +25,7 @@ import '../model/geometry.dart';
 import '../model/project.dart';
 import '../model/split.dart';
 import '../units.dart';
+import 'area_water.dart';
 import 'electrical.dart';
 import 'fittings.dart';
 import 'lp_sizing.dart';
@@ -233,8 +234,13 @@ class Designer {
     final r = analyzePivot(spec, id: p.id, name: name, groundRiseAt: rise, nozzles: nozzles);
     // the mainline feeds what the sprinkler package needs: its regulators,
     // drops and nozzles may ask for more than the plain machine hydraulics
-    final pkg = analyzeMechanised(project, p, terrain: terrain).package;
-    if (pkg.requiredInletHeadM > 0 && pkg.designFlow > 0) return r.withInlet(flow: pkg.designFlow, inletHead: pkg.requiredInletHeadM);
+    final mech = analyzeMechanised(project, p, terrain: terrain);
+    final pkg = mech.package;
+    // a corner arm adds its banks (all on, the arm extended) to the machine,
+    // whose package then ends at the hinge
+    final arm = mech.cornerArm;
+    final armFlow = arm == null || arm.steps.isEmpty ? 0.0 : math.max(0.0, arm.peakFlow - arm.mainFlow);
+    if (pkg.requiredInletHeadM > 0 && pkg.designFlow > 0) return r.withInlet(flow: pkg.designFlow + armFlow, inletHead: pkg.requiredInletHeadM);
     return r;
   }
 
@@ -2817,6 +2823,7 @@ class AreaRequirement {
     required this.flow,
     required this.hoursPerDay,
     required this.precipitationMmH,
+    this.machineFlow = 0,
   });
   final String areaId;
   final String name;
@@ -2826,6 +2833,9 @@ class AreaRequirement {
   final double flow;
   final double hoursPerDay;
   final double precipitationMmH;
+
+  /// Part of [flow] that comes from centre pivots and linear moves (m³/s).
+  final double machineFlow;
 }
 
 List<AreaRequirement> areaRequirements(Project project, DesignResults? results) {
@@ -2833,7 +2843,7 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
   final outletsByEntity = results?.outletsByEntity ?? {};
   for (final a in project.entities.whereType<AreaEntity>()) {
     if (a.points.length < 3) continue;
-    var flow = 0.0;
+    var flow = 0.0, machineFlow = 0.0;
     for (final e in project.entities) {
       if (e is OutletEntity && project.outletWatersArea(e, a.points)) {
         final res = outletsByEntity[e.id];
@@ -2869,17 +2879,34 @@ List<AreaRequirement> areaRequirements(Project project, DesignResults? results) 
         // a machine applies an even depth: the area gets the share of the
         // flow that falls on the part of the irrigated outline inside it
         final q = results?.pivots[e.id]?.flow ?? 0;
-        if (q > 0) flow += q * _shareInside(e.outline(), a.points);
+        if (q > 0) {
+          final share = q * _shareInside(e.outline(), a.points);
+          flow += share;
+          machineFlow += share;
+        }
       }
     }
     final area = a.area;
-    final gross = a.effectiveNetDepthMmPerDay / math.max(a.efficiency, 0.05);
-    // Localised irrigation waters only the wetted fraction of the area; the
-    // same factor is used by the crop table so both agree on volume and hours.
-    final vol = gross / 1000 * area * a.wettedFraction.clamp(0.05, 1.0);
+    // the gross depth of the design period by the rule every report shares
+    // (area_water.dart: ETc,loc = Kr·Kc·ETo over the whole area for
+    // localized irrigation, the wetted fraction only in the RAW)
+    final gross = areaWaterBasis(project, a).grossMmDay;
+    final vol = gross / 1000 * area;
     final hours = flow > 0 ? vol / (flow * 3600) : 0.0;
     final pr = area > 0 ? flow * 3600 * 1000 / area : 0.0;
-    out.add(AreaRequirement(areaId: a.id, name: a.name.isEmpty ? a.id : a.name, areaM2: area, grossDepthMm: gross, dailyVolumeM3: vol, flow: flow, hoursPerDay: hours, precipitationMmH: pr));
+    out.add(
+      AreaRequirement(
+        areaId: a.id,
+        name: a.name.isEmpty ? a.id : a.name,
+        areaM2: area,
+        grossDepthMm: gross,
+        dailyVolumeM3: vol,
+        flow: flow,
+        hoursPerDay: hours,
+        precipitationMmH: pr,
+        machineFlow: machineFlow,
+      ),
+    );
   }
   return out;
 }

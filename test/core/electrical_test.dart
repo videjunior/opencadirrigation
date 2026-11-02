@@ -279,4 +279,52 @@ void main() {
     expect(cat.newId('w'), isNot(anyOf('w1', 'w4')));
     expect(WireSpec.fromJson({'id': 'a', 'name': 'a', 'mm2': 4}).ohmPerKm, closeTo(copperOhmPerKm(4), 1e-9));
   });
+
+  group('what the controller can deliver (AGR-12)', () {
+    test('one valve with the master valve: two inrush currents at once', () {
+      final p = _site(100);
+      final master = p.catalog.valves.firstWhere((v) => v.kind == ValveKind.master);
+      p.entities.add(MiscHydraulicEntity(id: 'mv', position: const Pt(20, 0), valveSpecId: master.id));
+      final r = designElectrical(
+        p,
+        flows: const [
+          {'vA'},
+          {'vB'},
+          {'vC'},
+        ],
+      )!;
+      // it was 0.37 + 0.22 (the master counted as holding)
+      expect(r.controllers.single.peakCurrentA, closeTo(2 * 0.37, 1e-12));
+      expect(r.warnings, isEmpty);
+    });
+
+    test('a station of ten solenoids is beyond one output; a flow beyond the controller', () {
+      final p = _site(100);
+      final r = designElectrical(p, flows: all)!;
+      final duty = r.controllers.single;
+      expect(duty.stationLimitA, typicalStationCurrentA);
+      expect(duty.totalLimitA, typicalControllerCurrentA);
+      expect(duty.largestStationA, closeTo(0.37, 1e-12));
+      expect(duty.overcurrent, isFalse);
+      // a solenoid drawing 0.6 A when it opens is more than the usual 0.56 A output
+      p.params.solenoidInrushA = 0.6;
+      final hungry = designElectrical(p, flows: all)!;
+      expect(hungry.warnings, containsAll(['elec_station_current:vA', 'elec_station_current:vB', 'elec_station_current:vC']));
+      // the controller's own ratings: 1 A an output, but only 1 A in all for three valves at once
+      final k = p.entities.whereType<ControllerEntity>().single
+        ..stationMaxA = 1
+        ..totalMaxA = 1;
+      final rated = designElectrical(p, flows: all)!;
+      expect(rated.warnings.where((w) => w.startsWith('elec_station_current')), isEmpty);
+      expect(rated.warnings, contains('elec_overcurrent:${k.id}'));
+      expect(rated.controllers.single.peakCurrentA, closeTo(0.6 + 2 * 0.22, 1e-12));
+      final back = ControllerDuty.fromJson(jsonDecode(jsonEncode(rated.controllers.single.toJson())) as Map<String, dynamic>);
+      expect((back.stationLimitA, back.totalLimitA), (1.0, 1.0));
+      expect(back.largestStationA, closeTo(0.6, 1e-12));
+      // the ratings stay with the controller in the file
+      final j = Entity.fromJson(k.toJson()) as ControllerEntity;
+      expect((j.stationMaxA, j.totalMaxA), (1.0, 1.0));
+      expect(ControllerEntity(id: 'x', position: Pt.zero).toJson().containsKey('ist'), isFalse);
+    });
+  });
 }

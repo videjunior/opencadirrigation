@@ -13,6 +13,16 @@
 /// it carries the current of the heads beyond it, as the common conductor
 /// does. A head that no route reaches is reported unwired, the station's
 /// other heads still wired.
+///
+/// The controller must also deliver the current: every station output the
+/// inrush of its solenoids (a valve-in-head station opens all its heads at
+/// once) and the controller the worst instant of a system flow — a station
+/// opening while the others hold, or the master valve opening together with
+/// the first station (two inrush currents). Without the controller's data
+/// the typical outputs of 24 V AC controllers are used ([typicalStationCurrentA],
+/// [typicalControllerCurrentA]); above them a relay (pump start or station
+/// relay) or a split station is needed (`elec_station_current`,
+/// `elec_overcurrent`).
 library;
 
 import 'dart:collection';
@@ -98,6 +108,14 @@ class WireRun {
   );
 }
 
+/// Current one station output of a 24 V AC controller typically delivers
+/// (A), when the controller's own rating is not given.
+const typicalStationCurrentA = 0.56;
+
+/// Current a 24 V AC controller typically delivers in all (A; a transformer
+/// of about 40 VA), when its own rating is not given.
+const typicalControllerCurrentA = 1.5;
+
 /// What a controller drives.
 class ControllerDuty {
   ControllerDuty({
@@ -110,6 +128,9 @@ class ControllerDuty {
     required this.commonWireM,
     required this.maxOpen,
     required this.peakCurrentA,
+    this.largestStationA = 0,
+    this.stationLimitA = typicalStationCurrentA,
+    this.totalLimitA = typicalControllerCurrentA,
   });
   final String controllerId;
   final String name;
@@ -125,7 +146,16 @@ class ControllerDuty {
   /// controller supplies then (one opening, the others holding; A).
   final int maxOpen;
   final double peakCurrentA;
+
+  /// Inrush of the station that draws most (A) and the limits checked: one
+  /// station output and the whole controller (A).
+  final double largestStationA;
+  final double stationLimitA;
+  final double totalLimitA;
   bool get overloaded => used > stations;
+
+  /// The controller cannot deliver a station or the peak of a flow.
+  bool get overcurrent => largestStationA > stationLimitA + 1e-9 || peakCurrentA > totalLimitA + 1e-9;
 
   Map<String, dynamic> toJson() => {
     'ctrl': controllerId,
@@ -137,6 +167,9 @@ class ControllerDuty {
     'wire': commonWireM,
     'open': maxOpen,
     'amps': peakCurrentA,
+    if (largestStationA > 0) 'ist': largestStationA,
+    'imax': stationLimitA,
+    'itot': totalLimitA,
   };
   static ControllerDuty fromJson(Map<String, dynamic> j) => ControllerDuty(
     controllerId: j['ctrl'] as String,
@@ -148,6 +181,9 @@ class ControllerDuty {
     commonWireM: (j['wire'] as num?)?.toDouble() ?? 0,
     maxOpen: (j['open'] as num?)?.toInt() ?? 0,
     peakCurrentA: (j['amps'] as num?)?.toDouble() ?? 0,
+    largestStationA: (j['ist'] as num?)?.toDouble() ?? 0,
+    stationLimitA: (j['imax'] as num?)?.toDouble() ?? typicalStationCurrentA,
+    totalLimitA: (j['itot'] as num?)?.toDouble() ?? typicalControllerCurrentA,
   );
 }
 
@@ -440,8 +476,23 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
       for (final s in stationHeads.keys)
         if (owner[s] == c.id) s,
     ]..sort((a, b) => distance[a]!.compareTo(distance[b]!));
+    final stationLimit = c.stationMaxA > 0 ? c.stationMaxA : typicalStationCurrentA;
+    final totalLimit = c.totalMaxA > 0 ? c.totalMaxA : typicalControllerCurrentA;
     if (mine.isEmpty && myHeads.isEmpty) {
-      result.controllers.add(ControllerDuty(controllerId: c.id, name: c.name, stations: c.stations, used: 0, commonRouteM: 0, commonWireM: 0, maxOpen: 0, peakCurrentA: 0));
+      result.controllers.add(
+        ControllerDuty(
+          controllerId: c.id,
+          name: c.name,
+          stations: c.stations,
+          used: 0,
+          commonRouteM: 0,
+          commonWireM: 0,
+          maxOpen: 0,
+          peakCurrentA: 0,
+          stationLimitA: stationLimit,
+          totalLimitA: totalLimit,
+        ),
+      );
       continue;
     }
     if (mine.length + myHeads.length > c.stations) result.warnings.add('elec_stations:${c.id}');
@@ -582,13 +633,25 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
     var station = 0;
     var peak = 0.0;
     // one circuit opening (all the solenoids of a station at once), the
-    // others of its group holding
+    // others of its group holding; or the master valve opening together
+    // with the first station of the group: two inrush currents at once
     int solenoids(String id) => stationHeads[id]?.length ?? 1;
+    final masterSet = myMasters.toSet();
     for (final gs in groups) {
-      final top = gs.fold(1, (m, u) => math.max(m, solenoids(u)));
+      final top = gs.where((u) => !masterSet.contains(u)).fold(1, (m, u) => math.max(m, solenoids(u)));
       final all = gs.fold(0, (s, u) => s + solenoids(u));
-      peak = math.max(peak, top * sol.inrushA + (all - top) * sol.holdingA);
+      final masterCount = gs.where(masterSet.contains).length;
+      peak = math.max(peak, math.max(top * sol.inrushA + (all - top) * sol.holdingA, (top + masterCount) * sol.inrushA));
     }
+    // what one station output and the controller can deliver
+    var largestStation = 0.0;
+    for (final id in [for (final v in mine) v.id, ...myHeads]) {
+      final amps = solenoids(id) * sol.inrushA;
+      largestStation = math.max(largestStation, amps);
+      // the valve, or every head of a valve-in-head station
+      if (amps > stationLimit + 1e-9) result.warnings.add('elec_station_current:${(stationHeads[id] ?? [id]).join(':')}');
+    }
+    if (peak > totalLimit + 1e-9) result.warnings.add('elec_overcurrent:${c.id}');
     final byId = {for (final v in mine) v.id: v};
     for (final id in circuitIds) {
       final v = byId[id];
@@ -632,6 +695,9 @@ ElectricalResult? designElectrical(Project p, {List<Set<String>> flows = const [
         commonWireM: commonRoute * slack,
         maxOpen: maxOpen,
         peakCurrentA: peak,
+        largestStationA: largestStation,
+        stationLimitA: stationLimit,
+        totalLimitA: totalLimit,
       ),
     );
   }

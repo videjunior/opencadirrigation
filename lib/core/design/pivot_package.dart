@@ -557,6 +557,7 @@ class PivotPackageResult {
     this.speedAt100MPerMin = 0,
     this.hoursAt100 = 0,
     this.depthAt100Mm = 0,
+    this.speedForCycleMPerMin = 0,
   });
 
   final String pivotId;
@@ -604,6 +605,10 @@ class PivotPackageResult {
   final double hoursAt100;
   final double depthAt100Mm;
 
+  /// Speed of the last tower (m/min) that makes one revolution (or pass) in
+  /// the design cycle time; `pivot_pkg_slow_drive` when the drive is slower.
+  final double speedForCycleMPerMin;
+
   final List<PivotOutletRow> outlets;
   final List<PivotPackageSpanRow> spans;
   final List<PivotTimerRow> timer;
@@ -642,6 +647,7 @@ class PivotPackageResult {
     'v100': speedAt100MPerMin,
     't100': hoursAt100,
     'd100': depthAt100Mm,
+    if (speedForCycleMPerMin > 0) 'vcyc': speedForCycleMPerMin,
     'outlets': outlets.map((o) => o.toJson()).toList(),
     'spans': spans.map((o) => o.toJson()).toList(),
     'timer': timer.map((o) => o.toJson()).toList(),
@@ -672,6 +678,7 @@ class PivotPackageResult {
       speedAt100MPerMin: d('v100'),
       hoursAt100: d('t100'),
       depthAt100Mm: d('d100'),
+      speedForCycleMPerMin: d('vcyc'),
       outlets: list('outlets', PivotOutletRow.fromJson),
       spans: list('spans', PivotPackageSpanRow.fromJson),
       timer: list('timer', PivotTimerRow.fromJson),
@@ -1041,6 +1048,11 @@ PivotPackageResult designPivotPackage(
   } else if (v100 <= 0) {
     warn('pivot_pkg_no_drive');
   }
+  // a revolution at 100 % longer than the design cycle: the lightest depth
+  // per pass is more than the design depth and the cycle cannot be kept
+  final path100 = pivot ? 2 * math.pi * rLast * sector : math.max(s.travelM, 0.0);
+  final speedNeeded = s.hoursPerCycle > 0 ? path100 / (s.hoursPerCycle * 60) : 0.0;
+  if (hours100 > 0 && s.hoursPerCycle > 0 && hours100 > s.hoursPerCycle * (1 + 1e-6)) warn('pivot_pkg_slow_drive');
 
   return PivotPackageResult(
     pivotId: id,
@@ -1064,6 +1076,7 @@ PivotPackageResult designPivotPackage(
     speedAt100MPerMin: v100,
     hoursAt100: hours100,
     depthAt100Mm: depth100,
+    speedForCycleMPerMin: speedNeeded,
     outlets: rows,
     spans: spanRows,
     timer: timer,

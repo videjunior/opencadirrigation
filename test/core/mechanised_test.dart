@@ -334,8 +334,10 @@ void main() {
       expect(m.cornerArm, isNotNull);
       expect(m.vri, isNotNull);
       expect(m.electrical, isNotNull);
-      // the mainline is fed with the flow of the package
-      expect(r.pivots[pivot.id]!.flow, closeTo(m.package.designFlow, 1e-9));
+      // the mainline is fed with the flow of the package and of the arm's
+      // banks (all on, the arm extended); the package ends at the hinge
+      expect(r.pivots[pivot.id]!.flow, closeTo(m.package.designFlow + m.cornerArm!.peakFlow - m.cornerArm!.mainFlow, 1e-9));
+      expect(m.package.effectiveRadiusM, closeTo(m.package.lastTowerRadiusM, 1e-9));
       expect(r.pivots[pivot.id]!.inletHead, greaterThanOrEqualTo(m.package.regulatorM));
       final back = DesignResults.fromJson(jsonDecode(jsonEncode(r.toJson())) as Map<String, dynamic>);
       final mb = back.mechanised[pivot.id]!;

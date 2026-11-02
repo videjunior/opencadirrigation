@@ -196,9 +196,11 @@ class DensogramStats {
   /// Low-quarter distribution uniformity (%).
   final double du;
 
-  /// Scheduling coefficient: mean rate over the mean of the driest 5 % of
-  /// the cells (how much longer the system must run so the driest spots get
-  /// the mean depth; 1 = perfect).
+  /// Scheduling coefficient: mean rate over the mean of the driest
+  /// contiguous window holding 5 % of the area (Zoldoske & Solomon 1988;
+  /// how much longer the system must run so the driest spot gets the mean
+  /// depth; 1 = perfect). Without the map (a bare list of rates) the driest
+  /// 5 % of the cells wherever they are.
   final double sc;
 
   /// Share of the cells receiving less than half the mean (%).
@@ -456,16 +458,73 @@ Densogram computeDensogram(Project p, {DesignResults? results, DensogramOptions?
     rate: rate,
     inside: inside,
     sources: sources,
-    stats: densogramStats(values, cell * cell),
+    stats: densogramStats(values, cell * cell, driestWindowMean: driestWindowMean(rate, nx, ny, (k) => inside[k] == 1, (values.length * 0.05).round())),
     masked: areas.isNotEmpty,
     fromResults: fromResults,
     areaOf: areaOf,
-    areas: [for (var a = 0; a < areas.length; a++) DensogramArea(areaEntities[a].id, areaEntities[a].name, densogramStats(perArea[a], cell * cell))],
+    areas: [
+      for (var a = 0; a < areas.length; a++)
+        DensogramArea(
+          areaEntities[a].id,
+          areaEntities[a].name,
+          densogramStats(perArea[a], cell * cell, driestWindowMean: driestWindowMean(rate, nx, ny, (k) => areaOf[k] == a, (perArea[a].length * 0.05).round())),
+        ),
+    ],
   );
 }
 
-/// Uniformity of the rates [values] (mm/h) of cells of [cellArea] m².
-DensogramStats densogramStats(List<double> values, double cellArea) {
+/// Mean rate of the driest contiguous window of [windowCells] cells of the
+/// grid [rate] ([nx] × [ny], row by row) lying wholly in the cells for which
+/// [member] holds: the window as square as the target allows (the most
+/// nearly square rectangle of that many cells that fits somewhere), slid
+/// over every position (summed-area tables). Null when no window fits.
+double? driestWindowMean(List<double> rate, int nx, int ny, bool Function(int k) member, int windowCells) {
+  if (windowCells < 1 || nx < 1 || ny < 1) return null;
+  final w1 = nx + 1;
+  final sum = Float64List(w1 * (ny + 1));
+  final count = Int32List(w1 * (ny + 1));
+  for (var j = 0; j < ny; j++) {
+    for (var i = 0; i < nx; i++) {
+      final k = j * nx + i;
+      final m = member(k);
+      final o = (j + 1) * w1 + i + 1;
+      sum[o] = (m ? rate[k] : 0) + sum[o - 1] + sum[o - w1] - sum[o - w1 - 1];
+      count[o] = (m ? 1 : 0) + count[o - 1] + count[o - w1] - count[o - w1 - 1];
+    }
+  }
+  // shapes from the most nearly square outwards (both orientations of a
+  // shape count alike)
+  final side = math.sqrt(windowCells);
+  double squareness((int, int) s) => (s.$1 - side).abs() + (s.$2 - side).abs();
+  final shapes = <(int, int)>{
+    for (var h = 1; h <= math.min(ny, windowCells); h++)
+      if ((windowCells / h).ceil() <= nx) ((windowCells / h).ceil(), h),
+  }.toList()..sort((a, b) => squareness(a).compareTo(squareness(b)));
+  double? best;
+  double? bestShape;
+  for (final s in shapes) {
+    // a less square shape only when no squarer one fits anywhere
+    if (best != null && squareness(s) > bestShape! + 1e-9) break;
+    final (w, h) = s;
+    for (var j = 0; j + h <= ny; j++) {
+      for (var i = 0; i + w <= nx; i++) {
+        final a = j * w1 + i, b = j * w1 + i + w, c = (j + h) * w1 + i, d = (j + h) * w1 + i + w;
+        if (count[d] - count[b] - count[c] + count[a] != w * h) continue;
+        final mean = (sum[d] - sum[b] - sum[c] + sum[a]) / (w * h);
+        if (best == null || mean < best) {
+          best = mean;
+          bestShape ??= squareness(s);
+        }
+      }
+    }
+  }
+  return best;
+}
+
+/// Uniformity of the rates [values] (mm/h) of cells of [cellArea] m²; the
+/// scheduling coefficient from [driestWindowMean] (the driest contiguous 5 %
+/// of the map) when given.
+DensogramStats densogramStats(List<double> values, double cellArea, {double? driestWindowMean}) {
   if (values.isEmpty) return DensogramStats.empty;
   final n = values.length;
   final sorted = List.of(values)..sort();
@@ -475,7 +534,7 @@ DensogramStats densogramStats(List<double> values, double cellArea) {
   final q = math.max(1, (n / 4).round());
   final lq = sorted.take(q).fold(0.0, (s, v) => s + v) / q;
   final f = math.max(1, (n * 0.05).round());
-  final low5 = sorted.take(f).fold(0.0, (s, v) => s + v) / f;
+  final low5 = driestWindowMean ?? sorted.take(f).fold(0.0, (s, v) => s + v) / f;
   final dry = sorted.where((v) => v < mean / 2).length;
   return DensogramStats(
     cells: n,

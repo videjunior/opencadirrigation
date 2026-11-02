@@ -95,7 +95,8 @@ void masterValveTests() {
     expect(mv.openTogether, 2); // with the zone of each flow
     expect([for (final r in withMv.runs.where((r) => r.station > 0)) r.station], [1, 2]);
     expect(withMv.controllers.single.used, 2); // the master output is not a station
-    expect(withMv.controllers.single.peakCurrentA, closeTo(0.37 + 0.22, 1e-12));
+    // the master valve opens with the zone: two inrush currents at once (AGR-12)
+    expect(withMv.controllers.single.peakCurrentA, closeTo(2 * 0.37, 1e-12));
     final b1 = withMv.runs.firstWhere((r) => r.valveId == 'vB'), b0 = without.runs.firstWhere((r) => r.valveId == 'vB');
     expect(b1.volts, lessThan(b0.volts)); // the master valve loads the common too
   });

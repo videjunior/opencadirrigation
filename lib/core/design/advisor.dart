@@ -216,6 +216,8 @@ String adviceCode(String raw) => switch (raw) {
   'corner_arm_no_path' || 'corner_arm_no_rate' || 'corner_arm_overrun' || 'corner_arm_short' || 'corner_arm_jump' => 'corner_arm',
   'vri_above_maximum' || 'vri_below_minimum' || 'vri_no_depth' => 'vri_limits',
   'pivot_elec_drop' || 'pivot_elec_no_towers' || 'pivot_elec_start_drop' => 'pivot_elec_drop',
+  // 1.6.0 AGR
+  'req_leaching_infeasible' => 'area_leaching_infeasible',
   _ => raw,
 };
 
@@ -295,6 +297,14 @@ const adviceCodes = [
   'vih_not_in_flow',
   'vih_pressure_deficit',
   'vih_pressure_high',
+  // 1.6.0 AGR
+  'area_rate_exceeds_soil',
+  'area_eto_climate',
+  'area_planting_date',
+  'area_leaching_infeasible',
+  'elec_station_current',
+  'elec_overcurrent',
+  'pivot_pkg_slow_drive',
 ];
 
 AdviceLevel _level(String code) => switch (code) {

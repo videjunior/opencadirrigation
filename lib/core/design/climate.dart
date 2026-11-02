@@ -143,12 +143,20 @@ double clearSkyRadiationMJ(double raMJ, double elevationM, {double? angstromSum}
 /// for the grass reference).
 double netShortwaveRadiationMJ(double rsMJ, {double albedo = 0.23}) => (1 - albedo) * rsMJ;
 
+/// Lowest relative shortwave radiation Rs/Rso of the cloudiness factor
+/// (ASCE-EWRI 2005, The ASCE Standardized Reference Evapotranspiration
+/// Equation, eq. 18: 0.3 ≤ Rs/Rso ≤ 1.0, so 0.05 ≤ 1.35·Rs/Rso − 0.35 ≤ 1).
+const double minRelativeShortwave = 0.3;
+
 /// Net outgoing longwave radiation Rnl (MJ m⁻² day⁻¹), FAO-56 eq. 39, with
-/// Rs/Rso limited to 1.
+/// Rs/Rso limited to 0.3–1.0 as ASCE-EWRI (2005) eq. 18 does: below 0.26 the
+/// cloudiness factor would turn negative and the soil would gain longwave
+/// radiation under a heavy overcast or in the polar night (Rso = 0 takes the
+/// lower limit).
 double netLongwaveRadiationMJ(double tMaxC, double tMinC, double eaKPa, double rsMJ, double rsoMJ) {
   final tx = tMaxC + _kelvin, tn = tMinC + _kelvin;
   final sigmaT4 = stefanBoltzmannMJPerM2Day * (tx * tx * tx * tx + tn * tn * tn * tn) / 2;
-  final ratio = rsoMJ > 0 ? (rsMJ / rsoMJ).clamp(0.0, 1.0) : 0.0;
+  final ratio = rsoMJ > 0 ? (rsMJ / rsoMJ).clamp(minRelativeShortwave, 1.0) : minRelativeShortwave;
   return sigmaT4 * (0.34 - 0.14 * math.sqrt(math.max(eaKPa, 0.0))) * (1.35 * ratio - 0.35);
 }
 
@@ -199,6 +207,10 @@ enum Fao56Estimate {
 
   /// Wind speed below 0.5 m/s raised to 0.5 m/s.
   windLimited,
+
+  /// Rs/Rso below 0.3 (heavy overcast, polar night) raised to 0.3 in the
+  /// net longwave radiation (ASCE-EWRI 2005 eq. 18).
+  cloudinessLimited,
 }
 
 /// Inputs of a FAO Penman-Monteith calculation for one day, or for the mean
@@ -372,6 +384,7 @@ Fao56Result fao56Eto(Fao56Input i) {
     }
   }
   final rns = netShortwaveRadiationMJ(rs, albedo: i.albedo);
+  if (rso <= 0 || rs / rso < minRelativeShortwave) estimated.add(Fao56Estimate.cloudinessLimited);
   final rnl = netLongwaveRadiationMJ(i.tMaxC, i.tMinC, ea, rs, rso);
   final rn = rns - rnl;
   // wind

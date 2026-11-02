@@ -9,6 +9,7 @@ import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/state/design_runner.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/app/widgets/dialogs/agronomy_dialogs.dart';
+import 'package:opencadirrigation/core/design/climate.dart';
 import 'package:opencadirrigation/core/io/climate_online.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
@@ -96,6 +97,9 @@ void main() {
     expect(sc.lastYear - sc.firstYear, 1);
     expect(sc.etoMmDay, everyElement(closeTo(4, 1e-9)));
     expect(sc.solarKWhM2Day, everyElement(closeTo(5, 1e-6)));
+    // the humidity and the wind of the Kc adjustment (FAO-56 eqs. 62, 65)
+    expect(sc.rhMinPct, everyElement(closeTo(40, 1e-9)));
+    expect(sc.windSpeed2mMs, everyElement(closeTo(windSpeedAt2m(3, 10), 1e-9)));
     expect(c.project.climate, same(sc));
     expect(c.historyIndex, before + 1);
     // kept in the file
@@ -126,7 +130,8 @@ void main() {
     // July ETo typed over the download
     showSiteClimateDialog(ctxOf(tester), c);
     await settle(tester);
-    final july = find.descendant(of: find.byType(Table), matching: find.byType(TextField)).at(6 * 4);
+    // six fields a month: ETo, rain, dependable rain, radiation, RHmin, wind
+    final july = find.descendant(of: find.byType(Table), matching: find.byType(TextField)).at(6 * 6);
     await tester.tap(july);
     await tester.enterText(july, '6,5');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -144,6 +149,67 @@ void main() {
     await tester.tap(find.text('Remover clima'));
     await settle(tester);
     expect(c.project.climate, isNull);
+  });
+
+  testWidgets('station normals give the FAO-56 Penman-Monteith ETo of every month (AGR-13)', (tester) async {
+    final c = await pumpShell(tester);
+    await settle(tester);
+    showSiteClimateDialog(ctxOf(tester), c);
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('clim_tab_station')));
+    await settle(tester, 2);
+    expect(find.text('Preencha Tmáx e Tmín dos meses para calcular a ETo'), findsOneWidget);
+    Future<void> type(Key k, String v) async {
+      await tester.enterText(find.byKey(k), v);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+    }
+
+    // FAO-56 Example 20: Lyon (45°43' N, 200 m), July, Tmax 26.6 and Tmin 14.8 only: 4.56 mm/day
+    await type(const Key('st_lat'), '45,7167');
+    await type(const Key('st_elev'), '200');
+    for (var m = 0; m < 12; m++) {
+      await type(ValueKey('st_tmax_$m'), '26,6');
+      await type(ValueKey('st_tmin_$m'), '14,8');
+    }
+    await settle(tester, 2);
+    expect(find.text('4.56'), findsWidgets);
+    expect(find.textContaining('umidade pela Tmín'), findsWidgets);
+    expect(find.textContaining('radiação pela amplitude térmica'), findsWidgets);
+    expect(find.textContaining('vento de 2 m/s'), findsWidgets);
+    await tester.tap(find.byKey(const Key('clim_station_apply')));
+    await settle(tester, 2);
+    // back on the monthly values, filled
+    expect(find.byKey(const Key('clim_download')), findsNothing, reason: 'no site: no download');
+    await tester.tap(find.byKey(const Key('clim_ok')));
+    await settle(tester);
+    final sc = c.project.climate!;
+    expect(sc.source, 'station');
+    expect(sc.etoMmDay[6], closeTo(4.56, 0.01));
+    expect(sc.windSpeed2mMs, everyElement(closeTo(2, 1e-9)));
+    // FAO-56 eq. 63 with the vapour pressure from Tmin: 1.68 / 3.48 kPa
+    expect(sc.rhMinPct![6], closeTo(100 * 1.68 / 3.48, 0.3));
+  });
+
+  testWidgets('the climate puts the ETo of the design month on the areas with a typed ETo (AGR-05)', (tester) async {
+    final c = await pumpShell(tester);
+    final typed = AreaEntity(id: c.project.newId(), points: const [Pt(0, 0), Pt(50, 0), Pt(50, 50), Pt(0, 50)], useWaterBalance: true, etoMmDay: 5);
+    final crop = AreaEntity(id: c.project.newId(), points: const [Pt(60, 0), Pt(90, 0), Pt(90, 30), Pt(60, 30)], useWaterBalance: true, etoMmDay: 5, cropKey: 'crop.maize');
+    c.addEntity(typed);
+    c.addEntity(crop);
+    c.setClimate(SiteClimate(etoMmDay: [7.5, 7.0, 6.0, 5.0, 4.0, 3.5, 3.5, 4.5, 5.5, 6.5, 7.0, 7.5], rainMm: List.filled(12, 0)));
+    await settle(tester);
+    final before = c.historyIndex;
+    showSiteClimateDialog(ctxOf(tester), c);
+    await settle(tester);
+    expect(find.byKey(const Key('clim_fill_areas')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('clim_ok')));
+    await settle(tester);
+    expect(typed.etoMmDay, 7.5);
+    expect(crop.etoMmDay, 5, reason: 'a crop of the table takes the climate by itself');
+    expect(c.historyIndex, before + 1);
+    c.undo();
+    expect((c.project.byId(typed.id) as AreaEntity).etoMmDay, 5);
   });
 
   testWidgets('an area with a crop of the table gets the requirement report; the calculators open', (tester) async {

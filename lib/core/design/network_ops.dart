@@ -741,7 +741,9 @@ FertigationTravel? zoneTravel(Designer d, ZoneResult z, Map<String, GLink> links
       if (net.nodes.containsKey(id) && (d.model.nodes[id]?.emitters.isNotEmpty ?? false)) id,
   ];
   final res = NetworkResult(converged: true, iterations: 0, nodes: const {}, links: flows, warnings: const [], relativeFlowError: 0);
-  return fertigationTravel(net, res, nodes.$2, outlets: outlets);
+  // the lumps of the laterals: the travel follows their real emitters (AGR-16)
+  final lumps = {for (final id in outlets) id: d.model.nodes[id]!.emitters.fold(0, (s, e) => s + e.count)};
+  return fertigationTravel(net, res, nodes.$2, outlets: outlets, emittersAt: lumps);
 }
 
 /// Travel times of a product injected at [injectionId] (a supply or a

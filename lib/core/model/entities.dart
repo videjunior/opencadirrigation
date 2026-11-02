@@ -361,6 +361,10 @@ sealed class Entity {
           rainMethod: j['erm'] as String? ?? 'usdaScs',
           useDependableRain: j['dep'] as bool? ?? false,
           plantWaterUse: j['pwu'] as String? ?? '',
+          // 1.6.0 AGR
+          localizedKr: d('kr'),
+          yieldPotentialPct: d('yp', 100),
+          climateKc: j['kcc'] as bool? ?? true,
         );
       case EntityType.pivot:
         return PivotEntity(
@@ -405,6 +409,9 @@ sealed class Entity {
           outputVolts: d('v', 24),
           cost: d('cost'),
           maxSimultaneous: (j['sim'] as num?)?.toInt() ?? 0,
+          // 1.6.0 AGR
+          stationMaxA: d('ist'),
+          totalMaxA: d('itot'),
           accessories: {
             for (final e in ((j['acc'] as Map?) ?? const {}).entries)
               if (e.value is num) e.key as String: (e.value as num).toDouble(),
@@ -1995,6 +2002,9 @@ class AreaEntity extends Entity with PolyEntity {
     this.rainMethod = 'usdaScs',
     this.useDependableRain = false,
     this.plantWaterUse = '',
+    this.localizedKr = 0,
+    this.yieldPotentialPct = 100,
+    this.climateKc = true,
   });
   @override
   List<Pt> points;
@@ -2051,6 +2061,18 @@ class AreaEntity extends Entity with PolyEntity {
   /// Fraction of the area wetted (localized irrigation).
   double wettedFraction;
 
+  /// Localized irrigation reduction factor Kr typed by the designer (0 =
+  /// from [groundCover]).
+  double localizedKr;
+
+  /// Yield potential (%) whose soil salinity sets the leaching requirement
+  /// (FAO-29; 100 = no yield loss).
+  double yieldPotentialPct;
+
+  /// Adjust Kc mid and Kc end of a crop of the FAO-56 table to the minimum
+  /// humidity and wind of the site climate (FAO-56 eqs. 62 and 65).
+  bool climateKc;
+
   double get area => polygonArea(points).abs();
 
   /// Crop evapotranspiration ETc = ETo·Kc (mm/day).
@@ -2091,6 +2113,9 @@ class AreaEntity extends Entity with PolyEntity {
     rainMethod: rainMethod,
     useDependableRain: useDependableRain,
     plantWaterUse: plantWaterUse,
+    localizedKr: localizedKr,
+    yieldPotentialPct: yieldPotentialPct,
+    climateKc: climateKc,
   );
   @override
   AreaEntity translated(Pt d) => clone()..points = points.map((p) => p + d).toList();
@@ -2123,6 +2148,9 @@ class AreaEntity extends Entity with PolyEntity {
     if (rainMethod != 'usdaScs') 'erm': rainMethod,
     if (useDependableRain) 'dep': true,
     if (plantWaterUse.isNotEmpty) 'pwu': plantWaterUse,
+    if (localizedKr > 0) 'kr': localizedKr,
+    if (yieldPotentialPct != 100) 'yp': yieldPotentialPct,
+    if (!climateKc) 'kcc': false,
   };
 }
 
@@ -2144,6 +2172,8 @@ class ControllerEntity extends Entity with PointEntity {
     this.outputVolts = 24,
     this.cost = 0,
     this.maxSimultaneous = 0,
+    this.stationMaxA = 0,
+    this.totalMaxA = 0,
     Map<String, double>? accessories,
   }) : accessories = accessories ?? {};
   @override
@@ -2162,6 +2192,12 @@ class ControllerEntity extends Entity with PointEntity {
   /// say): the common wire carries their currents together.
   int maxSimultaneous;
 
+  /// Largest current one station output and the whole controller deliver
+  /// (A; 0 = the typical values of 24 V AC controllers, see
+  /// `electrical.dart`).
+  double stationMaxA;
+  double totalMaxA;
+
   /// Sensors and accessories fitted (rain, soil moisture, flow, freeze and
   /// wind sensors, pump start relay, surge protection; see
   /// [controllerAccessoryKinds]) with their prices for the bill of materials.
@@ -2178,6 +2214,8 @@ class ControllerEntity extends Entity with PointEntity {
     outputVolts: outputVolts,
     cost: cost,
     maxSimultaneous: maxSimultaneous,
+    stationMaxA: stationMaxA,
+    totalMaxA: totalMaxA,
     accessories: Map.of(accessories),
   );
   @override
@@ -2192,6 +2230,8 @@ class ControllerEntity extends Entity with PointEntity {
     'v': outputVolts,
     if (cost > 0) 'cost': cost,
     if (maxSimultaneous > 0) 'sim': maxSimultaneous,
+    if (stationMaxA > 0) 'ist': stationMaxA,
+    if (totalMaxA > 0) 'itot': totalMaxA,
     if (accessories.isNotEmpty) 'acc': accessories,
   };
 }

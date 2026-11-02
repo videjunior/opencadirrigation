@@ -14,6 +14,7 @@ import '../translate.dart';
 import '../units.dart';
 import 'agronomy.dart';
 import 'area_requirement.dart';
+import 'area_water.dart';
 import 'designer.dart';
 import 'proposal.dart';
 import 'results.dart';
@@ -651,11 +652,11 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
                 '-',
                 wireName(d.commonWireId),
                 d.maxOpen,
-                '${fmt(d.peakCurrentA, 2)} A',
-                d.overloaded ? labels.warning('elec_stations') : '',
+                '${fmt(d.peakCurrentA, 2)} A / ${fmt(d.totalLimitA, 2)} A',
+                [if (d.overloaded) labels.warning('elec_stations'), if (d.overcurrent) labels.warning('elec_overcurrent')].join('; '),
               ],
           ],
-          warn: [for (final run in el.runs) !run.ok, for (final d in el.controllers) d.overloaded],
+          warn: [for (final run in el.runs) !run.ok, for (final d in el.controllers) d.overloaded || d.overcurrent],
         ),
       );
     }
@@ -739,6 +740,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
         title: t('reports.crop'),
         headers: [
           t('rep.area'),
+          t('area.designMonth'),
+          'Kr',
           'ETc (${u.depthPerDayLabel})',
           '${t('rep.raw')} (${u.depthLabel})',
           t('rep.interval'),
@@ -753,6 +756,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           for (final c in crops)
             [
               c.name,
+              c.month == null ? '-' : t('mon.${c.month}'),
+              RNum(c.kr, 2),
               RNum(u.depthFromMm(c.etcMmDay), 2),
               RNum(u.depthFromMm(c.rawMm), 2),
               RNum(c.intervalDays, 0),
@@ -768,11 +773,8 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     );
     final prog = buildControllerProgram(project, results, days: 7);
     if (prog.entries.isNotEmpty) {
-      String hhmm(double h) {
-        final hh = h.floor() % 24, mm = ((h - h.floor()) * 60).round();
-        return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
-      }
-
+      // rounded to the minute, "+1 d" for an end after midnight
+      String hhmm(double h) => clockText(h, t: t);
       out.add(
         ReportTable(
           key: 'schedule',
@@ -793,12 +795,14 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
     final rows = <List<Object>>[];
     final warn = <bool>[];
     final totals = <List<Object>>[];
+    final totalsWarn = <bool>[];
     for (final e in reqTables.entries) {
       final a = project.byId(e.key);
       final name = a == null || a.name.isEmpty ? labels.name(e.key) : a.name;
       for (final row in e.value.monthly) {
         if (row.cropDays == 0) continue;
-        final d = math.max(1, row.end.difference(row.start).inDays + 1);
+        // water too saline for the crop: no gross depth can keep the yield
+        Object na(Object v) => row.applicable ? v : '-';
         rows.add([
           name,
           t(row.cropKey),
@@ -811,18 +815,20 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           RNum(u.depthFromMm(row.rainMm), 1),
           RNum(u.depthFromMm(row.effectiveRainMm), 1),
           RNum(u.depthFromMm(row.netMm), 1),
-          RNum(row.leachingFraction * 100, 1),
-          RNum(u.depthFromMm(row.grossMm), 1),
-          RNum(u.depthFromMm(row.grossMm / d), 2),
+          na(RNum(row.leachingFraction * 100, 1)),
+          na(RNum(u.depthFromMm(row.grossMm), 1)),
+          // per day of crop in the field (the month of planting has fewer)
+          na(RNum(u.depthFromMm(row.grossMmDay), 2)),
           RNum(u.depthFromMm(row.rawMm), 1),
           row.intervalDays,
-          RNum(u.depthFromMm(row.grossPerEventMm), 1),
+          na(RNum(u.depthFromMm(row.grossPerEventMm), 1)),
           row.hoursPerEvent == null ? '-' : RNum(row.hoursPerEvent!, 2),
-          RNum(u.volumeFromM3(row.volumeM3), 0),
+          na(RNum(u.volumeFromM3(row.volumeM3), 0)),
         ]);
         warn.add(row.warnings.any((w) => w != 'req_no_application_rate'));
       }
       final tt = e.value.areaTotals;
+      totalsWarn.add(tt.notApplicableRows > 0);
       totals.add([
         name,
         RNum(u.depthFromMm(tt.etoMm), 0),
@@ -880,6 +886,7 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           '${t('req.peakVolume')} (${u.volumeLabel}/d)',
         ],
         rows: totals,
+        warn: totalsWarn,
       ),
     );
   }
@@ -1316,7 +1323,7 @@ List<ReportTable> mechanisedTables(Project project, DesignResults r, ReportLabel
     for (final tw in e.towers) {
       elRows.add([
         name,
-        tw.index,
+        tw.arm ? '${tw.index} (${t('mech.armTower')})' : tw.index,
         RNum(u.lengthFromSi(tw.radiusM), 0),
         RNum(u.lengthFromSi(tw.cableM), 0),
         RNum(tw.spanCurrentA, 1),
@@ -1355,17 +1362,18 @@ List<ReportTable> mechanisedTables(Project project, DesignResults r, ReportLabel
 }
 
 /// Category (A, B or C) of an irrigation project for the environmental
-/// licensing of Brazilian Resolution CONAMA 284/2001 (annex): by the
-/// irrigated area of the property and the method — sprinkler below 100 ha,
-/// up to 1 000 ha, beyond; micro-irrigation below 500 ha, up to 1 000 ha,
-/// beyond; surface below 50 ha, up to 100 ha, beyond. Informative: the
-/// validity of the resolution and the rules of each state agency must be
-/// checked.
+/// licensing of Brazilian Resolution CONAMA 284/2001, by the irrigated area
+/// of the property and the method, as in the table of its Art. 1º:
+/// sprinkler A below 100 ha, B from 100 to 500 ha, C beyond 500 ha;
+/// localized (micro-irrigation) A below 500 ha, B from 500 to 1 000 ha, C
+/// beyond 1 000 ha; surface A below 50 ha, B from 50 to 500 ha, C beyond
+/// 500 ha. Informative: the validity of the resolution and the rules of each
+/// state agency must be checked.
 String conamaCategory(String method, double hectares) {
   final (a, b) = switch (method) {
     'localized' => (500.0, 1000.0),
-    'surface' => (50.0, 100.0),
-    _ => (100.0, 1000.0),
+    'surface' => (50.0, 500.0),
+    _ => (100.0, 500.0),
   };
   return hectares < a ? 'A' : (hectares <= b ? 'B' : 'C');
 }
@@ -1376,7 +1384,7 @@ String conamaCategory(String method, double hectares) {
 List<(String, double, String)> licensingRows(Project project) {
   final ha = <String, double>{};
   for (final e in project.entities) {
-    if (e is AreaEntity && e.points.length >= 3) ha[e.irrigationMethod] = (ha[e.irrigationMethod] ?? 0) + e.area / 10000;
+    if (e is AreaEntity && e.points.length >= 3) ha[areaIrrigationMethod(e)] = (ha[areaIrrigationMethod(e)] ?? 0) + e.area / 10000;
     // a machine on a field already drawn as an area counts once
     if (e is PivotEntity && !project.entities.any((a) => a is AreaEntity && a.points.length >= 3 && pointInPolygon(e.center, a.points))) {
       ha['sprinkler'] = (ha['sprinkler'] ?? 0) + polygonArea(e.outline()).abs() / 10000;
