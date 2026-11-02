@@ -196,9 +196,10 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       final tutorialLink = tut != null && tut > 0;
       // ?ai=1 (the site's "Open the AI assistant" button, the app shortcut)
       final aiLink = q['ai'] == '1';
-      // an example only when the address asks for one (the tutorial and the
-      // designed sample work on the orchard); otherwise the app starts empty
-      if (example != null || designLink || tutorialLink) loadExampleAction(c, example ?? ExampleId.orchard);
+      // an example only when the address asks for one (the designed sample
+      // works on the orchard; the tutorial opens its own); otherwise the app
+      // starts empty
+      if (example != null || designLink) loadExampleAction(c, example ?? ExampleId.orchard);
       if (designLink) c.runDesign();
       if (tutorialLink && mounted) {
         startTutorial(startAt: tut - 1);
@@ -260,10 +261,18 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     if (mounted) setState(() {});
   }
 
+  /// Help → Interactive tutorial (also the welcome's "Start tutorial" and
+  /// `?tutorial=N`): the orchard example in a tab of its own — the blank tab
+  /// of a fresh start is used, any other project stays as it is in its tab —
+  /// so the steps find what they talk about and their "Show me" demos never
+  /// change the user's work.
   void startTutorial({int startAt = 0}) {
-    c.select(const []);
-    c.setTool(ToolId.select);
-    tutorial.start(buildTutorialSteps(c.lang), startAt: startAt);
+    final cur = c;
+    final target = cur.project.entities.isEmpty && !cur.dirty ? cur : ws.addTab();
+    loadExampleAction(target);
+    target.select(const []);
+    target.setTool(ToolId.select);
+    tutorial.start(buildTutorialSteps(target.lang), startAt: startAt);
   }
 
   /// Help → Welcome and example gallery.
