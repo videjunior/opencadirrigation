@@ -229,7 +229,8 @@ void main() {
       expect(local.warnings, ['crs_missing']);
       expect(local.place(10, 20), const Pt(10, 20));
       expect(local.georef, isNull);
-      final unknown = GeoPlacement.plan(parseCrs('EPSG:5880'), [(5123456.7, 8123456.7)]);
+      // web Mercator (Brazil Polyconic, 5880, is known since 1.6.0)
+      final unknown = GeoPlacement.plan(parseCrs('EPSG:3857'), [(5123456.7, 8123456.7)]);
       expect(unknown.warnings, ['crs_epsg_unknown']);
       expect(unknown.georef, isNull);
       expect(unknown.localOrigin, const Pt(5123500, 8123500));

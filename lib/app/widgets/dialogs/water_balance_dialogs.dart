@@ -170,7 +170,7 @@ Future<void> showWaterBalanceDialog(BuildContext context, ProjectController c) {
                   line: Cad.accent,
                   raw: Cad.caution,
                   taw: Cad.error,
-                  rain: Cad.info,
+                  rainfall: Cad.info,
                   irrigation: Cad.ok,
                   grid: Cad.chartGrid,
                   text: Cad.fg60,
@@ -237,9 +237,19 @@ Widget _legend(Color color, String label) => Row(
 /// The depletion of the root zone day by day (0 at the top: field
 /// capacity), the RAW and TAW lines, the rain and the irrigations as bars.
 class BalanceChartPainter extends CustomPainter {
-  BalanceChartPainter(this.r, {required this.line, required this.raw, required this.taw, required this.rain, required this.irrigation, required this.grid, required this.text, required this.labels});
+  BalanceChartPainter(
+    this.r, {
+    required this.line,
+    required this.raw,
+    required this.taw,
+    required this.rainfall,
+    required this.irrigation,
+    required this.grid,
+    required this.text,
+    required this.labels,
+  });
   final BalanceResult r;
-  final Color line, raw, taw, rain, irrigation, grid, text;
+  final Color line, raw, taw, rainfall, irrigation, grid, text;
   final (String, String, String) labels;
 
   @override
@@ -273,7 +283,7 @@ class BalanceChartPainter extends CustomPainter {
       final bw = math.max(1.0, w / days.length);
       for (var i = 0; i < days.length; i++) {
         final d = days[i];
-        if (d.rainMm > 0) canvas.drawRect(Rect.fromLTWH(x(i) - bw / 2, top, bw, h * 0.25 * d.rainMm / maxBar), Paint()..color = rain.withValues(alpha: 0.55));
+        if (d.rainMm > 0) canvas.drawRect(Rect.fromLTWH(x(i) - bw / 2, top, bw, h * 0.25 * d.rainMm / maxBar), Paint()..color = rainfall.withValues(alpha: 0.55));
         if (d.netIrrigationMm > 0) canvas.drawRect(Rect.fromLTWH(x(i) - bw / 2, top, bw, h * 0.25 * d.netIrrigationMm / maxBar), Paint()..color = irrigation.withValues(alpha: 0.8));
       }
     }

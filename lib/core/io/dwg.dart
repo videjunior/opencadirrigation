@@ -350,6 +350,12 @@ class _Entity {
   double colSpacing = 0;
   double rowSpacing = 0;
 
+  /// INSERT / MINSERT: the handles of its attributes (R2004+), or the first
+  /// and the last of them (R13–R2000, a range of handles).
+  List<int> ownedAttribs = const [];
+  int firstAttrib = 0;
+  int lastAttrib = 0;
+
   /// 3DFACE: the elevations of the corners in [points].
   List<double> cornerZ = const [];
 
@@ -2242,7 +2248,7 @@ class DwgReader {
         e.rotation = br.readBD() * 180 / math.pi;
         e.ocsMirror = br.readExtrusion();
         final hasAttribs = br.readB() == 1;
-        if (ver.index >= DwgVersion.r2004.index && hasAttribs) br.readBL(); // owned attribs
+        final ownedAttribs = ver.index >= DwgVersion.r2004.index && hasAttribs ? br.readBL() : 0;
         if (type == 8) {
           e.cols = br.readBS();
           e.rows = br.readBS();
@@ -2254,6 +2260,16 @@ class DwgReader {
         e.scaleY = sy;
         readCommonHandles();
         e.blockHandle = _absHandle(hr.readH(), handle);
+        // its attributes: by them an ATTRIB written in model space (as
+        // LibreDWG writes them, with no owner) still belongs to it
+        if (hasAttribs) {
+          if (ver.index >= DwgVersion.r2004.index) {
+            e.ownedAttribs = [for (var i = 0; i < ownedAttribs && i < 100000; i++) _absHandle(hr.readH(), handle)];
+          } else {
+            e.firstAttrib = _absHandle(hr.readH(), handle);
+            e.lastAttrib = _absHandle(hr.readH(), handle);
+          }
+        }
         _entities.add(_withLayer(e, layerHandle, owner));
         return;
       case 45: // LEADER: its vertices only (a polyline, as the DXF reader takes it)
@@ -2311,6 +2327,9 @@ class DwgReader {
       ..rows = e.rows
       ..colSpacing = e.colSpacing
       ..rowSpacing = e.rowSpacing
+      ..ownedAttribs = e.ownedAttribs
+      ..firstAttrib = e.firstAttrib
+      ..lastAttrib = e.lastAttrib
       ..cornerZ = e.cornerZ
       ..attribTag = e.attribTag
       ..invisible = e.invisible
@@ -2669,10 +2688,38 @@ class DwgReader {
       }
     }
 
+    // the INSERT of each ATTRIB: its owner, or, for one written without an
+    // owner (in model space, as LibreDWG does), the INSERT that lists it
+    final attribOwner = <int, int>{};
+    final attribHandles = [
+      for (final e in _entities)
+        if (e.type == 2) e.handle,
+    ]..sort();
+    for (final e in _entities) {
+      if (e.type != 7 && e.type != 8) continue;
+      for (final h in e.ownedAttribs) {
+        attribOwner[h] = e.handle;
+      }
+      if (e.firstAttrib == 0 || e.lastAttrib < e.firstAttrib) continue;
+      var lo = 0, hi = attribHandles.length;
+      while (lo < hi) {
+        final mid = (lo + hi) >> 1;
+        if (attribHandles[mid] < e.firstAttrib) {
+          lo = mid + 1;
+        } else {
+          hi = mid;
+        }
+      }
+      for (var i = lo; i < attribHandles.length && attribHandles[i] <= e.lastAttrib; i++) {
+        attribOwner[attribHandles[i]] = e.handle;
+      }
+    }
+    int? insertOf(_Entity e) => e.type != 2 ? null : (e.entmode == 0 ? e.owner : attribOwner[e.handle]);
     // the attributes of each INSERT (invisible ones included), by its handle
     final attributesOf = <int, Map<String, String>>{};
     for (final e in _entities) {
-      if (e.type == 2 && e.entmode == 0 && e.attribTag.isNotEmpty) (attributesOf[e.owner] ??= {})[e.attribTag] = e.text.trim();
+      final ins = insertOf(e);
+      if (ins != null && e.attribTag.isNotEmpty) (attributesOf[ins] ??= {})[e.attribTag] = e.text.trim();
     }
     DxfInsert toInsert(_Entity e) =>
         DxfInsert(
@@ -2752,9 +2799,10 @@ class DwgReader {
       if (e.type == 2 && e.invisible) continue;
       final isInsert = e.type == 7 || e.type == 8 || (e.type >= 20 && e.type <= 26);
       // attributes belong to their INSERT: drawn where it is
-      final ofInsert = e.type == 2 && e.entmode == 0 && (insertInModel.contains(e.owner) || insertSpace.containsKey(e.owner));
+      final insert = insertOf(e);
+      final ofInsert = insert != null && (insertInModel.contains(insert) || insertSpace.containsKey(insert));
       // model space: entmode 2, or entmode 0 owned by *Model_Space
-      final inModel = ofInsert ? insertInModel.contains(e.owner) : inModelSpace(e);
+      final inModel = ofInsert ? insertInModel.contains(insert) : inModelSpace(e);
       // hatch islands become closed polylines next to the hatch
       Iterable<DxfEntity> converted() sync* {
         if ((e.type == 28 && e.cornerZ.any((z) => z != 0)) || e.type == 29 || e.type == 30) {
@@ -2780,7 +2828,7 @@ class DwgReader {
         continue;
       }
       if (e.entmode == 1 && !ofInsert) continue; // paper space
-      final b = ofInsert ? insertSpace[e.owner] : blockFor(e);
+      final b = ofInsert ? insertSpace[insert] : blockFor(e);
       if (b == null) continue;
       if (isInsert) {
         blockInserts.putIfAbsent(b.handle, () => []).add(toInsert(e));

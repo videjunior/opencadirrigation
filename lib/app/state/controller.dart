@@ -2349,6 +2349,9 @@ class ProjectController extends ChangeNotifier {
     final pending = _autoJob;
     if (autoRunning && pending != null) await pending;
     busy = true;
+    // the edits from here on are made while the design runs ("edit during
+    // the design"), the frame yielded below included: they make it stale
+    final gen = _editSeq;
     progress = null;
     if (!_assistantRounds) _cancelRequested = false;
     track('design');
@@ -2356,7 +2359,6 @@ class ProjectController extends ChangeNotifier {
     await _yieldFrame();
     try {
       if (_cancelRequested) throw const DesignCancelled();
-      final gen = _editSeq;
       final request = DesignRequest.of(project, lang: lang, sizeZones: sizeZones, sizeMain: sizeMain);
       final response = await designRunner.run(
         request,

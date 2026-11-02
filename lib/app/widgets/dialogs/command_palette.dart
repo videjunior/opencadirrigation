@@ -152,35 +152,6 @@ List<PaletteEntry> buildPaletteEntries(ProjectController c, {void Function(Strin
   final out = <PaletteEntry>[];
   final bar = AppMenuBar.barKey.currentWidget;
   if (bar is MenuBar) out.addAll(paletteFromMenus(bar.children, englishOf: englishOf));
-  // the typed commands: those whose target a menu already holds lend it their aliases
-  if (runAlias != null) {
-    final byTarget = <Object, List<String>>{};
-    for (final e in commandAliases.entries) {
-      (byTarget[e.value] ??= []).add(e.key);
-    }
-    final byLabel = <String, int>{for (var i = 0; i < out.length; i++) foldSearch(out[i].label): i};
-    for (final e in byTarget.entries) {
-      final target = e.key;
-      final label = target is ToolId ? t('tool.${target.name}') : t(actionLabelKey(target as CadAction));
-      final aliases = e.value;
-      final at = byLabel[foldSearch(label.replaceFirst(RegExp(r'…$'), ''))] ?? byLabel[foldSearch(label)];
-      if (at != null) {
-        final m = out[at];
-        out[at] = PaletteEntry(label: m.label, path: m.path, shortcut: m.shortcut, icon: m.icon, checked: m.checked, run: m.run, keywords: '${m.keywords} ${aliases.join(' ')}');
-        continue;
-      }
-      out.add(
-        PaletteEntry(
-          label: label,
-          path: t('pal.commands'),
-          shortcut: '${aliases.take(3).join(' · ')} ⏎',
-          icon: target is ToolId ? Icons.edit_outlined : Icons.terminal,
-          keywords: '${aliases.join(' ')} ${englishOf(label)}',
-          run: () => runAlias(aliases.first),
-        ),
-      );
-    }
-  }
   final settings = t('pal.settings');
   void refresh() => c.refresh();
   PaletteEntry toggle(String label, bool value, void Function(bool v) set, {IconData? icon, String shortcut = ''}) => PaletteEntry(
@@ -232,6 +203,36 @@ List<PaletteEntry> buildPaletteEntries(ProjectController c, {void Function(Strin
     toggle(t('uiv.focus'), uiFocusMode.value, setFocusMode, icon: Icons.fullscreen, shortcut: 'Ctrl+Alt+F'),
     toggle(t('uiv.side'), uiSideFolded.value, setSideFolded, icon: Icons.view_sidebar_outlined),
   ]);
+  // the typed commands: those whose target a menu or a switch above already
+  // holds lend it their aliases (one Snap entry, which switches it at once)
+  if (runAlias != null) {
+    final byTarget = <Object, List<String>>{};
+    for (final e in commandAliases.entries) {
+      (byTarget[e.value] ??= []).add(e.key);
+    }
+    final byLabel = <String, int>{for (var i = 0; i < out.length; i++) foldSearch(out[i].label): i};
+    for (final e in byTarget.entries) {
+      final target = e.key;
+      final label = target is ToolId ? t('tool.${target.name}') : t(actionLabelKey(target as CadAction));
+      final aliases = e.value;
+      final at = byLabel[foldSearch(label.replaceFirst(RegExp(r'…$'), ''))] ?? byLabel[foldSearch(label)];
+      if (at != null) {
+        final m = out[at];
+        out[at] = PaletteEntry(label: m.label, path: m.path, shortcut: m.shortcut, icon: m.icon, checked: m.checked, run: m.run, keywords: '${m.keywords} ${aliases.join(' ')}');
+        continue;
+      }
+      out.add(
+        PaletteEntry(
+          label: label,
+          path: t('pal.commands'),
+          shortcut: '${aliases.take(3).join(' · ')} ⏎',
+          icon: target is ToolId ? Icons.edit_outlined : Icons.terminal,
+          keywords: '${aliases.join(' ')} ${englishOf(label)}',
+          run: () => runAlias(aliases.first),
+        ),
+      );
+    }
+  }
   return out;
 }
 

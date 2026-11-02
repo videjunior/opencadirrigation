@@ -70,9 +70,11 @@ void main() {
         expect(v is ToolId || v is CadAction, isTrue);
       }
       expect(commandAliases.keys.every((k) => k == k.toUpperCase() && k.isNotEmpty), isTrue, reason: 'aliases are typed in upper case');
-      // (the insert block tool is started by its dialog, which INSERT opens)
+      // (the insert block tool is started by its dialog, which INSERT opens;
+      // the field photo tool by Draw → Field photo, once the photo is chosen
+      // and has no place of its own: it waits for the click that places it)
       expect(commandAliases['INSERT'], CadAction.insertBlock);
-      final drawing = ToolId.values.where((t) => t != ToolId.select && t != ToolId.insertBlock);
+      final drawing = ToolId.values.where((t) => t != ToolId.select && t != ToolId.insertBlock && t != ToolId.fieldPhoto);
       for (final t in drawing) {
         expect(aliasOf(t), isNotNull, reason: '${t.name} has no alias');
       }
