@@ -10,6 +10,11 @@ import '../../core/units.dart';
 /// the cursor ("direct distance entry"). Values are in the display unit
 /// ([toSi] converts them); the separator is `,` with decimal points, or `;`
 /// with decimal points or commas. Null when [text] is none of these.
+///
+/// 1.6.0 CAD: the angle of `@d<a` may be an azimuth (`A120`, `AZ120`:
+/// degrees clockwise from north) or a bearing of field surveys (`N45E`,
+/// `S30W`, `N45.5L`, `45NE`: degrees from north or south towards east or
+/// west; L and O are east and west in Portuguese), see [parseTypedAngle].
 Pt? parseTypedPoint(String text, {Pt? reference, Pt? cursor, double Function(double v) toSi = _same}) {
   var s = text.trim().replaceAll(' ', '');
   if (s.isEmpty) return null;
@@ -20,7 +25,7 @@ Pt? parseTypedPoint(String text, {Pt? reference, Pt? cursor, double Function(dou
     if (reference == null) return null;
     final parts = s.split('<');
     if (parts.length != 2) return null;
-    final d = num(parts[0]), a = num(parts[1]);
+    final d = num(parts[0]), a = parseTypedAngle(parts[1]);
     if (d == null || a == null) return null;
     return reference + Pt.polar(toSi(d), a * math.pi / 180);
   }
@@ -45,6 +50,37 @@ Pt? parseTypedPoint(String text, {Pt? reference, Pt? cursor, double Function(dou
 }
 
 double _same(double v) => v;
+
+/// 1.6.0 CAD: an angle typed after `<`, in degrees counter-clockwise from
+/// east: a plain number, an azimuth (`A120`, `AZ120`, clockwise from north)
+/// or a bearing (`N45E`, `S30W`, `N45L`, `S10O`, `45NE`, `30SW`); null when
+/// it is none of these.
+double? parseTypedAngle(String text) {
+  final s = text.trim().toUpperCase().replaceAll(' ', '').replaceAll('°', '');
+  if (s.isEmpty) return null;
+  final az = RegExp(r'^AZ?([0-9]+(?:[.,][0-9]+)?)$').firstMatch(s);
+  if (az != null) {
+    final v = parseNumber(az.group(1)!);
+    return v == null || v > 360 ? null : 90 - v;
+  }
+  String? ns, ew;
+  double? v;
+  final lead = RegExp(r'^([NS])([0-9]+(?:[.,][0-9]+)?)([EWLO])$').firstMatch(s);
+  final tail = RegExp(r'^([0-9]+(?:[.,][0-9]+)?)([NS])([EWLO])$').firstMatch(s);
+  if (lead != null) {
+    (ns, v, ew) = (lead.group(1), parseNumber(lead.group(2)!), lead.group(3));
+  } else if (tail != null) {
+    (v, ns, ew) = (parseNumber(tail.group(1)!), tail.group(2), tail.group(3));
+  }
+  if (ns != null && ew != null) {
+    if (v == null || v > 90) return null;
+    final east = ew == 'E' || ew == 'L';
+    // azimuth of the bearing, then counter-clockwise from east
+    final azimuth = ns == 'N' ? (east ? v : 360 - v) : (east ? 180 - v : 180 + v);
+    return 90 - azimuth;
+  }
+  return parseNumber(s);
+}
 
 /// A bare number typed on the command line (an angle, a factor, a
 /// distance), in the display unit; null for a point (`x,y`, `@…`, `d<a`)

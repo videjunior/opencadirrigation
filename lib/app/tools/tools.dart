@@ -12,6 +12,7 @@ import '../canvas/camera.dart';
 import '../state/controller.dart';
 import '../theme.dart';
 import 'ai_mark_tool.dart';
+import 'cad_plus_tools.dart';
 import 'edit_commands.dart';
 import 'edit_tools.dart';
 import 'insert_block_tool.dart';
@@ -1732,6 +1733,10 @@ Tool createTool(ToolId id, ProjectController c, ToolHost host) => switch (id) {
   ToolId.fillet => CornerTool(c, host, chamfer: false),
   ToolId.chamfer => CornerTool(c, host, chamfer: true),
   ToolId.breakTwo => BreakTool(c, host),
+  // 1.6.0 CAD
+  ToolId.lengthen => LengthenTool(c, host),
+  ToolId.boundary => BoundaryTool(c, host),
+  ToolId.fieldPhoto => FieldPhotoTool(c, host),
 };
 
 /// Hint key of a tool (status bar and properties panel).
@@ -1786,4 +1791,8 @@ String hintKeyOf(ToolId t) => switch (t) {
   ToolId.fillet => 'fillet',
   ToolId.chamfer => 'chamfer',
   ToolId.breakTwo => 'breakTwo',
+  // 1.6.0 CAD
+  ToolId.lengthen => 'lengthen',
+  ToolId.boundary => 'boundary',
+  ToolId.fieldPhoto => 'fieldPhoto',
 };

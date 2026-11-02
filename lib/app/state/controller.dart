@@ -42,6 +42,7 @@ import '../../core/io/pdf_import.dart';
 import '../../core/io/pdf_reader.dart';
 import '../../core/io/shp_writer.dart' show ShapefileParts;
 import '../../core/io/work_slicer.dart';
+import '../../core/model/blocks.dart' show appendBlockBom, resolveBlockRefs;
 import '../../core/model/catalog.dart';
 import '../../core/model/currency.dart';
 import '../../core/model/regional.dart';
@@ -65,7 +66,9 @@ import '../io/wake_lock.dart';
 import '../io/window_locks.dart';
 import '../keys/canvas_keys.dart';
 import 'ai_marks.dart';
+import 'design_job.dart' show isDesignPassive;
 import 'design_runner.dart';
+import 'drawing_prefs.dart' show attachDrawingPrefs;
 
 /// Language of the interface: the app lays itself out right to left for
 /// the languages written that way (see [rtlLanguages]).
@@ -132,7 +135,12 @@ enum ToolId {
   stretch,
   fillet,
   chamfer,
-  breakTwo;
+  breakTwo,
+  // 1.6.0 CAD: lengthen, the outline by a click inside, the field photo
+  // pinned where it was taken (cad_plus_tools.dart)
+  lengthen,
+  boundary,
+  fieldPhoto;
 
   /// One of the tools that mark the drawing for the AI assistant.
   bool get isAiMark => this == aiMarkPoint || this == aiMarkLine;
@@ -178,7 +186,24 @@ class SnapSettings {
     final i = polarSteps.indexOf(polarStepDeg);
     polarStepDeg = polarSteps[(i + 1) % polarSteps.length];
   }
+
+  // 1.6.0 CAD: the object snaps one by one, and one for the next point only
+
+  /// The object snaps that are on (of [snapModes]); the others are off.
+  final Set<String> modes = {...snapModes};
+
+  /// A snap for the next point only (typed END, MID… or chosen in the menu
+  /// of the drawing): it alone is looked for, even with the object snap
+  /// off; null when none is chosen.
+  String? once;
+
+  /// Whether the object snap [mode] (one of [snapModes]) may be used now.
+  bool allows(String mode) => once != null ? once == mode : modes.contains(mode);
 }
+
+/// 1.6.0 CAD: the object snaps that are turned on and off one by one, in
+/// the order the settings list them.
+const snapModes = ['endpoint', 'midpoint', 'center', 'quadrant', 'node', 'intersection', 'perpendicular', 'tangent', 'nearest', 'extension'];
 
 /// Current defaults used by the creation tools.
 class ToolSettings {
@@ -354,6 +379,8 @@ class ProjectController extends ChangeNotifier {
   SpatialIndex get index {
     final idx = _index;
     if (idx != null && _indexSeq == _editSeq && _indexCount == _project.entities.length && identical(_indexProject, _project)) return idx;
+    // 1.6.0 CAD: the block references draw (and are as large as) their block
+    resolveBlockRefs(_project);
     final built = SpatialIndex.build(_project.entities);
     _index = built;
     _indexSeq = _editSeq;
@@ -681,6 +708,8 @@ class ProjectController extends ChangeNotifier {
   void _init() {
     camera.center = const Pt(60, 30);
     camera.scale = 5;
+    // 1.6.0 CAD: the drawing and snap settings last used
+    attachDrawingPrefs(this);
     _claimUid();
     setDocumentLanguage(lang);
     // a controller is made while the shell builds: tell the app afterwards
@@ -843,6 +872,8 @@ class ProjectController extends ChangeNotifier {
     ControllerEntity _ => 'controller',
     WireEntity _ => 'wire',
     OrdinateDimensionEntity _ => 'dimOrdinate',
+    // 1.6.0 CAD
+    BlockRefEntity _ => 'blockRef',
     _ => 'select',
   };
 
@@ -1008,9 +1039,20 @@ class ProjectController extends ChangeNotifier {
   /// told why.
   bool editAllowed() {
     if (!busy && !_assistantRounds) return true;
+    // 1.6.0 CAD: with "edit during the design" on, a design the user runs
+    // lets the edits through: it works on a copy of the project, and its
+    // results, then out of date, are discarded when it ends (the drawing is
+    // never overwritten, and its undo step is only taken when applied)
+    if (editDuringDesign && !_assistantRounds) return true;
     notify(t('msg.designBusy'));
     return false;
   }
+
+  /// 1.6.0 CAD: edits are allowed while a design runs (its results are
+  /// then discarded as out of date). Off unless the user turns it on;
+  /// "fix automatically" and "optimise" still keep the project to
+  /// themselves between their rounds.
+  bool editDuringDesign = false;
 
   /// "Fix automatically" or "optimise" is working in rounds: the project
   /// stays as they leave it between two designs, so nothing else edits it.
@@ -1310,6 +1352,8 @@ class ProjectController extends ChangeNotifier {
   /// Annotations, dimensions, pictures and plain drawing keep the results.
   bool affectsResults(Entity e) {
     if (e.isHydraulic || e is SpotHeightEntity || e is BreaklineEntity || e is AreaEntity || e is WireEntity || e is ControllerEntity) return true;
+    // 1.6.0 CAD: a reference to a block of the bill of materials
+    if (e is BlockRefEntity) return (e.definition ?? project.blocks.byName(e.blockName))?.inBom ?? false;
     if (e is ContourEntity) return !e.derived;
     if (e is PolylineEntity || e is SplineEntity) return _pivotOutlines().contains(e.id);
     return false;
@@ -2202,7 +2246,7 @@ class ProjectController extends ChangeNotifier {
     try {
       final response = await designRunner.run(DesignRequest.of(project, lang: lang, sizeZones: false, sizeMain: false), yieldControl: _yieldFrame);
       if (gen == _editSeq && _autoAnalyze) {
-        results = response.results;
+        results = appendBlockBom(project, response.results);
         unconnected = response.results.unconnected;
         final adv = response.advice;
         if (adv != null) {
@@ -2230,17 +2274,26 @@ class ProjectController extends ChangeNotifier {
       return;
     }
     if (busy || _assistantRounds) return;
-    final redo = List.of(_redo);
-    _snapshot('hist.design');
-    final st = _undo.last;
-    final r = await _design(sizeZones: sizeZones, sizeMain: sizeMain);
-    if (r != null) {
-      _designNotice(r);
-    } else if (_undo.isNotEmpty && identical(_undo.last, st)) {
-      // a design that failed, was cancelled or went stale changed nothing:
-      // no undo step, and the redo steps stay
-      _dropSnapshot(st, redo);
+    // 1.6.0 CAD: the undo step is taken when the result is applied (a design
+    // that fails, is cancelled or goes stale records none, and the redo steps
+    // stay), and an analysis that changes no item records none either: it
+    // only replaces the results
+    final r = await _design(sizeZones: sizeZones, sizeMain: sizeMain, step: 'hist.design');
+    if (r != null) _designNotice(r);
+  }
+
+  /// 1.6.0 CAD: whether the design kept every item as it was ([before] are
+  /// the copies taken before it was applied; the pictures, never sent to the
+  /// design, are not compared).
+  static bool _sameEntities(List<Entity> before, List<Entity> after) {
+    if (before.length != after.length) return false;
+    for (var i = 0; i < before.length; i++) {
+      final a = before[i], b = after[i];
+      if (a.id != b.id || a.runtimeType != b.runtimeType) return false;
+      if (isDesignPassive(a)) continue;
+      if (jsonEncode(a.toJson()) != jsonEncode(b.toJson())) return false;
     }
+    return true;
   }
 
   /// Set by [cancelDesign] until the next design starts.
@@ -2260,9 +2313,11 @@ class ProjectController extends ChangeNotifier {
   bool get _canDesign => project.entities.any((e) => e is ControlValveEntity || e is WaterSupplyEntity);
 
   /// Runs the design (in the worker when there is one) and applies it to the
-  /// project. No undo snapshot and no message; null when the design cannot
-  /// run, fails or goes stale.
-  Future<DesignResults?> _design({bool sizeZones = true, bool sizeMain = true}) async {
+  /// project. No message; null when the design cannot run, fails or goes
+  /// stale. With [step] (a `hist.*` label) the undo step is taken just
+  /// before the result is applied — none for an analysis that changes no
+  /// item; without it the caller took its own.
+  Future<DesignResults?> _design({bool sizeZones = true, bool sizeMain = true, String? step}) async {
     if (!_canDesign || busy) return null;
     _autoTimer?.cancel();
     // one job at a time in the worker: let an automatic analysis finish
@@ -2296,9 +2351,15 @@ class ProjectController extends ChangeNotifier {
         notify(t('msg.designStale'));
         return null;
       }
+      final redo = List.of(_redo);
+      if (step != null) _snapshot(step);
+      final st = step == null ? null : _undo.last;
       applyDesignResponse(project, response);
+      // 1.6.0 CAD: an analysis that left every item as it was is no undo step
+      if (st != null && !sizeZones && !sizeMain && _sameEntities(st.entities, project.entities)) _dropSnapshot(st, redo);
       _editSeq++; // pipes were resized / split: rebuild the spatial index
-      final r = response.results;
+      // 1.6.0 CAD: with the references of the blocks of the bill of materials
+      final r = appendBlockBom(project, response.results);
       results = r;
       unconnected = r.unconnected;
       // the messages came built with the design (see DesignResponse.advice)

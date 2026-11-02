@@ -65,6 +65,13 @@ enum CadAction {
   join,
   explode,
   toArea,
+  // 1.6.0 CAD: layers, drawing order, editing a block in place
+  isolateLayer,
+  unisolateLayers,
+  toCurrentLayer,
+  bringToFront,
+  sendToBack,
+  editBlock,
 }
 
 /// Command alias → [ToolId] or [CadAction].
@@ -189,6 +196,15 @@ const commandAliases = <String, Object>{
   'FILLET': ToolId.fillet, 'FIL': ToolId.fillet, 'CONCORDAR': ToolId.fillet, 'CONCORDANCIA': ToolId.fillet, 'EMPALME': ToolId.fillet,
   'CHA': ToolId.chamfer, 'CHAMFER': ToolId.chamfer, 'CHANFRO': ToolId.chamfer, 'CHANFRAR': ToolId.chamfer, 'CHAFLAN': ToolId.chamfer,
   'BREAK': ToolId.breakTwo, 'BK': ToolId.breakTwo, 'QUEBRAR': ToolId.breakTwo, 'PARTIR': ToolId.breakTwo, 'ROMPER': ToolId.breakTwo,
+  // 1.6.0 CAD: lengthen, the outline by a click inside, layers, drawing order, blocks
+  'LEN': ToolId.lengthen, 'LENGTHEN': ToolId.lengthen, 'ALONGAR': ToolId.lengthen, 'LONGITUD': ToolId.lengthen,
+  'BO': ToolId.boundary, 'BOUNDARY': ToolId.boundary, 'BPOLY': ToolId.boundary, 'CONTORNO': ToolId.boundary,
+  'LAYISO': CadAction.isolateLayer, 'ISOLAR': CadAction.isolateLayer, 'AISLAR': CadAction.isolateLayer,
+  'LAYUNISO': CadAction.unisolateLayers, 'DESISOLAR': CadAction.unisolateLayers,
+  'LAYCUR': CadAction.toCurrentLayer, 'PARACAMADA': CadAction.toCurrentLayer,
+  'TOFRONT': CadAction.bringToFront, 'FRENTE': CadAction.bringToFront,
+  'TOBACK': CadAction.sendToBack, 'FUNDO': CadAction.sendToBack, 'ATRAS': CadAction.sendToBack,
+  'BEDIT': CadAction.editBlock, 'EDITARBLOCO': CadAction.editBlock,
 };
 
 /// Preferred (shortest) alias of a tool, for tooltips and menus.
@@ -260,6 +276,13 @@ String actionLabelKey(CadAction a) => switch (a) {
   CadAction.join => 'edt.join',
   CadAction.explode => 'edt.explode',
   CadAction.toArea => 'edt.toArea',
+  // 1.6.0 CAD
+  CadAction.isolateLayer => 'layer.isolate',
+  CadAction.unisolateLayers => 'layer.unisolate',
+  CadAction.toCurrentLayer => 'layer.toCurrent',
+  CadAction.bringToFront => 'order.front',
+  CadAction.sendToBack => 'order.back',
+  CadAction.editBlock => 'blkref.edit',
 };
 
 /// " → Linha ⏎" for a typed alias that matches a command, else "".
@@ -374,6 +397,14 @@ const shortcutGroups = <ShortcutGroup>[
     ('JOIN · JO', 'edt.join'),
     ('X · EXPLODE', 'edt.explode'),
     ('TOAREA', 'edt.toArea'),
+    // 1.6.0 CAD
+    ('LEN · LENGTHEN', 'tool.lengthen'),
+    ('BO · BOUNDARY', 'tool.boundary'),
+    ('LAYISO · LAYUNISO', 'layer.isolate'),
+    ('LAYCUR', 'layer.toCurrent'),
+    ('TOFRONT · TOBACK', 'order.menu'),
+    ('BEDIT', 'blkref.edit'),
+    ('END · MID · INT · PER · TAN · NEA · CEN · QUA · NOD · EXT · NON', 'cadp.snapOnceKeys'),
     ('CLIPCUT', 'edit.clipCut'),
     ('PA · PASTE', 'edit.paste'),
     ('U · UNDO  /  REDO', 'edit.undo'),

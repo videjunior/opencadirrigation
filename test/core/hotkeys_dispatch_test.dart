@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/keys/hotkeys.dart';
 import 'package:opencadirrigation/app/shortcuts.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
+import 'package:opencadirrigation/app/tools/cad_plus_commands.dart';
 import 'package:opencadirrigation/app/tools/typed_point.dart';
+import 'package:opencadirrigation/core/io/geo.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 
@@ -459,8 +461,106 @@ void main() {
           expect(c.lastMessage, c.t('edt.nothingToExplode'), reason: e.key);
         case CadAction.toArea:
           expect(c.lastMessage, c.t('edt.notClosed'), reason: e.key);
+        // 1.6.0 CAD
+        case CadAction.isolateLayer:
+          expect([for (final l in c.project.layers) if (l.visible) l.name], [c.project.currentLayer], reason: e.key);
+        case CadAction.unisolateLayers:
+          expect(c.layersIsolated, isFalse, reason: e.key);
+          expect(c.project.layers.every((l) => l.visible), isTrue, reason: e.key);
+        case CadAction.toCurrentLayer:
+          expect(c.lastMessage, c.t('cadp.alreadyOnLayer'), reason: e.key);
+        case CadAction.bringToFront:
+          expect(c.project.entities.last.id, line.id, reason: e.key);
+        case CadAction.sendToBack:
+          expect(c.project.entities.first.id, line.id, reason: e.key);
+        case CadAction.editBlock:
+          expect(c.lastMessage, c.t('blkref.selectRef'), reason: e.key);
       }
     }
+  });
+
+  // 1.6.0 CAD+
+  group('coordinates of the field, a snap for one point, the dynamic input', () {
+    const g = GeoReference(zone: 23, north: false, originEasting: 456000, originNorthing: 7654000);
+    void typeKeys(String text) {
+      for (final ch in text.split('')) {
+        keys.handle(HotkeyEvent(ch));
+      }
+    }
+
+    test('UTM typed with its zone and spaces goes to the tool as a local point', () {
+      c.project.meta.georef = g;
+      c.setTool(ToolId.polyline);
+      typeKeys('23S 456789 7654321');
+      expect(c.command, '23S 456789 7654321', reason: 'the spaces stay in the coordinate');
+      keys.handle(const HotkeyEvent('Enter'));
+      expect(canvas.calls, contains('point:789.0,321.0'));
+    });
+
+    test('latitude and longitude with the LL prefix; DMS through the command field; no georeference says so', () {
+      c.project.meta.georef = g;
+      c.setTool(ToolId.polyline);
+      typeKeys('ll -22.5,-47.1');
+      keys.handle(const HotkeyEvent('Enter'));
+      final (x, y) = g.fromLatLon(-22.5, -47.1);
+      expect(canvas.calls, contains('point:$x,$y'));
+      canvas.calls.clear();
+      c.command = "22°30'S 47°06'W";
+      keys.runCommand();
+      expect(canvas.calls.single, startsWith('point:'));
+      c.project.meta.georef = null;
+      c.command = 'LL -22.5,-47.1';
+      keys.runCommand();
+      expect(c.lastMessage, c.t('cmd.geoNoGeoref'));
+      // a plain pair stays a local point
+      canvas.calls.clear();
+      c.command = '-22.5,-47.1';
+      keys.runCommand();
+      expect(canvas.calls, contains('point:-22.5,-47.1'));
+    });
+
+    test('END, MID… choose the snap of the next point; NON clears it; not while selecting', () {
+      c.setTool(ToolId.line);
+      c.command = 'END';
+      keys.runCommand();
+      expect(c.snap.once, 'endpoint');
+      expect(c.lastMessage, c.t('cadp.snapOnce', {'k': c.t('snapk.endpoint')}));
+      c.command = 'NON';
+      keys.runCommand();
+      expect(c.snap.once, isNull);
+      c.setTool(ToolId.select);
+      c.command = 'MID';
+      keys.runCommand();
+      expect(c.snap.once, isNull);
+      expect(c.lastMessage, contains('MID'), reason: 'an unknown command while selecting');
+    });
+
+    test('Tab keeps the length typed (or on the screen) and the angle is typed next', () {
+      c.setTool(ToolId.line);
+      canvas
+        ..referencePoint = Pt.zero
+        ..cursorPoint = const Pt(3, 4);
+      typeKeys('10');
+      expect(keys.handle(const HotkeyEvent('Tab')), isTrue);
+      expect(c.command, '@10<');
+      typeKeys('90');
+      keys.handle(const HotkeyEvent('Enter'));
+      expect(canvas.calls.last, startsWith('point:'));
+      final p = canvas.calls.last.substring(6).split(',').map(double.parse).toList();
+      expect(p[0], closeTo(0, 1e-9));
+      expect(p[1], closeTo(10, 1e-9));
+      // nothing typed: the length on the screen
+      expect(keys.handle(const HotkeyEvent('Tab')), isTrue);
+      expect(c.command, startsWith('@5'));
+      expect(c.command, endsWith('<'));
+      keys.setCommand('');
+      // off, or no point yet: Tab is left to the focus
+      c.cadPlus.dynamicInput = false;
+      expect(keys.handle(const HotkeyEvent('Tab')), isFalse);
+      c.cadPlus.dynamicInput = true;
+      canvas.referencePoint = null;
+      expect(keys.handle(const HotkeyEvent('Tab')), isFalse);
+    });
   });
 
   test('browser keys that must never reach the page', () {

@@ -10,6 +10,8 @@ import '../state/controller.dart';
 import '../io/links.dart';
 import '../keys/canvas_keys.dart';
 import '../state/workspace.dart';
+import '../../core/model/entities.dart';
+import '../tools/cad_plus_commands.dart';
 import '../tools/context_menu.dart';
 import '../tools/edit_commands.dart';
 import '../tools/tools.dart';
@@ -90,6 +92,20 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     _held = false;
   }
 
+  // 1.6.0 CAD: a finger dragged while drawing aims with a magnifier (the
+  // point goes where it is lifted), the text edited in place, and the
+  // length and angle beside the cursor
+  bool _aiming = false;
+  Offset? _aimAt;
+  String? _editingText;
+  TextEditingController? _textCtl;
+  final FocusNode _textFocus = FocusNode(debugLabel: 'textInPlace');
+  final ValueNotifier<Offset?> _dynAt = ValueNotifier<Offset?>(null);
+
+  /// Whether a finger aims with the magnifier now: a drawing tool, the
+  /// magnifier on.
+  bool get _aimsWithLoupe => c.cadPlus.touchLoupe && c.activeTool != ToolId.select && c.activeTool != ToolId.pan && _tool.usesSnap;
+
   ProjectController get c => widget.controller;
 
   @override
@@ -126,6 +142,9 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     basemap.dispose();
     _scene.dispose();
     _endHold();
+    _textFocus.dispose();
+    _textCtl?.dispose();
+    _dynAt.dispose();
     super.dispose();
   }
 
@@ -183,6 +202,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   void _onPointerDown(PointerDownEvent e) {
     widget.focusNode.requestFocus();
     _lastPointer = e.localPosition;
+    _lastTouch = _isTouch(e);
     if (_isTouch(e)) {
       _touches[e.pointer] = e.localPosition;
       if (_touches.length >= 2) {
@@ -255,11 +275,15 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     final keys = HardwareKeyboard.instance;
     if (isDouble) {
       _tool.onDoubleClick(p);
+      // 1.6.0 CAD: a double click on a text, a leader or a comment edits its text in place
+      if (_tool is SelectTool) _editTextAt(local);
     } else {
       // 1.6.0 EDT: "add to the selection" stands in for Shift on a touch screen
       _tool.onDown(p, shift: keys.isShiftPressed || c.editSettings.addToSelection, ctrl: keys.isControlPressed || keys.isMetaPressed);
       if (_snap?.locked ?? false) c.track('lock');
     }
+    // 1.6.0 CAD: a snap chosen for one point is used up by it
+    if (c.snap.once != null && _tool.usesSnap) c.snap.once = null;
     _dragging = true;
     _dragArmed = false;
     _dragOrigin = local;
@@ -306,6 +330,18 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
           _dragOrigin = _holdAt;
         }
       }
+      // 1.6.0 CAD: aiming with the magnifier
+      if (_aiming) {
+        _aim(e.localPosition);
+        return;
+      }
+      if (_touchDrawPending && _lastPointer != null && _aimsWithLoupe && (e.localPosition - _lastPointer!).distance > 8 && !_dragging) {
+        _touchDrawPending = false;
+        _endHold();
+        _aiming = true;
+        _aim(e.localPosition);
+        return;
+      }
       if (_touchDrawPending && _lastPointer != null) {
         // a finger drag before any tap commits: pan (touch-friendly), unless
         // the select tool is moving a selection
@@ -342,6 +378,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
 
   void _onPointerHover(PointerHoverEvent e) {
     _lastPointer = e.localPosition;
+    _lastTouch = false;
     final p = _snapped(e.localPosition);
     _tool.onMove(p);
     if (_tool is SelectTool) {
@@ -354,6 +391,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   }
 
   void _updateStatus(Pt p) {
+    // 1.6.0 CAD: the dynamic input follows the cursor
+    _dynAt.value = _lastPointer;
     final u = c.units;
     // distance and angle from the previous point, as typed input expects them
     final ref = _tool.referencePoint;
@@ -380,6 +419,13 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
         return;
       }
       _held = false;
+      // 1.6.0 CAD: the point aimed at with the magnifier goes where the finger is lifted
+      if (_aiming) {
+        _aiming = false;
+        _aimAt = null;
+        setState(() {});
+        _primaryDown(e.localPosition, touch: true);
+      }
       if (_touchDrawPending) {
         // simple tap: run the tool's down + up at the tap position
         _touchDrawPending = false;
@@ -415,6 +461,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     if (_touches.isEmpty) {
       _touchGesture = false;
       _touchDrawPending = false;
+      // 1.6.0 CAD
+      if (_aiming) setState(() => _aiming = false);
       _panning = false;
       _dragArmed = false;
       _dragOrigin = null;
@@ -463,6 +511,8 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     _tool.onDown(p);
     _tool.onUp(p);
     _tool.onMove(p);
+    // 1.6.0 CAD: a snap chosen for one point is used up by a typed one too
+    c.snap.once = null;
     _updateStatus(p);
     _redraw();
   }
@@ -491,8 +541,195 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   @override
   void redraw() => _redraw();
 
+  // ---- 1.6.0 CAD: aiming on a touch screen, text in place, dynamic input
+
+  /// The finger aims at [local]: the snap, the rubber band and the
+  /// magnifier follow it.
+  void _aim(Offset local) {
+    _aimAt = local;
+    _lastPointer = local;
+    final p = _snapped(local);
+    _tool.onMove(p);
+    _updateStatus(p);
+    _redraw();
+    if (mounted) setState(() {});
+  }
+
+  /// Opens the text of the item under [local] for editing in place.
+  void _editTextAt(Offset local) {
+    final hit = c.pick(_world(local), c.snap.tolerancePx / c.camera.scale);
+    if (hit == null || !hasEditableText(hit) || c.project.isLocked(hit.layer)) return;
+    _textCtl?.dispose();
+    setState(() {
+      _editingText = hit.id;
+      _textCtl = TextEditingController(text: editableTextOf(hit));
+    });
+    c.track('textInPlace');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _editingText != null) _textFocus.requestFocus();
+    });
+  }
+
+  /// Ends the edit in place: the text typed goes to the item (one undo
+  /// step) unless [cancel].
+  void _commitText({bool cancel = false}) {
+    final id = _editingText, ctl = _textCtl;
+    if (id == null || ctl == null) return;
+    _editingText = null;
+    _textCtl = null;
+    if (!cancel) c.setEntityText(id, ctl.text);
+    if (mounted) setState(() {});
+    // the field lets the controller go once it is off the screen
+    WidgetsBinding.instance.addPostFrameCallback((_) => ctl.dispose());
+    widget.focusNode.requestFocus();
+  }
+
+  Widget _textEditor() {
+    final e = c.entityById(_editingText!);
+    if (e == null) return const SizedBox.shrink();
+    final at = switch (e) {
+      LeaderEntity l => l.textPosition,
+      PointEntity p => p.position,
+      _ => e.bounds.center,
+    };
+    final o = c.camera.toScreen(at);
+    final size = c.camera.size;
+    final multi = _textCtl!.text.contains('\n') || e is! TextEntity;
+    const w = 280.0;
+    return Positioned(
+      left: o.dx.clamp(4.0, math.max(4.0, size.width - w - 4)),
+      top: (o.dy - (multi ? 96 : 52)).clamp(4.0, math.max(4.0, size.height - 100)),
+      width: w,
+      child: Material(
+        key: const Key('text_in_place'),
+        color: Cad.panel,
+        elevation: 4,
+        borderRadius: BorderRadius.circular(4),
+        child: CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.escape): () => _commitText(cancel: true),
+            const SingleActivator(LogicalKeyboardKey.enter, control: true): _commitText,
+            const SingleActivator(LogicalKeyboardKey.enter, meta: true): _commitText,
+          },
+          child: Focus(
+            onFocusChange: (has) {
+              if (!has) _commitText();
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: TextField(
+                key: const Key('text_in_place_field'),
+                controller: _textCtl,
+                focusNode: _textFocus,
+                minLines: 1,
+                maxLines: multi ? 4 : 1,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(isDense: true, helperText: c.t(multi ? 'cadp.textInPlaceMulti' : 'cadp.textInPlaceHint'), helperMaxLines: 2),
+                onSubmitted: multi ? null : (_) => _commitText(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The length and angle of the segment beside the cursor (or X and Y
+  /// before the first point), with what is being typed in its field: Tab
+  /// keeps the length and goes on to the angle (see the dispatcher).
+  Widget _dynamicInput() => ListenableBuilder(
+    listenable: Listenable.merge([_dynAt, c]),
+    builder: (context, _) {
+      final at = _dynAt.value;
+      final show = at != null && c.cadPlus.dynamicInput && c.activeTool != ToolId.select && c.activeTool != ToolId.pan && _tool.usesSnap && !_aiming && !touchInputActive;
+      final cur = _tool.cursor;
+      if (!show || cur == null) return const Positioned(left: 0, top: 0, child: SizedBox.shrink());
+      final u = c.units;
+      String l(double v) => u.lengthFromSi(v).toStringAsFixed(2);
+      final ref = _tool.referencePoint;
+      final typed = c.command;
+      final List<(String, String, bool)> fields;
+      if (ref == null) {
+        fields = [('X', l(cur.x), false), ('Y', l(cur.y), false)];
+      } else {
+        final d = cur - ref;
+        final ang = ((math.atan2(d.y, d.x) * 180 / math.pi) % 360 + 360) % 360;
+        final polar = RegExp(r'^@([^<]*)<(.*)$').firstMatch(typed);
+        fields = polar != null
+            ? [(c.t('cadp.dynLength'), polar.group(1)!, false), ('∠', '${polar.group(2)!}_', true)]
+            : [(c.t('cadp.dynLength'), typed.isNotEmpty ? '${typed}_' : l(d.length), typed.isNotEmpty), ('∠', '${ang.toStringAsFixed(1)}°', false)];
+      }
+      final size = c.camera.size;
+      return Positioned(
+        left: math.min(at.dx + 18, math.max(0.0, size.width - 200)),
+        top: math.min(at.dy + 18, math.max(0.0, size.height - 30)),
+        child: IgnorePointer(
+          child: Container(
+            key: const Key('dynamic_input'),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(color: Cad.overlay, borderRadius: BorderRadius.circular(3)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (label, value, active) in fields) ...[
+                  Text('$label ', style: TextStyle(fontSize: 10.5, color: Cad.fg54)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(border: Border.all(color: active ? Cad.accent : Cad.fg24), borderRadius: BorderRadius.circular(2)),
+                    child: Text(value, style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  /// Whether the last pointer was a finger (the dynamic input is for a mouse).
+  bool get touchInputActive => _lastTouch;
+  bool _lastTouch = false;
+
+  /// The magnifier over the finger at [at]: 2.5 times the drawing round
+  /// the point aimed at, above the finger (below it at the top edge).
+  Widget _loupe(Offset at) {
+    const s = 128.0, gap = 40.0;
+    final size = c.camera.size;
+    final left = (at.dx - s / 2).clamp(0.0, math.max(0.0, size.width - s));
+    var top = at.dy - s - gap;
+    if (top < 0) top = math.min(at.dy + gap, math.max(0.0, size.height - s));
+    final centre = Offset(left + s / 2, top + s / 2);
+    return Positioned(
+      left: left,
+      top: top,
+      child: IgnorePointer(
+        child: RawMagnifier(
+          key: const Key('touch_loupe'),
+          size: const Size(s, s),
+          magnificationScale: 2.5,
+          focalPointOffset: at - centre,
+          decoration: MagnifierDecoration(
+            shape: CircleBorder(side: BorderSide(color: Cad.accent, width: 2)),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 1.6.0 CAD: the text edited in place lies outside the canvas's own keys
+    return Stack(
+      children: [
+        Positioned.fill(child: _canvas(context)),
+        if (_editingText != null && _textCtl != null) _textEditor(),
+      ],
+    );
+  }
+
+  Widget _canvas(BuildContext context) {
     return Focus(
       focusNode: widget.focusNode,
       autofocus: true,
@@ -552,6 +789,9 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
                         ],
                       ),
                     ),
+                    // 1.6.0 CAD: length and angle beside the cursor, the magnifier over the finger
+                    _dynamicInput(),
+                    if (_aiming && _aimAt != null) _loupe(_aimAt!),
                   ],
                 ),
               ),
