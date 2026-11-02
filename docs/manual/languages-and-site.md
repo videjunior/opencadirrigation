@@ -38,7 +38,8 @@ taken from the language packs); Arabic and Urdu pages read right to left. Since
 Flutter paints on a canvas, every page carries the content as real HTML (heading, features,
 examples, FAQ), with its own canonical, `hreflang` between all the versions (also the bare `pt` and
 `zh` beside `pt-BR` and `zh-CN`), a Content Security Policy (scripts from the site only, WebAssembly
-for CanvasKit, no inline script, no plugin or frame), Open Graph and JSON-LD
+for CanvasKit, no inline script, no plugin or frame), Open Graph (with a sharing image in the page's own script, `web/og/og-image-<code>.jpg`,
+rendered from the page by `node tool/og/render_og.js`; English keeps `web/og-image.png`) and JSON-LD
 (application, FAQ, how it works and the example gallery, in the page's language, with the subject
 linked to Wikipedia/Wikidata). The test `test/web_metadata_test.dart` fails when the generated files
 drift from the template.

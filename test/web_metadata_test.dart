@@ -592,6 +592,20 @@ void main() {
     expect((w, h), (780, 1688));
   });
 
+  test('every page is shared with an image in its own language (SIT-20)', () {
+    for (final l in siteLanguages) {
+      final html = File('web/${l.file}').readAsStringSync();
+      final image = ogImage(l);
+      expect(html, contains('<meta property="og:image" content="$site$image">'), reason: l.code);
+      expect(html, contains('<meta name="twitter:image" content="$site$image">'), reason: l.code);
+      final file = File('web/${image.split('?').first}');
+      expect(file.existsSync(), isTrue, reason: '${l.code}: run node tool/og/render_og.js');
+      final picture = img.decodeImage(file.readAsBytesSync())!;
+      expect((picture.width, picture.height), (1200, 630), reason: l.code);
+      if (!l.isRoot) expect(image, startsWith('og/og-image-${l.code}.jpg?v='), reason: '${l.code}: not the English card');
+    }
+  });
+
   test('the FAQ no longer promises that the internet is reached only on request (SIT-02)', () {
     final en = siteText('en');
     final cloud = en.faq.indexWhere((f) => f.$1 == 'Are my projects stored in the cloud?');

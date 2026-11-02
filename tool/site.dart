@@ -783,6 +783,12 @@ String landingLogo(int width) => versioned('brand/logo-horizontal-$width.webp');
 /// `design-1440x900.png`): up to 940 px wide on the page, at 1× to 1.5×.
 const landingShotWidths = [720, 1080, 1440];
 
+/// The sharing image (Open Graph, Twitter card) of [lang]: the English
+/// `og-image.png` at the root, and for every other language its logo and
+/// heading in its own script (`web/og/og-image-<code>.jpg`, rendered from
+/// the page by `node tool/og/render_og.js`), versioned by its content.
+String ogImage(SiteLang lang) => lang.isRoot ? 'og-image.png' : versioned('og/og-image-${lang.code}.jpg');
+
 /// Address of the landing screenshot [width] wide.
 String landingShot(int width) => versioned('screenshots/design-$width.webp');
 
@@ -866,7 +872,7 @@ String jsonLd(SiteLang lang) {
         {'@id': '${lang.url}#how'},
         {'@id': '${lang.url}#examples'},
       ],
-      'primaryImageOfPage': {'@type': 'ImageObject', 'url': '${siteUrl}og-image.png', 'width': 1200, 'height': 630},
+      'primaryImageOfPage': {'@type': 'ImageObject', 'url': '$siteUrl${ogImage(lang)}', 'width': 1200, 'height': 630},
       'dateModified': siteLastMod,
       'breadcrumb': {'@id': '${lang.url}#breadcrumb'},
     },
@@ -884,7 +890,7 @@ String jsonLd(SiteLang lang) {
       'alternateName': 'OpenCAD Irrigation',
       'url': lang.url,
       'installUrl': lang.url,
-      'image': '${siteUrl}og-image.png',
+      'image': '$siteUrl${ogImage(lang)}',
       'screenshot': {'@type': 'ImageObject', 'url': '${siteUrl}screenshots/design-1440x900.png', 'width': 1440, 'height': 900, 'caption': t.screenshotLabel},
       'description': t.description,
       'abstract': t.faq.first.$2,
@@ -1052,9 +1058,9 @@ ${_hreflangLinks()}
   <meta property="og:url" content="${lang.url}">
   <meta property="og:title" content="${_esc(t.title)}">
   <meta property="og:description" content="${_esc(t.description)}">
-  <meta property="og:image" content="${siteUrl}og-image.png">
-  <meta property="og:image:secure_url" content="${siteUrl}og-image.png">
-  <meta property="og:image:type" content="image/png">
+  <meta property="og:image" content="$siteUrl${ogImage(lang)}">
+  <meta property="og:image:secure_url" content="$siteUrl${ogImage(lang)}">
+  <meta property="og:image:type" content="${lang.isRoot ? 'image/png' : 'image/jpeg'}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${_esc(t.h1)}">
@@ -1067,7 +1073,7 @@ ${_hreflangLinks()}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${_esc(t.title)}">
   <meta name="twitter:description" content="${_esc(t.description)}">
-  <meta name="twitter:image" content="${siteUrl}og-image.png">
+  <meta name="twitter:image" content="$siteUrl${ogImage(lang)}">
   <meta name="twitter:image:alt" content="${_esc(t.h1)}">
 
   <!-- Icons and app manifest -->
@@ -1382,7 +1388,7 @@ String renderSitemap() {
       }
     }
     b.writeln('    <xhtml:link rel="alternate" hreflang="x-default" href="${siteLang('en').url}"/>');
-    for (final image in [landingShot(landingShotWidths.last), landingLogo(landingLogoWidths.last), 'og-image.png', 'screenshots/design-1440x900.png']) {
+    for (final image in [landingShot(landingShotWidths.last), landingLogo(landingLogoWidths.last), ogImage(l), 'screenshots/design-1440x900.png']) {
       b.writeln('    <image:image><image:loc>$siteUrl$image</image:loc></image:image>');
     }
     b.writeln('  </url>');
@@ -1695,7 +1701,7 @@ String renderHostingConfig() {
       ],
       'headers': [
         rule('**', {'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': permissionsPolicy}),
-        rule('/@(brand|icons|screenshots)/**', {'Cache-Control': _monthCache}),
+        rule('/@(brand|icons|screenshots|og)/**', {'Cache-Control': _monthCache}),
         rule('/*.@(png|ico)', {'Cache-Control': _monthCache}),
         rule('/', {'Cache-Control': _revalidate}),
         rule('/*/', {'Cache-Control': _revalidate}),

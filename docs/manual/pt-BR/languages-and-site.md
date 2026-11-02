@@ -39,7 +39,9 @@ tirada dos pacotes de idioma); as páginas em árabe e urdu são da direita para
 Flutter desenha em canvas, cada página traz o conteúdo em HTML real (título, recursos, exemplos,
 perguntas frequentes), com canônica própria, `hreflang` entre todas as versões (também os genéricos
 `pt` e `zh` ao lado de `pt-BR` e `zh-CN`), uma Content Security Policy (scripts só do site,
-WebAssembly para o CanvasKit, nenhum script inline, nenhum plugin nem frame), Open Graph e JSON-LD
+WebAssembly para o CanvasKit, nenhum script inline, nenhum plugin nem frame), Open Graph (com uma imagem de compartilhamento na escrita da própria página,
+`web/og/og-image-<código>.jpg`, gerada a partir da página por `node tool/og/render_og.js`; o inglês mantém
+`web/og-image.png`) e JSON-LD
 (aplicativo, perguntas frequentes, como funciona e galeria de exemplos, no idioma da página, com o
 assunto ligado à Wikipédia/Wikidata). O teste `test/web_metadata_test.dart` falha quando os arquivos
 gerados divergem do template.

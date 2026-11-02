@@ -49,7 +49,7 @@
         ]
       },
       {
-        "source": "/@(brand|icons|screenshots)/**",
+        "source": "/@(brand|icons|screenshots|og)/**",
         "headers": [
           {
             "key": "Cache-Control",
