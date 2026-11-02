@@ -98,7 +98,11 @@ void main() {
         final length = lines.fold(0.0, (s, l) => s + polylineLength(l));
         expect(length, closeTo(4000, 250), reason: 'about the field area over the spacing');
         expect(crossEachOther(lines), isFalse, reason: 'offset copies never cross');
-        expect(r.messages, isEmpty);
+        // nothing left dry; since 1.6.0 (MOD-26) the rows of the saw-tooth
+        // that lie 10 m or more from it have the loops of its teeth cut out,
+        // which block_guide_offset says (the smooth guides keep plain copies)
+        expect(r.messages.where((m) => !m.startsWith('block_guide_offset:')), isEmpty);
+        expect(r.messages.any((m) => m.startsWith('block_guide_offset:')), key == 'saw-tooth contour', reason: '${r.messages}');
         for (final l in lines) {
           for (final q in l) {
             expect(q.x, inInclusiveRange(-1e-6, 200 + 1e-6));
