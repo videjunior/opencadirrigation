@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencadirrigation/app/actions.dart';
@@ -11,6 +12,12 @@ import 'package:opencadirrigation/app/state/controller.dart';
 import 'package:opencadirrigation/app/state/design_job.dart';
 import 'package:opencadirrigation/app/state/workspace.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
+import 'package:opencadirrigation/app/ai/ai_assistant.dart';
+import 'package:opencadirrigation/app/widgets/dialogs/ai_assistant_dialog.dart';
+import 'package:opencadirrigation/app/widgets/layout_mode.dart';
+import 'package:opencadirrigation/app/widgets/mobile_shell.dart';
+import 'package:opencadirrigation/app/widgets/properties_panel.dart';
+import 'package:opencadirrigation/app/widgets/status_bar.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
 import 'package:opencadirrigation/core/model/geometry.dart';
 import 'package:opencadirrigation/main.dart';
@@ -210,6 +217,156 @@ void main() {
       expect(c.autosaveEnabled, !autosave);
       await tapItem(c.t('menu.design'), c.t('terrain.idw'));
       expect(c.project.params.terrainMethod.name, 'idw');
+    });
+  });
+
+  group('UI-06 commands, coordinates and lengths without a physical keyboard', () {
+    testWidgets('the ⌨ field of the phone draws a 25 m line from typed points', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(390, 844));
+      final ProjectController c = shell.c;
+      await tester.tap(find.byKey(const Key('mobile_command')));
+      await settle(tester);
+      expect(find.byKey(const Key('command_entry')), findsOneWidget);
+      final field = find.byKey(const Key('command_entry_field'));
+      Future<void> run(String text) async {
+        await tester.enterText(field, text);
+        await tester.tap(find.byKey(const Key('command_entry_run')));
+        await settle(tester, 2);
+      }
+
+      await run('l');
+      expect(c.activeTool, ToolId.line, reason: 'an alias runs as Enter would');
+      await run('0,0');
+      // the keys the numeric keyboard lacks
+      await tester.tap(find.byKey(const Key('command_key_@')));
+      await tester.pump();
+      expect(tester.widget<TextField>(field).controller!.text, '@');
+      await tester.enterText(field, '@25<0');
+      await tester.tap(find.byKey(const Key('command_entry_run')));
+      await settle(tester, 2);
+      final line = c.project.entities.whereType<LineEntity>().single;
+      expect(line.length, closeTo(25, 1e-9));
+      await tester.tap(find.byKey(const Key('command_entry_close')));
+      await settle(tester);
+      expect(find.byKey(const Key('command_entry')), findsNothing);
+    });
+
+    testWidgets('the length of a line or a pipe is typed in its properties', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      final line = LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(10, 0));
+      c.addEntity(line);
+      c.select([line.id]);
+      await settle(tester);
+      final field = find.descendant(of: find.byKey(const Key('props_length')), matching: find.byType(TextField));
+      await tester.enterText(field, '25');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester);
+      expect((c.project.byId(line.id) as LineEntity).length, closeTo(25, 1e-9));
+      expect((c.project.byId(line.id) as LineEntity).b, const Pt(25, 0));
+      // a length the last segment cannot give is refused with a message
+      final pipe = PipeEntity(id: c.project.newId(), scope: HydraulicScope.mainline, points: [const Pt(0, 10), const Pt(30, 10), const Pt(30, 20)]);
+      c.addEntity(pipe);
+      c.select([pipe.id]);
+      await settle(tester);
+      await tester.enterText(field, '35');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester);
+      expect((c.project.byId(pipe.id) as PipeEntity).points.last, const Pt(30, 15));
+      await tester.enterText(field, '20');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester);
+      expect(c.lastMessage, c.t('props.lengthNo'));
+      expect((c.project.byId(pipe.id) as PipeEntity).length, closeTo(35, 1e-9));
+      expect(endForLength(const [Pt.zero, Pt.zero], 5), isNull);
+    });
+  });
+
+  group('UI-07 the layout follows the width, the height and the pointer', () {
+    tearDown(() => lastPointerKind.value = null);
+
+    test('the arrangement of each kind of screen', () {
+      expect(shellLayoutFor(const Size(390, 844), touch: true), ShellLayout.phone);
+      expect(shellLayoutFor(const Size(844, 390), touch: true), ShellLayout.phone, reason: 'a phone held sideways');
+      expect(shellLayoutFor(const Size(844, 390), touch: false), ShellLayout.narrow, reason: 'a low desktop window with a mouse');
+      expect(shellLayoutFor(const Size(768, 1024), touch: true), ShellLayout.narrow, reason: 'a tablet in portrait');
+      expect(shellLayoutFor(const Size(1280, 800), touch: true), ShellLayout.wide);
+      expect(shellLayoutFor(const Size(650, 900), touch: false), ShellLayout.phone);
+      lastPointerKind.value = PointerDeviceKind.mouse;
+      expect(touchInput, isFalse);
+      lastPointerKind.value = PointerDeviceKind.touch;
+      expect(touchInput, isTrue);
+    });
+
+    testWidgets('a phone held sideways gets the touch layout', (tester) async {
+      await pumpFresh(tester, size: const Size(844, 390));
+      expect(find.byType(MobileShell), findsOneWidget);
+      expect(find.byKey(const Key('mobile_done')), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a tablet in portrait keeps the drawing: the side panel is a drawer, the assistant a sheet', (tester) async {
+      final shell = await pumpFresh(tester, size: const Size(768, 1024));
+      final ProjectController c = shell.c;
+      expect(find.byType(MobileShell), findsNothing);
+      expect(find.byType(PropertiesPanel), findsNothing, reason: 'folded away');
+      expect(tester.getSize(find.byKey(const ValueKey('canvas1'))).width, greaterThan(600));
+      await tester.tap(find.byKey(const Key('side_drawer_open')));
+      await settle(tester);
+      expect(find.byType(PropertiesPanel), findsOneWidget);
+      await tester.tap(find.byKey(const Key('side_drawer_close')));
+      await settle(tester);
+      expect(find.byType(PropertiesPanel), findsNothing);
+      // the assistant opens over the drawing, never docked beside it
+      showAiAssistantDialog(tester.element(find.byType(MenuBar)), c);
+      await settle(tester);
+      expect(AiAssistant.panelOpen.value, isFalse);
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(tester.getSize(find.byKey(const ValueKey('canvas1'))).width, greaterThan(600));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the menus that do not fit go under ⋯', (tester) async {
+      await pumpFresh(tester, size: const Size(900, 1000));
+      expect(find.byKey(const Key('menu_more')), findsOneWidget);
+      expect(find.text('Ajuda'), findsNothing, reason: 'the last menu is under ⋯');
+      await tester.tap(find.byKey(const Key('menu_more')));
+      await settle(tester);
+      expect(find.text('Ajuda'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      // a wide window shows them all
+      tester.view.physicalSize = const Size(1920, 1080);
+      await settle(tester);
+      expect(find.byKey(const Key('menu_more')), findsNothing);
+    });
+
+    testWidgets('on a low window the reports leave the drawing room', (tester) async {
+      lastPointerKind.value = PointerDeviceKind.mouse;
+      final shell = await pumpFresh(tester, size: const Size(1280, 480));
+      final ProjectController c = shell.c;
+      c.showReports = true;
+      c.refresh();
+      await settle(tester);
+      expect(find.byType(MobileShell), findsNothing);
+      expect(tester.getSize(find.byKey(const ValueKey('canvas1'))).height, greaterThan(120));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('UI-29 the status bar shows the real scale of the screen', () {
+    test('4 pixels per metre on a 96 dpi screen is about 1:945, not 1:25', () {
+      // one metre takes 4 px × 0.2646 mm = 1.058 mm
+      expect(screenScaleDenominator(4), closeTo(944.88, 0.01));
+      expect(screenScaleDenominator(1000 / 0.2645833), closeTo(1, 1e-3));
+    });
+
+    testWidgets('the status bar reads it', (tester) async {
+      final shell = await pumpFresh(tester);
+      final ProjectController c = shell.c;
+      c.camera.scale = 4;
+      c.refresh();
+      await settle(tester);
+      expect(find.textContaining('1:945'), findsOneWidget);
     });
   });
 }

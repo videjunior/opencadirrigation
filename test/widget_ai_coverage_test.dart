@@ -182,7 +182,11 @@ Future<_Found> _enumerate(WidgetTester tester) async {
   }
 
   final bar = tester.widget<MenuBar>(find.byType(MenuBar));
-  for (final top in bar.children.whereType<SubmenuButton>()) {
+  // (the menus that do not fit the window are under "⋯": top menus all the same)
+  final tops = [
+    for (final top in bar.children.whereType<SubmenuButton>()) ...(top.key == const Key('menu_more') ? top.menuChildren.whereType<SubmenuButton>() : [top]),
+  ];
+  for (final top in tops) {
     walk(top.menuChildren, _menuKey(_text(top.child)) ?? '?', '');
   }
   // the phone layout: the ☰ sheet and the floating buttons (drawing, with

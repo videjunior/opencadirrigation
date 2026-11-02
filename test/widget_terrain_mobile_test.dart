@@ -263,9 +263,13 @@ void main() {
       await tester.tap(find.byKey(const Key('mobile_menu')));
       await settle(tester);
       expect(find.byKey(const Key('mobile_menu_sheet')), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('mobile_menu_design')));
+      await settle(tester, 1);
       await tester.tap(find.byKey(const Key('mobile_menu_design')));
       await settle(tester);
       expect(find.byKey(const Key('mobile_menu_check')), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('mobile_menu_check')));
+      await settle(tester, 1);
       await tester.tap(find.byKey(const Key('mobile_menu_check')));
       await settle(tester);
       expect(find.byKey(const Key('check_list')), findsOneWidget);

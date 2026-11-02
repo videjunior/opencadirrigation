@@ -46,4 +46,24 @@ const _ui = <String, (String, String, String)>{
   'mob.gridSnap': ('Encaixe na grade (F9)', 'Snap to grid (F9)', 'Ajuste a la cuadrícula (F9)'),
   'mob.polar': ('Rastreamento polar: {s}', 'Polar tracking: {s}', 'Rastreo polar: {s}'),
   'mob.off': ('desligado', 'off', 'desactivado'),
+  // ---- UI-06 typed commands on touch screens
+  'cmd.open': ('Digitar comando ou coordenada', 'Type a command or a coordinate', 'Escribir un comando o una coordenada'),
+  'cmd.hint': ('L, PL… ou 25,10  @5,0  @25<90  12', 'L, PL… or 25,10  @5,0  @25<90  12', 'L, PL… o 25,10  @5,0  @25<90  12'),
+  'cmd.run': ('Executar (Enter)', 'Run (Enter)', 'Ejecutar (Intro)'),
+  'cmd.letters': ('Letras (comandos)', 'Letters (commands)', 'Letras (comandos)'),
+  'cmd.digits': ('Números (coordenadas)', 'Numbers (coordinates)', 'Números (coordenadas)'),
+  'props.lengthNo': (
+    'Esse comprimento não cabe: o último trecho ficaria com comprimento zero ou negativo.',
+    'That length does not fit: the last segment would become zero or negative.',
+    'Esa longitud no cabe: el último tramo quedaría con longitud cero o negativa.',
+  ),
+  // ---- UI-07 layout by width, height and pointer
+  'ui.sideOpen': ('Mostrar propriedades, camadas e histórico', 'Show properties, layers and history', 'Mostrar propiedades, capas e historial'),
+  'ui.sideClose': ('Recolher o painel', 'Fold the panel away', 'Recoger el panel'),
+  // ---- UI-29 the real scale in the status bar
+  'ui.scaleTip': (
+    'Escala do desenho na tela (tela de 96 pontos por polegada)',
+    'Scale of the drawing on the screen (a screen of 96 dots per inch)',
+    'Escala del dibujo en la pantalla (pantalla de 96 puntos por pulgada)',
+  ),
 };

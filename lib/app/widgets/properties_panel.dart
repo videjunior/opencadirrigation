@@ -24,6 +24,27 @@ class PropertiesPanel extends StatelessWidget {
   const PropertiesPanel({super.key, required this.c});
   final ProjectController c;
 
+  /// The length of a line, an open polyline or a pipe as a field: the last
+  /// vertex moves along the last segment (what is joined to it goes along
+  /// when "Keep connections" is on), so an exact length can be typed and
+  /// corrected later, also without a keyboard command.
+  Widget _lengthField(Entity e, List<Pt> pts) {
+    final t = c.t, u = c.units;
+    return NumField(
+      key: const Key('props_length'),
+      label: '${t('props.length')} (${u.lengthLabel})',
+      value: u.lengthFromSi(polylineLength(pts)),
+      onChanged: (v) {
+        final end = endForLength(pts, u.lengthToSi(v));
+        if (end == null) {
+          c.notify(t('props.lengthNo'));
+          return;
+        }
+        c.setGrip(e.id, pts.length - 1, end, keepConnections: c.toolSettings.keepConnections);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = c.t;
@@ -57,7 +78,7 @@ class PropertiesPanel extends StatelessWidget {
       case PipeEntity p:
         items.addAll([
           KV(t('props.scope'), t('scope.${p.scope.name}')),
-          KV(t('props.length'), '${fmt(u.lengthFromSi(p.length))} ${u.lengthLabel}'),
+          _lengthField(p, p.points),
           SpecDropdown<PipeSpec>(
             label: t('props.pipe'),
             value: p.pipeSpecId,
@@ -433,7 +454,7 @@ class PropertiesPanel extends StatelessWidget {
         ]);
       case PolylineEntity pl:
         items.addAll([
-          KV(t('props.length'), '${fmt(u.lengthFromSi(pl.length))} ${u.lengthLabel}'),
+          if (pl.closed) KV(t('props.length'), '${fmt(u.lengthFromSi(pl.length))} ${u.lengthLabel}') else _lengthField(pl, pl.points),
           if (pl.closed) KV(t('props.area'), '${fmt(u.areaFromSi(pl.area), 3)} ${u.areaLabel}'),
           SwitchListTile(
             dense: true,
@@ -444,7 +465,7 @@ class PropertiesPanel extends StatelessWidget {
           ),
         ]);
       case LineEntity l:
-        items.add(KV(t('props.length'), '${fmt(u.lengthFromSi(l.length))} ${u.lengthLabel}'));
+        items.add(_lengthField(l, [l.a, l.b]));
       case DimensionEntity d:
         items.add(NumField(label: t('props.dimOffset'), value: d.offset, onChanged: (x) => set(() => d.offset = x, inv: false)));
       case AngularDimensionEntity ad:
@@ -1440,4 +1461,16 @@ class PropertiesPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Where the last vertex of [pts] goes for the path to measure [length]
+/// (along the last segment); null when the last segment would vanish or
+/// turn back, or has no direction.
+Pt? endForLength(List<Pt> pts, double length) {
+  if (pts.length < 2 || !length.isFinite) return null;
+  final a = pts[pts.length - 2], seg = pts.last - a;
+  if (seg.length < 1e-9) return null;
+  final last = length - (polylineLength(pts) - seg.length);
+  if (last <= 1e-6) return null;
+  return a + seg.normalized * last;
 }

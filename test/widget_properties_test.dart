@@ -186,7 +186,8 @@ void main() {
     await add(tester, c, WireEntity(id: c.project.newId(), points: [const Pt(0, -10), const Pt(0, -20)]));
     expect(find.text(t('hint.wire')), findsOneWidget);
     final line = await add(tester, c, LineEntity(id: c.project.newId(), a: Pt.zero, b: const Pt(3, 4)));
-    expect(find.textContaining('5.00'), findsWidgets);
+    // (the length is a field: typed, it moves the end of the line)
+    expect(find.descendant(of: find.byKey(const Key('props_length')), matching: find.text('5.0')), findsOneWidget);
     // the layer picker moves the entity
     await pick(tester, t('props.layer'), Layers.text);
     expect(line.layer, Layers.text);

@@ -12,4 +12,12 @@ const coverageUi = <String, String>{
   'menu:mob.polar': 'setting:snap.polar_step_deg',
   // (the Tabs section lists the open tabs by their project names; an unnamed one reads "New project")
   'menu:name.newProject': 'op:switch_tab',
+  // ---- UI-06 typed commands on touch screens (the ⌨ button and field)
+  'menu:cmd.open': 'tool:run_command',
+  'view:commandEntry': 'tool:run_command',
+  'panel:properties.line.length': 'op:edit_vertices',
+  'panel:properties.polyline.length': 'op:edit_vertices',
+  'panel:properties.pipe.length': 'op:edit_vertices',
+  // ---- UI-07 layout: the side panel of narrow windows folds into a drawer
+  'view:sideDrawer': 'n/a:the user folds the side panel of a narrow window away to see more of the drawing; the panels\' contents have their own routes',
 };

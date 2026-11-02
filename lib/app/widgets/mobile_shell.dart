@@ -19,6 +19,7 @@ import '../examples.dart';
 import '../theme.dart';
 import '../tutorial/tutorial.dart';
 import 'advice_panel.dart';
+import 'command_entry.dart';
 import 'ai/ai_panel.dart';
 import 'dialogs/agronomy_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
@@ -38,13 +39,14 @@ import 'dialogs/shortcuts_dialog.dart';
 import 'dialogs/terrain_dialogs.dart';
 import 'dialogs/transient_dialogs.dart';
 import 'history_panel.dart';
+import 'layout_mode.dart';
 import 'layers_panel.dart';
 import 'properties_panel.dart';
 import 'reports_panel.dart';
 import 'tool_palette.dart';
 
 /// Screens narrower than this use the phone layout.
-const mobileBreakpoint = 700.0;
+const mobileBreakpoint = phoneMaxWidth;
 
 class MobileShell extends StatefulWidget {
   const MobileShell({
@@ -58,6 +60,7 @@ class MobileShell extends StatefulWidget {
     required this.onCloseTab,
     required this.onDesignCheck,
     this.onCloseTabAt,
+    this.onCommand,
   });
   final ProjectController c;
   final Workspace ws;
@@ -74,12 +77,19 @@ class MobileShell extends StatefulWidget {
   /// null closes it at once.
   final void Function(int index)? onCloseTabAt;
 
+  /// Runs a typed command line (alias, point or distance) as the keyboard
+  /// does; null hides the ⌨ button.
+  final ValueChanged<String>? onCommand;
+
   @override
   State<MobileShell> createState() => _MobileShellState();
 }
 
 class _MobileShellState extends State<MobileShell> {
   String _group = 'draw';
+
+  /// The command line for the on-screen keyboard is open.
+  bool _commandOpen = false;
 
   ProjectController get c => widget.c;
 
@@ -536,6 +546,7 @@ class _MobileShellState extends State<MobileShell> {
                         children: [
                           if (drawing) _fab(const Key('mobile_done'), Icons.check, t('mob.done'), () => _toolKey('Enter'), color: Cad.okFill),
                           if (drawing) _fab(const Key('mobile_cancel'), Icons.close, t('mob.cancel'), () => _toolKey('Escape')),
+                          if (widget.onCommand != null) _fab(const Key('mobile_command'), Icons.keyboard_outlined, t('cmd.open'), () => setState(() => _commandOpen = !_commandOpen)),
                           if (c.selection.isNotEmpty) _fab(const Key('mobile_delete'), Icons.delete_outline, t('edit.delete'), c.deleteSelected),
                           _fab(const Key('mobile_undo'), Icons.undo, t('edit.undo'), c.canUndo ? c.undo : null),
                           _fab(const Key('mobile_history'), Icons.history, t('hist.title'), () => _openProperties(tab: 2)),
@@ -548,6 +559,8 @@ class _MobileShellState extends State<MobileShell> {
                 ),
               ),
             ),
+            // typed commands and coordinates, above the on-screen keyboard
+            if (_commandOpen && widget.onCommand != null) CommandEntry(c: c, onRun: widget.onCommand!, onClose: () => setState(() => _commandOpen = false)),
             // tool bar: group tabs + tools of the group
             Container(
               key: TutorialTargets.palette,

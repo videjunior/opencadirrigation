@@ -419,6 +419,10 @@ void main() {
 
   testWidgets('status bar toggles, tab bar and keyboard shortcuts', (tester) async {
     final c = await pumpShell(tester);
+    // (the message of the loaded project floats over the middle of the status bar)
+    await settle(tester, 2);
+    ScaffoldMessenger.of(tester.element(find.byType(CadCanvas))).removeCurrentSnackBar();
+    await settle(tester, 2);
     await tester.tap(find.text('Snap F3'));
     await settle(tester, 1);
     expect(c.snap.enabled, isTrue);

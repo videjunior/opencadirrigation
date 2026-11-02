@@ -77,9 +77,10 @@ class AppMenuBar extends StatelessWidget {
           Text(t('app.title'), style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(width: 12),
           Expanded(
-            child: MenuBar(
-              style: MenuStyle(backgroundColor: WidgetStatePropertyAll(Cad.menu), elevation: const WidgetStatePropertyAll(0)),
-              children: [
+            // the menus that do not fit the window go under "⋯" (no hidden
+            // horizontal scroll the mouse wheel cannot reach)
+            child: LayoutBuilder(
+              builder: (context, box) => _fitMenus(context, box.maxWidth, [
                 SubmenuButton(
                   onOpen: _menuOpened,
                   onClose: _menuClosed,
@@ -527,7 +528,7 @@ class AppMenuBar extends StatelessWidget {
                   ],
                   child: Text(t('menu.help')),
                 ),
-              ],
+              ]),
             ),
           ),
           if (c.busy)
@@ -552,6 +553,57 @@ class AppMenuBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The menu bar with as many of [menus] as fit [width] (each measured by
+/// its title); the others go into a last "⋯" menu, where they open as
+/// submenus.
+Widget _fitMenus(BuildContext context, double width, List<SubmenuButton> menus) {
+  final style = Theme.of(context).textTheme.labelLarge ?? const TextStyle(fontSize: 14);
+  final scaler = MediaQuery.textScalerOf(context);
+  final dir = Directionality.of(context);
+  double titleWidth(Widget? child) {
+    final tp = TextPainter(
+      text: TextSpan(text: child is Text ? child.data ?? '' : '', style: style),
+      textDirection: dir,
+      textScaler: scaler,
+    )..layout();
+    final w = tp.width;
+    tp.dispose();
+    // the padding of the button (8 on each side) and a little slack
+    return w + 18;
+  }
+
+  final widths = [for (final m in menus) titleWidth(m.child)];
+  // (the bar's own padding)
+  final room = width - 8;
+  var fit = menus.length;
+  if (widths.fold<double>(0, (a, b) => a + b) > room) {
+    const more = 40.0;
+    var used = 0.0;
+    fit = 0;
+    for (final w in widths) {
+      if (used + w + more > room) break;
+      used += w;
+      fit++;
+    }
+  }
+  return MenuBar(
+    style: MenuStyle(backgroundColor: WidgetStatePropertyAll(Cad.menu), elevation: const WidgetStatePropertyAll(0)),
+    children: [
+      ...menus.take(fit),
+      if (fit < menus.length)
+        SubmenuButton(
+          key: const Key('menu_more'),
+          onOpen: _menuOpened,
+          onClose: _menuClosed,
+          // copies without the global key of the top menu: a menu moving between the bar and "⋯"
+          // as the window is resized is then a new button, never one reparented between menu anchors
+          menuChildren: [for (final m in menus.skip(fit)) SubmenuButton(onOpen: m.onOpen, onClose: m.onClose, leadingIcon: m.leadingIcon, menuChildren: m.menuChildren, child: m.child)],
+          child: const Text('⋯'),
+        ),
+    ],
+  );
 }
 
 void _menuOpened() => AppMenuBar.openMenus.value++;

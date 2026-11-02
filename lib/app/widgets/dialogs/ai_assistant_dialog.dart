@@ -17,13 +17,14 @@ import '../../theme.dart';
 import '../advice_panel.dart' show adviceTitle;
 import '../ai/ai_panel.dart';
 import '../ai/ai_views.dart';
+import '../layout_mode.dart';
 
 /// Opens the assistant of [c]; [prompt] prefills the question (nothing is
 /// sent before the user sends it).
 Future<void> showAiAssistantDialog(BuildContext context, ProjectController c, {String? prompt}) {
   final ai = AiAssistant.of(c);
   if (AiAssistant.dockable) {
-    if (MediaQuery.of(context).size.width < 700) return showAiAgentSheet(context, c, prompt: prompt);
+    if (!assistantDocks(context)) return showAiAgentSheet(context, c, prompt: prompt);
     if (prompt != null) ai.rewound = prompt;
     ai.focusInput = true;
     AiAssistant.panelOpen.value = true;
