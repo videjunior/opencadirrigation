@@ -186,4 +186,5 @@ export 'design/memorial.dart';
 export 'design/om_plan.dart';
 export 'design/permit.dart';
 export 'io/tech_doc.dart';
+export 'io/tech_doc_sections.dart';
 export 'model/deliverables.dart';

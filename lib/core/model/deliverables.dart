@@ -432,6 +432,15 @@ class DeliverableSettings {
 
   bool get isDefault => permit.isDefault && memorial.isDefault && om.isDefault && budget.isDefault && lifeCycle.isDefault && (extra?.isEmpty ?? true);
 
+  /// The texts the user typed (permit data, memorial texts), for the fonts
+  /// of a PDF that prints them.
+  Iterable<String> get texts sync* {
+    for (final s in permit.sources.values) {
+      yield* [s.waterBody, s.basin, s.municipality, s.registry, s.permitNumber];
+    }
+    yield* [memorial.objective, memorial.notes];
+  }
+
   /// Multiplies every amount of money by [factor] (currency conversion):
   /// the hourly costs of the budget and the price of the water.
   void scalePrices(double factor) {
