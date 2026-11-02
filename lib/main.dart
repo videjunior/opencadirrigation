@@ -350,20 +350,35 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     return false;
   }
 
-  @override
-  void runDesign() => c.runDesign();
+  /// The application keys (Ctrl+S, Ctrl+O, Ctrl+I, Ctrl+P, F5) act on what
+  /// the user sees: the field being typed in gives the focus up first (it
+  /// commits its value on focus loss, in a microtask) and [action] runs
+  /// after that, so the number just typed is saved, exported or designed.
+  void _afterFieldCommit(VoidCallback action) {
+    if (!editableTextFocused()) {
+      action();
+      return;
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    Future<void>.delayed(Duration.zero, () {
+      if (mounted) action();
+    });
+  }
 
   @override
-  void save() => saveProjectAction(context, c);
+  void runDesign() => _afterFieldCommit(() => c.runDesign());
 
   @override
-  void open() => openProjectInTabAction(context, ws);
+  void save() => _afterFieldCommit(() => saveProjectAction(context, c));
 
   @override
-  void import() => importDrawingAction(context, c);
+  void open() => _afterFieldCommit(() => openProjectInTabAction(context, ws));
 
   @override
-  void exportPdf() => exportDrawingAction(context, c, DrawingFormat.pdf);
+  void import() => _afterFieldCommit(() => importDrawingAction(context, c));
+
+  @override
+  void exportPdf() => _afterFieldCommit(() => exportDrawingAction(context, c, DrawingFormat.pdf));
 
   @override
   void newTab() => ws.addTab();
@@ -538,7 +553,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   }
 
   @override
-  void saveProject() => saveProjectAction(context, c);
+  void saveProject() => _afterFieldCommit(() => saveProjectAction(context, c));
 
   @override
   void typeCommand(String alias) {

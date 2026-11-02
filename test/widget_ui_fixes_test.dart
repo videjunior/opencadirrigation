@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencadirrigation/app/actions.dart';
+import 'package:opencadirrigation/app/io/app_keys.dart';
 import 'package:opencadirrigation/app/io/prefs.dart';
 import 'package:opencadirrigation/app/io/project_store.dart';
+import 'package:opencadirrigation/app/keys/hotkeys.dart';
 import 'package:opencadirrigation/app/state/controller.dart';
+import 'package:opencadirrigation/app/state/design_job.dart';
 import 'package:opencadirrigation/app/state/workspace.dart';
 import 'package:opencadirrigation/app/tutorial/tutorial.dart';
 import 'package:opencadirrigation/core/model/entities.dart';
@@ -87,6 +93,54 @@ void main() {
       expect(ws.current.project.meta.georef, isNotNull);
       expect(mine.project.meta.georef, isNull);
       expect(mine.saveJson(markClean: false), before);
+    });
+  });
+
+  group('UI-03 the application keys take the value being typed', () {
+    Future<(ProjectController, SpotHeightEntity)> typeElevation(WidgetTester tester, dynamic shell, String text) async {
+      final ProjectController c = shell.c;
+      loadExampleAction(c);
+      c.designRunner = InThreadDesignRunner();
+      final sp = SpotHeightEntity(id: c.project.newId(), position: const Pt(5, 5), elevation: 100);
+      c.addEntity(sp);
+      c.select([sp.id]);
+      await settle(tester);
+      final field = find.widgetWithText(TextField, c.t('props.elevation'));
+      expect(field, findsOneWidget);
+      await tester.enterText(field, text);
+      await tester.pump();
+      expect(editableTextFocused(), isTrue);
+      return (c, sp);
+    }
+
+    testWidgets('F5 while typing designs with the number just typed (it was refused as "design running")', (tester) async {
+      final shell = await pumpFresh(tester);
+      final (c, sp) = await typeElevation(tester, shell, '123.5');
+      (shell.hotkeys as Hotkeys).handle(const HotkeyEvent('F5'));
+      await settle(tester);
+      for (var k = 0; k < 400 && c.busy; k++) {
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      await settle(tester);
+      expect(c.results, isNotNull, reason: 'the design ran');
+      expect((c.project.entities.firstWhere((e) => e.id == sp.id) as SpotHeightEntity).elevation, 123.5);
+      expect(c.lastMessage, isNot(c.t('msg.designBusy')));
+    });
+
+    testWidgets('Ctrl+S while typing saves the number just typed', (tester) async {
+      final shell = await pumpFresh(tester);
+      final (c, sp) = await typeElevation(tester, shell, '321');
+      (shell.hotkeys as Hotkeys).handle(const HotkeyEvent('s', ctrl: true));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 50));
+      final saved = c.store.load(c.project.meta.uid);
+      expect(saved, isNotNull);
+      final entities = ((jsonDecode(saved!) as Map<String, dynamic>)['project'] as Map<String, dynamic>? ?? jsonDecode(saved) as Map<String, dynamic>)['entities'] as List;
+      expect((entities.firstWhere((e) => (e as Map)['id'] == sp.id) as Map)['z'], 321);
+      expect(c.dirty, isFalse);
+      // the file chooser of the desktop build
+      appNavigatorKey.currentState?.pop();
+      await settle(tester);
     });
   });
 }
