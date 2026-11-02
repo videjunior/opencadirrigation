@@ -1412,8 +1412,8 @@ class ProjectController extends ChangeNotifier {
   Scenario? saveScenario(String name) {
     final r = results;
     if (r == null) return null;
-    final snap = project.toJson()..remove('scenarios');
-    snap['results'] = r.toJson();
+    // without the pictures of images and comments (they stay in the project)
+    final snap = scenarioSnapshot(project, r);
     final sc = Scenario(
       id: 'scn${DateTime.now().microsecondsSinceEpoch}',
       name: name.trim().isEmpty ? t('scn.default', {'n': '${project.scenarios.length + 1}'}) : name.trim(),
@@ -1430,12 +1430,9 @@ class ProjectController extends ChangeNotifier {
   bool restoreScenario(String id) {
     final sc = project.scenarios.where((x) => x.id == id).firstOrNull;
     if (sc == null) return false;
-    final Project restored;
-    try {
-      restored = Project.fromJson(Map<String, dynamic>.of(sc.snapshot)..remove('results'));
-    } catch (_) {
-      return false;
-    }
+    // the pictures of images and comments come back from the current project
+    final restored = sc.restoredInto(project);
+    if (restored == null) return false;
     final res = sc.snapshot['results'] is Map ? DesignResults.fromJson((sc.snapshot['results'] as Map).cast<String, dynamic>()) : null;
     final done = mutate(() {
       project

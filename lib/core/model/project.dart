@@ -490,29 +490,51 @@ class Project {
   int get nextIdValue => _nextId;
 
   /// Multiplies every price of the project by [factor]: catalogue costs, the
-  /// energy tariff, the pivot machine and tower costs and the controller
-  /// prices.
+  /// energy tariff, the quote, the pivot machine and tower costs, the
+  /// controller and its accessories and the pump hour meters (the money
+  /// fields of the entities are listed in [entityMoneyKeys]). The
+  /// alternatives follow in [setCurrency].
   void scalePrices(double factor) {
     if (factor == 1) return;
     scaleCatalogPrices(catalog, factor);
     params.powerCostPerKwh *= factor;
     proposal.scalePrices(factor);
     for (final e in entities) {
-      if (e is PivotEntity) {
-        e.machineCost *= factor;
-        e.towerCost *= factor;
-      } else if (e is ControllerEntity) {
-        e.cost *= factor;
+      switch (e) {
+        case PivotEntity p:
+          p.machineCost *= factor;
+          p.towerCost *= factor;
+        case ControllerEntity c:
+          c.cost *= factor;
+          c.accessories.updateAll((_, v) => v * factor);
+        case PumpEntity p:
+          p.hourMeterCost *= factor;
+        default:
+          break;
       }
     }
   }
 
+  /// The JSON keys of every entity field that holds money, by type: what
+  /// [scalePrices] converts (a test fails when a new price field is left
+  /// out).
+  static const entityMoneyKeys = {
+    EntityType.pivot: {'cost', 'tcost'},
+    EntityType.controller: {'cost', 'acc'},
+    EntityType.pump: {'hm'},
+  };
+
   /// Switches the project to currency [code]; with [rate] (units of the new
-  /// currency per unit of the old one) the prices are converted too.
+  /// currency per unit of the old one) the prices are converted too, and so
+  /// are the money figures and the projects of the alternatives (whose
+  /// results, priced in the old currency, are dropped).
   void setCurrency(String code, {double? rate, String? symbol}) {
     if (rate != null) scalePrices(rate);
     params.currencyCode = code;
     params.currency = symbol ?? currencySymbol(code);
+    for (final s in scenarios) {
+      s.convertCurrency(code, params.currency, rate: rate);
+    }
   }
 
   /// Raises the id counter so ids created elsewhere (a design job running in

@@ -20,13 +20,26 @@ const shareLinkWarnLength = 60000;
 const shareLinkMaxLength = 1800000;
 
 /// Project JSON made fit for a link: embedded pictures, the photos of
-/// comments and design results left out (the receiver designs again).
+/// comments and design results left out (the receiver designs again), in
+/// the project and in each of its alternatives.
 String shareableProjectJson(Map<String, dynamic> project) {
-  final j = Map<String, dynamic>.of(project)..remove('results');
-  j['entities'] = [
-    for (final e in (j['entities'] as List? ?? const []).cast<Map<String, dynamic>>())
-      if (e['type'] == 'image') (Map<String, dynamic>.of(e)..remove('data')) else if (e['type'] == 'comment' && e.containsKey('photo')) (Map<String, dynamic>.of(e)..remove('photo')) else e,
-  ];
+  Map<String, dynamic> strip(Map<String, dynamic> p) {
+    final j = Map<String, dynamic>.of(p)..remove('results');
+    j['entities'] = [
+      for (final e in (j['entities'] as List? ?? const []).cast<Map<String, dynamic>>())
+        if (e['type'] == 'image') (Map<String, dynamic>.of(e)..remove('data')) else if (e['type'] == 'comment' && e.containsKey('photo')) (Map<String, dynamic>.of(e)..remove('photo')) else e,
+    ];
+    return j;
+  }
+
+  final j = strip(project);
+  // 1.6.0 MOD: the alternatives carry a copy of the project
+  if (j['scenarios'] is List) {
+    j['scenarios'] = [
+      for (final s in j['scenarios'] as List)
+        if (s is Map && s['project'] is Map) {...s.cast<String, dynamic>(), 'project': strip((s['project'] as Map).cast<String, dynamic>())} else s,
+    ];
+  }
   return jsonEncode(j);
 }
 
