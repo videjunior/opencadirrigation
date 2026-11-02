@@ -3,9 +3,10 @@
 /// ETRS89 and NAD83, which agree with it at the accuracy of a project map),
 /// recognition of the CRS of a file (.prj and other WKT strings in the ESRI
 /// and OGC flavours, WKT 2, EPSG codes and OGC URNs), datum shifts by
-/// geocentric translation, the transverse Mercator projection (UTM) on any
-/// ellipsoid and the placement of imported coordinates in the local frame of
-/// a project ([GeoPlacement]).
+/// geocentric translation, the map projections on any ellipsoid (transverse
+/// Mercator and UTM, Albers equal-area conic, Lambert conformal conic,
+/// American polyconic: [MapProjection]) and the placement of imported
+/// coordinates in the local frame of a project ([GeoPlacement]).
 ///
 /// SIRGAS 2000 is Brazil's official datum (IBGE, R.PR 1/2005). It was
 /// realised on ITRF2000 at epoch 2000.4 and agrees with WGS 84 (realisations
@@ -227,9 +228,65 @@ enum GeodeticDatum {
 
 // ------------------------------------------------------------------ projection
 
+/// A map projection on an ellipsoid: geodetic latitude/longitude (degrees,
+/// on [ellipsoid]) to easting/northing (metres) and back. The transverse
+/// Mercator (UTM and the other TM systems), the Albers equal-area conic,
+/// the Lambert conformal conic (one and two standard parallels) and the
+/// American polyconic are held: the projected systems of the national maps
+/// of Brazil (the Albers and polyconic projections of IBGE), of statistical
+/// and land-cover data (Albers, LCC) and of many national grids
+/// (Lambert-93, LCC Europe).
+///
+/// References: Snyder, J. P. (1987), "Map Projections — A Working Manual",
+/// USGS Professional Paper 1395 (chapters 14, 15 and 18, ellipsoidal
+/// formulas); IOGP Publication 373-7-2, "Geomatics Guidance Note 7, part 2"
+/// (EPSG methods 9801, 9802, 9818 and 9822).
+abstract class MapProjection {
+  const MapProjection();
+
+  Ellipsoid get ellipsoid;
+
+  /// Degrees.
+  double get centralMeridian;
+
+  /// Degrees.
+  double get latitudeOfOrigin;
+
+  /// Metres.
+  double get falseEasting;
+  double get falseNorthing;
+
+  /// Latitude/longitude (degrees, on [ellipsoid]) to easting/northing (m).
+  (double easting, double northing) forward(double lat, double lon);
+
+  /// Easting/northing (m) to latitude/longitude (degrees, on [ellipsoid]).
+  (double lat, double lon) inverse(double easting, double northing);
+
+  /// The UTM zone these parameters describe, or null (any other projection).
+  int? get utmZone => null;
+
+  /// Northern-hemisphere UTM (no false northing); true for the other projections.
+  bool get north => true;
+
+  /// The method name in ESRI WKT (`PROJECTION["…"]`) and in OGC WKT 1.
+  String get esriMethod;
+  String get ogcMethod;
+
+  /// The parameters of the method as WKT 1 writes them: (ESRI name, OGC
+  /// name, value), angles in degrees and lengths in metres.
+  List<(String, String, double)> get wktParameters;
+}
+
+/// [lon] − [lon0] (degrees) in (−180°, 180°], as radians.
+double _lonDiffRad(double lon, double lon0) {
+  var d = (lon - lon0) % 360;
+  if (d > 180) d -= 360;
+  return d * math.pi / 180;
+}
+
 /// Transverse Mercator projection on any ellipsoid (Krüger series to n³, as
 /// in [latLonToUtm]; a few millimetres within a UTM zone).
-class TransverseMercator {
+class TransverseMercator extends MapProjection {
   const TransverseMercator({required this.centralMeridian, this.scale = 0.9996, this.falseEasting = 500000, this.falseNorthing = 0, this.latitudeOfOrigin = 0, this.ellipsoid = Ellipsoid.wgs84});
 
   /// The UTM zone [zone] (1–60) of the given hemisphere.
@@ -237,17 +294,36 @@ class TransverseMercator {
       TransverseMercator(centralMeridian: zone * 6.0 - 183, falseNorthing: north ? 0 : 10000000, ellipsoid: ellipsoid);
 
   /// Degrees.
+  @override
   final double centralMeridian;
   final double scale;
+  @override
   final double falseEasting;
+  @override
   final double falseNorthing;
 
   /// Degrees.
+  @override
   final double latitudeOfOrigin;
+  @override
   final Ellipsoid ellipsoid;
+
+  @override
+  String get esriMethod => 'Transverse_Mercator';
+  @override
+  String get ogcMethod => 'Transverse_Mercator';
+  @override
+  List<(String, String, double)> get wktParameters => [
+    ('Latitude_Of_Origin', 'latitude_of_origin', latitudeOfOrigin),
+    ('Central_Meridian', 'central_meridian', centralMeridian),
+    ('Scale_Factor', 'scale_factor', scale),
+    ('False_Easting', 'false_easting', falseEasting),
+    ('False_Northing', 'false_northing', falseNorthing),
+  ];
 
   /// The UTM zone these parameters describe, or null (another transverse
   /// Mercator: a local or regional system).
+  @override
   int? get utmZone {
     final z = (centralMeridian + 183) / 6;
     if ((z - z.round()).abs() > 1e-9 || z.round() < 1 || z.round() > 60) return null;
@@ -257,6 +333,7 @@ class TransverseMercator {
   }
 
   /// Northern-hemisphere UTM (no false northing).
+  @override
   bool get north => falseNorthing.abs() < 1e-6;
 
   double get _n => ellipsoid.f / (2 - ellipsoid.f);
@@ -288,12 +365,14 @@ class TransverseMercator {
   double get _northingOfOrigin => latitudeOfOrigin == 0 ? 0 : _raw(latitudeOfOrigin, centralMeridian).$1 * scale;
 
   /// Latitude/longitude (degrees, on [ellipsoid]) to easting/northing (m).
+  @override
   (double easting, double northing) forward(double lat, double lon) {
     final (x, y) = _raw(lat, lon);
     return (falseEasting + scale * y, falseNorthing + scale * x - _northingOfOrigin);
   }
 
   /// Easting/northing (m) to latitude/longitude (degrees, on [ellipsoid]).
+  @override
   (double lat, double lon) inverse(double easting, double northing) {
     final n = _n;
     final beta = [n / 2 - 2 * n * n / 3 + 37 * n * n * n / 96, n * n / 48 + n * n * n / 15, 17 * n * n * n / 480];
@@ -315,6 +394,307 @@ class TransverseMercator {
   }
 }
 
+/// Albers equal-area conic on an ellipsoid (EPSG method 9822; Snyder,
+/// eqs. 14-1 to 14-21): the projection of the statistical and land-cover
+/// maps (IBGE's "SIRGAS 2000 / Brazil Albers", the US national datasets).
+class AlbersEqualArea extends MapProjection {
+  AlbersEqualArea({
+    required this.centralMeridian,
+    required this.latitudeOfOrigin,
+    required this.standardParallel1,
+    required this.standardParallel2,
+    this.falseEasting = 0,
+    this.falseNorthing = 0,
+    this.ellipsoid = Ellipsoid.grs80,
+  }) {
+    final p1 = standardParallel1 * math.pi / 180, p2 = standardParallel2 * math.pi / 180;
+    final m1 = _m(p1), m2 = _m(p2), q1 = _q(p1), q2 = _q(p2);
+    _n = (p1 - p2).abs() < 1e-10 ? math.sin(p1) : (m1 * m1 - m2 * m2) / (q2 - q1);
+    _c = m1 * m1 + _n * q1;
+    _rho0 = _rho(_q(latitudeOfOrigin * math.pi / 180));
+  }
+
+  @override
+  final double centralMeridian, latitudeOfOrigin, falseEasting, falseNorthing;
+
+  /// Degrees.
+  final double standardParallel1, standardParallel2;
+  @override
+  final Ellipsoid ellipsoid;
+  late final double _n, _c, _rho0;
+
+  double get _e => math.sqrt(ellipsoid.e2);
+
+  double _m(double phi) {
+    final s = math.sin(phi);
+    return math.cos(phi) / math.sqrt(1 - ellipsoid.e2 * s * s);
+  }
+
+  /// q of Snyder (3-12), the authalic function.
+  double _q(double phi) {
+    final s = math.sin(phi), e = _e, e2 = ellipsoid.e2;
+    if (e < 1e-12) return 2 * s;
+    return (1 - e2) * (s / (1 - e2 * s * s) - 1 / (2 * e) * math.log((1 - e * s) / (1 + e * s)));
+  }
+
+  double _rho(double q) => ellipsoid.a * math.sqrt(math.max(0.0, _c - _n * q)) / _n;
+
+  @override
+  String get esriMethod => 'Albers';
+  @override
+  String get ogcMethod => 'Albers_Conic_Equal_Area';
+  @override
+  List<(String, String, double)> get wktParameters => [
+    ('False_Easting', 'false_easting', falseEasting),
+    ('False_Northing', 'false_northing', falseNorthing),
+    ('Central_Meridian', 'longitude_of_center', centralMeridian),
+    ('Standard_Parallel_1', 'standard_parallel_1', standardParallel1),
+    ('Standard_Parallel_2', 'standard_parallel_2', standardParallel2),
+    ('Latitude_Of_Origin', 'latitude_of_center', latitudeOfOrigin),
+  ];
+
+  @override
+  (double easting, double northing) forward(double lat, double lon) {
+    final rho = _rho(_q(lat * math.pi / 180));
+    final theta = _n * _lonDiffRad(lon, centralMeridian);
+    return (falseEasting + rho * math.sin(theta), falseNorthing + _rho0 - rho * math.cos(theta));
+  }
+
+  @override
+  (double lat, double lon) inverse(double easting, double northing) {
+    final x = easting - falseEasting, y = _rho0 - (northing - falseNorthing);
+    var rho = math.sqrt(x * x + y * y);
+    final theta = _n >= 0 ? math.atan2(x, y) : math.atan2(-x, -y);
+    if (_n < 0) rho = -rho;
+    final a = ellipsoid.a, e = _e, e2 = ellipsoid.e2;
+    final q = (_c - rho * rho * _n * _n / (a * a)) / _n;
+    // the pole: q reaches its limit there
+    final qPole = e < 1e-12 ? 2.0 : 1 - (1 - e2) / (2 * e) * math.log((1 - e) / (1 + e));
+    double phi;
+    if ((q.abs() - qPole).abs() < 1e-12) {
+      phi = q.sign * math.pi / 2;
+    } else {
+      phi = math.asin((q / 2).clamp(-1.0, 1.0));
+      for (var i = 0; i < 25; i++) {
+        final s = math.sin(phi), c = math.cos(phi);
+        final w = 1 - e2 * s * s;
+        final d = e < 1e-12
+            ? (q / 2 - s) / c
+            : w * w / (2 * c) * (q / (1 - e2) - s / w + 1 / (2 * e) * math.log((1 - e * s) / (1 + e * s)));
+        phi += d;
+        if (d.abs() < 1e-14) break;
+      }
+    }
+    return (phi * 180 / math.pi, centralMeridian + theta / _n * 180 / math.pi);
+  }
+}
+
+/// Lambert conformal conic on an ellipsoid with two standard parallels
+/// (EPSG method 9802; Snyder, eqs. 15-1 to 15-11) or one (method 9801, a
+/// scale factor at the latitude of origin): Lambert-93, LCC Europe and many
+/// state and national grids.
+class LambertConformalConic extends MapProjection {
+  LambertConformalConic({
+    required this.centralMeridian,
+    required this.latitudeOfOrigin,
+    required this.standardParallel1,
+    required this.standardParallel2,
+    this.scale = 1,
+    this.falseEasting = 0,
+    this.falseNorthing = 0,
+    this.ellipsoid = Ellipsoid.grs80,
+  }) {
+    final p1 = standardParallel1 * math.pi / 180, p2 = standardParallel2 * math.pi / 180;
+    final m1 = _m(p1), m2 = _m(p2), t1 = _t(p1), t2 = _t(p2);
+    _n = (p1 - p2).abs() < 1e-10 ? math.sin(p1) : (math.log(m1) - math.log(m2)) / (math.log(t1) - math.log(t2));
+    _f = m1 / (_n * math.pow(t1, _n));
+    _rho0 = _rho(latitudeOfOrigin * math.pi / 180);
+  }
+
+  /// One standard parallel: the latitude of origin, with [scale] there.
+  factory LambertConformalConic.oneParallel({
+    required double centralMeridian,
+    required double latitudeOfOrigin,
+    double scale = 1,
+    double falseEasting = 0,
+    double falseNorthing = 0,
+    Ellipsoid ellipsoid = Ellipsoid.grs80,
+  }) => LambertConformalConic(
+    centralMeridian: centralMeridian,
+    latitudeOfOrigin: latitudeOfOrigin,
+    standardParallel1: latitudeOfOrigin,
+    standardParallel2: latitudeOfOrigin,
+    scale: scale,
+    falseEasting: falseEasting,
+    falseNorthing: falseNorthing,
+    ellipsoid: ellipsoid,
+  );
+
+  @override
+  final double centralMeridian, latitudeOfOrigin, falseEasting, falseNorthing;
+
+  /// Degrees.
+  final double standardParallel1, standardParallel2;
+
+  /// Scale factor (1 with two standard parallels).
+  final double scale;
+  @override
+  final Ellipsoid ellipsoid;
+  late final double _n, _f, _rho0;
+
+  bool get oneParallel => (standardParallel1 - standardParallel2).abs() < 1e-10 && (standardParallel1 - latitudeOfOrigin).abs() < 1e-10;
+
+  double get _e => math.sqrt(ellipsoid.e2);
+
+  double _m(double phi) {
+    final s = math.sin(phi);
+    return math.cos(phi) / math.sqrt(1 - ellipsoid.e2 * s * s);
+  }
+
+  /// t of Snyder (15-9).
+  double _t(double phi) {
+    final s = math.sin(phi), e = _e;
+    return math.tan(math.pi / 4 - phi / 2) / math.pow((1 - e * s) / (1 + e * s), e / 2);
+  }
+
+  double _rho(double phi) {
+    if ((phi.abs() - math.pi / 2).abs() < 1e-12 && phi * _n > 0) return 0;
+    return ellipsoid.a * _f * math.pow(_t(phi), _n) * scale;
+  }
+
+  @override
+  String get esriMethod => 'Lambert_Conformal_Conic';
+  @override
+  String get ogcMethod => oneParallel ? 'Lambert_Conformal_Conic_1SP' : 'Lambert_Conformal_Conic_2SP';
+  @override
+  List<(String, String, double)> get wktParameters => oneParallel
+      ? [
+          ('False_Easting', 'false_easting', falseEasting),
+          ('False_Northing', 'false_northing', falseNorthing),
+          ('Central_Meridian', 'central_meridian', centralMeridian),
+          ('Standard_Parallel_1', 'latitude_of_origin', latitudeOfOrigin),
+          ('Scale_Factor', 'scale_factor', scale),
+          ('Latitude_Of_Origin', 'latitude_of_origin', latitudeOfOrigin),
+        ]
+      : [
+          ('False_Easting', 'false_easting', falseEasting),
+          ('False_Northing', 'false_northing', falseNorthing),
+          ('Central_Meridian', 'central_meridian', centralMeridian),
+          ('Standard_Parallel_1', 'standard_parallel_1', standardParallel1),
+          ('Standard_Parallel_2', 'standard_parallel_2', standardParallel2),
+          ('Scale_Factor', 'scale_factor', scale),
+          ('Latitude_Of_Origin', 'latitude_of_origin', latitudeOfOrigin),
+        ];
+
+  @override
+  (double easting, double northing) forward(double lat, double lon) {
+    final rho = _rho(lat * math.pi / 180);
+    final theta = _n * _lonDiffRad(lon, centralMeridian);
+    return (falseEasting + rho * math.sin(theta), falseNorthing + _rho0 - rho * math.cos(theta));
+  }
+
+  @override
+  (double lat, double lon) inverse(double easting, double northing) {
+    final x = easting - falseEasting, y = _rho0 - (northing - falseNorthing);
+    var rho = math.sqrt(x * x + y * y);
+    final theta = _n >= 0 ? math.atan2(x, y) : math.atan2(-x, -y);
+    if (_n < 0) rho = -rho;
+    final e = _e;
+    if (rho == 0) return (_n.sign * 90.0, centralMeridian);
+    final t = math.pow(rho / (ellipsoid.a * _f * scale), 1 / _n).toDouble();
+    var phi = math.pi / 2 - 2 * math.atan(t);
+    for (var i = 0; i < 25; i++) {
+      final s = math.sin(phi);
+      final next = math.pi / 2 - 2 * math.atan(t * math.pow((1 - e * s) / (1 + e * s), e / 2));
+      final d = next - phi;
+      phi = next;
+      if (d.abs() < 1e-14) break;
+    }
+    return (phi * 180 / math.pi, centralMeridian + theta / _n * 180 / math.pi);
+  }
+}
+
+/// The American polyconic projection on an ellipsoid (EPSG method 9818;
+/// Snyder, eqs. 18-1 to 18-19): IBGE's "Brazil Polyconic" of the national
+/// systematic mapping (SIRGAS 2000 and SAD 69).
+class Polyconic extends MapProjection {
+  const Polyconic({required this.centralMeridian, this.latitudeOfOrigin = 0, this.falseEasting = 0, this.falseNorthing = 0, this.ellipsoid = Ellipsoid.grs80});
+
+  @override
+  final double centralMeridian, latitudeOfOrigin, falseEasting, falseNorthing;
+  @override
+  final Ellipsoid ellipsoid;
+
+  /// The meridian distance from the equator to [phi] (Snyder 3-21).
+  double _meridian(double phi) {
+    final e2 = ellipsoid.e2, e4 = e2 * e2, e6 = e4 * e2;
+    return ellipsoid.a *
+        ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi -
+            (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * math.sin(2 * phi) +
+            (15 * e4 / 256 + 45 * e6 / 1024) * math.sin(4 * phi) -
+            35 * e6 / 3072 * math.sin(6 * phi));
+  }
+
+  /// d(M/a)/dφ.
+  double _meridianSlope(double phi) {
+    final e2 = ellipsoid.e2, e4 = e2 * e2, e6 = e4 * e2;
+    return 1 -
+        e2 / 4 -
+        3 * e4 / 64 -
+        5 * e6 / 256 -
+        2 * (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * math.cos(2 * phi) +
+        4 * (15 * e4 / 256 + 45 * e6 / 1024) * math.cos(4 * phi) -
+        6 * 35 * e6 / 3072 * math.cos(6 * phi);
+  }
+
+  @override
+  String get esriMethod => 'Polyconic';
+  @override
+  String get ogcMethod => 'Polyconic';
+  @override
+  List<(String, String, double)> get wktParameters => [
+    ('False_Easting', 'false_easting', falseEasting),
+    ('False_Northing', 'false_northing', falseNorthing),
+    ('Central_Meridian', 'central_meridian', centralMeridian),
+    ('Latitude_Of_Origin', 'latitude_of_origin', latitudeOfOrigin),
+  ];
+
+  @override
+  (double easting, double northing) forward(double lat, double lon) {
+    final phi = lat * math.pi / 180, lam = _lonDiffRad(lon, centralMeridian);
+    final m0 = _meridian(latitudeOfOrigin * math.pi / 180);
+    if (phi.abs() < 1e-12) return (falseEasting + ellipsoid.a * lam, falseNorthing - m0);
+    final s = math.sin(phi);
+    final nu = ellipsoid.a / math.sqrt(1 - ellipsoid.e2 * s * s);
+    final l = lam * s, cot = 1 / math.tan(phi);
+    return (falseEasting + nu * cot * math.sin(l), falseNorthing + _meridian(phi) - m0 + nu * cot * (1 - math.cos(l)));
+  }
+
+  @override
+  (double lat, double lon) inverse(double easting, double northing) {
+    final a = ellipsoid.a, e2 = ellipsoid.e2;
+    final x = easting - falseEasting, y = northing - falseNorthing;
+    final m0 = _meridian(latitudeOfOrigin * math.pi / 180);
+    if ((y + m0).abs() < 1e-9) return (0, centralMeridian + x / a * 180 / math.pi);
+    final aa = (m0 + y) / a, bb = x * x / (a * a) + aa * aa;
+    var phi = aa;
+    var c = 0.0;
+    for (var i = 0; i < 40; i++) {
+      final s = math.sin(phi);
+      c = math.sqrt(1 - e2 * s * s) * math.tan(phi);
+      final ma = _meridian(phi) / a, mp = _meridianSlope(phi);
+      final s2 = math.sin(2 * phi);
+      final d = (aa * (c * ma + 1) - ma - 0.5 * (ma * ma + bb) * c) / (e2 * s2 * (ma * ma + bb - 2 * aa * ma) / (4 * c) + (aa - ma) * (c * mp - 2 / s2) - mp);
+      phi -= d;
+      if (d.abs() < 1e-14) break;
+    }
+    final s = math.sin(phi);
+    c = math.sqrt(1 - e2 * s * s) * math.tan(phi);
+    final lam = math.asin((x * c / a).clamp(-1.0, 1.0)) / s;
+    return (phi * 180 / math.pi, centralMeridian + lam * 180 / math.pi);
+  }
+}
+
 double _sinh(double x) => (math.exp(x) - math.exp(-x)) / 2;
 double _cosh(double x) => (math.exp(x) + math.exp(-x)) / 2;
 double _asinh(double x) => math.log(x + math.sqrt(x * x + 1));
@@ -327,7 +707,8 @@ enum CrsKind {
   /// Longitude/latitude in degrees (x = longitude).
   geographic,
 
-  /// A transverse Mercator projection (UTM or another one) in metres.
+  /// A map projection (UTM or another transverse Mercator, Albers, Lambert
+  /// conformal conic, polyconic) in metres.
   projected,
 
   /// Plain local metres (a site grid or a drawing without georeference).
@@ -365,8 +746,8 @@ class CrsInfo {
   /// Null when the datum is not known.
   final GeodeticDatum? datum;
 
-  /// Transverse Mercator parameters of a projected CRS.
-  final TransverseMercator? projection;
+  /// The projection of a projected CRS.
+  final MapProjection? projection;
   final int? epsg;
   final String name;
 
@@ -424,9 +805,14 @@ class CrsInfo {
     final pr = projection;
     if (kind != CrsKind.projected || pr == null) return gcs;
     final z = pr.utmZone;
-    final pname = z != null ? '${d.esriProjectedPrefix}_UTM_Zone_$z${pr.north ? 'N' : 'S'}' : '${d.esriProjectedPrefix}_Transverse_Mercator';
-    return 'PROJCS["$pname",$gcs,PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",${_wktNum(pr.falseEasting)}],PARAMETER["False_Northing",${_wktNum(pr.falseNorthing)}],'
-        'PARAMETER["Central_Meridian",${_wktNum(pr.centralMeridian)}],PARAMETER["Scale_Factor",${_wktNum(pr.scale)}],PARAMETER["Latitude_Of_Origin",${_wktNum(pr.latitudeOfOrigin)}],UNIT["Meter",1.0]]';
+    if (pr is TransverseMercator) {
+      final pname = z != null ? '${d.esriProjectedPrefix}_UTM_Zone_$z${pr.north ? 'N' : 'S'}' : '${d.esriProjectedPrefix}_Transverse_Mercator';
+      return 'PROJCS["$pname",$gcs,PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",${_wktNum(pr.falseEasting)}],PARAMETER["False_Northing",${_wktNum(pr.falseNorthing)}],'
+          'PARAMETER["Central_Meridian",${_wktNum(pr.centralMeridian)}],PARAMETER["Scale_Factor",${_wktNum(pr.scale)}],PARAMETER["Latitude_Of_Origin",${_wktNum(pr.latitudeOfOrigin)}],UNIT["Meter",1.0]]';
+    }
+    final pname = name.isNotEmpty ? name.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_') : '${d.esriProjectedPrefix}_${pr.esriMethod}';
+    final params = [for (final (esri, _, v) in pr.wktParameters) 'PARAMETER["$esri",${_wktNum(v)}]'].join(',');
+    return 'PROJCS["$pname",$gcs,PROJECTION["${pr.esriMethod}"],$params,UNIT["Meter",1.0]]';
   }
 
   /// WKT 1 in the OGC flavour, with EPSG authority codes.
@@ -439,9 +825,20 @@ class CrsInfo {
     if (kind != CrsKind.projected || pr == null) return gcs;
     final code = epsgCode;
     final z = pr.utmZone;
-    final pname = z != null ? '${d.ogcName} / UTM zone $z${pr.north ? 'N' : 'S'}' : '${d.ogcName} / Transverse Mercator';
-    return 'PROJCS["$pname",$gcs,PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",${_wktNum(pr.latitudeOfOrigin)}],PARAMETER["central_meridian",${_wktNum(pr.centralMeridian)}],'
-        'PARAMETER["scale_factor",${_wktNum(pr.scale)}],PARAMETER["false_easting",${_wktNum(pr.falseEasting)}],PARAMETER["false_northing",${_wktNum(pr.falseNorthing)}],UNIT["metre",1,AUTHORITY["EPSG","9001"]],'
+    if (pr is TransverseMercator) {
+      final pname = z != null ? '${d.ogcName} / UTM zone $z${pr.north ? 'N' : 'S'}' : '${d.ogcName} / Transverse Mercator';
+      return 'PROJCS["$pname",$gcs,PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",${_wktNum(pr.latitudeOfOrigin)}],PARAMETER["central_meridian",${_wktNum(pr.centralMeridian)}],'
+          'PARAMETER["scale_factor",${_wktNum(pr.scale)}],PARAMETER["false_easting",${_wktNum(pr.falseEasting)}],PARAMETER["false_northing",${_wktNum(pr.falseNorthing)}],UNIT["metre",1,AUTHORITY["EPSG","9001"]],'
+          'AXIS["Easting",EAST],AXIS["Northing",NORTH]${code != null ? ',AUTHORITY["EPSG","$code"]' : ''}]';
+    }
+    final pname = name.isNotEmpty ? name : '${d.ogcName} / ${pr.ogcMethod.replaceAll('_', ' ')}';
+    // a parameter the method names once (the latitude of origin of a 1SP Lambert)
+    final seen = <String>{};
+    final params = [
+      for (final (_, ogc, v) in pr.wktParameters)
+        if (seen.add(ogc)) 'PARAMETER["$ogc",${_wktNum(v)}]',
+    ].join(',');
+    return 'PROJCS["${pname.replaceAll('"', '')}",$gcs,PROJECTION["${pr.ogcMethod}"],$params,UNIT["metre",1,AUTHORITY["EPSG","9001"]],'
         'AXIS["Easting",EAST],AXIS["Northing",NORTH]${code != null ? ',AUTHORITY["EPSG","$code"]' : ''}]';
   }
 
@@ -474,6 +871,8 @@ CrsInfo crsFromEpsg(int code) {
       }
     }
   }
+  final national = _nationalProjected(code);
+  if (national != null) return national;
   // deprecated SAD69 UTM codes (18N–22N, 17S–25S) and Córrego Alegre 1961 (21S–24S)
   if (code >= 29118 && code <= 29122) return _utmAlias(code, code - 29100, true, GeodeticDatum.sad69);
   if (code >= 29177 && code <= 29185) return _utmAlias(code, code - 29160, false, GeodeticDatum.sad69);
@@ -484,6 +883,102 @@ CrsInfo crsFromEpsg(int code) {
 CrsInfo _utmAlias(int code, int zone, bool north, GeodeticDatum d) {
   final c = CrsInfo.utm(zone, north, datum: d);
   return CrsInfo(kind: c.kind, datum: d, projection: c.projection, epsg: code, name: c.name);
+}
+
+/// Projected systems other than UTM of national maps and datasets, by
+/// their EPSG codes: IBGE's Brazil Polyconic (SIRGAS 2000 and SAD 69) and
+/// Brazil Albers, Lambert-93 (RGF93, which agrees with ETRS89), LCC Europe,
+/// the US Conus Albers and Mexico's LCC (ITRF2008, which agrees with WGS 84).
+CrsInfo? _nationalProjected(int code) {
+  CrsInfo crs(GeodeticDatum d, MapProjection p, String name) => CrsInfo(kind: CrsKind.projected, datum: d, projection: p, epsg: code, name: name);
+  switch (code) {
+    case 5880:
+      return crs(GeodeticDatum.sirgas2000, const Polyconic(centralMeridian: -54, falseEasting: 5000000, falseNorthing: 10000000), 'SIRGAS 2000 / Brazil Polyconic');
+    case 29101:
+      return crs(GeodeticDatum.sad69, const Polyconic(centralMeridian: -54, falseEasting: 5000000, falseNorthing: 10000000, ellipsoid: Ellipsoid.sad69), 'SAD69 / Brazil Polyconic');
+    case 10857:
+      return crs(
+        GeodeticDatum.sirgas2000,
+        AlbersEqualArea(centralMeridian: -54, latitudeOfOrigin: -12, standardParallel1: -2, standardParallel2: -22, falseEasting: 5000000, falseNorthing: 10000000),
+        'SIRGAS 2000 / Brazil Albers',
+      );
+    case 2154:
+      return crs(
+        GeodeticDatum.etrs89,
+        LambertConformalConic(centralMeridian: 3, latitudeOfOrigin: 46.5, standardParallel1: 49, standardParallel2: 44, falseEasting: 700000, falseNorthing: 6600000),
+        'RGF93 v1 / Lambert-93',
+      );
+    case 3034:
+      return crs(
+        GeodeticDatum.etrs89,
+        LambertConformalConic(centralMeridian: 10, latitudeOfOrigin: 52, standardParallel1: 35, standardParallel2: 65, falseEasting: 4000000, falseNorthing: 2800000),
+        'ETRS89-extended / LCC Europe',
+      );
+    case 5070:
+      return crs(GeodeticDatum.nad83, AlbersEqualArea(centralMeridian: -96, latitudeOfOrigin: 23, standardParallel1: 29.5, standardParallel2: 45.5), 'NAD83 / Conus Albers');
+    case 6372:
+      return crs(
+        GeodeticDatum.wgs84,
+        LambertConformalConic(centralMeridian: -102, latitudeOfOrigin: 12, standardParallel1: 17.5, standardParallel2: 29.5, falseEasting: 2500000),
+        'Mexico ITRF2008 / LCC',
+      );
+  }
+  return null;
+}
+
+/// The projection a WKT method name and its parameters describe (keys of
+/// [params] in lower case, letters and digits only, lengths in metres), or
+/// null when the method is not held. [zoneName] is a UTM zone found in the
+/// CRS name (`… UTM zone 23S`).
+MapProjection? projectionFromParameters(String method, Map<String, double> params, Ellipsoid ellipsoid, {(int, bool)? zoneName}) {
+  final m = method.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  double? p(List<String> keys) {
+    for (final k in keys) {
+      final v = params[k];
+      if (v != null) return v;
+    }
+    return null;
+  }
+
+  final fe = p(['falseeasting', 'eastingatfalseorigin', 'eastingatprojectioncentre']) ?? 0;
+  final fn = p(['falsenorthing', 'northingatfalseorigin', 'northingatprojectioncentre']) ?? 0;
+  final lat0 = p(['latitudeoforigin', 'latitudeofnaturalorigin', 'latitudeoffalseorigin', 'latitudeofcenter', 'latitudeofcentre', 'latitudeofprojectioncentre']) ?? 0;
+  final lon0 = p(['centralmeridian', 'longitudeofnaturalorigin', 'longitudeoffalseorigin', 'longitudeoforigin', 'longitudeofcenter', 'longitudeofcentre', 'longitudeofprojectioncentre']);
+  final sp1 = p(['standardparallel1', 'latitudeof1ststandardparallel']);
+  final sp2 = p(['standardparallel2', 'latitudeof2ndstandardparallel']);
+  final k0 = p(['scalefactor', 'scalefactoratnaturalorigin']);
+  if (m.contains('transversemercator') || m.contains('gausskruger') || m == 'tm') {
+    if (lon0 != null) return TransverseMercator(centralMeridian: lon0, scale: k0 ?? 1, falseEasting: fe, falseNorthing: fn, latitudeOfOrigin: lat0, ellipsoid: ellipsoid);
+    if (zoneName != null) return TransverseMercator.utm(zoneName.$1, zoneName.$2, ellipsoid);
+    return null;
+  }
+  if (m.contains('albers')) {
+    if (lon0 == null || sp1 == null) return null;
+    return AlbersEqualArea(centralMeridian: lon0, latitudeOfOrigin: lat0, standardParallel1: sp1, standardParallel2: sp2 ?? sp1, falseEasting: fe, falseNorthing: fn, ellipsoid: ellipsoid);
+  }
+  if (m.contains('lambertconformalconic') || m.contains('lambertconicconformal')) {
+    if (lon0 == null) return null;
+    final oneSp = m.contains('1sp') || (sp1 == null && sp2 == null) || (sp2 == null && sp1 != null && (sp1 - lat0).abs() < 1e-9);
+    if (oneSp) {
+      return LambertConformalConic.oneParallel(centralMeridian: lon0, latitudeOfOrigin: sp1 ?? lat0, scale: k0 ?? 1, falseEasting: fe, falseNorthing: fn, ellipsoid: ellipsoid);
+    }
+    return LambertConformalConic(
+      centralMeridian: lon0,
+      latitudeOfOrigin: lat0,
+      standardParallel1: sp1 ?? lat0,
+      standardParallel2: sp2 ?? sp1 ?? lat0,
+      scale: k0 ?? 1,
+      falseEasting: fe,
+      falseNorthing: fn,
+      ellipsoid: ellipsoid,
+    );
+  }
+  if (m.contains('polyconic')) {
+    if (lon0 == null) return null;
+    return Polyconic(centralMeridian: lon0, latitudeOfOrigin: lat0, falseEasting: fe, falseNorthing: fn, ellipsoid: ellipsoid);
+  }
+  if ((m.isEmpty || m.contains('mercator')) && zoneName != null) return TransverseMercator.utm(zoneName.$1, zoneName.$2, ellipsoid);
+  return null;
 }
 
 /// Recognises a CRS from its text: WKT 1 (ESRI .prj or OGC), WKT 2,
@@ -536,38 +1031,21 @@ CrsInfo crsFromWkt(WktNode root) {
     if (datum == null) return CrsInfo(kind: CrsKind.geographic, name: name, problem: 'crs_datum_unknown');
     return CrsInfo(kind: CrsKind.geographic, datum: datum, epsg: authority ?? datum.geographicEpsg, name: name);
   }
-  // projection: transverse Mercator parameters, or a UTM zone in the name
-  final method = (root.find('PROJECTION')?.stringArg(0) ?? root.find('CONVERSION')?.find('METHOD')?.stringArg(0) ?? root.find('METHOD')?.stringArg(0) ?? '').toLowerCase().replaceAll(
-    RegExp(r'[^a-z]'),
-    '',
-  );
+  // projection: the method and its parameters (transverse Mercator, Albers,
+  // Lambert conformal conic, polyconic), or a UTM zone in the name
+  final method = root.find('PROJECTION')?.stringArg(0) ?? root.find('CONVERSION')?.find('METHOD')?.stringArg(0) ?? root.find('METHOD')?.stringArg(0) ?? '';
   final unit = _linearUnit(root) ?? 1;
   final params = <String, double>{};
   for (final p in root.findAll('PARAMETER')) {
-    final k = (p.stringArg(0) ?? '').toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
+    final k = (p.stringArg(0) ?? '').toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
     final v = p.numArg(1);
-    if (v != null) params[k] = v;
+    // eastings and northings are in the unit of the system
+    if (v != null) params[k] = k.contains('easting') || k.contains('northing') ? v * unit : v;
   }
   final ellipsoid = datum?.ellipsoid ?? Ellipsoid.wgs84;
-  TransverseMercator? tm;
   final zoneMatch =
       RegExp(r'UTM[\s_]*(?:zone[\s_]*)?(\d{1,2})\s*([NS])\b', caseSensitive: false).firstMatch(name) ?? RegExp(r'UTM[\s_]*zone[\s_]*(\d{1,2})([NS])', caseSensitive: false).firstMatch(name);
-  if (method.contains('transversemercator') || method.contains('gausskruger') || method == 'tm') {
-    final cm = params['centralmeridian'] ?? params['longitudeofnaturalorigin'] ?? params['longitudeoforigin'];
-    if (cm != null) {
-      tm = TransverseMercator(
-        centralMeridian: cm,
-        scale: params['scalefactor'] ?? params['scalefactoratnaturalorigin'] ?? 1,
-        falseEasting: (params['falseeasting'] ?? 0) * unit,
-        falseNorthing: (params['falsenorthing'] ?? 0) * unit,
-        latitudeOfOrigin: params['latitudeoforigin'] ?? params['latitudeofnaturalorigin'] ?? 0,
-        ellipsoid: ellipsoid,
-      );
-    }
-  }
-  if (tm == null && zoneMatch != null && (method.isEmpty || method.contains('mercator'))) {
-    tm = TransverseMercator.utm(int.parse(zoneMatch.group(1)!), zoneMatch.group(2)!.toUpperCase() == 'N', ellipsoid);
-  }
+  final tm = projectionFromParameters(method, params, ellipsoid, zoneName: zoneMatch == null ? null : (int.parse(zoneMatch.group(1)!), zoneMatch.group(2)!.toUpperCase() == 'N'));
   if (tm == null) return CrsInfo(kind: CrsKind.unknown, datum: datum, name: name, problem: 'crs_projection_unsupported');
   if (datum == null) return CrsInfo(kind: CrsKind.projected, projection: tm, name: name, unitM: unit, problem: 'crs_datum_unknown');
   final z = tm.utmZone;
@@ -635,8 +1113,12 @@ GeodeticDatum? datumFromName(String name) {
   if (u.contains('SAD69') || u.contains('SAD1969') || u.contains('SOUTHAMERICAN1969') || u.contains('SOUTHAMERICANDATUM1969')) return u.contains('6996') ? GeodeticDatum.sad69r96 : GeodeticDatum.sad69;
   if (u.contains('CORREGOALEGRE')) return GeodeticDatum.corregoAlegre;
   if (u.contains('ETRS89') || u.contains('ETRS1989') || u.contains('EUROPEANTERRESTRIALREFERENCESYSTEM1989')) return GeodeticDatum.etrs89;
+  // RGF93 (France) is a realisation of ETRS89
+  if (u.contains('RGF93') || u.contains('RGF1993') || u.contains('RESEAUGEODESIQUEFRANCAIS1993')) return GeodeticDatum.etrs89;
   if (u.contains('NAD83') || u.contains('NAD1983') || u.contains('NORTHAMERICAN1983') || u.contains('NORTHAMERICANDATUM1983')) return GeodeticDatum.nad83;
   if (u.contains('WGS84') || u.contains('WGS1984') || u.contains('WORLDGEODETICSYSTEM1984')) return GeodeticDatum.wgs84;
+  // the ITRF realisations agree with WGS 84 (G1150 onwards) to centimetres
+  if (RegExp(r'ITRF(19|20)?\d\d').hasMatch(u)) return GeodeticDatum.wgs84;
   return null;
 }
 
