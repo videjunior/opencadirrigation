@@ -172,7 +172,7 @@ const _fr = SiteText(
     ),
     (
       'Mes projets sont-ils stockés dans le cloud ?',
-      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous conservez où vous voulez ; un lien de partage transporte le projet dans l’adresse elle-même, si bien que rien n’est téléversé, et OpenCADIrrigation n’a aucun serveur qui pourrait en garder une copie. Les polices de toutes les écritures et de tous les symboles viennent de ce site lui-même. Le navigateur contacte toutefois d’autres services : les fonds de carte, l’altitude et le climat en ligne, la recherche d’adresse, les catalogues chargés par URL et, si vous l’utilisez, l’assistant IA (uniquement le fournisseur que vous avez choisi, Anthropic ou OpenAI) s’adressent à leurs services quand vous les utilisez ; et le site et l’application comptent les visites avec Google Analytics, sans cookie à moins que vous ne les acceptiez. La politique de confidentialité liste chaque service et ce qu’il reçoit.',
+      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous conservez où vous voulez ; un lien de partage transporte le projet dans l’adresse elle-même, si bien que rien n’est téléversé, et OpenCADIrrigation n’a aucun serveur qui pourrait en garder une copie. Les polices de toutes les écritures et de tous les symboles viennent de ce site lui-même. Le navigateur contacte toutefois d’autres services : les fonds de carte, l’altitude et le climat en ligne, la recherche d’adresse, les catalogues chargés par URL et, si vous l’utilisez, l’assistant IA (uniquement le fournisseur que vous avez choisi, Anthropic ou OpenAI) s’adressent à leurs services quand vous les utilisez ; et le site et l’application comptent les visites avec Google Analytics, qui utilise des cookies (vous pouvez le désactiver avec Paramètres des cookies, en bas des pages). La politique de confidentialité liste chaque service et ce qu’il reçoit.',
     ),
     (
       'Comment l’hydraulique est-elle calculée ?',
@@ -210,7 +210,7 @@ const _legalFr = LegalText(
     ]),
     LegalSection('En bref', [
       '- Il n’y a ni compte ni serveur d’OpenCADIrrigation derrière l’application : les projets, les enregistrements automatiques, les versions, les conversations IA, les clés et les préférences restent dans votre navigateur et dans les fichiers que vous enregistrez.',
-      '- Les statistiques de visite (Google Analytics) tournent sur toutes les pages du site et dans l’application : sans votre consentement, elles ne déposent aucun cookie et ne conservent aucun identifiant sur votre appareil ; avec celui-ci, elles utilisent leurs cookies.',
+      '- Les statistiques de visite (Google Analytics) tournent sur toutes les pages du site et dans l’application, avec leurs cookies ; vous pouvez les désactiver avec Paramètres des cookies, en bas des pages.',
       '- Les services que l’application utilise pour les polices, les cartes, le terrain, le climat, la recherche d’adresse et l’assistant IA reçoivent vos requêtes directement depuis votre navigateur quand vous les utilisez.',
     ]),
     LegalSection('Ce qui reste sur votre appareil', [
@@ -219,9 +219,9 @@ const _legalFr = LegalText(
       'Un lien de partage transporte le projet dans l’adresse, après le #, que les navigateurs n’envoient à aucun serveur.',
     ]),
     LegalSection('Statistiques de visite et cookies', [
-      'Toutes les pages du site et l’application chargent Google Analytics 4 en mode Consentement. Sans votre consentement, il ne dépose aucun cookie et n’enregistre aucun identifiant sur votre appareil : pour chaque page vue et chaque démarrage de l’application, il envoie à Google un signal sans cookies avec l’heure, la page qui vous a amené, le type d’appareil et de navigateur, la taille de l’écran, la langue et une localisation approximative que Google déduit de l’adresse IP (Google Analytics 4 ne conserve pas l’adresse IP), à partir duquel Google estime combien de personnes utilisent le site et l’application. Si vous acceptez, il dépose aussi les cookies _ga et _ga_<id> (ils durent jusqu’à deux ans), qui lui permettent de reconnaître vos visites suivantes.',
-      'Finalité : savoir combien de personnes visitent le site et utilisent l’application, et quelles pages et langues elles utilisent, afin de les améliorer. Base légale : pour les signaux sans cookies, l’intérêt légitime à mesurer l’utilisation d’un service gratuit sans rien enregistrer sur votre appareil ; pour les cookies, votre consentement. Les données sont conservées pendant la durée de conservation définie dans Google Analytics, au plus 14 mois.',
-      'Si vous refusez, ou ne répondez pas, aucun cookie de statistiques n’est déposé et seuls les signaux sans cookies sont envoyés. Vous pouvez changer votre choix à tout moment avec Paramètres des cookies, en bas des pages ; refuser supprime les cookies de statistiques du site.',
+      'Toutes les pages du site et l’application chargent Google Analytics 4, qui dépose les cookies _ga et _ga_<id> (ils durent jusqu’à deux ans) et enregistre les pages vues et chaque démarrage de l’application, l’heure de la visite, la page qui vous a amené, le type d’appareil et de navigateur, la taille de l’écran, la langue et une localisation approximative que Google déduit de l’adresse IP (Google Analytics 4 ne conserve pas l’adresse IP). Il ne reçoit jamais la partie de l’adresse située après le #, où un lien de partage transporte le projet, et ses fonctions publicitaires sont désactivées.',
+      'Finalité : savoir combien de personnes visitent le site et utilisent l’application, et quelles pages et langues elles utilisent, afin de les améliorer. Base légale : l’intérêt légitime à mesurer l’utilisation d’un service gratuit. Les données sont conservées pendant la durée de conservation définie dans Google Analytics, au plus 14 mois.',
+      'Vous pouvez vous y opposer à tout moment avec Paramètres des cookies, en bas des pages : si vous refusez, les cookies de statistiques du site sont supprimés et Google Analytics n’est plus chargé dans ce navigateur. Bloquer les cookies ou les scripts dans votre navigateur l’empêche aussi de fonctionner.',
       'Les statistiques tournent aussi pendant que l’application est ouverte, dans la page qui contient vos projets et, si vous choisissez de les mémoriser, vos clés API de l’IA : comme tout script du site, le script de Google Analytics pourrait lire le stockage du site dans votre navigateur, et il n’envoie à Google que les données ci-dessus. Google Analytics est un service de Google soumis à ses propres conditions et à sa propre politique de confidentialité, et les données peuvent être traitées aux États-Unis et dans d’autres pays.',
     ]),
     LegalSection('Hébergement', [
@@ -267,8 +267,7 @@ const _legalFr = LegalText(
   privacyLink: 'Confidentialité',
   termsLink: 'Conditions d’utilisation',
   cookieSettings: 'Paramètres des cookies',
-  consentText:
-      'Le site et l’application peuvent-ils utiliser des cookies pour les statistiques de visite (Google Analytics) ? Sans eux, les visites sont tout de même comptées, sans cookie ni identifiant.',
+  consentText: 'Le site et l’application comptent les visites avec Google Analytics, qui utilise des cookies. Si vous refusez, vos visites ne sont plus comptées dans ce navigateur.',
   consentAccept: 'Accepter',
   consentDecline: 'Refuser',
   updated: 'Dernière mise à jour',

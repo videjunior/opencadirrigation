@@ -5,6 +5,18 @@ Ajuda → Sobre e na barra de status; o `pubspec.yaml` a guarda, e o checklist d
 [CONTRIBUTING.md](CONTRIBUTING.md#releasing) acrescenta aqui a seção de cada versão nova. Inglês (canônico):
 [CHANGELOG.md](CHANGELOG.md).
 
+## 1.6.1 (2026-11-04)
+
+- **A estatística de visitas volta a contar todo mundo**: o site e o app carregam o Google Analytics com os seus
+  cookies, como até a 1.5.2 (cada página vista e cada abertura do app; publicidade sempre negada; o endereço sem a parte
+  depois do `#`). Na 1.6.0, quem não apertava *Aceitar* era contado sem cookies, e o Google Analytics 4 deixa essas
+  visitas fora dos relatórios até um site ter milhares delas por dia; o aviso nem aparecia onde o app abre sozinho, então
+  quase ninguém era contado. Nenhum aviso pergunta mais: *Preferências de cookies*, no rodapé das páginas, o abre, e o
+  seu *Recusar* apaga os cookies e deixa de carregar a estatística naquele navegador (um *Recusar* dado na 1.6.0 é
+  mantido). A política de privacidade, a FAQ e o manual dizem isso em todos os idiomas.
+- **Novidades depois de uma atualização**: uma versão sem novidades próprias mostra as da versão mais nova a quem ainda
+  não as viu.
+
 ## 1.6.0 (2026-11-02)
 
 Uma varredura do projeto inteiro, com defeitos corrigidos em todas as áreas, e funções novas em treze delas: estações

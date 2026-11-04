@@ -156,7 +156,7 @@ const _de = SiteText(
     ),
     (
       'Werden meine Projekte in der Cloud gespeichert?',
-      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie aufbewahren, wo Sie möchten; ein Freigabelink trägt das Projekt in der Adresse selbst, sodass nichts hochgeladen wird, und OpenCADIrrigation hat keinen Server, der eine Kopie aufbewahren könnte. Die Schriften für alle Schriftsysteme und Symbole kommen von dieser Website selbst. Andere Dienste erreicht der Browser durchaus: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, Adresssuche, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent (nur der von Ihnen gewählte Anbieter, Anthropic oder OpenAI) wenden sich an ihre Dienste, wenn Sie sie verwenden; und die Website und die App zählen Besuche mit Google Analytics, ohne Cookies, solange Sie diesen nicht zustimmen. Die Datenschutzerklärung nennt jeden Dienst und was er erhält.',
+      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie aufbewahren, wo Sie möchten; ein Freigabelink trägt das Projekt in der Adresse selbst, sodass nichts hochgeladen wird, und OpenCADIrrigation hat keinen Server, der eine Kopie aufbewahren könnte. Die Schriften für alle Schriftsysteme und Symbole kommen von dieser Website selbst. Andere Dienste erreicht der Browser durchaus: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, Adresssuche, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent (nur der von Ihnen gewählte Anbieter, Anthropic oder OpenAI) wenden sich an ihre Dienste, wenn Sie sie verwenden; und die Website und die App zählen Besuche mit Google Analytics, das Cookies verwendet (mit Cookie-Einstellungen am Fuß der Seiten lässt es sich abschalten). Die Datenschutzerklärung nennt jeden Dienst und was er erhält.',
     ),
     (
       'Wie wird die Hydraulik berechnet?',
@@ -194,7 +194,7 @@ const _legalDe = LegalText(
     ]),
     LegalSection('Kurz gesagt', [
       '- Hinter der App stehen weder ein Konto noch ein Server von OpenCADIrrigation: Projekte, automatische Speicherungen, Versionen, KI-Unterhaltungen, Schlüssel und Einstellungen bleiben in Ihrem Browser und in den Dateien, die Sie speichern.',
-      '- Besuchsstatistiken (Google Analytics) laufen auf allen Seiten der Website und in der App: Ohne Ihre Einwilligung setzen sie kein Cookie und speichern keine Kennung auf Ihrem Gerät; mit ihr verwenden sie ihre Cookies.',
+      '- Besuchsstatistiken (Google Analytics) laufen mit ihren Cookies auf allen Seiten der Website und in der App; Sie können sie mit Cookie-Einstellungen am Fuß der Seiten abschalten.',
       '- Die Dienste, die die App für Schriften, Karten, Gelände, Klima, Adresssuche und den KI-Assistenten nutzt, erhalten Ihre Anfragen direkt von Ihrem Browser, wenn Sie sie verwenden.',
     ]),
     LegalSection('Was auf Ihrem Gerät bleibt', [
@@ -203,9 +203,9 @@ const _legalDe = LegalText(
       'Ein Freigabelink trägt das Projekt in der Adresse, nach dem #, den Browser an keinen Server senden.',
     ]),
     LegalSection('Besuchsstatistiken und Cookies', [
-      'Alle Seiten der Website und die App laden Google Analytics 4 im Einwilligungsmodus. Ohne Ihre Einwilligung setzt es kein Cookie und speichert keine Kennung auf Ihrem Gerät: Für jede aufgerufene Seite und jeden Start der App sendet es Google eine Meldung ohne Cookies mit dem Zeitpunkt, der verweisenden Seite, der Art von Gerät und Browser, der Bildschirmgröße, der Sprache und einem ungefähren Standort, den Google aus der IP-Adresse ableitet (Google Analytics 4 speichert die IP-Adresse nicht); daraus schätzt Google, wie viele Menschen die Website und die App nutzen. Wenn Sie zustimmen, setzt es außerdem die Cookies _ga und _ga_<id> (sie bestehen bis zu zwei Jahre), mit denen es Ihre wiederholten Besuche erkennen kann.',
-      'Zweck: zu wissen, wie viele Menschen die Website besuchen und die App nutzen und welche Seiten und Sprachen sie verwenden, um beide zu verbessern. Rechtsgrundlage: für die Meldungen ohne Cookies das berechtigte Interesse, die Nutzung eines kostenlosen Dienstes zu messen, ohne etwas auf Ihrem Gerät zu speichern; für die Cookies Ihre Einwilligung. Die Daten werden für die in Google Analytics eingestellte Aufbewahrungsdauer gespeichert, höchstens 14 Monate.',
-      'Wenn Sie ablehnen oder nicht antworten, wird kein Statistik-Cookie gesetzt, und es werden nur die Meldungen ohne Cookies gesendet. Sie können Ihre Wahl jederzeit mit Cookie-Einstellungen am Fuß der Seiten ändern; die Ablehnung löscht die Statistik-Cookies der Website.',
+      'Alle Seiten der Website und die App laden Google Analytics 4. Es setzt die Cookies _ga und _ga_<id> (sie bestehen bis zu zwei Jahre) und erfasst die aufgerufenen Seiten und jeden Start der App, den Zeitpunkt des Besuchs, die verweisende Seite, die Art von Gerät und Browser, die Bildschirmgröße, die Sprache und einen ungefähren Standort, den Google aus der IP-Adresse ableitet (Google Analytics 4 speichert die IP-Adresse nicht). Den Teil der Adresse nach dem #, in dem ein Freigabelink das Projekt trägt, erhält es nie, und seine Werbefunktionen sind abgeschaltet.',
+      'Zweck: zu wissen, wie viele Menschen die Website besuchen und die App nutzen und welche Seiten und Sprachen sie verwenden, um beide zu verbessern. Rechtsgrundlage: das berechtigte Interesse, die Nutzung eines kostenlosen Dienstes zu messen. Die Daten werden für die in Google Analytics eingestellte Aufbewahrungsdauer gespeichert, höchstens 14 Monate.',
+      'Sie können der Verarbeitung jederzeit mit Cookie-Einstellungen am Fuß der Seiten widersprechen: Wenn Sie ablehnen, werden die Statistik-Cookies der Website gelöscht, und Google Analytics wird in diesem Browser nicht mehr geladen. Auch das Blockieren von Cookies oder Skripten in Ihrem Browser unterbindet die Statistik.',
       'Die Statistik läuft auch, während die App geöffnet ist, also auf der Seite, die Ihre Projekte und, wenn Sie sie sich merken lassen, Ihre KI-Schlüssel enthält: Wie jedes Skript der Website könnte das Skript von Google Analytics den Speicher der Website in Ihrem Browser lesen, und es sendet Google nur die oben genannten Daten. Google Analytics ist ein Dienst von Google mit eigenen Bedingungen und eigener Datenschutzerklärung, und die Daten können in den Vereinigten Staaten und in anderen Ländern verarbeitet werden.',
     ]),
     LegalSection('Hosting', [
@@ -251,7 +251,7 @@ const _legalDe = LegalText(
   privacyLink: 'Datenschutz',
   termsLink: 'Nutzungsbedingungen',
   cookieSettings: 'Cookie-Einstellungen',
-  consentText: 'Dürfen die Website und die App Cookies für die Besuchsstatistik (Google Analytics) verwenden? Ohne sie werden Besuche trotzdem gezählt, ohne Cookie und ohne Kennung.',
+  consentText: 'Die Website und die App zählen Besuche mit Google Analytics, das Cookies verwendet. Wenn Sie ablehnen, werden Ihre Besuche in diesem Browser nicht mehr gezählt.',
   consentAccept: 'Akzeptieren',
   consentDecline: 'Ablehnen',
   updated: 'Zuletzt aktualisiert',

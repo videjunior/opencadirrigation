@@ -31,15 +31,30 @@ List<String> whatsNewKeys(String version) => [for (final id in whatsNewNotes[ver
 /// The version whose news the user was last shown.
 const whatsNewSeenPref = 'whatsnew_seen';
 
+/// Whether version [a] comes before version [b] (`1.5.2` before `1.6.0`,
+/// `1.9.3` before `1.10.0`; a build number after `+` does not count).
+bool versionBefore(String a, String b) {
+  List<int> parts(String v) => [for (final p in v.split('+').first.split('.')) int.tryParse(p) ?? 0];
+  final x = parts(a);
+  final y = parts(b);
+  for (var i = 0; i < x.length || i < y.length; i++) {
+    final d = (i < x.length ? x[i] : 0) - (i < y.length ? y[i] : 0);
+    if (d != 0) return d < 0;
+  }
+  return false;
+}
+
 /// Whether to show the news at start-up: once per version, to someone who
 /// used an earlier one (a version seen before, projects kept in this
-/// browser or the tutorial done); a first visit only notes the version.
+/// browser or the tutorial done); a first visit only notes the version. A
+/// version without news of its own (a patch release) shows those of the
+/// newest version that has them, to whoever had not seen that one yet.
 bool shouldShowWhatsNew(ProjectController c) {
   final seen = getPref(whatsNewSeenPref);
   if (seen == appVersion) return false;
   final returning = seen != null || c.store.list().isNotEmpty || TutorialController.isDone;
   setPref(whatsNewSeenPref, appVersion);
-  return returning && whatsNewNotes.containsKey(appVersion);
+  return returning && whatsNewNotes.containsKey(whatsNewVersion) && (seen == null || versionBefore(seen, whatsNewVersion));
 }
 
 /// The full history of the versions, in Portuguese for a Portuguese

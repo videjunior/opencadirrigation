@@ -216,14 +216,13 @@ turns this off and deletes them. A conversation exported to a file leaves the ke
 you attached out. The notice when the app is in the background blinks the title of the tab and, if
 you allow them, shows system notifications; nothing of it leaves the page. What each company does
 with the requests is governed by your agreement with it.</li>
-<li><strong>Visit statistics</strong>: every page of opencadirrigation.com and the app load Google Analytics 4 in
-Consent Mode v2: advertising is always denied and, until the visitor accepts, the statistics set no
-cookie and send Google notices without cookies (each page viewed, and an <code>app_start</code> event when the
-app starts), so the number of visitors and users can be known. The pages ask once whether the
-statistics may use cookies; <em>Accept</em> turns on the cookies <code>_ga</code> and <code>_ga_&lt;id&gt;</code>, and <em>Decline</em>, also
-later with <em>Cookie settings</em> at the foot of the pages, deletes them. The notice is not shown over
-the app. Like any script of the site, the statistics script runs in the page that holds the
-projects and the remembered keys.
+<li><strong>Visit statistics</strong>: every page of opencadirrigation.com and the app load Google Analytics 4 with
+its cookies <code>_ga</code> and <code>_ga_&lt;id&gt;</code> (each page viewed, and an <code>app_start</code> event when the app starts),
+so the number of visitors and users can be known; advertising is always denied and the address goes
+without the part after the <code>#</code>, where a share link carries the project. No notice asks: <em>Cookie
+settings</em>, at the foot of the pages, opens it, and its <em>Decline</em> deletes the cookies and stops
+loading the statistics in that browser. Like any script of the site, the statistics script runs in
+the page that holds the projects and the remembered keys.
 The measurement id is set when the pages are generated (<code>OCI_ANALYTICS_ID</code>, empty for none). The
 privacy policy (<code>/privacy/</code>) and the terms of use (<code>/terms/</code>) are generated with the pages, and
 Help → About links them in the interface language.</li>
@@ -270,9 +269,9 @@ the tutorial stopped, the assistant's settings) are kept in the browser preferen
     <p>OpenCADIrrigation 1.6.0 · <a href="https://github.com/videjunior/opencadirrigation">Source code (MIT licence)</a> · <a href="https://opencadirrigation.com/privacy/">Privacy</a> · <a href="https://opencadirrigation.com/terms/">Terms of use</a> · <button type="button" class="oci-linkish" data-consent-open>Cookie settings</button> · Last updated <time datetime="2026-11-02">2026-11-02</time></p>
   </footer>
   <div class="oci-consent" id="oci-consent" role="region" aria-label="Cookie settings" lang="en" hidden>
-    <p>May the site and the app use cookies for the visit statistics (Google Analytics)? Without them visits are still counted, with no cookie and no identifier. <a href="https://opencadirrigation.com/privacy/">Privacy policy</a></p>
+    <p>The site and the app count visits with Google Analytics, which uses cookies. If you decline, your visits are no longer counted in this browser. <a href="https://opencadirrigation.com/privacy/">Privacy policy</a></p>
     <div class="actions"><button type="button" data-consent="denied">Decline</button><button type="button" data-consent="granted">Accept</button></div>
   </div>
-  <script src="/site.js?v=833dc84c" data-ga="G-3M0P4T8V2T" defer></script>
+  <script src="/site.js?v=67c62d53" data-ga="G-3M0P4T8V2T" defer></script>
 </body>
 </html>

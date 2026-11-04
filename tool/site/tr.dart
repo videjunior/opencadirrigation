@@ -149,7 +149,7 @@ const _tr = SiteText(
     ),
     (
       'Projelerim bulutta mı saklanıyor?',
-      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde sakladığınız .oci.json dosyaları olarak kaydedilir; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey yüklenmez ve OpenCADIrrigation’ın kopya saklayabilecek bir sunucusu yoktur. Her yazı sisteminin ve simgenin yazı tipleri bu sitenin kendisinden gelir. Tarayıcı yine de başka hizmetlere bağlanır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, adres arama, URL’den yüklenen kataloglar ve kullanırsanız yapay zekâ asistanı (yalnızca seçtiğiniz sağlayıcı, Anthropic veya OpenAI) siz kullandığınızda kendi hizmetlerine bağlanır; site ve uygulama da ziyaretleri Google Analytics ile sayar; çerezleri kabul etmediğiniz sürece çerez kullanılmaz. Gizlilik politikası her hizmeti ve neyi aldığını listeler.',
+      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde sakladığınız .oci.json dosyaları olarak kaydedilir; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey yüklenmez ve OpenCADIrrigation’ın kopya saklayabilecek bir sunucusu yoktur. Her yazı sisteminin ve simgenin yazı tipleri bu sitenin kendisinden gelir. Tarayıcı yine de başka hizmetlere bağlanır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, adres arama, URL’den yüklenen kataloglar ve kullanırsanız yapay zekâ asistanı (yalnızca seçtiğiniz sağlayıcı, Anthropic veya OpenAI) siz kullandığınızda kendi hizmetlerine bağlanır; site ve uygulama da ziyaretleri çerez kullanan Google Analytics ile sayar (bunu sayfaların altındaki Çerez ayarları ile kapatabilirsiniz). Gizlilik politikası her hizmeti ve neyi aldığını listeler.',
     ),
     (
       'Hidrolik hesap nasıl yapılır?',
@@ -187,7 +187,7 @@ const _legalTr = LegalText(
     ]),
     LegalSection('Kısaca', [
       '- Uygulamanın arkasında OpenCADIrrigation’a ait ne bir hesap ne de bir sunucu vardır: projeler, otomatik kayıtlar, sürümler, yapay zekâ sohbetleri, anahtarlar ve tercihler tarayıcınızda ve kaydettiğiniz dosyalarda kalır.',
-      '- Ziyaret istatistikleri (Google Analytics) sitenin tüm sayfalarında ve uygulamada çalışır: açık rızanız olmadan cihazınıza hiçbir çerez yerleştirmez ve hiçbir tanımlayıcı saklamaz; açık rızanızla kendi çerezlerini kullanır.',
+      '- Ziyaret istatistikleri (Google Analytics) sitenin tüm sayfalarında ve uygulamada kendi çerezleriyle çalışır; bunları sayfaların altındaki Çerez ayarları ile kapatabilirsiniz.',
       '- Uygulamanın yazı tipleri, haritalar, arazi, iklim, adres arama ve yapay zekâ asistanı için kullandığı hizmetler, siz kullandığınızda isteklerinizi doğrudan tarayıcınızdan alır.',
     ]),
     LegalSection('Cihazınızda kalanlar', [
@@ -196,9 +196,9 @@ const _legalTr = LegalText(
       'Paylaşım bağlantısı projeyi adresin içinde, tarayıcıların hiçbir sunucuya göndermediği # işaretinden sonra taşır.',
     ]),
     LegalSection('Ziyaret istatistikleri ve çerezler', [
-      'Sitenin tüm sayfaları ve uygulama, Google Analytics 4’ü İzin Modu’nda yükler. Açık rızanız olmadan bu hizmet cihazınıza hiçbir çerez yerleştirmez ve hiçbir tanımlayıcı saklamaz: görüntülenen her sayfa ve uygulamanın her açılışı için Google’a çerezsiz bir sinyal gönderir; bu sinyal saati, sizi getiren sayfayı, cihaz ve tarayıcı türünü, ekran boyutunu, dili ve Google’ın IP adresinden çıkardığı yaklaşık konumu içerir (Google Analytics 4 IP adresini saklamaz) ve Google bunlardan siteyi ve uygulamayı kaç kişinin kullandığını tahmin eder. Kabul ederseniz ayrıca _ga ve _ga_<id> çerezlerini de yerleştirir (en fazla iki yıl kalırlar); bu çerezler sonraki ziyaretlerinizin tanınmasını sağlar.',
-      'Amaç: siteyi ve uygulamayı iyileştirmek için kaç kişinin siteyi ziyaret ettiğini ve uygulamayı kullandığını, hangi sayfaları ve dilleri kullandığını bilmek. Hukuki dayanak: çerezsiz sinyaller için, cihazınızda hiçbir şey saklamadan ücretsiz bir hizmetin kullanımını ölçmekteki meşru menfaat; çerezler için açık rızanız. Veriler Google Analytics’te ayarlanan saklama süresi boyunca, en fazla 14 ay saklanır.',
-      'Reddederseniz veya yanıt vermezseniz hiçbir istatistik çerezi yerleştirilmez ve yalnızca çerezsiz sinyaller gönderilir. Seçiminizi istediğiniz zaman sayfaların altındaki Çerez ayarları ile değiştirebilirsiniz; reddetmek sitenin istatistik çerezlerini siler.',
+      'Sitenin tüm sayfaları ve uygulama, Google Analytics 4’ü yükler. Bu hizmet _ga ve _ga_<id> çerezlerini yerleştirir (en fazla iki yıl kalırlar) ve görüntülenen sayfaları, uygulamanın her açılışını, ziyaretin saatini, sizi getiren sayfayı, cihaz ve tarayıcı türünü, ekran boyutunu, dili ve Google’ın IP adresinden çıkardığı yaklaşık konumu kaydeder (Google Analytics 4 IP adresini saklamaz). Adresin # işaretinden sonraki kısmını, yani paylaşım bağlantısının projeyi taşıdığı yeri hiçbir zaman almaz ve reklam işlevleri kapalıdır.',
+      'Amaç: siteyi ve uygulamayı iyileştirmek için kaç kişinin siteyi ziyaret ettiğini ve uygulamayı kullandığını, hangi sayfaları ve dilleri kullandığını bilmek. Hukuki dayanak: ücretsiz bir hizmetin kullanımını ölçmekteki meşru menfaat. Veriler Google Analytics’te ayarlanan saklama süresi boyunca, en fazla 14 ay saklanır.',
+      'Bu işlemeye, sayfaların altındaki Çerez ayarları ile istediğiniz zaman itiraz edebilirsiniz: reddederseniz sitenin istatistik çerezleri silinir ve Google Analytics o tarayıcıda artık yüklenmez. Tarayıcınızda çerezleri veya betikleri engellemek de onu durdurur.',
       'İstatistikler uygulama açıkken de, yani projelerinizi ve hatırlanmasını seçerseniz yapay zekâ anahtarlarınızı tutan sayfada da çalışır: sitenin her betiği gibi Google Analytics betiği de sitenin tarayıcınızdaki depolama alanını okuyabilir ve Google’a yalnızca yukarıdaki verileri gönderir. Google Analytics, kendi koşullarına ve gizlilik politikasına tabi bir Google hizmetidir; veriler Amerika Birleşik Devletleri’nde ve başka ülkelerde işlenebilir.',
     ]),
     LegalSection('Barındırma', [
@@ -244,7 +244,7 @@ const _legalTr = LegalText(
   privacyLink: 'Gizlilik',
   termsLink: 'Kullanım koşulları',
   cookieSettings: 'Çerez ayarları',
-  consentText: 'Site ve uygulama, ziyaret istatistikleri (Google Analytics) için çerez kullanabilir mi? Çerezler olmadan da ziyaretler sayılmaya devam eder; çerez ve tanımlayıcı kullanılmaz.',
+  consentText: 'Site ve uygulama, ziyaretleri çerez kullanan Google Analytics ile sayar. Reddederseniz ziyaretleriniz bu tarayıcıda artık sayılmaz.',
   consentAccept: 'Kabul et',
   consentDecline: 'Reddet',
   updated: 'Son güncelleme',

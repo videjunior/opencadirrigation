@@ -49,8 +49,11 @@ repository; this file says how to bring the versioned configuration into it.
 
 ## Visit statistics
 
-The pages load Google Analytics 4 only after the visitor accepts it (Consent Mode v2, everything denied by default,
-only `analytics_storage` granted), never in a page where the app runs. The measurement id comes from
+Every page and the app load Google Analytics 4 with its cookies (`analytics_storage` granted; `ad_storage`,
+`ad_user_data` and `ad_personalization` always denied); no notice asks, and *Cookie settings* at the foot of the
+pages turns the statistics off in a browser. Version 1.6.0 kept `analytics_storage` denied until the visitor accepted:
+Google Analytics 4 reports such visits only through modelling, which needs at least 1,000 of their events a day for
+7 days and 1,000 consented users a day, so almost nobody was counted. The measurement id comes from
 `OCI_ANALYTICS_ID` when the pages are generated (`OCI_ANALYTICS_ID=G-… dart run tool/gen_site.dart`; empty: no
 statistics and no notice), the owner's id otherwise. In the Google Analytics property, keep the data retention at
 14 months or less (Admin → Data collection and modification → Data retention), as the privacy policy states.

@@ -220,13 +220,12 @@ fora a chave e as fotos que você anexou. O aviso quando o app está em segundo 
 título da aba e, se você permitir, mostra notificações do sistema; nada dele sai da página. O que
 cada empresa faz com os pedidos é regido pelo seu acordo com ela.</li>
 <li><strong>Estatística de visitas</strong>: todas as páginas de opencadirrigation.com e o app carregam o Google
-Analytics 4 em Consent Mode v2: a publicidade fica sempre negada e, até o visitante aceitar, a
-estatística não grava cookie e manda ao Google avisos sem cookies (cada página vista, e um evento
-<code>app_start</code> quando o app inicia), de modo que dá para saber quantos visitantes e usuários há. As
-páginas perguntam uma vez se a estatística pode usar cookies; <em>Aceitar</em> liga os cookies <code>_ga</code> e
-<code>_ga_&lt;id&gt;</code>, e <em>Recusar</em>, também depois em <em>Preferências de cookies</em> no rodapé das páginas, os
-apaga. O aviso não aparece sobre o app. Como qualquer script do site, o da estatística roda na
-página que guarda os projetos e as chaves lembradas. O ID de medição é definido quando as páginas são geradas
+Analytics 4 com os seus cookies <code>_ga</code> e <code>_ga_&lt;id&gt;</code> (cada página vista, e um evento <code>app_start</code>
+quando o app inicia), de modo que dá para saber quantos visitantes e usuários há; a publicidade fica
+sempre negada e o endereço vai sem a parte depois do <code>#</code>, onde um link de compartilhamento leva o
+projeto. Nenhum aviso pergunta: <em>Preferências de cookies</em>, no rodapé das páginas, o abre, e o seu
+<em>Recusar</em> apaga os cookies e deixa de carregar a estatística naquele navegador. Como qualquer script
+do site, o da estatística roda na página que guarda os projetos e as chaves lembradas. O ID de medição é definido quando as páginas são geradas
 (<code>OCI_ANALYTICS_ID</code>, vazio para nenhum). A política de privacidade (<code>/privacy/</code>) e os termos de uso
 (<code>/terms/</code>) são gerados com as páginas, e Ajuda → Sobre leva a eles no idioma da interface.</li>
 <li><strong>Idioma e preferências</strong> (idioma escolhido, tema, tamanho e contraste da interface, as
@@ -272,9 +271,9 @@ onde o tutorial parou, as configurações do assistente) ficam nas preferências
     <p>OpenCADIrrigation 1.6.0 · <a href="https://github.com/videjunior/opencadirrigation">Código-fonte (licença MIT)</a> · <a href="https://opencadirrigation.com/pt/privacy/">Privacidade</a> · <a href="https://opencadirrigation.com/pt/terms/">Termos de uso</a> · <button type="button" class="oci-linkish" data-consent-open>Preferências de cookies</button> · Atualizado em <time datetime="2026-11-02">2026-11-02</time></p>
   </footer>
   <div class="oci-consent" id="oci-consent" role="region" aria-label="Preferências de cookies" lang="pt-BR" hidden>
-    <p>O site e o app podem usar cookies para as estatísticas de visita (Google Analytics)? Sem eles, as visitas continuam sendo contadas, sem cookie e sem identificador. <a href="https://opencadirrigation.com/pt/privacy/">Política de privacidade</a></p>
+    <p>O site e o app contam as visitas com o Google Analytics, que usa cookies. Se você recusar, as suas visitas deixam de ser contadas neste navegador. <a href="https://opencadirrigation.com/pt/privacy/">Política de privacidade</a></p>
     <div class="actions"><button type="button" data-consent="denied">Recusar</button><button type="button" data-consent="granted">Aceitar</button></div>
   </div>
-  <script src="/site.js?v=833dc84c" data-ga="G-3M0P4T8V2T" defer></script>
+  <script src="/site.js?v=67c62d53" data-ga="G-3M0P4T8V2T" defer></script>
 </body>
 </html>

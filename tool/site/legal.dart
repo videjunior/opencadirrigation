@@ -9,7 +9,7 @@ part of '../site.dart';
 // the issues of the repository.
 
 /// Date of the current text of the legal pages (shown at their foot).
-const legalLastMod = '2026-11-02';
+const legalLastMod = '2026-11-04';
 
 /// Address where the maintainer is reached (the project's issues).
 const contactUrl = '$appRepositoryUrl/issues';
@@ -53,8 +53,9 @@ class LegalText {
   /// The footer button that shows the consent notice again.
   final String cookieSettings;
 
-  /// The consent notice: the question, then Accept and Decline (equal
-  /// buttons) and the link to the privacy policy.
+  /// The statistics notice, opened by [cookieSettings]: what is counted
+  /// and what declining does, then Decline and Accept (equal buttons) and
+  /// the link to the privacy policy.
   final String consentText;
   final String consentAccept;
   final String consentDecline;
@@ -76,7 +77,7 @@ const _legalEn = LegalText(
     ]),
     LegalSection('In short', [
       '- There is no account and no server of OpenCADIrrigation behind the app: projects, autosaves, versions, AI conversations, keys and preferences stay in your browser and in the files you save.',
-      '- Visit statistics (Google Analytics) run on every page of the site and in the app: without your consent they set no cookie and keep no identifier on your device; with it they use their cookies.',
+      '- Visit statistics (Google Analytics) run on every page of the site and in the app, with their cookies; you can turn them off with Cookie settings, at the foot of the pages.',
       '- The services the app uses for fonts, maps, terrain, climate, address search and the AI assistant receive your requests straight from your browser when you use them.',
     ]),
     LegalSection('What stays on your device', [
@@ -85,9 +86,9 @@ const _legalEn = LegalText(
       'A share link carries the project inside the address, after the #, which browsers do not send to any server.',
     ]),
     LegalSection('Visit statistics and cookies', [
-      'Every page of the site and the app load Google Analytics 4 in Consent Mode. Without your consent it sets no cookie and stores no identifier on your device: for each page viewed and each start of the app it sends Google a notice without cookies with the time, the page that brought you, the type of device and browser, the screen size, the language and an approximate location that Google derives from the IP address (Google Analytics 4 does not store the IP address), from which Google estimates how many people use the site and the app. If you accept, it also sets the cookies _ga and _ga_<id> (they last up to two years), which let it recognise your returning visits.',
-      'Purpose: to know how many people visit the site and use the app, and which pages and languages they use, so as to improve them. Legal basis: for the notices without cookies, the legitimate interest in measuring the use of a free service with nothing stored on your device; for the cookies, your consent. The data are kept for the retention period set in Google Analytics, at most 14 months.',
-      'If you decline, or do not answer, no statistics cookie is set and only the notices without cookies are sent. You can change your choice at any time with Cookie settings, at the foot of the pages; declining deletes the statistics cookies of the site.',
+      'Every page of the site and the app load Google Analytics 4, which sets the cookies _ga and _ga_<id> (they last up to two years) and records the pages viewed and each start of the app, the time of the visit, the page that brought you, the type of device and browser, the screen size, the language and an approximate location that Google derives from the IP address (Google Analytics 4 does not store the IP address). It never receives the part of the address after the #, where a share link carries the project, and its advertising functions are off.',
+      'Purpose: to know how many people visit the site and use the app, and which pages and languages they use, so as to improve them. Legal basis: the legitimate interest in measuring the use of a free service. The data are kept for the retention period set in Google Analytics, at most 14 months.',
+      'You can object at any time with Cookie settings, at the foot of the pages: if you decline, the statistics cookies of the site are deleted and Google Analytics is no longer loaded in that browser. Blocking cookies or scripts in your browser also stops it.',
       'The statistics also run while the app is open, in the page that holds your projects and, if you choose to remember them, your AI keys: like any script of the site, the Google Analytics script could read the storage of the site in your browser, and it sends Google only the data above. Google Analytics is a Google service under its own terms and privacy policy, and the data may be processed in the United States and in other countries.',
     ]),
     LegalSection('Hosting', [
@@ -133,7 +134,7 @@ const _legalEn = LegalText(
   privacyLink: 'Privacy',
   termsLink: 'Terms of use',
   cookieSettings: 'Cookie settings',
-  consentText: 'May the site and the app use cookies for the visit statistics (Google Analytics)? Without them visits are still counted, with no cookie and no identifier.',
+  consentText: 'The site and the app count visits with Google Analytics, which uses cookies. If you decline, your visits are no longer counted in this browser.',
   consentAccept: 'Accept',
   consentDecline: 'Decline',
   updated: 'Last updated',
@@ -150,7 +151,7 @@ const _legalPt = LegalText(
     ]),
     LegalSection('Em resumo', [
       '- Não há conta nem servidor do OpenCADIrrigation por trás do app: projetos, autossalvamentos, versões, conversas da IA, chaves e preferências ficam no seu navegador e nos arquivos que você salva.',
-      '- As estatísticas de visita (Google Analytics) rodam em todas as páginas do site e no app: sem o seu consentimento não gravam cookie nem identificador no seu aparelho; com ele, usam cookies.',
+      '- As estatísticas de visita (Google Analytics) rodam em todas as páginas do site e no app, com os seus cookies; você pode desligá-las em Preferências de cookies, no rodapé das páginas.',
       '- Os serviços que o app usa para fontes, mapas, terreno, clima, busca de endereços e o assistente de IA recebem os pedidos direto do seu navegador quando você os usa.',
     ]),
     LegalSection('O que fica no seu aparelho', [
@@ -159,9 +160,9 @@ const _legalPt = LegalText(
       'Um link de compartilhamento leva o projeto dentro do endereço, depois do #, que os navegadores não enviam a nenhum servidor.',
     ]),
     LegalSection('Estatísticas de visita e cookies', [
-      'Todas as páginas do site e o app carregam o Google Analytics 4 no modo de consentimento. Sem o seu consentimento ele não grava cookie nem guarda identificador no seu aparelho: a cada página vista e a cada abertura do app, envia ao Google um aviso sem cookies com a hora, a página de onde você veio, o tipo de aparelho e de navegador, o tamanho da tela, o idioma e uma localização aproximada que o Google deduz do endereço IP (o Google Analytics 4 não guarda o endereço IP), com o qual o Google estima quantas pessoas usam o site e o app. Se você aceitar, ele também grava os cookies _ga e _ga_<id> (duram até dois anos), que permitem reconhecer as suas visitas seguintes.',
-      'Finalidade: saber quantas pessoas visitam o site e usam o app, e quais páginas e idiomas usam, para melhorá-los. Base legal: para os avisos sem cookies, o interesse legítimo em medir o uso de um serviço gratuito sem guardar nada no seu aparelho; para os cookies, o seu consentimento. Os dados ficam guardados pelo prazo de retenção configurado no Google Analytics, no máximo 14 meses.',
-      'Se você recusar, ou não responder, nenhum cookie de estatística é gravado e só os avisos sem cookies são enviados. Você pode mudar a escolha a qualquer momento em Preferências de cookies, no rodapé das páginas; recusar apaga os cookies de estatística do site.',
+      'Todas as páginas do site e o app carregam o Google Analytics 4, que grava os cookies _ga e _ga_<id> (duram até dois anos) e registra as páginas vistas e cada abertura do app, a hora da visita, a página de onde você veio, o tipo de aparelho e de navegador, o tamanho da tela, o idioma e uma localização aproximada que o Google deduz do endereço IP (o Google Analytics 4 não guarda o endereço IP). Ele nunca recebe a parte do endereço depois do #, onde um link de compartilhamento leva o projeto, e as suas funções de publicidade ficam desligadas.',
+      'Finalidade: saber quantas pessoas visitam o site e usam o app, e quais páginas e idiomas usam, para melhorá-los. Base legal: o interesse legítimo em medir o uso de um serviço gratuito. Os dados ficam guardados pelo prazo de retenção configurado no Google Analytics, no máximo 14 meses.',
+      'Você pode se opor a qualquer momento em Preferências de cookies, no rodapé das páginas: se recusar, os cookies de estatística do site são apagados e o Google Analytics deixa de ser carregado naquele navegador. Bloquear cookies ou scripts no seu navegador também o impede.',
       'As estatísticas rodam também com o app aberto, na página que guarda os seus projetos e, se você escolher lembrá-las, as suas chaves de IA: como qualquer script do site, o script do Google Analytics poderia ler o armazenamento do site no seu navegador, e ele envia ao Google só os dados acima. O Google Analytics é um serviço do Google, com termos e política de privacidade próprios, e os dados podem ser tratados nos Estados Unidos e em outros países.',
     ]),
     LegalSection('Hospedagem', [
@@ -207,7 +208,7 @@ const _legalPt = LegalText(
   privacyLink: 'Privacidade',
   termsLink: 'Termos de uso',
   cookieSettings: 'Preferências de cookies',
-  consentText: 'O site e o app podem usar cookies para as estatísticas de visita (Google Analytics)? Sem eles, as visitas continuam sendo contadas, sem cookie e sem identificador.',
+  consentText: 'O site e o app contam as visitas com o Google Analytics, que usa cookies. Se você recusar, as suas visitas deixam de ser contadas neste navegador.',
   consentAccept: 'Aceitar',
   consentDecline: 'Recusar',
   updated: 'Atualizado em',
@@ -224,7 +225,7 @@ const _legalEs = LegalText(
     ]),
     LegalSection('En resumen', [
       '- No hay cuenta ni servidor de OpenCADIrrigation detrás de la aplicación: proyectos, guardados automáticos, versiones, conversaciones de la IA, claves y preferencias quedan en su navegador y en los archivos que usted guarda.',
-      '- Las estadísticas de visitas (Google Analytics) se ejecutan en todas las páginas del sitio y en la aplicación: sin su consentimiento no guardan cookies ni identificadores en su dispositivo; con él, usan cookies.',
+      '- Las estadísticas de visitas (Google Analytics) se ejecutan en todas las páginas del sitio y en la aplicación, con sus cookies; puede desactivarlas en Preferencias de cookies, al pie de las páginas.',
       '- Los servicios que la aplicación usa para fuentes, mapas, terreno, clima, búsqueda de direcciones y el asistente de IA reciben las peticiones directamente desde su navegador cuando usted los usa.',
     ]),
     LegalSection('Lo que queda en su dispositivo', [
@@ -233,9 +234,9 @@ const _legalEs = LegalText(
       'Un enlace para compartir lleva el proyecto dentro de la dirección, después del #, que los navegadores no envían a ningún servidor.',
     ]),
     LegalSection('Estadísticas de visitas y cookies', [
-      'Todas las páginas del sitio y la aplicación cargan Google Analytics 4 en modo de consentimiento. Sin su consentimiento no guarda cookies ni identificadores en su dispositivo: por cada página vista y cada apertura de la aplicación envía a Google un aviso sin cookies con la hora, la página de la que vino, el tipo de dispositivo y de navegador, el tamaño de la pantalla, el idioma y una ubicación aproximada que Google deduce de la dirección IP (Google Analytics 4 no guarda la dirección IP), con el que Google estima cuántas personas usan el sitio y la aplicación. Si usted acepta, también guarda las cookies _ga y _ga_<id> (duran hasta dos años), que permiten reconocer sus visitas siguientes.',
-      'Finalidad: saber cuántas personas visitan el sitio y usan la aplicación, y qué páginas e idiomas usan, para mejorarlos. Base jurídica: para los avisos sin cookies, el interés legítimo en medir el uso de un servicio gratuito sin guardar nada en su dispositivo; para las cookies, su consentimiento. Los datos se conservan durante el plazo de retención configurado en Google Analytics, como máximo 14 meses.',
-      'Si usted las rechaza, o no responde, no se guarda ninguna cookie de estadísticas y solo se envían los avisos sin cookies. Puede cambiar su elección en cualquier momento en Preferencias de cookies, al pie de las páginas; rechazar borra las cookies de estadísticas del sitio.',
+      'Todas las páginas del sitio y la aplicación cargan Google Analytics 4, que guarda las cookies _ga y _ga_<id> (duran hasta dos años) y registra las páginas vistas y cada apertura de la aplicación, la hora de la visita, la página de la que vino, el tipo de dispositivo y de navegador, el tamaño de la pantalla, el idioma y una ubicación aproximada que Google deduce de la dirección IP (Google Analytics 4 no guarda la dirección IP). Nunca recibe la parte de la dirección después del #, donde un enlace para compartir lleva el proyecto, y sus funciones de publicidad están desactivadas.',
+      'Finalidad: saber cuántas personas visitan el sitio y usan la aplicación, y qué páginas e idiomas usan, para mejorarlos. Base jurídica: el interés legítimo en medir el uso de un servicio gratuito. Los datos se conservan durante el plazo de retención configurado en Google Analytics, como máximo 14 meses.',
+      'Puede oponerse en cualquier momento en Preferencias de cookies, al pie de las páginas: si lo rechaza, se borran las cookies de estadísticas del sitio y Google Analytics deja de cargarse en ese navegador. Bloquear las cookies o los scripts en su navegador también lo impide.',
       'Las estadísticas también se ejecutan con la aplicación abierta, en la página que guarda sus proyectos y, si decide recordarlas, sus claves de IA: como cualquier script del sitio, el script de Google Analytics podría leer el almacenamiento del sitio en su navegador, y solo envía a Google los datos anteriores. Google Analytics es un servicio de Google, con sus propios términos y política de privacidad, y los datos pueden tratarse en Estados Unidos y en otros países.',
     ]),
     LegalSection('Alojamiento', [
@@ -281,7 +282,7 @@ const _legalEs = LegalText(
   privacyLink: 'Privacidad',
   termsLink: 'Términos de uso',
   cookieSettings: 'Preferencias de cookies',
-  consentText: '¿Pueden el sitio y la aplicación usar cookies para las estadísticas de visitas (Google Analytics)? Sin ellas, las visitas se siguen contando, sin cookies ni identificadores.',
+  consentText: 'El sitio y la aplicación cuentan las visitas con Google Analytics, que usa cookies. Si usted lo rechaza, sus visitas dejan de contarse en este navegador.',
   consentAccept: 'Aceptar',
   consentDecline: 'Rechazar',
   updated: 'Actualizado el',
@@ -380,8 +381,8 @@ const _consentStyle = '''
     .oci-linkish { font: inherit; color: #64B5F6; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 ''';
 
-/// The consent notice (hidden until site.js shows it), or nothing when the
-/// site counts no visits.
+/// The statistics notice (hidden: the Cookie settings button at the foot of
+/// the pages opens it), or nothing when the site counts no visits.
 String consentNotice(SiteLang lang, LegalText l) {
   if (analyticsId.isEmpty) return '';
   final dir = hasLegalText(lang.code) ? lang.dirAttr : '';

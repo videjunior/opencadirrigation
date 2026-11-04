@@ -480,7 +480,8 @@ void main() {
         'GDPR',
         'ANPD',
         'also run while the app is open',
-        'without cookies',
+        'legitimate interest in measuring the use of a free service',
+        'Google Analytics is no longer loaded in that browser',
       ]) {
         expect(privacy, contains(needle), reason: needle);
       }
@@ -495,7 +496,7 @@ void main() {
       expect(File('web/pt/privacy/index.html').readAsStringSync(), contains('mantenedor do OpenCADIrrigation'));
     });
 
-    test('the statistics run on every page and in the app, in Consent Mode: cookies only after Accept', () {
+    test('the statistics run with their cookies on every page and in the app; only a Decline in Cookie settings stops them', () {
       final pages = [
         for (final e in renderSite().entries)
           if (e.key.endsWith('.html')) e.value,
@@ -504,15 +505,16 @@ void main() {
         expect(html, isNot(contains('googletagmanager.com/gtag')), reason: 'gtag.js is loaded by site.js, after the consent defaults');
       }
       final script = File('web/site.js').readAsStringSync();
-      // Consent Mode v2: advertising always denied, the statistics cookies only with a stored Accept
+      // the statistics granted, advertising always denied: Google Analytics 4 leaves the visits sent without
+      // consent out of its reports below its modelling thresholds, so consent-only statistics counted almost nobody
+      expect(script, contains("'consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'granted' }"));
+      expect(script.indexOf("'consent', 'default'"), lessThan(script.indexOf("tag.src = 'https://www.googletagmanager.com/gtag/js?id='")));
+      // loaded on every page, before the app starts (each start is an event), whatever the device keeps, unless declined
       expect(
         script,
-        contains("'consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: readConsent() === 'granted' ? 'granted' : 'denied' }"),
+        contains(r"if (analytics || !analyticsId || declined() || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return;"),
+        reason: 'development and tests are not counted',
       );
-      expect(script, contains("'consent', 'update', { analytics_storage: c }"));
-      expect(script.indexOf("'consent', 'default'"), lessThan(script.indexOf("tag.src = 'https://www.googletagmanager.com/gtag/js?id='")));
-      // loaded on every page, before the app starts (each start is an event), and whatever the device keeps
-      expect(script, contains(r"if (analytics || !analyticsId || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return;"), reason: 'development and tests are not counted');
       expect(script, isNot(contains('keepsAiKey')));
       expect(script.indexOf('  loadAnalytics();'), lessThan(script.indexOf('if (wanted()) start();')));
       expect(script, contains("track('app_start');"));
@@ -521,7 +523,14 @@ void main() {
       expect(script, contains("window.gtag('config', analyticsId, { page_location: page() });"));
       expect(script, contains("window.gtag('event', name, { page_location: page() });"));
       expect(script, isNot(contains('location.assign(')), reason: 'the app buttons open the app in place');
-      expect(script, contains("if (!started && analyticsId && readConsent() === null) showBanner(true);"));
+      // no page asks by itself: the notice opens only from Cookie settings
+      expect(RegExp(r'showBanner\(true\)').allMatches(script).length, 1, reason: 'only the Cookie settings button opens the notice');
+      expect(script, contains("if (t.hasAttribute('data-consent-open')) showBanner(true);"));
+      // a Decline (also one given in the notice of 1.6.0) stops them in this page and in the next ones
+      expect(script, contains("return !!v && v.c === 'denied';"));
+      expect(script, contains("window['ga-disable-' + analyticsId] = true;"));
+      expect(script, contains("window.gtag('consent', 'update', { analytics_storage: 'denied' });"));
+      expect(script, contains("if (analytics && !declined()) window.gtag('event', name, { page_location: page() });"));
       // the answer is not stored under the app's prefix: answering the notice is not using the app
       final key = RegExp(r"var consentKey = '([^']+)';").firstMatch(script)!.group(1)!;
       expect(key.startsWith('opencadirrigation.'), isFalse);
@@ -658,7 +667,7 @@ void main() {
     final en = siteText('en');
     final cloud = en.faq.indexWhere((f) => f.$1 == 'Are my projects stored in the cloud?');
     expect(en.faq[cloud].$2, faqCloudAnswerEn);
-    for (final needle in ['come from this site itself', 'the site and the app count visits with Google Analytics', 'no cookie unless you accept', 'privacy policy']) {
+    for (final needle in ['come from this site itself', 'the site and the app count visits with Google Analytics, which uses cookies', 'Cookie settings', 'privacy policy']) {
       expect(faqCloudAnswerEn, contains(needle));
     }
     expect(faqCloudAnswerEn, isNot(contains('Google Fonts')), reason: 'the fonts are served by the site (tool/site_fonts.dart)');

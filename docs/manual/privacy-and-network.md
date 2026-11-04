@@ -77,14 +77,13 @@
   you attached out. The notice when the app is in the background blinks the title of the tab and, if
   you allow them, shows system notifications; nothing of it leaves the page. What each company does
   with the requests is governed by your agreement with it.
-- **Visit statistics**: every page of opencadirrigation.com and the app load Google Analytics 4 in
-  Consent Mode v2: advertising is always denied and, until the visitor accepts, the statistics set no
-  cookie and send Google notices without cookies (each page viewed, and an `app_start` event when the
-  app starts), so the number of visitors and users can be known. The pages ask once whether the
-  statistics may use cookies; *Accept* turns on the cookies `_ga` and `_ga_<id>`, and *Decline*, also
-  later with *Cookie settings* at the foot of the pages, deletes them. The notice is not shown over
-  the app. Like any script of the site, the statistics script runs in the page that holds the
-  projects and the remembered keys.
+- **Visit statistics**: every page of opencadirrigation.com and the app load Google Analytics 4 with
+  its cookies `_ga` and `_ga_<id>` (each page viewed, and an `app_start` event when the app starts),
+  so the number of visitors and users can be known; advertising is always denied and the address goes
+  without the part after the `#`, where a share link carries the project. No notice asks: *Cookie
+  settings*, at the foot of the pages, opens it, and its *Decline* deletes the cookies and stops
+  loading the statistics in that browser. Like any script of the site, the statistics script runs in
+  the page that holds the projects and the remembered keys.
   The measurement id is set when the pages are generated (`OCI_ANALYTICS_ID`, empty for none). The
   privacy policy (`/privacy/`) and the terms of use (`/terms/`) are generated with the pages, and
   Help → About links them in the interface language.

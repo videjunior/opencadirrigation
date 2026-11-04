@@ -5,6 +5,18 @@ the status bar; `pubspec.yaml` holds it, and the release checklist in [CONTRIBUT
 adds the section of each new version here (a test fails when the current version has none). Portuguese:
 [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md).
 
+## 1.6.1 (2026-11-04)
+
+- **Visit statistics count everyone again**: the site and the app load Google Analytics with its cookies, as up to
+  1.5.2 (each page viewed and each start of the app; advertising always denied; the address without the part after the
+  `#`). In 1.6.0, whoever did not press *Accept* was counted without cookies, and Google Analytics 4 leaves those visits
+  out of its reports until a site has thousands of them a day; the notice did not even show where the app opens by
+  itself, so almost nobody was counted. No notice asks any more: *Cookie settings*, at the foot of the pages, opens it,
+  and its *Decline* deletes the cookies and stops loading the statistics in that browser (a *Decline* given in 1.6.0 is
+  kept). The privacy policy, the FAQ and the manual say so in every language.
+- **What's new after an update**: a version without news of its own shows those of the newest version to whoever had
+  not seen them yet.
+
 ## 1.6.0 (2026-11-02)
 
 A sweep of the whole project, with defects fixed in every area, and new functions in thirteen of them: pump stations

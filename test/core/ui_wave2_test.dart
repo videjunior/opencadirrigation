@@ -256,14 +256,32 @@ void main() {
       expect(shouldShowWhatsNew(c), isFalse);
       expect(getPref(whatsNewSeenPref), appVersion);
       expect(shouldShowWhatsNew(c), isFalse, reason: 'this version was seen');
-      // an earlier version seen: shown when this version has news
+      // an earlier version seen: shown (the news of this version, or of the newest one with news)
       setPref(whatsNewSeenPref, '0.9.0');
-      expect(shouldShowWhatsNew(c), whatsNewNotes.containsKey(appVersion));
+      expect(shouldShowWhatsNew(c), isTrue);
       expect(shouldShowWhatsNew(c), isFalse, reason: 'once');
       // no version seen, but the tutorial done (an earlier version's user)
       removePref(whatsNewSeenPref);
       TutorialController.markDone();
-      expect(shouldShowWhatsNew(c), whatsNewNotes.containsKey(appVersion));
+      expect(shouldShowWhatsNew(c), isTrue);
+    });
+
+    test('a version without news of its own shows the newest news only to whoever had not seen them', () {
+      expect(versionBefore('1.5.2', '1.6.0'), isTrue);
+      expect(versionBefore('1.6.0+14', '1.6.0'), isFalse);
+      expect(versionBefore('1.6.1', '1.6.0'), isFalse);
+      expect(versionBefore('1.9.3', '1.10.0'), isTrue);
+      expect(versionBefore('1.6', '1.6.1'), isTrue);
+      final c = ProjectController()..autosaveEnabled = false;
+      c.newProject();
+      // the newest news seen, or a first visit made in their version: nothing until the next news
+      setPref(whatsNewSeenPref, whatsNewVersion);
+      expect(shouldShowWhatsNew(c), isFalse);
+      expect(getPref(whatsNewSeenPref), appVersion);
+      // a user of a version before them sees them once, in a patch release too
+      setPref(whatsNewSeenPref, '1.5.2');
+      expect(shouldShowWhatsNew(c), isTrue);
+      expect(shouldShowWhatsNew(c), isFalse, reason: 'once');
     });
   });
 
