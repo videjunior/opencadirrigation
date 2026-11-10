@@ -91,6 +91,41 @@ void main() {
     expect((c.project.byId(t.id)! as TextEntity).text, 'Pump house');
   });
 
+  testWidgets('a double click is timed by the clock the test pumps: a slow machine between the presses keeps it, a pause ends it', (tester) async {
+    final c = await pumpShell(tester);
+    lastPointerKind.value = PointerDeviceKind.mouse;
+    addTearDown(() => lastPointerKind.value = null);
+    final t = TextEntity(id: c.project.newId(), position: const Pt(20, 0), text: 'Pump', height: 2);
+    c.addEntity(t);
+    await settle(tester, 1);
+    final at = global(tester, c, const Pt(21, 1));
+    // half a second of the machine between the two presses (CI on a busy
+    // runner), 60 ms of the test's clock: still a double click
+    await tester.tapAt(at, kind: PointerDeviceKind.mouse);
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 450)));
+    await tester.pump(const Duration(milliseconds: 60));
+    await tester.tapAt(at, kind: PointerDeviceKind.mouse);
+    await settle(tester, 2);
+    expect(find.byKey(const Key('text_in_place_field')), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester, 2);
+    expect(find.byKey(const Key('text_in_place_field')), findsNothing);
+    // 350 ms after a click, another one in the same place is a click
+    await tester.tapAt(at, kind: PointerDeviceKind.mouse);
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.tapAt(at, kind: PointerDeviceKind.mouse);
+    await settle(tester, 2);
+    expect(find.byKey(const Key('text_in_place_field')), findsNothing);
+    // and just inside the window it is the double click again
+    await tester.tapAt(at, kind: PointerDeviceKind.mouse);
+    await tester.pump(const Duration(milliseconds: 340));
+    await tester.tapAt(at, kind: PointerDeviceKind.mouse);
+    await settle(tester, 2);
+    expect(find.byKey(const Key('text_in_place_field')), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester, 2);
+  });
+
   testWidgets('a finger dragged while drawing aims with a magnifier: the point goes where it is lifted', (tester) async {
     final c = await pumpShell(tester);
     c.setTool(ToolId.line);

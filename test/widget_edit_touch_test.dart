@@ -45,11 +45,13 @@ void main() {
   RenderBox canvasBox(WidgetTester tester) => tester.renderObject(find.byType(CadCanvas)) as RenderBox;
   Offset global(WidgetTester tester, ProjectController c, Pt world) => canvasBox(tester).localToGlobal(c.camera.toScreen(world));
 
-  Future<void> tap(WidgetTester tester, ProjectController c, Pt at) async {
+  /// A finger down for 50 ms at [at], then [pause] before what comes next
+  /// (400 ms, with the 50 of the next tap, is past the time of a double tap).
+  Future<void> tap(WidgetTester tester, ProjectController c, Pt at, {Duration pause = const Duration(milliseconds: 400)}) async {
     final g = await tester.startGesture(global(tester, c, at), kind: PointerDeviceKind.touch);
     await tester.pump(const Duration(milliseconds: 50));
     await g.up();
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(pause);
   }
 
   List<JunctionEntity> addItems(ProjectController c) {
@@ -114,13 +116,29 @@ void main() {
     final c = await pumpShell(tester);
     c.setTool(ToolId.polyline);
     await settle(tester, 1);
-    for (final p in [Pt.zero, const Pt(10, 0), const Pt(20, 0)]) {
+    for (final p in [Pt.zero, const Pt(10, 0)]) {
       await tap(tester, c, p);
     }
-    // 1.5 m = 15 px at 10 px/m from the last tap
+    // the last vertex, and 150 ms later a tap 1.5 m = 15 px (at 10 px/m) from it
+    await tap(tester, c, const Pt(20, 0), pause: const Duration(milliseconds: 100));
     await tap(tester, c, const Pt(21.5, 0));
     final pl = c.project.entities.whereType<PolylineEntity>().single;
     expect(pl.points, [Pt.zero, const Pt(10, 0), const Pt(20, 0)]);
+  });
+
+  testWidgets('two finger taps 15 px apart with a pause between them are two vertices', (tester) async {
+    final c = await pumpShell(tester);
+    c.setTool(ToolId.polyline);
+    await settle(tester, 1);
+    // 450 ms from one tap to the next: past the 400 ms of a double tap
+    for (final p in [Pt.zero, const Pt(10, 0), const Pt(20, 0), const Pt(21.5, 0)]) {
+      await tap(tester, c, p);
+    }
+    expect(c.project.entities.whereType<PolylineEntity>(), isEmpty);
+    await tap(tester, c, const Pt(30, 0), pause: const Duration(milliseconds: 100));
+    await tap(tester, c, const Pt(31, 0));
+    final pl = c.project.entities.whereType<PolylineEntity>().single;
+    expect(pl.points, [Pt.zero, const Pt(10, 0), const Pt(20, 0), const Pt(21.5, 0), const Pt(30, 0)]);
   });
 
   testWidgets('a right click opens the menu of the drawing; a right drag pans (CAD-34)', (tester) async {

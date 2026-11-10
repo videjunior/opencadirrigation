@@ -46,8 +46,13 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   Offset? _lastPointer;
   bool _panning = false;
   bool _dragging = false;
-  DateTime _lastDown = DateTime.fromMillisecondsSinceEpoch(0);
   Offset? _lastDownPos;
+
+  /// Runs while a second press near [_lastDownPos] still makes a double
+  /// click. A timer, not the wall clock: it follows the clock of a widget
+  /// test, where the time between two presses is what the test pumps, not
+  /// how long the machine took to draw the frames in between.
+  Timer? _doubleClickWindow;
 
   /// Dead zone around a press: the tool only sees a drag once the pointer has
   /// travelled this far, so clicking an item to look at it never nudges it out
@@ -144,6 +149,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     basemap.dispose();
     _scene.dispose();
     _endHold();
+    _doubleClickWindow?.cancel();
     _textFocus.dispose();
     _textCtl?.dispose();
     _dynAt.dispose();
@@ -269,9 +275,9 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
   }
 
   void _primaryDown(Offset local, {bool touch = false}) {
-    final now = DateTime.now();
-    final isDouble = now.difference(_lastDown).inMilliseconds < (touch ? 400 : 350) && _lastDownPos != null && (_lastDownPos! - local).distance < (touch ? doubleTapSlopPx : 6);
-    _lastDown = now;
+    final isDouble = (_doubleClickWindow?.isActive ?? false) && _lastDownPos != null && (_lastDownPos! - local).distance < (touch ? doubleTapSlopPx : 6);
+    _doubleClickWindow?.cancel();
+    _doubleClickWindow = Timer(Duration(milliseconds: touch ? 400 : 350), () {});
     _lastDownPos = local;
     final p = _snapped(local);
     final keys = HardwareKeyboard.instance;
