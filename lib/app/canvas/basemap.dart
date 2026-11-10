@@ -378,6 +378,12 @@ class BaseMapLayer extends ChangeNotifier {
 
   int get tileCount => _tiles.length;
 
+  /// No tile is being downloaded or decoded and none waits its turn: what
+  /// the last paint asked for is cached, missing or failed. For the tests,
+  /// which wait for this and not for an amount of time.
+  @visibleForTesting
+  bool get idle => _loading.isEmpty && _queue.isEmpty;
+
   /// Keeps a downloaded tile, dropping the least recently drawn ones past
   /// [maxTiles] (never those on screen nor the new one).
   void _store(String key, ui.Image img) {

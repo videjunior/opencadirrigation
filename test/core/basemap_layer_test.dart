@@ -106,9 +106,10 @@ void main() {
     return n;
   }
 
-  /// Lets the fake responses and the image decoding finish.
-  Future<void> settle(bool Function() done) async {
-    for (var i = 0; i < 200 && !done(); i++) {
+  /// Lets the fake responses and the image decoding finish: until [done],
+  /// for [tries] × 5 ms at most (a second by default).
+  Future<void> settle(bool Function() done, {int tries = 200}) async {
+    for (var i = 0; i < tries && !done(); i++) {
       await Future<void>.delayed(const Duration(milliseconds: 5));
     }
     await Future<void>.delayed(const Duration(milliseconds: 20));
@@ -166,12 +167,15 @@ void main() {
   test('the tiles on screen are never evicted, however small the cache', () async {
     serve((m, u, b) => (200, png));
     final layer = BaseMapLayer(maxTiles: 2);
-    var notified = 0;
-    layer.addListener(() => notified++);
-    Future<void> answered() => settle(() => notified >= client.requests.length);
+    // until every tile the last paint asked for is downloaded and decoded,
+    // however long the machine takes (a count of answers is already "all"
+    // before the first request leaves)
+    Future<void> answered() => settle(() => layer.idle, tries: 4000);
     const o = BaseMapOptions(BaseMap.streets);
     paint(layer, o);
+    expect(layer.idle, isFalse, reason: 'the tiles of the view are wanted');
     await answered();
+    expect(layer.idle, isTrue);
     final inView = client.requests.toSet().length;
     expect(inView, greaterThan(2));
     expect(layer.tileCount, 2, reason: 'nothing was drawn yet, so the cache size applies');
@@ -183,6 +187,7 @@ void main() {
     expect(drawn, inView);
     final asked = client.requests.length;
     expect(paint(layer, o), inView);
+    expect(layer.idle, isTrue, reason: 'every visible tile stays cached: nothing to download');
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(client.requests.length, asked, reason: 'every visible tile stays cached');
     layer.dispose();
