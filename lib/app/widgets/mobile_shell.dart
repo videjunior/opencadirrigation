@@ -33,6 +33,7 @@ import 'dialogs/agb_dialogs.dart';
 import 'dialogs/field_machine_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
+import 'dialogs/curve_digitiser_dialog.dart'; // 1.7.0 DGZ
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
@@ -478,6 +479,7 @@ class _MobileShellState extends State<MobileShell> {
           section(t('menu.design'), Icons.play_circle_outline, [
             row(t('design.params'), () => showDesignParamsDialog(context, c), icon: Icons.tune),
             row(t('design.catalog'), () => showCatalogEditorDialog(context, c), icon: Icons.inventory_2_outlined),
+            row(t('dgz.menu'), () => showCurveDigitiserDialog(context, c), icon: Icons.show_chart, key: const Key('mobile_menu_digitiser')), // 1.7.0 DGZ
             row(t('design.management'), () => showManagementDialog(context, c), icon: Icons.schedule),
             row(t('design.proposal'), () => showProposalDialog(context, c), icon: Icons.request_quote_outlined),
             row(t('design.scenarios'), () => showScenariosDialog(context, c), icon: Icons.compare_outlined),

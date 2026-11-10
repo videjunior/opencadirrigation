@@ -248,3 +248,8 @@ export 'model/project_compare.dart';
 
 // 1.6.0 SIT+: the credits of the third-party data in a project
 export 'io/data_credits.dart';
+
+// 1.7.0 DGZ: curves read off a picture of a chart into the catalogue
+export 'design/curve_digitiser.dart';
+export 'design/curve_fits.dart';
+export 'design/curve_trace.dart';
