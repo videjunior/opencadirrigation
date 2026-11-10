@@ -29,6 +29,8 @@ export 'ai/image_prep.dart';
 export 'ai/llm.dart';
 export 'ai/llm_formats.dart';
 export 'ai/openai_api.dart';
+export 'ai/openrouter_api.dart';
+export 'ai/openrouter_catalog.dart';
 export 'ai/project_context.dart';
 export 'design/advisor.dart';
 export 'design/agronomy.dart';
