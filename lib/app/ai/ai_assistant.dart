@@ -2073,6 +2073,12 @@ class AiAssistant extends ChangeNotifier {
     _system ??= aiSystemPrompt(c, instructions: instructions);
     _stopWarm();
     final client = _client(m.provider, key);
+    // a model that does not read a PDF whole gets the text read from it here
+    if (!m.pdf) {
+      for (final a in files) {
+        if (a.isPdf) a.asText = true;
+      }
+    }
     final message = client.userMessage([for (final a in files) ...a.parts(), AiTextPart(composeText(q.isEmpty ? t('ai.q.attachment') : q, ctx))]);
     // the effort: the conversation's first stays the request's own (a change
     // there would rewrite the whole cached conversation); a change goes as an

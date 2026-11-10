@@ -51,6 +51,8 @@ void main() {
     expect(million.cost(AiModel.gemini35FlashLite), closeTo(0.3 + 2.5, 1e-9));
     expect(million.cost(AiModel.grok47), closeTo((2 + 6) * 2, 1e-9), reason: 'a prompt of 200K tokens or more pays twice');
     expect(const AiUsage(input: 100000, output: 1000).cost(AiModel.grok47), closeTo((100000 * 2 + 1000 * 6) / 1e6, 1e-12));
+    expect(const AiUsage(input: 200000).cost(AiModel.grok47), closeTo(200000 * 2 * 2 / 1e6, 1e-12), reason: 'the step is at a prompt that reaches 200K');
+    expect(const AiUsage(input: 199999).cost(AiModel.grok47), closeTo(199999 * 2 / 1e6, 1e-12));
     expect(million.cost(AiModel.museWonder), closeTo(24, 1e-9));
     expect(million.cost(AiModel.museSpark), closeTo(1.25 + 4.25, 1e-9));
     expect(million.cost(AiModel.museEmber), closeTo((0.1 + 0.5) * 3, 1e-9), reason: 'over 200K input tokens Muse Ember costs three times as much');
@@ -83,7 +85,8 @@ void main() {
     expect(AiModel.gemini4Argon.effortFor(AiEffort.xhigh), AiEffort.high);
     expect(AiModel.gemini4Argon.effortFor(AiEffort.low), AiEffort.low);
     expect(AiModel.grok47.effortFor(AiEffort.max), AiEffort.xhigh);
-    expect(AiModel.grok43.effortFor(AiEffort.xhigh), AiEffort.high);
+    expect(AiModel.grok43.effortFor(AiEffort.max), AiEffort.xhigh);
+    expect(AiModel.grok47.pdf, isFalse, reason: 'a PDF goes to Grok as its text');
     const odd = AiModel(AiProvider.openrouter, 'x/odd', 'Odd', AiTier.fast, input: 1, output: 1, cacheRead: 1, cacheWrite: 1, efforts: [AiEffort.high, AiEffort.max]);
     expect(odd.effortFor(AiEffort.low), AiEffort.high, reason: 'nothing below: the lowest it has');
     expect(odd.effortFor(AiEffort.xhigh), AiEffort.high);

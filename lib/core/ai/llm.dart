@@ -21,7 +21,7 @@ enum AiProvider {
   anthropic('Anthropic', 'Claude', 'api.anthropic.com', 'https://console.anthropic.com/settings/keys', 'sk-ant-', 'https://platform.claude.com/settings/billing'),
   openai('OpenAI', 'GPT', 'api.openai.com', 'https://platform.openai.com/api-keys', 'sk-', 'https://platform.openai.com/settings/organization/billing/overview'),
   google('Google', 'Gemini', 'generativelanguage.googleapis.com', 'https://aistudio.google.com/apikey', 'AIza', 'https://aistudio.google.com/usage'),
-  xai('xAI', 'Grok', 'api.x.ai', 'https://console.x.ai/', 'xai-', 'https://console.x.ai/'),
+  xai('xAI', 'Grok', 'api.x.ai', 'https://console.x.ai/team/default/api-keys', 'xai-', 'https://console.x.ai/team/default/billing'),
   meta('Meta', 'Muse', 'api.meta.ai', 'https://dev.meta.ai/', '', 'https://dev.meta.ai/'),
   openrouter('OpenRouter', 'OpenRouter', 'openrouter.ai', 'https://openrouter.ai/settings/keys', 'sk-or-', 'https://openrouter.ai/settings/credits');
 
@@ -96,6 +96,7 @@ class AiModel {
     this.introUntil = 0,
     this.introFactor = 1,
     this.vision = true,
+    this.pdf = true,
     this.tools = true,
     this.priced = true,
   });
@@ -121,6 +122,10 @@ class AiModel {
 
   /// Reads pictures (the views of the drawing and the map).
   final bool vision;
+
+  /// Reads an attached PDF whole, pages and pictures (false: the PDF goes
+  /// as the text read from it on this device).
+  final bool pdf;
 
   /// Calls tools (without them the assistant can only talk).
   final bool tools;
@@ -438,8 +443,10 @@ class AiModel {
     efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
   );
 
-  // xAI (docs.x.ai models page; a prompt of 200K tokens or more pays twice
-  // these prices; caching is automatic, with no price for the writing).
+  // xAI (docs.x.ai models and pricing pages; a prompt that reaches 200K
+  // tokens pays twice these prices; caching is automatic, and a prompt
+  // written to the cache pays the input price). An attached PDF would turn
+  // on xAI's paid search in the file, so it goes as its text.
   static const grok47 = AiModel(
     AiProvider.xai,
     'grok-4.7',
@@ -449,10 +456,12 @@ class AiModel {
     output: 6,
     cacheRead: 0.5,
     cacheWrite: 2,
-    longAbove: 200000,
+    longAbove: 199999,
     longInput: 2,
     longOutput: 2,
+    maxOutput: 128000,
     compaction: false,
+    pdf: false,
     efforts: [AiEffort.low, AiEffort.medium, AiEffort.high, AiEffort.xhigh],
   );
   static const grok43 = AiModel(
@@ -464,11 +473,13 @@ class AiModel {
     output: 2.5,
     cacheRead: 0.2,
     cacheWrite: 1.25,
-    longAbove: 200000,
+    longAbove: 199999,
     longInput: 2,
     longOutput: 2,
+    maxOutput: 128000,
     compaction: false,
-    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+    pdf: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high, AiEffort.xhigh],
   );
 
   // Meta (Meta Model API pricing page, Standard mode: the content is not
