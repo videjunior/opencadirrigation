@@ -22,6 +22,7 @@ import '../../state/controller.dart';
 import '../../theme.dart';
 import '../fields.dart';
 import '../reports_panel.dart' show ReportTableView;
+import 'programme_player_dialogs.dart' show showProgrammePlayer; // 1.7.0 PLY
 import 'terrain_dialogs.dart' show dialogWidth;
 
 Widget _row(List<Widget> children) => Row(
@@ -550,6 +551,18 @@ Future<void> showIrrigationProgrammeDialog(BuildContext context, ProjectControll
                 key: const Key('prog_export_runs'),
                 onPressed: prog.runs.isEmpty ? null : () => saveTextFile('${p.meta.name}_programme_runs.csv', programmeRunsCsv(prog, t: t.call), mime: 'text/csv'),
                 child: Text(t('prog.exportRuns')),
+              ),
+              // 1.7.0 PLY: the programme played on the drawing
+              OutlinedButton.icon(
+                key: const Key('prog_play'),
+                onPressed: c.results == null || prog.runs.isEmpty
+                    ? null
+                    : () {
+                        Navigator.pop(ctx);
+                        showProgrammePlayer(context, c);
+                      },
+                icon: const Icon(Icons.play_circle_outline, size: 16),
+                label: Text(t('ply.play')),
               ),
             ],
           ),

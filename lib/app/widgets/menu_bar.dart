@@ -20,6 +20,7 @@ import 'dialogs/blocks_dialogs.dart';
 import 'dialogs/data_terms_dialog.dart'; // 1.6.0 SIT
 import 'dialogs/field_map_dialog.dart'; // 1.6.0 SIT
 import 'dialogs/agronomy_dialogs.dart';
+import 'dialogs/programme_player_dialogs.dart'; // 1.7.0 PLY
 // 1.6.0 AGB
 import 'dialogs/agb_dialogs.dart';
 import 'dialogs/field_machine_dialogs.dart';
@@ -554,6 +555,7 @@ class AppMenuBar extends StatelessWidget {
                       menuChildren: [
                         item(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_water_balance')),
                         item(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('menu_programme')),
+                        item(t('ply.menu'), () => showProgrammePlayer(context, c), icon: Icons.play_circle_outline, key: const Key('menu_programme_player')),
                         item(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('menu_runoff')),
                         item(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('menu_fert_stages')),
                         item(t('ft.menu'), () => showFieldUniformityDialog(context, c), icon: Icons.grid_on, key: const Key('menu_field_uniformity')),
