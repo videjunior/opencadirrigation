@@ -262,14 +262,14 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       var recovered = 0;
       if (widget.offerRecovery && mounted) recovered = await showRecoveryDialog(context, ws);
       if (!mounted) return;
-      // 1.6.0 UI (SIT-07): once after an update of the web app, what changed;
-      // an address that asks for something (an example, a design, the
-      // tutorial, the assistant, a shared project or files) is not held up by
-      // it: the next plain visit shows it
       // a project shared by link (#p=…): the page took it out of the address
       // before the engine started (lib/app/io/share_inbox.dart), so neither
       // a reload nor a restored tab opens it again
       final link = shareInbox.takeStart();
+      // 1.6.0 UI (SIT-07): once after an update of the web app, what changed;
+      // an address that asks for something (an example, a design, the
+      // tutorial, the assistant, a shared project or files) is not held up by
+      // it: the next plain visit shows it
       final asked = Uri.base.queryParameters;
       final askedFor = link != null || openedWithFiles() || const ['example', 'design', 'tutorial', 'ai', 'share'].any(asked.containsKey);
       if (kIsWeb && !askedFor && shouldShowWhatsNew(c)) await showWhatsNewDialog(context, c, afterUpdate: true);

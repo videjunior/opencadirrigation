@@ -139,6 +139,35 @@ function shareLink(name) {
   return { url: `${base}/#p=${packed}`, name, count: project.entities.length };
 }
 
+/** Answers "Later" when the app offers to recover projects left unsaved (it asks that before it opens a link); done when [opened] shows instead. */
+async function answerRecovery(page, opened, ms = 30000) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click()).catch(() => {});
+    const later = await page
+      .evaluate((opened) => {
+        const nodes = [...document.querySelectorAll('flt-semantics-host *')];
+        const label = (e) => `${e.getAttribute('aria-label') ?? ''} ${e.textContent ?? ''}`;
+        if (nodes.some((e) => label(e).includes(opened))) return 'opened';
+        if (!nodes.some((e) => label(e).includes('Recover project'))) return null;
+        const b = nodes
+          .filter((e) => label(e).trim() === 'Later')
+          .map((e) => e.getBoundingClientRect())
+          .find((r) => r.width > 0 && r.height > 0);
+        return b ? [b.left + b.width / 2, b.top + b.height / 2] : null;
+      }, opened)
+      .catch(() => null);
+    if (later === 'opened') return false;
+    if (later) {
+      await page.mouse.click(later[0], later[1]);
+      await page.waitForTimeout(500);
+      return true;
+    }
+    await page.waitForTimeout(250);
+  }
+  return false;
+}
+
 /** Whether [page] shows the project of [link] open (its name in the tab bar, its entity count in the status bar) and its address no longer carries the project. */
 async function opensShared(page, link, ms = 90000) {
   const end = Date.now() + ms;
@@ -285,9 +314,14 @@ async function smoke(name, browser) {
     await page.waitForTimeout(2000);
     check('the app starts again offline', started);
     await shot('2-offline');
-    // a share link opened offline: the page and its script come from the worker, the project from the address
+    // a share link opened offline: the page and its script come from the worker, the project from the address. The
+    // designed example left unsaved is offered for recovery first (in English: the language saved here); the link
+    // opens once that question is answered
+    await page.evaluate(() => localStorage.setItem('opencadirrigation.lang', 'en'));
     const offline = shareLink('Linked garden offline');
     await page.goto(offline.url);
+    await page.waitForSelector('flutter-view', { timeout: 60000 }).catch(() => {});
+    await answerRecovery(page, offline.name);
     const r = await opensShared(page, offline);
     check('a share link opens its project offline, with the service worker in control', r.open && r.clean, r.address.slice(0, 60));
     await context.setOffline(false);
