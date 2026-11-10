@@ -12,9 +12,9 @@ import 'app/i18n_assets.dart';
 import 'app/io/app_keys.dart';
 import 'app/io/app_update.dart'; // 1.6.0 SIT
 import 'app/io/launch_files.dart'; // 1.6.0 SIT
-import 'app/io/links.dart';
 import 'app/launch_actions.dart'; // 1.6.0 SIT
 import 'app/io/page_lifecycle.dart';
+import 'app/io/share_inbox.dart';
 import 'app/io/unload.dart';
 import 'app/keys/hotkeys.dart';
 import 'app/keys/native_keys.dart';
@@ -43,8 +43,6 @@ import 'app/widgets/dialogs/transient_dialogs.dart';
 import 'app/widgets/dialogs/blocks_dialogs.dart';
 import 'app/widgets/dialogs/selection_dialogs.dart';
 import 'app/widgets/dialogs/welcome_dialog.dart';
-// 1.6.0 FMT
-import 'app/widgets/dialogs/share_confirm_dialog.dart' show confirmSharedProject;
 import 'app/widgets/mobile_shell.dart';
 import 'app/widgets/command_entry.dart';
 import 'app/widgets/layout_mode.dart';
@@ -60,7 +58,6 @@ import 'app/widgets/status_bar.dart';
 import 'app/widgets/tool_palette.dart';
 import 'app/widgets/update_notice.dart'; // 1.6.0 SIT
 import 'core/io/project_export.dart';
-import 'core/io/share_link.dart';
 import 'core/model/entities.dart';
 import 'core/model/geometry.dart';
 import 'app/project_name.dart'; // 1.6.0 UI
@@ -72,6 +69,9 @@ import 'app/widgets/side_dock.dart'; // 1.6.0 UI
 import 'app/widgets/fields.dart' show localizeUi; // 1.6.0 UI
 
 Future<void> main() async {
+  // A project shared by a link (#p=…): taken before anything else, while the address still has it on a page that
+  // did not take it already (the engine rewrites the address as it starts; see lib/app/io/share_inbox.dart)
+  captureShareLinks();
   // The exact build goes to the console at start-up (also shown in the
   // welcome dialog, the status bar and Help → About).
   debugPrint('$appName $appVersionLabel');
@@ -266,24 +266,20 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
       // an address that asks for something (an example, a design, the
       // tutorial, the assistant, a shared project or files) is not held up by
       // it: the next plain visit shows it
+      // a project shared by link (#p=…): the page took it out of the address
+      // before the engine started (lib/app/io/share_inbox.dart), so neither
+      // a reload nor a restored tab opens it again
+      final link = shareInbox.takeStart();
       final asked = Uri.base.queryParameters;
-      final askedFor = Uri.base.fragment.startsWith('p=') || openedWithFiles() || const ['example', 'design', 'tutorial', 'ai', 'share'].any(asked.containsKey);
+      final askedFor = link != null || openedWithFiles() || const ['example', 'design', 'tutorial', 'ai', 'share'].any(asked.containsKey);
       if (kIsWeb && !askedFor && shouldShowWhatsNew(c)) await showWhatsNewDialog(context, c, afterUpdate: true);
       if (!mounted) return;
-      // a project shared by link (#p=…) opens in a tab of its own, as a copy
-      // (the link carries the uid of whoever sent it); the address loses it
-      // first, so a link that cannot be opened is not tried again when the
-      // page is reloaded or the tab restored
-      final fragment = Uri.base.fragment;
-      final linked = fragment.startsWith('p=');
-      if (linked) clearAddressFragment();
-      final read = linked ? projectJsonFromLink('#$fragment') : null;
-      // 1.6.0 FMT: a large project opens only when the user says so (FMT-09)
-      var declined = false;
-      if (read != null && mounted) declined = !await confirmSharedProject(context, c, read);
+      // it opens in a tab of its own, as a copy (the link carries the uid of
+      // whoever sent it); 1.6.0 FMT: a large project only when the user says so (FMT-09)
+      final shared = link == null ? null : await openShareLinkAction(context, ws, link);
       if (!mounted) return;
-      final shared = declined ? null : read;
-      if (linked && !declined && (shared == null || openJsonInTab(ws, shared, asCopy: true) == null)) c.notify(c.t('share.damaged'));
+      // the links pasted into the address bar from now on (and while the app was starting) open as they come
+      shareInbox.listen(_onLaterShareLink);
       final q = Uri.base.queryParameters;
       final example = exampleIdFromName(q['example']) ?? widget.startExample;
       final designLink = q['design'] == '1';
@@ -320,6 +316,14 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
     });
   }
 
+  /// A share link pasted into the address bar of the open app: its project opens in a tab of its own.
+  void _onLaterShareLink(String link) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) openShareLinkAction(context, ws, link);
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
   /// Puts the new project where the start-up screen said (georeferenced
   /// there, on the satellite map) and opens the assistant when the user
   /// chose to design with it, the place named in the request.
@@ -339,6 +343,7 @@ class _AppShellState extends State<AppShell> implements ToolHost, TutorialHost, 
   @override
   void dispose() {
     AppErrors.detach(ws);
+    shareInbox.stopListening(_onLaterShareLink);
     for (final t in _subscribed) {
       t.removeListener(_onController);
     }

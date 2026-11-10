@@ -1220,8 +1220,13 @@ String siteScriptTag({bool absolute = true}) => '<script src="${absolute ? '/' :
 /// that the Content Security Policy allows the site's files alone):
 ///
 /// - on an entry page it starts the app when it is wanted (an app address,
-///   the installed app, a visitor who has used it here before) and opens
-///   it in place from the page's buttons and example links;
+///   a shared project, the installed app, a visitor who has used it here
+///   before) and opens it in place from the page's buttons and example links;
+/// - on an entry page it takes a shared project (`#p=…`) out of the address
+///   before the statistics and the app's engine load (the engine would read
+///   it as a page of the app and drop it from the address) and keeps it for
+///   the app (`window.ociLinks`, lib/app/io/share_inbox.dart); a link pasted
+///   later into the address bar goes the same way, its history entry emptied;
 /// - on every page and in the app it loads Google Analytics with its
 ///   cookies (advertising always denied), and each start of the app is an
 ///   `app_start` event; no notice asks: Cookie settings, at the foot of the
@@ -1263,6 +1268,80 @@ String renderSiteScript() {
   if ($hosts.indexOf(location.hostname) >= 0 && !usedHere()) {
     location.replace($origin + location.pathname + location.search + location.hash);
     return;
+  }
+
+  // ---- a project shared by a link: the whole project after #p= (lib/core/io/share_link.dart)
+  // Taken out of the address before anything else reads it: before the statistics load, so that they never see it,
+  // and before the app's engine starts, which reads #p=… as a page of the app and rewrites the address without it.
+  // The app takes it with window.ociLinks (lib/app/io/share_inbox_web.dart). A link pasted later into the address bar
+  // of this page is a new entry of the history: the link is taken, that entry emptied and left (the page steps back
+  // from it), so the engine and the statistics never see it, and neither Back nor Forward brings it back.
+  var replaceState = history.replaceState.bind(history);
+  var links = [];
+  var takeLink = null;
+  var linked = false;
+  var pasted = null;
+  var leaving = false;
+  function isLink(hash) {
+    return /^#p=./.test(hash || '');
+  }
+  function here() {
+    return location.pathname + location.search;
+  }
+  function arrived() {
+    var link = pasted;
+    pasted = null;
+    if (!link) return;
+    if (takeLink) takeLink(link);
+    else links.push(link);
+    if (landing && !started) start();
+  }
+  function leave() {
+    leaving = true;
+    history.back();
+    // the link arrives once the page is back on the entry it came from (or a second later, whatever happens)
+    setTimeout(arrived, 1000);
+  }
+  function takePasted() {
+    pasted = location.hash;
+    replaceState({ ociEmptied: true }, '', here());
+    leave();
+  }
+  window.ociLinks = function (callback) {
+    takeLink = callback;
+    var pending = links;
+    links = [];
+    pending.forEach(function (l) { callback(l); });
+  };
+  if (landing) {
+    if (isLink(location.hash)) {
+      linked = true;
+      links.push(location.hash);
+      replaceState(history.state, '', here());
+    }
+    // (listening in the capture phase, before the engine and the statistics listen: they never get these events)
+    window.addEventListener('popstate', function (e) {
+      if (leaving) {
+        // the step back from the emptied entry
+        e.stopImmediatePropagation();
+        leaving = false;
+        arrived();
+      } else if (e.state && e.state.ociEmptied) {
+        e.stopImmediatePropagation();
+        leave();
+      } else if (isLink(location.hash)) {
+        e.stopImmediatePropagation();
+        takePasted();
+      }
+    }, true);
+    window.addEventListener('hashchange', function (e) {
+      var to = String(e.newURL || '');
+      var at = to.indexOf('#');
+      if (!isLink(at < 0 ? '' : to.slice(at)) && !isLink(location.hash)) return;
+      e.stopImmediatePropagation();
+      // (a browser that tells the change of the fragment without a popstate)
+      if (isLink(location.hash) && !leaving) takePasted();
+    }, true);
   }
 
   // ---- visit statistics: on every page and in the app, with their cookies, unless declined in Cookie settings
@@ -1343,8 +1422,9 @@ String renderSiteScript() {
   function remember() {
     try { localStorage.setItem(prefix + 'site.app', '1'); } catch (e) {}
   }
-  // The app starts by itself for an app address, the installed app and whoever has used it here before.
+  // The app starts by itself for an app address (a shared project too), the installed app and whoever has used it here before.
   function wanted() {
+    if (linked) return true;
     if (/[?&](example|tutorial|design|ai|lang|source|app|share)=/.test(location.search)) return true;
     if (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui), (display-mode: fullscreen)').matches) return true;
     return usedHere();

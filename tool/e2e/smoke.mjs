@@ -11,7 +11,11 @@
 //   5. a worker of another build (a cache that kept the design_worker.js of
 //      the release before) is noticed by its answer and loaded again past
 //      the cache: the design still runs in a worker of this build;
-//   6. no page errors along the way.
+//   6. a share link (#p=…, the project in the address) opens its project on a
+//      first visit (no landing page first), on a returning visit, pasted into
+//      the address bar of the open app, and offline with the service worker
+//      in control (in 3.), and the address keeps no project;
+//   7. no page errors along the way.
 //
 // Browsers (--browser, comma-separated, default chromium):
 //   chromium  an installed Chrome (--chrome <path> or CHROME_PATH; the usual
@@ -31,6 +35,7 @@
 //   node tool/e2e/smoke.mjs build/web [--browser chromium,webkit,firefox] [--chrome <path>] [--shots <dir>]
 // Exit code 1 when a check fails.
 import { createServer } from 'node:http';
+import { gzipSync } from 'node:zlib';
 import { readFile, stat, mkdir } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { platform } from 'node:os';
@@ -121,8 +126,38 @@ function launch(name) {
 }
 
 const version = JSON.parse(await readFile(join(root, 'version.json'), 'utf8'));
+// the project of the share links: an example of the repository, renamed for each check
+const garden = JSON.parse(await readFile(new URL('../../examples/en/garden.oci.json', import.meta.url), 'utf8'));
 const server = await serve(root);
 const base = `http://127.0.0.1:${server.address().port}`;
+
+/** A share link to the garden example named [name] at this server, as lib/core/io/share_link.dart writes them (gzip, base64url without padding); with its entity count. */
+function shareLink(name) {
+  const project = { ...garden, meta: { ...garden.meta, name } };
+  delete project.results;
+  const packed = gzipSync(Buffer.from(JSON.stringify(project), 'utf8')).toString('base64url').replace(/=+$/, '');
+  return { url: `${base}/#p=${packed}`, name, count: project.entities.length };
+}
+
+/** Whether [page] shows the project of [link] open (its name in the tab bar, its entity count in the status bar) and its address no longer carries the project. */
+async function opensShared(page, link, ms = 90000) {
+  const end = Date.now() + ms;
+  let all = '';
+  while (Date.now() < end) {
+    await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click()).catch(() => {});
+    all = await page
+      .evaluate(() =>
+        [...document.querySelectorAll('flt-semantics-host *')]
+          .map((e) => `${e.getAttribute('aria-label') ?? ''} ${[...e.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join('')}`)
+          .join('\n'),
+      )
+      .catch(() => '');
+    if (all.includes(link.name) && all.includes(`${link.count} ent.`)) break;
+    await page.waitForTimeout(250);
+  }
+  const address = await page.evaluate(() => location.href).catch(() => '');
+  return { open: all.includes(link.name) && all.includes(`${link.count} ent.`), clean: !address.includes('#'), address };
+}
 try {
   for (const name of browsers) {
     console.log(`-- ${name}`);
@@ -250,6 +285,11 @@ async function smoke(name, browser) {
     await page.waitForTimeout(2000);
     check('the app starts again offline', started);
     await shot('2-offline');
+    // a share link opened offline: the page and its script come from the worker, the project from the address
+    const offline = shareLink('Linked garden offline');
+    await page.goto(offline.url);
+    const r = await opensShared(page, offline);
+    check('a share link opens its project offline, with the service worker in control', r.open && r.clean, r.address.slice(0, 60));
     await context.setOffline(false);
   }
   await context.close();
@@ -260,10 +300,71 @@ async function smoke(name, browser) {
   // 5. a worker of another build
   await staleWorker(name, browser, logs, check, skip);
 
-  // 6. no page errors
+  // 6. share links
+  await shareLinks(name, browser, logs, check);
+
+  // 7. no page errors
   // (a connection hint the test's own blocking refused is no error of the app)
   const errors = logs.filter((l) => l.startsWith('[pageerror]') || (l.startsWith('[error]') && !l.includes('ERR_INTERNET_DISCONNECTED') && !l.includes('Failed to load resource') && !l.includes('Failed to preconnect')));
   check('no page errors', errors.length === 0, errors.slice(0, 5).join(' | '));
+}
+
+/**
+ * Share links (#p=…): on a first visit (nothing in this browser: the link asks for the app, no landing page first),
+ * on a returning visit, and pasted into the address bar of the open app (the same page, a new entry of its history).
+ * Each opens its project, and the address keeps no project.
+ */
+async function shareLinks(name, browser, logs, check) {
+  const shot = async (page, file) => {
+    if (!shots) return;
+    await mkdir(shots, { recursive: true });
+    await page.screenshot({ path: join(shots, `${name}-${file}.png`) });
+  };
+  for (const returning of [false, true]) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
+    if (returning) {
+      await context.addInitScript(() => {
+        localStorage.setItem('opencadirrigation.tutorial_done', '1');
+        localStorage.setItem('opencadirrigation.ai.askAtStart', 'off');
+      });
+    }
+    const page = await context.newPage();
+    page.on('console', (m) => logs.push(`[${m.type()}] ${m.text().slice(0, 400)}`));
+    page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
+    page.on('dialog', (d) => d.accept());
+    const visit = returning ? 'a returning visit' : 'a first visit';
+    try {
+      const link = shareLink(returning ? 'Linked garden returning' : 'Linked garden first');
+      await page.goto(link.url);
+      const started = await page
+        .waitForSelector('flutter-view', { timeout: 90000 })
+        .then(() => true)
+        .catch(() => false);
+      check(`a share link starts the app on ${visit}`, started);
+      if (!started) continue;
+      await page.waitForTimeout(2000);
+      const r = await opensShared(page, link);
+      check(`a share link opens its project on ${visit}`, r.open, `${link.name}, ${link.count} ent.`);
+      check(`the address keeps no project on ${visit}`, r.clean, r.address.slice(0, 60));
+      await shot(page, `4-share-${returning ? 'returning' : 'first'}`);
+      if (!returning) continue;
+      // a second link pasted into the address bar of the open app
+      const pasted = shareLink('Linked garden pasted');
+      await page.evaluate((u) => {
+        location.href = u;
+      }, pasted.url);
+      const p = await opensShared(page, pasted, 30000);
+      check('a share link pasted into the address bar of the open app opens its project', p.open && p.clean, p.address.slice(0, 60));
+      // Forward to the entry of the pasted link: it was emptied, the page steps back, the app stays
+      await page.evaluate(() => history.forward());
+      await page.waitForTimeout(1500);
+      const after = await opensShared(page, pasted, 5000);
+      check('Forward after a pasted link brings no project back', after.open && after.clean, after.address.slice(0, 60));
+      await shot(page, '5-share-pasted');
+    } finally {
+      await context.close();
+    }
+  }
 }
 
 /**
