@@ -248,3 +248,7 @@ export 'model/project_compare.dart';
 
 // 1.6.0 SIT+: the credits of the third-party data in a project
 export 'io/data_credits.dart';
+
+// 1.7.0 FCT: the irrigation forecast from the weather forecast of the site
+export 'design/irrigation_forecast.dart';
+export 'io/forecast_online.dart';

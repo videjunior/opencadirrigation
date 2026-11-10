@@ -190,12 +190,12 @@ List<AgentTool> opsFmt(AgentToolbox b) {
     engOp(
       b,
       name: 'data_cache_info',
-      description: 'File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem) and of the climate series (climate): count, size, since when, where (the browser database or a folder), and whether new downloads are kept. Kept downloads make download_terrain and the climate download read from the device instead of the network.',
+      description: 'File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem), of the climate series (climate) and of the weather forecasts (forecast): count, size, since when, where (the browser database or a folder), and whether new downloads are kept. Kept downloads make download_terrain and the climate download read from the device instead of the network.',
       schema: obj({}),
       run: (a, _) async {
         final dc = appDataCache();
         final out = StringBuffer('Keeping downloads: ${dc.enabled ? 'on' : 'off'}; store: ${dc.store.kind}${dc.store.location.isEmpty ? '' : ' (${dc.store.location})'}.');
-        for (final k in const ['dem', 'climate']) {
+        for (final k in const ['dem', 'climate', 'forecast']) {
           final s = await dc.stats(k);
           out.write('\n$k: ${s.count} entries, ${engN(s.bytes / 1e6, 2)} MB${s.oldest == null ? '' : ', since ${s.oldest!.toIso8601String().substring(0, 10)}'}');
         }
@@ -219,9 +219,9 @@ List<AgentTool> opsFmt(AgentToolbox b) {
       b,
       name: 'clear_data_cache',
       effect: ToolEffect.write,
-      description: 'Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate) or all (default). The next download fetches them again. Always confirmed by the user.',
+      description: 'Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate), of the weather forecasts (forecast) or all (default). The next download fetches them again. Always confirmed by the user.',
       schema: obj({
-        'kind': str('What to clear; default all.', ['dem', 'climate', 'all']),
+        'kind': str('What to clear; default all.', ['dem', 'climate', 'forecast', 'all']),
       }),
       confirm: (_) => true,
       summary: (i) => b.t('ai.op.clear_data_cache', {'k': '${i['kind'] ?? 'all'}'}),

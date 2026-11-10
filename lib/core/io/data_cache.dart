@@ -22,7 +22,7 @@ class DataCacheEntry {
   /// When it was downloaded.
   final DateTime date;
 
-  /// `dem` or `climate`.
+  /// `dem`, `climate` or `forecast` (1.7.0 FCT).
   String get kind => key.contains(':') ? key.substring(0, key.indexOf(':')) : '';
 }
 
@@ -136,6 +136,19 @@ class DataCache {
     if (enabled) await _put(key, Uint8List.fromList(body));
     return body;
   };
+
+  /// The text kept under [kind] for [url]; null when none is or keeping is off (1.7.0 FCT: the forecast, whose text
+  /// says until when it stays valid).
+  Future<String?> keptText(String kind, String url) async {
+    if (!enabled) return null;
+    final kept = await _get('$kind:$url');
+    return kept == null ? null : utf8.decode(kept, allowMalformed: true);
+  }
+
+  /// Keeps [text] under [kind] for [url], in place of what was kept (nothing when keeping is off).
+  Future<void> keepText(String kind, String url, String text) async {
+    if (enabled) await _put('$kind:$url', Uint8List.fromList(utf8.encode(text)));
+  }
 
   Future<Uint8List?> _get(String key) async {
     try {

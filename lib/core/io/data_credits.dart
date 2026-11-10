@@ -9,9 +9,10 @@ import '../model/entities.dart';
 import '../model/project.dart';
 import 'climate_online.dart';
 import 'dem_online.dart';
+import 'forecast_online.dart'; // 1.7.0 FCT
 
-/// What kind of data a credit is for.
-enum DataKind { elevation, climate, baseMap, search }
+/// What kind of data a credit is for (1.7.0 FCT: the weather forecast of the irrigation forecast).
+enum DataKind { elevation, climate, baseMap, search, forecast }
 
 /// What the free use of a source allows.
 enum DataUse {
@@ -53,8 +54,8 @@ class DataSource {
   final DataUse use;
 }
 
-/// The sources of elevation, climate and address search (the base maps have terms of their own: View → Base map →
-/// Terms of the maps).
+/// The sources of elevation, climate, address search and weather forecast (the base maps have terms of their own:
+/// View → Base map → Terms of the maps).
 final List<DataSource> dataSources = [
   DataSource('terrainTiles', 'Terrain Tiles (AWS Open Data)', DataKind.elevation, DemSource.terrainTiles.attribution, 'https://registry.opendata.aws/terrain-tiles/', DataUse.any),
   DataSource('openMeteoDem', 'Open-Meteo Elevation API', DataKind.elevation, DemSource.openMeteo.attribution, 'https://open-meteo.com/en/terms', DataUse.nonCommercial),
@@ -62,6 +63,9 @@ final List<DataSource> dataSources = [
   DataSource('nasaPower', 'NASA POWER', DataKind.climate, ClimateSource.nasaPower.attribution, 'https://power.larc.nasa.gov/docs/referencing/', DataUse.any),
   DataSource('openMeteo', 'Open-Meteo Historical Weather API', DataKind.climate, ClimateSource.openMeteo.attribution, 'https://open-meteo.com/en/terms', DataUse.nonCommercial),
   const DataSource('nominatim', 'Nominatim (OpenStreetMap)', DataKind.search, '© OpenStreetMap contributors', 'https://operations.osmfoundation.org/policies/nominatim/', DataUse.light),
+  // 1.7.0 FCT: the weather forecast of Design → Agronomy → Irrigation forecast
+  DataSource('metNorway', 'MET Norway Locationforecast', DataKind.forecast, ForecastSource.metNorway.attribution, ForecastSource.metNorway.termsUrl, DataUse.any),
+  DataSource('openMeteoForecast', 'Open-Meteo Forecast API', DataKind.forecast, ForecastSource.openMeteo.attribution, ForecastSource.openMeteo.termsUrl, DataUse.nonCommercial),
 ];
 
 /// The use the free service of a climate source allows.

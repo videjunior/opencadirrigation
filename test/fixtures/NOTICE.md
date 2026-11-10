@@ -24,3 +24,14 @@ The other fixtures belong to this project (MIT):
   libraries (ezdxf, pyshp, Pillow, tifffile, openpyxl) and LibreDWG;
 - `shaping/`: written by `tool/fonts/make_shaping_fixtures.py` from the fonts
   of `assets/fonts` and the strings of `assets/i18n`.
+
+Recorded weather forecasts in `forecast/` (the tests of the irrigation
+forecast) are data of their providers, kept under their CC BY 4.0 licences:
+
+- `forecast/met_locationforecast.json`: based on data from MET Norway
+  (Locationforecast 2.0 "complete" for -22.7253, -47.6492, fetched on
+  2026-11-10 03:00 UTC), trimmed to the variables the app reads and to the
+  hours before 2026-11-15 06:00 UTC;
+- `forecast/open_meteo_forecast.json`: weather data by Open-Meteo.com (the
+  Forecast API answer for the same point and day, unchanged but for the
+  whitespace).
