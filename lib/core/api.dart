@@ -272,3 +272,7 @@ export 'mcp/json_schema.dart';
 export 'mcp/mcp_server.dart';
 export 'mcp/oci_mcp_tools.dart';
 export 'model/default_layers.dart';
+
+// 1.7.0 FCT: the irrigation forecast from the weather forecast of the site
+export 'design/irrigation_forecast.dart';
+export 'io/forecast_online.dart';

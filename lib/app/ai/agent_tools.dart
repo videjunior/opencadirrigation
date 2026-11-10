@@ -51,6 +51,7 @@ import 'op_parts/prb.dart';
 import 'op_parts/scr.dart'; // 1.7.0 SCR
 import 'op_parts/ply.dart';
 import 'op_parts/dgz.dart';
+import 'op_parts/fct.dart'; // 1.7.0 FCT
 import 'view_snapshot.dart';
 import 'vision_marks.dart' show ChangeTracker;
 
@@ -129,6 +130,7 @@ class AgentToolbox {
     ...opsScr(this), // 1.7.0 SCR
     ...opsPly(this),
     ...opsDgz(this),
+    ...opsFct(this),
   ];
 
   ContextSource source() => ContextSource(

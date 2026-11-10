@@ -31,6 +31,7 @@ import 'dialogs/deliverables_dialogs.dart'; // 1.6.0 PRB
 import 'dialogs/curve_digitiser_dialog.dart'; // 1.7.0 DGZ
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/water_balance_dialogs.dart';
+import 'dialogs/forecast_dialog.dart'; // 1.7.0 FCT
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
@@ -559,6 +560,7 @@ class AppMenuBar extends StatelessWidget {
                         item(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_water_balance')),
                         item(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('menu_programme')),
                         item(t('ply.menu'), () => showProgrammePlayer(context, c), icon: Icons.play_circle_outline, key: const Key('menu_programme_player')),
+                        item(t('fct.menu'), () => showIrrigationForecastDialog(context, c), icon: Icons.cloud_queue, key: const Key('menu_irrigation_forecast')), // 1.7.0 FCT
                         item(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('menu_runoff')),
                         item(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('menu_fert_stages')),
                         item(t('ft.menu'), () => showFieldUniformityDialog(context, c), icon: Icons.grid_on, key: const Key('menu_field_uniformity')),

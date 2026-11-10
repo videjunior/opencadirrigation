@@ -13,7 +13,7 @@ import '../fields.dart';
 import 'terrain_dialogs.dart' show dialogWidth;
 
 /// The kinds of downloads the dialog lists.
-const dataCacheKinds = ['dem', 'climate'];
+const dataCacheKinds = ['dem', 'climate', 'forecast']; // 1.7.0 FCT: the weather forecast
 
 String _size(int bytes) => bytes < 1e6 ? '${fmtUi(bytes / 1e3, 0)} kB' : '${fmtUi(bytes / 1e6, bytes < 1e7 ? 1 : 0)} MB';
 

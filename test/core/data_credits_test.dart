@@ -78,7 +78,7 @@ void main() {
   });
 
   test('every source of the terms has its page and credit; Help → Terms of the data lists them all', () {
-    expect(dataSources.map((s) => s.id).toSet(), {'terrainTiles', 'openMeteoDem', 'openTopoData', 'nasaPower', 'openMeteo', 'nominatim'});
+    expect(dataSources.map((s) => s.id).toSet(), {'terrainTiles', 'openMeteoDem', 'openTopoData', 'nasaPower', 'openMeteo', 'nominatim', 'metNorway', 'openMeteoForecast'});
     for (final s in dataSources) {
       expect(s.url, startsWith('https://'), reason: s.id);
       expect(s.credit, isNotEmpty, reason: s.id);
