@@ -88,4 +88,45 @@ void main() {
     expect(txt, contains('Contact: https://'));
     expect(txt, contains('Canonical: https://opencadirrigation.com/.well-known/security.txt'));
   });
+
+  test('what the documents say the AI assistant reaches are the counts of docs/AI_TOOLS.md', () {
+    // docs/AI_TOOLS.md is generated from the coverage map (widget_ai_coverage_test keeps it current);
+    // the technical study (section 27.6), the manual and the site's reference quote its numbers
+    final table = File('docs/AI_TOOLS.md').readAsStringSync();
+    final counts = RegExp(r'^(\d+) tools, (\d+) operations, (\d+) settings\.$', multiLine: true).firstMatch(table)!;
+    final tools = counts.group(1)!, operations = counts.group(2)!, settings = counts.group(3)!;
+    int row(String source) => int.parse(RegExp('^\\| ${RegExp.escape(source)} \\| (\\d+) \\|', multiLine: true).firstMatch(table)!.group(1)!);
+    final all = RegExp(r'^\| \*\*All\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*0\*\* \|$', multiLine: true).firstMatch(table)!;
+    final total = all.group(1)!, covered = all.group(2)!, notApplicable = all.group(3)!;
+    // (the documents wrap their lines: one space for every run of white space)
+    String text(String path) => File(path).readAsStringSync().replaceAll(RegExp(r'\s+'), ' ');
+
+    final study = text('docs/TECHNICAL_STUDY.md');
+    for (final needle in [
+      '$tools tools are sent with every request',
+      'cover $operations operations that are not sent',
+      'cover $settings settings',
+      '${row('Command actions')} command actions, ${row('Drawing tools')} drawing tools, ${row('Command aliases')} command aliases, ${row('Menu items (desktop and phone)')} items of the desktop and phone menus, '
+          '${row('Dialogs')} dialogs and ${row('Dialog options')} of their options, ${row('Panel fields')} panel fields, ${row('Status bar')} status-bar controls and ${row('View options')} view options, '
+          '$total in all, of which $covered are covered and $notApplicable have no meaning for the model',
+    ]) {
+      expect(study, contains(needle), reason: 'docs/TECHNICAL_STUDY.md, section 27.6');
+    }
+    final estudo = text('docs/PESQUISA.pt-BR.md');
+    for (final needle in [
+      '$tools ferramentas vão com cada requisição',
+      'cobrem $operations operações que não são enviadas',
+      'cobrem $settings configurações',
+      '${row('Command actions')} ações de comando, ${row('Drawing tools')} ferramentas de desenho, ${row('Command aliases')} apelidos de comando, ${row('Menu items (desktop and phone)')} itens dos menus do desktop e do celular, '
+          '${row('Dialogs')} diálogos e ${row('Dialog options')} das suas opções, ${row('Panel fields')} campos de painéis, ${row('Status bar')} controles da barra de status e ${row('View options')} opções de vista, '
+          '$total ao todo, das quais $covered são cobertas e $notApplicable não fazem sentido para o modelo',
+    ]) {
+      expect(estudo, contains(needle), reason: 'docs/PESQUISA.pt-BR.md, seção 27.6');
+    }
+    expect(text('docs/manual/ai-assistant.md'), contains('$tools tools sent with every request, $operations more operations'));
+    expect(text('docs/manual/pt-BR/ai-assistant.md'), contains('$tools ferramentas enviadas em todo pedido, mais $operations operações'));
+    expect(text('docs/manual/architecture.md'), contains('$tools tools and $operations operations'));
+    expect(text('docs/manual/pt-BR/architecture.md'), contains('$tools ferramentas e $operations operações'));
+    expect(text('web/llms-full.txt'), contains('($tools tools, $operations more operations,'), reason: 'tool/site/llms.dart, then dart run tool/gen_site.dart');
+  });
 }

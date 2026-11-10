@@ -3243,10 +3243,10 @@ A compaction is announced in the conversation.
 
 ### 27.6 Tools, operations and coverage
 
-70 tools are sent with every request, in a fixed order, since they are part of the cached prefix
-(their definitions take about 88 000 characters, some 22 000 tokens, cached with the system prompt).
-Each is a thin wrapper over the controller and the engine, so the model works with the program's own
-numbers and every change is an ordinary undo step:
+75 tools are sent with every request, in a fixed order, since they are part of the cached prefix
+(their definitions take about 103 000 characters, some 26 000 tokens, cached with the system
+prompt). Each is a thin wrapper over the controller and the engine, so the model works with the
+program's own numbers and every change is an ordinary undo step:
 
 - **reading**: project summary, items by type, layer or zone, one item with its properties and the
   report rows that name it, parameters, catalogue search, report tables, design messages,
@@ -3260,40 +3260,52 @@ numbers and every change is an ordinary undo step:
   zoning and routing, lateral blocks, field subdivision, tree rings, sports templates, pivot fit),
   vegetation areas (section 20), pump, air valves, energy grouping and wire routes; an export
   (always confirmed);
-- **pictures and the terrain** (section 27.7); **the site**: `find_site` (an address or place name
-  through OpenStreetMap Nominatim: at most eight searches per conversation, at least a second apart,
-  cached, with the attribution its terms ask for), `set_site`, the base map on screen,
-  `download_terrain` and `download_climate` through the program's own downloads, and
-  `import_attachment` for drawings and GIS files the user attached (DXF, DWG, DGN, KML/KMZ,
-  shapefile, GeoJSON, GPX, LandXML, IFC, EPANET, LAS, GeoTIFF; up to 60 MB, never sent to the model);
+- **pictures and the terrain** (section 27.7), with the outline of a field or of every field of an
+  area traced on the imagery and a field photo pinned where it was taken as a review comment; **the
+  site**: `find_site` (an address or place name through OpenStreetMap Nominatim: at most eight
+  searches per conversation, at least a second apart, cached, with the attribution its terms ask
+  for), `set_site`, the base map on screen, `download_terrain` and `download_climate` through the
+  program's own downloads, and `import_attachment` for drawings and GIS files the user attached
+  (DXF, DWG, DGN, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, IFC, EPANET, LAS, GeoTIFF; up to 60 MB,
+  never sent to the model);
 - **the work itself**: a to-do list the user sees above the conversation; `ask_user` (one to four
   questions with two to four options each, answered on cards, where the user may write an answer of
-  their own or skip); `present_plan`; the project's AI notes; the playbooks; the examples (list, read,
-  open in a new tab); and the manual (section 27.8).
+  their own or skip); `present_plan`; the project's AI notes; a long attachment read in parts
+  (`read_attachment`) or searched by a smaller model of the same company (`summarize_attachment`);
+  the playbooks; the examples (list, read, open in a new tab); and the manual (section 27.8).
 
 The descriptions tell the model the conventions: coordinates in metres with x east and y north, item
-properties in SI as in the project file, reports in the project's display units, ids looked up before
-they are used (an item may also be named, and an ambiguous name is an error listing the ids). The
-tools check the values themselves (ranges, points, ids) before anything changes, so a refused call
-leaves the project as it was, with a message the model can act on; a change is refused while a
+properties in SI as in the project file, reports in the project's display units, ids looked up
+before they are used (an item may also be named, and an ambiguous name is an error listing the ids).
+The tools check the values themselves (ranges, points, ids) before anything changes, so a refused
+call leaves the project as it was, with a message the model can act on; a change is refused while a
 design runs.
 
 The rest of the program is reached through three dispatchers. `find_operations` and `run_operation`
-cover 101 operations that are not sent, so the requests stay small (drawing edits such as offset,
-trim, extend, split, array and align, dimensions and revision clouds, blocks, layers, the view, undo,
-redo and the history, tabs, terrain, georeference and images, imports, analyses, calculators,
-machines, sheets and the catalogue), each with its own schema, effect and confirmation. `run_command`
-runs any command alias or action by name: a command that opens a dialog runs the operation behind it,
-without the dialog, and a drawing tool that takes the user's clicks answers with what to call
-instead. `get_setting` and `set_setting` cover 133 settings (the design parameters, units, project
-details, quote, view, snapping, tool defaults and program options), typed and range-checked.
-`docs/AI_TOOLS.md`, generated from the coverage map (`ai_coverage.dart`) by
-`widget_ai_coverage_test.dart`, lists every function a user can reach and what the model uses for it:
-45 command actions, 48 drawing tools, 311 command aliases, 286 items of the desktop and phone menus,
-70 dialogs and 624 of their options, 246 panel fields, 12 status-bar controls and 23 view options,
-1665 in all, of which 1633 are covered and 32 have no meaning for the model (the About box, the
-interface language…), each with its reason; none is missing. The test fails when a new command,
-tool, menu item or dialog has no route, or a route leads nowhere.
+cover 216 operations that are not sent, so the requests stay small, each with its own schema, effect
+and confirmation: drawing edits (offset, trim, extend, split, array, align, stretch, fillet,
+chamfer, break, join, explode), dimensions and revision clouds, blocks and their libraries, layers
+and layer states, the view, undo, redo and the history, tabs, recent projects and versions, terrain,
+georeference, datum and images, imports, the analyses and studies, calculators, machines, pump
+stations and reservoirs, the agronomy of section 21 (daily water balance, irrigation programme,
+field tests, fertigation by stage, the climate risk, the irrigation forecast and the programme
+played on the plan), the power and water analyses, the technical documents and the title block,
+sheets and their preview, the catalogue (with the curves read off a picture, section 24.13), the
+crop rows read from the image (section 20.1), the design scorecard (section 26.1), comparisons and
+review comments. `run_command` runs any command alias or action by name: a command that opens a
+dialog runs the operation behind it, without the dialog, and a drawing tool that takes the user's
+clicks answers with what to call instead. `get_setting` and `set_setting` cover 152 settings (the
+design parameters, units, project details, quote, view, snapping, tool defaults and program
+options), typed and range-checked. `docs/AI_TOOLS.md`, generated from the coverage map
+(`ai_coverage.dart`) by `widget_ai_coverage_test.dart`, lists every function a user can reach and
+what the model uses for it: 57 command actions, 62 drawing tools, 402 command aliases, 375 items of
+the desktop and phone menus, 123 dialogs and 847 of their options, 333 panel fields, 13 status-bar
+controls and 31 view options, 2243 in all, of which 2167 are covered and 76 have no meaning for the
+model (the About box, the interface language…), each with its reason; none is missing. The test
+fails when a new command, tool, menu item or dialog has no route, or a route leads nowhere. These
+are the counts of version 1.7.0: `docs/AI_TOOLS.md` is regenerated with every change of the
+coverage, and `web_docs_test.dart` fails when this section, the manual or the site's reference quote
+other numbers than it.
 
 ### 27.7 Vision
 

@@ -3339,8 +3339,8 @@ Uma compactação é anunciada na conversa.
 
 ### 27.6 Ferramentas, operações e cobertura
 
-70 ferramentas vão com cada requisição, numa ordem fixa, pois fazem parte do prefixo em cache (as suas
-definições ocupam cerca de 88 000 caracteres, uns 22 000 tokens, em cache junto com o prompt de
+75 ferramentas vão com cada requisição, numa ordem fixa, pois fazem parte do prefixo em cache (as suas
+definições ocupam cerca de 103 000 caracteres, uns 26 000 tokens, em cache junto com o prompt de
 sistema). Cada uma é uma camada fina sobre o controlador e o motor, de modo que o modelo trabalha com
 os números do próprio programa e toda alteração é um passo de desfazer comum:
 
@@ -3356,42 +3356,54 @@ os números do próprio programa e toda alteração é um passo de desfazer comu
   seção 19 (traçado de aspersores com zoneamento e roteamento, blocos de laterais, subdivisão de
   áreas, anéis de árvores, modelos esportivos, ajuste de pivô), áreas de vegetação (seção 20), bomba,
   ventosas, agrupamento por energia e rotas de fios; uma exportação (sempre confirmada);
-- **imagens e o terreno** (seção 27.7); **o local**: `find_site` (um endereço ou nome de lugar pelo
-  Nominatim do OpenStreetMap: no máximo oito buscas por conversa, com pelo menos um segundo entre
-  elas, em cache, com a atribuição que os seus termos pedem), `set_site`, o mapa de fundo da tela,
-  `download_terrain` e `download_climate` pelos downloads do próprio programa, e `import_attachment`
-  para desenhos e arquivos de SIG que o usuário anexou (DXF, DWG, DGN, KML/KMZ, shapefile, GeoJSON,
-  GPX, LandXML, IFC, EPANET, LAS, GeoTIFF; até 60 MB, nunca enviados ao modelo);
+- **imagens e o terreno** (seção 27.7), com o contorno de um talhão, ou de todos os talhões de uma
+  área, traçado sobre a imagem, e uma foto de campo fixada onde foi tirada como comentário de revisão;
+  **o local**: `find_site` (um endereço ou nome de lugar pelo Nominatim do OpenStreetMap: no máximo
+  oito buscas por conversa, com pelo menos um segundo entre elas, em cache, com a atribuição que os
+  seus termos pedem), `set_site`, o mapa de fundo da tela, `download_terrain` e `download_climate`
+  pelos downloads do próprio programa, e `import_attachment` para desenhos e arquivos de SIG que o
+  usuário anexou (DXF, DWG, DGN, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, IFC, EPANET, LAS, GeoTIFF;
+  até 60 MB, nunca enviados ao modelo);
 - **o próprio trabalho**: uma lista de tarefas que o usuário vê acima da conversa; `ask_user` (de uma
   a quatro perguntas com duas a quatro opções cada, respondidas em cartões, onde o usuário pode
-  escrever uma resposta própria ou pular); `present_plan`; as notas de IA do projeto; os playbooks; os
-  exemplos (listar, ler, abrir numa aba nova); e o manual (seção 27.8).
+  escrever uma resposta própria ou pular); `present_plan`; as notas de IA do projeto; um anexo longo
+  lido em partes (`read_attachment`) ou pesquisado por um modelo menor da mesma empresa
+  (`summarize_attachment`); os playbooks; os exemplos (listar, ler, abrir numa aba nova); e o manual
+  (seção 27.8).
 
-As descrições informam ao modelo as convenções: coordenadas em metros com x para leste e y para
-norte, propriedades dos itens no SI como no arquivo do projeto, relatórios nas unidades de exibição
-do projeto, ids consultados antes de serem usados (um item também pode ser citado pelo nome, e um nome
+As descrições informam ao modelo as convenções: coordenadas em metros com x para leste e y para norte,
+propriedades dos itens no SI como no arquivo do projeto, relatórios nas unidades de exibição do
+projeto, ids consultados antes de serem usados (um item também pode ser citado pelo nome, e um nome
 ambíguo é um erro que lista os ids). As ferramentas conferem os próprios valores (faixas, pontos, ids)
 antes de qualquer alteração, de modo que uma chamada recusada deixa o projeto como estava, com uma
 mensagem com que o modelo pode agir; uma alteração é recusada enquanto um cálculo roda.
 
-O resto do programa é alcançado por três despachantes. `find_operations` e `run_operation` cobrem 101
-operações que não são enviadas, para que as requisições fiquem pequenas (edições de desenho como
-offset, aparar, estender, dividir, matriz e alinhar, cotas e nuvens de revisão, blocos, camadas, a
-vista, desfazer, refazer e o histórico, abas, terreno, georreferência e imagens, importações,
-análises, calculadoras, máquinas, pranchas e o catálogo), cada uma com o seu esquema, o seu efeito e a
-sua confirmação. `run_command` executa qualquer apelido de comando ou ação pelo nome: um comando que
-abre um diálogo executa a operação por trás dele, sem o diálogo, e uma ferramenta de desenho que
-depende dos cliques do usuário responde com o que chamar em vez dela. `get_setting` e `set_setting`
-cobrem 133 configurações (os parâmetros de projeto, unidades, dados do projeto, orçamento, vista,
-snap, padrões das ferramentas e opções do programa), tipadas e conferidas contra as suas faixas.
-`docs/AI_TOOLS.md`, gerado a partir do mapa de cobertura (`ai_coverage.dart`) por
-`widget_ai_coverage_test.dart`, lista toda função que um usuário alcança e o que o modelo usa para
-ela: 45 ações de comando, 48 ferramentas de desenho, 311 apelidos de comando, 286 itens dos menus do
-desktop e do celular, 70 diálogos e 624 das suas opções, 246 campos de painéis, 12 controles da barra
-de status e 23 opções de vista, 1665 ao todo, das quais 1633 são cobertas e 32 não fazem sentido para
-o modelo (a caixa Sobre, o idioma da interface…), cada uma com o seu motivo; nenhuma falta. O teste
-falha quando um comando, uma ferramenta, um item de menu ou um diálogo novo não tem rota, ou quando uma
-rota não leva a nada.
+O resto do programa é alcançado por três despachantes. `find_operations` e `run_operation` cobrem 216
+operações que não são enviadas, para que as requisições fiquem pequenas, cada uma com o seu esquema, o
+seu efeito e a sua confirmação: edições de desenho (offset, aparar, estender, dividir, matriz,
+alinhar, esticar, concordar, chanfrar, quebrar, unir, explodir), cotas e nuvens de revisão, blocos e
+as suas bibliotecas, camadas e estados de camadas, a vista, desfazer, refazer e o histórico, abas,
+projetos recentes e versões, terreno, georreferência, datum e imagens, importações, as análises e os
+estudos, calculadoras, máquinas, estações de bombeamento e reservatórios, a agronomia da seção 21
+(balanço hídrico diário, programa de rega, testes de campo, fertirrigação por estágio, o risco
+climático, a previsão de irrigação e o programa reproduzido na planta), as análises de energia e de
+água, os documentos técnicos e o carimbo, as pranchas e a sua pré-visualização, o catálogo (com as
+curvas lidas de uma imagem, seção 24.13), as fileiras de plantio lidas na imagem (seção 20.1), o
+boletim de qualidade do projeto (seção 26.1), comparações e comentários de revisão. `run_command`
+executa qualquer apelido de comando ou ação pelo nome: um comando que abre um diálogo executa a
+operação por trás dele, sem o diálogo, e uma ferramenta de desenho que depende dos cliques do usuário
+responde com o que chamar em vez dela. `get_setting` e `set_setting` cobrem 152 configurações (os
+parâmetros de projeto, unidades, dados do projeto, orçamento, vista, snap, padrões das ferramentas e
+opções do programa), tipadas e conferidas contra as suas faixas. `docs/AI_TOOLS.md`, gerado a partir
+do mapa de cobertura (`ai_coverage.dart`) por `widget_ai_coverage_test.dart`, lista toda função que um
+usuário alcança e o que o modelo usa para ela: 57 ações de comando, 62 ferramentas de desenho, 402
+apelidos de comando, 375 itens dos menus do desktop e do celular, 123 diálogos e 847 das suas opções,
+333 campos de painéis, 13 controles da barra de status e 31 opções de vista, 2243 ao todo, das quais
+2167 são cobertas e 76 não fazem sentido para o modelo (a caixa Sobre, o idioma da interface…), cada
+uma com o seu motivo; nenhuma falta. O teste falha quando um comando, uma ferramenta, um item de menu
+ou um diálogo novo não tem rota, ou quando uma rota não leva a nada. Estas são as contagens da versão
+1.7.0: o `docs/AI_TOOLS.md` é regerado a cada mudança da cobertura, e o `web_docs_test.dart` falha
+quando esta seção, o manual ou a referência do site citam números diferentes dos dele.
 
 ### 27.7 Visão
 
