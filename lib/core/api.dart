@@ -28,6 +28,7 @@ export 'ai/claude_api.dart';
 export 'ai/image_prep.dart';
 export 'ai/llm.dart';
 export 'ai/llm_formats.dart';
+export 'ai/meta_api.dart';
 export 'ai/openai_api.dart';
 export 'ai/project_context.dart';
 export 'design/advisor.dart';
