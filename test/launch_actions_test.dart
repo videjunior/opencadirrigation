@@ -63,6 +63,16 @@ void main() {
     expect(ws.tabs, hasLength(3));
     expect(ws.current.project.meta.name, 'Shared orchard');
 
+    // the installed app, open, asked to open a share link (its window is focused, the page does not navigate): the
+    // address of the launch carries the project
+    final other = shareLinkFor(shareableProjectJson(jsonDecode(projectJson('Linked vineyard')) as Map<String, dynamic>));
+    await handleLaunch(context, ws, LaunchRequest(url: other));
+    expect(ws.tabs, hasLength(4));
+    expect(ws.current.project.meta.name, 'Linked vineyard');
+    await handleLaunch(context, ws, const LaunchRequest(url: 'https://opencadirrigation.com/#p=H4sIAAAAdamaged'));
+    expect(ws.tabs, hasLength(4));
+    expect(ws.current.lastMessage, ws.current.t('share.damaged'));
+
     for (final t in ws.tabs) {
       t.autosaveEnabled = false;
     }

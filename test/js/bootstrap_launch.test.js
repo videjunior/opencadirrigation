@@ -43,9 +43,10 @@ const ociShared = win.ociShared;
   // the fonts
   if (process.argv[3]) assert.deepStrictEqual(JSON.parse(JSON.stringify(loaded)), { config: { fontFallbackBaseUrl: process.argv[3] } });
   else assert.deepStrictEqual(JSON.parse(JSON.stringify(loaded)), {});
-  // a launch before the app listens: queued; the first launch keeps its files only
+  // a launch before the app listens: queued; the first launch keeps its files only (its address may still carry the
+  // shared project that site.js took out of the page's address: the app has it already)
   const f1 = new File(['{"format":"opencadirrigation"}'], 'a.oci.json', { type: 'application/json' });
-  consumer({ targetURL: 'https://opencadirrigation.com/?source=pwa', files: [{ getFile: async () => f1 }] });
+  consumer({ targetURL: 'https://opencadirrigation.com/?source=pwa#p=H4sIAAAA', files: [{ getFile: async () => f1 }] });
   await new Promise((r) => setTimeout(r, 10));
   const got = [];
   ociLaunches((item) => got.push(item));
@@ -53,11 +54,16 @@ const ociShared = win.ociShared;
   assert.strictEqual(got[0].url, '');
   assert.strictEqual(got[0].files.length, 1);
   assert.strictEqual(got[0].files[0].name, 'a.oci.json');
-  // a later launch into this window: its address counts
+  // a later launch into this window: its address counts, a shared project in it too
   consumer({ targetURL: 'https://opencadirrigation.com/?ai=1', files: [] });
   await new Promise((r) => setTimeout(r, 10));
   assert.strictEqual(got.length, 2);
   assert.strictEqual(got[1].url, 'https://opencadirrigation.com/?ai=1');
+  consumer({ targetURL: 'https://opencadirrigation.com/?source=pwa#p=H4sIAAAA', files: [] });
+  await new Promise((r) => setTimeout(r, 10));
+  assert.strictEqual(got.length, 3);
+  assert.strictEqual(got[2].url, 'https://opencadirrigation.com/?source=pwa#p=H4sIAAAA');
+  got.pop();
   // a handle that cannot be read: the launch still arrives, without files
   consumer({ targetURL: 'https://opencadirrigation.com/?source=file', files: [{ getFile: async () => { throw new Error('denied'); } }] });
   await new Promise((r) => setTimeout(r, 10));

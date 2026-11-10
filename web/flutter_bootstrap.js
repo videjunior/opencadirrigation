@@ -9,11 +9,16 @@
 // - those shared with it (the share target of its manifest), which web/sw.js
 //   keeps under __oci__/share/<id> and sends the page to ?share=<id>.
 // The launch that opened this page brings the page's own address, which the
-// app reads at start: only its files count.
+// app reads at start: only its files count. (Compared without the fragment:
+// site.js has already taken a shared project, #p=…, out of the address.)
 (function () {
   var queue = [];
   var consumer = null;
-  var initial = location.href;
+  function bare(u) {
+    var at = u.indexOf('#');
+    return at < 0 ? u : u.slice(0, at);
+  }
+  var initial = bare(location.href);
   var seen = false;
   function deliver(item) {
     if (consumer) consumer(item);
@@ -22,7 +27,7 @@
   if (window.launchQueue && typeof window.launchQueue.setConsumer === 'function') {
     window.launchQueue.setConsumer(function (params) {
       var url = (params && params.targetURL) || '';
-      var first = !seen && url === initial;
+      var first = !seen && bare(url) === initial;
       seen = true;
       var handles = (params && params.files) || [];
       Promise.all(Array.prototype.map.call(handles, function (h) { return h.getFile(); })).then(

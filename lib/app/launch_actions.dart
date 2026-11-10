@@ -2,7 +2,7 @@
 /// opens in a tab of its own, a PDF plan goes through its import dialog, a drawing, a survey or a picture is imported
 /// into a new project tab (the blank tab of a fresh start is used), an OpenCADIrrigation link in a shared text opens
 /// its project, and the launch of the window already open does what its address asks (an example, the sized sample,
-/// the tutorial, the AI assistant), as the same address does when it opens the app.
+/// the tutorial, the AI assistant, a shared project), as the same address does when it opens the app.
 library;
 
 import 'dart:convert';
@@ -15,10 +15,12 @@ import '../core/model/project.dart';
 import 'actions.dart';
 import 'examples.dart';
 import 'io/launch_files.dart';
+import 'state/controller.dart';
 import 'state/workspace.dart';
 import 'widgets/dialogs/ai_assistant_dialog.dart';
 import 'widgets/dialogs/import_progress_dialog.dart';
 import 'widgets/dialogs/pdf_import_dialog.dart';
+import 'widgets/dialogs/share_confirm_dialog.dart' show confirmSharedProject;
 
 /// How a launched file opens.
 enum LaunchKind { project, pdf, import }
@@ -51,15 +53,13 @@ Future<void> handleLaunch(BuildContext context, Workspace ws, LaunchRequest r, {
     if (!context.mounted) return;
     if (await openLaunchedFile(context, ws, f)) opened++;
   }
-  // a shared text: an OpenCADIrrigation link carries its project in the address
-  final link = RegExp(r'#p=[^\s]+').firstMatch(r.text);
+  // a shared text, or the address of a launch into the window already open (a link the installed app was asked to
+  // open): an OpenCADIrrigation link carries its project in the address
+  final linkPattern = RegExp(r'#p=[^\s]+');
+  final link = linkPattern.firstMatch(r.text)?.group(0) ?? linkPattern.firstMatch(r.url)?.group(0);
   if (link != null) {
-    final json = projectJsonFromLink(link.group(0)!);
-    if (json == null || openJsonInTab(ws, json, asCopy: true) == null) {
-      ws.current.notify(ws.current.t('share.damaged'));
-    } else {
-      opened++;
-    }
+    if (!context.mounted) return;
+    if (await openShareLinkAction(context, ws, link) != null) opened++;
   }
   if (r.shared && opened == 0 && r.files.isEmpty && link == null) ws.current.notify(ws.current.t('launch.nothing'));
   if (r.url.isEmpty) return;
@@ -78,6 +78,22 @@ Future<void> handleLaunch(BuildContext context, Workspace ws, LaunchRequest r, {
     if (!context.mounted) return;
     showAiAssistantDialog(context, ws.current);
   }
+}
+
+/// Opens the project a share link carries ([link]: the link, or its fragment `#p=…`) in a tab of its own (the blank
+/// tab of a fresh start is used), as a copy, since the link carries the uid of whoever sent it; a large one only when
+/// the user says so (FMT-09). A link that cannot be read is told. The tab it opened in, or null (declined, damaged).
+/// The start-up opens the link that opened the page with it, the shell those pasted later into the address bar.
+Future<ProjectController?> openShareLinkAction(BuildContext context, Workspace ws, String link) async {
+  final json = projectJsonFromLink(link);
+  if (json == null) {
+    ws.current.notify(ws.current.t('share.damaged'));
+    return null;
+  }
+  if (!await confirmSharedProject(context, ws.current, json) || !context.mounted) return null;
+  final opened = openJsonInTab(ws, json, asCopy: true);
+  if (opened == null) ws.current.notify(ws.current.t('share.damaged'));
+  return opened;
 }
 
 /// Opens one launched file: a project in a tab of its own, a PDF plan through its import dialog, anything else
