@@ -492,8 +492,8 @@ group guarantees:</p>
 <td>One self-crossing detector and one offset, the longest lateral, the item-by-item review of Fix and Optimise, tracing on imagery against synthetic tiles; the costs by step, Apply the rest of this task, the effort by stage, the conversations of a project; the unnamed tab, the command palette, the manual and its chapters, What's new, the report of a problem</td>
 </tr>
 <tr>
-<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>share_inbox_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code></td>
-<td>The user guide pages (anchors, links, text, metadata, sitemap), the fonts served by the site, the service worker and bootstrap scripts and the share links of <code>site.js</code> in Node, opening files and share links with the installed app and in the open app, the credits of third-party data, the map kept for the field, the translation review files, the links and headings of the documentation</td>
+<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>share_inbox_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code>, <code>test_failures_test.dart</code></td>
+<td>The user guide pages (anchors, links, text, metadata, sitemap), the fonts served by the site, the service worker and bootstrap scripts and the share links of <code>site.js</code> in Node, opening files and share links with the installed app and in the open app, the credits of third-party data, the map kept for the field, the translation review files, the links and headings of the documentation, the failed tests of a run as CI shows them</td>
 </tr>
 <tr>
 <td><code>core/ai_gemini_test.dart</code>, <code>core/ai_xai_test.dart</code>, <code>core/ai_meta_test.dart</code>, <code>core/ai_openrouter_test.dart</code>, <code>core/ai_openrouter_catalog_test.dart</code>, <code>core/ai_providers_test.dart</code></td>
@@ -541,7 +541,10 @@ generators without differences, the suite in four slices with coverage floors by
 timing tests, tagged <code>perf</code>, apart with a slack), the browser tests in Chrome, a production build
 checked by <code>tool/release.dart verify-build</code> with the end-to-end smoke test, and a formats job with
 pinned Python packages and LibreDWG; a matrix job runs the same smoke test in WebKit and Firefox on
-that build. Dependabot proposes updates of the packages and of the actions.</li>
+that build. A test that fails there shows on the page of the run, with what it said, as an
+annotation and in the summary of the job (<code>tool/test_failures.dart</code> reads the JSON report of the
+test runner), so the cause can be read without opening the log. Dependabot proposes updates of the
+packages and of the actions.</li>
 <li><strong>End-to-end smoke test</strong> (<code>tool/e2e/smoke.mjs</code>, pinned <code>playwright-core</code>): on a production build
 (<code>sh tool/build_web.sh</code>), the app opens an example and designs it in the Web Worker, prints the
 version of the build, installs its service worker and starts again offline, sends a message of the

@@ -5,6 +5,8 @@
 # Jobs:
 #   checks    analysis, formatting, the worker bundle and the generated files
 #   test      the suite in 4 shards with coverage (speed tests left out)
+#             (a test that fails shows on the page of the run, with what it
+#             said: tool/test_failures.dart, also in perf and browser)
 #   perf      the speed tests (tag perf), one file at a time, with room
 #   coverage  the shards' coverage merged, by folder, with floors
 #   browser   the browser-only code (test/web) in Chrome
@@ -81,6 +83,10 @@ jobs:
         run: >-
           flutter test --exclude-tags perf --total-shards 4 --shard-index ${{ matrix.shard }}
           --coverage --coverage-path coverage/lcov-${{ matrix.shard }}.info
+          --file-reporter json:build/test-report.json
+      - name: The tests that did not pass, as annotations and in the summary
+        if: failure()
+        run: dart run tool/test_failures.dart build/test-report.json --summary "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: lcov-${{ matrix.shard }}
@@ -105,7 +111,10 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: flutter test --tags perf
         run: |
-          flutter test --tags perf --concurrency 1 $(grep -rl 'tags: perfTag' test)
+          flutter test --tags perf --concurrency 1 --file-reporter json:build/test-report.json $(grep -rl 'tags: perfTag' test)
+      - name: The tests that did not pass, as annotations and in the summary
+        if: failure()
+        run: dart run tool/test_failures.dart build/test-report.json --summary "$GITHUB_STEP_SUMMARY"
 
   coverage:
     name: Coverage by folder
@@ -160,7 +169,10 @@ jobs:
       - name: flutter test --platform chrome test/web
         env:
           CHROME_EXECUTABLE: /usr/bin/google-chrome
-        run: flutter test --platform chrome test/web
+        run: flutter test --platform chrome --file-reporter json:build/test-report.json test/web
+      - name: The tests that did not pass, as annotations and in the summary
+        if: failure()
+        run: dart run tool/test_failures.dart build/test-report.json --summary "$GITHUB_STEP_SUMMARY"
 
   web:
     name: Web build and end-to-end smoke test

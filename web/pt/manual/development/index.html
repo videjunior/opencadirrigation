@@ -494,8 +494,8 @@ cada grupo garante:</p>
 <td>Um detector de autointerseção e um deslocamento só, o comprimento máximo da lateral, a revisão item a item do Corrigir e do Otimizar, o contorno pela imagem contra blocos sintéticos; os custos por passo, Aplicar o resto da tarefa, o esforço por etapa, as conversas de um projeto; a aba sem nome, a paleta de comandos, o manual e os seus capítulos, as Novidades, o relato de problema</td>
 </tr>
 <tr>
-<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>share_inbox_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code></td>
-<td>As páginas do guia do usuário (âncoras, links, texto, metadados, sitemap), as fontes servidas pelo site, os scripts do service worker e do bootstrap e os links de compartilhamento do <code>site.js</code> no Node, abrir arquivos e links de compartilhamento com o app instalado e no app aberto, os créditos dos dados de terceiros, o mapa guardado para o campo, os arquivos da revisão de traduções, os links e títulos da documentação</td>
+<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>share_inbox_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code>, <code>test_failures_test.dart</code></td>
+<td>As páginas do guia do usuário (âncoras, links, texto, metadados, sitemap), as fontes servidas pelo site, os scripts do service worker e do bootstrap e os links de compartilhamento do <code>site.js</code> no Node, abrir arquivos e links de compartilhamento com o app instalado e no app aberto, os créditos dos dados de terceiros, o mapa guardado para o campo, os arquivos da revisão de traduções, os links e títulos da documentação, os testes que falharam numa execução como a CI os mostra</td>
 </tr>
 <tr>
 <td><code>core/ai_gemini_test.dart</code>, <code>core/ai_xai_test.dart</code>, <code>core/ai_meta_test.dart</code>, <code>core/ai_openrouter_test.dart</code>, <code>core/ai_openrouter_catalog_test.dart</code>, <code>core/ai_providers_test.dart</code></td>
@@ -543,7 +543,10 @@ sem diferença, a suíte em quatro fatias com pisos de cobertura por pasta (os t
 marcados <code>perf</code>, à parte com folga), os testes de navegador no Chrome, um build de produção conferido
 por <code>tool/release.dart verify-build</code> com o teste de fumaça de ponta a ponta, e um trabalho de formatos
 com pacotes de Python fixados e o LibreDWG; um trabalho em matriz roda a mesma fumaça no WebKit e no
-Firefox sobre esse build. O Dependabot propõe atualizações dos pacotes e das ações.</li>
+Firefox sobre esse build. Um teste que falha ali aparece na página da execução, com o que ele disse,
+como anotação e no resumo do trabalho (<code>tool/test_failures.dart</code> lê o relatório JSON do executor de
+testes), e a causa se lê sem abrir o registro. O Dependabot propõe atualizações dos pacotes e das
+ações.</li>
 <li><strong>Teste de fumaça de ponta a ponta</strong> (<code>tool/e2e/smoke.mjs</code>, <code>playwright-core</code> fixado): num build de
 produção (<code>sh tool/build_web.sh</code>), o app abre um exemplo e o calcula no Web Worker, mostra a versão
 do build, instala o seu service worker e abre de novo sem rede, envia uma mensagem do assistente de
