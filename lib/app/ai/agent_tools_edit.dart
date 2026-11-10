@@ -14,6 +14,7 @@ import '../../core/hydraulics/friction.dart';
 import '../../core/hydraulics/minor_losses.dart';
 import '../../core/hydraulics/water_hammer.dart' show PipeMaterial;
 import '../../core/model/catalog.dart';
+import '../../core/model/default_layers.dart';
 import '../../core/model/entities.dart';
 import '../../core/model/geometry.dart';
 import '../../core/model/label_rules.dart';
@@ -148,34 +149,9 @@ final String entityLegend =
 - furrows {pts (head line, first point the inlet on the mainline), right (furrows to the right), len (furrow length m), sp (spacing m), slope (m/m), n (Manning), fam (NRCS intake family in/h), depth (mm to infiltrate), q (L/s per furrow; 0 = best), set (furrows at once; 0 = all), ditch (head ditch instead of gated pipe), mm (pipe bore), c (Hazen-Williams C), cost (pipe per m), gcost (gate)}: a furrow set fed by a gated pipe, a demand on the mainline at its inlet.
 read_manual "entities" (item: a type) has every key with its unit, default and values; read_manual "drawing" the connection rules.''';
 
-/// The layer a new item of [e]'s type goes to when none is given.
-String defaultLayerOf(Entity e) => switch (e) {
-  PipeEntity p => p.scope == HydraulicScope.zone ? Layers.zonePipes : Layers.mainlinePipes,
-  SpraylineEntity _ => Layers.spraylines,
-  TapeEntity _ => Layers.tapes,
-  OutletEntity _ => Layers.outlets,
-  ControlValveEntity _ => Layers.controlValves,
-  WaterSupplyEntity _ => Layers.waterSupply,
-  PumpEntity _ => Layers.pumps,
-  MiscHydraulicEntity _ => Layers.misc,
-  JunctionEntity _ => Layers.junctions,
-  PivotEntity _ => Layers.pivots,
-  // 1.6.0 AGB
-  TravellerEntity _ => Layers.travellers,
-  FurrowEntity _ => Layers.surface,
-  AreaEntity _ => Layers.areas,
-  ControllerEntity _ => Layers.controllers,
-  WireEntity _ => Layers.wires,
-  ContourEntity _ => Layers.contours,
-  SpotHeightEntity _ => Layers.spotHeights,
-  BreaklineEntity _ => Layers.breaklines,
-  TextEntity _ => Layers.text,
-  LeaderEntity _ => Layers.dimensions,
-  SymbolEntity _ => Layers.symbols,
-  HatchEntity _ => Layers.hatches,
-  CommentEntity _ => Layers.comments,
-  _ => Layers.drawing,
-};
+/// The layer a new item of [e]'s type goes to when none is given (1.7.0:
+/// shared with the MCP server, lib/core/model/default_layers.dart).
+String defaultLayerOf(Entity e) => defaultLayerFor(e);
 
 /// [raw] with its points checked and turned into number lists.
 Map<String, dynamic> _normalised(Map<String, dynamic> raw, String where) {

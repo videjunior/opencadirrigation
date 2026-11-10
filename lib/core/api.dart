@@ -266,3 +266,9 @@ export 'io/scorecard_chart.dart';
 export 'design/curve_digitiser.dart';
 export 'design/curve_fits.dart';
 export 'design/curve_trace.dart';
+
+// 1.7.0 MCP: the Model Context Protocol server and its tools (docs/MCP.md)
+export 'mcp/json_schema.dart';
+export 'mcp/mcp_server.dart';
+export 'mcp/oci_mcp_tools.dart';
+export 'model/default_layers.dart';

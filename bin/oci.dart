@@ -10,6 +10,7 @@
 ///   dart run bin/oci.dart import survey.dxf field.kml --out farm.oci.json
 ///   dart run bin/oci.dart new --out lawn.oci.json --boundary lawn.kml --layout --currency USD --hz 60
 ///   dart run bin/oci.dart design projects/ --out-dir designed/
+///   dart run bin/oci.dart mcp --root ~/irrigation        (the MCP server, docs/MCP.md)
 ///
 /// Besides lib/core it reads two plain-Dart files of lib/app that the design
 /// worker also compiles without Flutter: the string table (i18n.dart) and the
@@ -35,6 +36,8 @@ import 'package:opencadirrigation/core/io/geo.dart';
 import 'package:opencadirrigation/core/io/pdf_sheet.dart';
 import 'package:opencadirrigation/core/io/project_export.dart';
 import 'package:opencadirrigation/core/io/xlsx.dart';
+import 'package:opencadirrigation/core/mcp/mcp_server.dart';
+import 'package:opencadirrigation/core/mcp/oci_mcp_tools.dart';
 import 'package:opencadirrigation/core/model/area_holes.dart' show fitsAsHole, holesOf;
 import 'package:opencadirrigation/core/model/catalog.dart';
 import 'package:opencadirrigation/core/model/catalog_packs.dart';
@@ -47,6 +50,8 @@ import 'package:opencadirrigation/core/model/project.dart';
 import 'package:opencadirrigation/core/model/read_report.dart';
 import 'package:opencadirrigation/core/model/schema.dart';
 import 'package:opencadirrigation/core/units.dart';
+
+import 'src/oci_mcp_io.dart';
 
 Future<void> main(List<String> args) async {
   exitCode = await runOci(args);
@@ -69,9 +74,9 @@ abstract final class OciExit {
   static const failed = 4;
 }
 
-const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom', 'schema', 'import', 'new', 'set', 'pack'];
-const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper', 'out-dir', 'into', 'units', 'currency', 'hz', 'name', 'boundary', 'outlet'};
-const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version', 'no-results', 'layout'};
+const _commands = ['design', 'analyze', 'check', 'validate', 'export', 'bom', 'schema', 'import', 'new', 'set', 'pack', 'mcp'];
+const _valueOptions = {'out', 'report', 'results', 'lang', 'format', 'georef', 'paper', 'out-dir', 'into', 'units', 'currency', 'hz', 'name', 'boundary', 'outlet', 'root'};
+const _flagOptions = {'design', 'analyze', 'portrait', 'json', 'help', 'version', 'no-results', 'layout', 'read-only'};
 
 /// The commands that run on projects and take several of them (files or
 /// folders of `.oci.json`) in one go.
@@ -103,6 +108,11 @@ Commands:
             without --out the file is rewritten; the results are left out).
   pack add  Add catalogue packs: pack add <project> <pack.oci.cat or bundled id>… [--out]
             (ids kept, prices converted to the project's currency).
+  mcp       Serve the engine to AI applications over the Model Context Protocol:
+            mcp --root <folder> [--read-only] [--lang]. JSON-RPC 2.0 messages on stdin
+            and stdout, one per line (protocol 2026-07-28, 2025-11-25 and 2025-06-18),
+            logs on stderr; every file stays inside --root, nothing goes online.
+            See docs/MCP.md.
 
 design, analyze, check, validate, export and bom take several projects (or folders of
 .oci.json files) in one run; --out-dir tells where their files go.
@@ -137,6 +147,9 @@ Options:
   --boundary <file>   new: the drawing whose largest closed outline is the area.
   --layout            new: lay sprinkler heads over the area.
   --outlet <id>       new --layout: the sprinkler family (default the first enabled one).
+  --root <folder>     mcp: the folder the AI application may read and write (nothing
+                      outside it).
+  --read-only         mcp: only the tools that read, analyse and report (none writes).
   -h, --help          This help.
   --version           The version of the engine.
 
@@ -249,6 +262,8 @@ Future<int> runOci(List<String> args, {StringSink? out, StringSink? err, String?
         return await session.setProject(a);
       case 'pack':
         return await session.pack(a);
+      case 'mcp':
+        return await _mcp(a, o, e, root, lang);
     }
     final inputs = session.projectFiles(a.positional);
     if (inputs.length == 1 && !a.values.containsKey('out-dir')) return await session.runOn(command, inputs.single, a);
@@ -383,7 +398,7 @@ class _Session {
     }
     String ext(String v) => v.contains('.') ? v.split('.').last : v;
     final formatName = a.values['format']?.toLowerCase();
-    final format = formatName == null ? null : DrawingFormat.values.where((f) => f.name == formatName).firstOrNull;
+    final format = formatName == null ? null : DrawingFormat.values.where((f) => f.name.toLowerCase() == formatName).firstOrNull;
     var worst = OciExit.ok, ok = 0, problems = 0, failed = 0;
     for (final path in inputs) {
       final stem = File(_stem(path)).uri.pathSegments.last;
@@ -765,7 +780,7 @@ class _Session {
   Future<int> export(Project project, _Args a, String input) async {
     final name = a.values['format'];
     if (name == null) throw _UsageError('export needs --format (${DrawingFormat.values.map((f) => f.name).join(', ')})');
-    final format = DrawingFormat.values.where((f) => f.name == name.toLowerCase()).firstOrNull;
+    final format = DrawingFormat.values.where((f) => f.name.toLowerCase() == name.toLowerCase()).firstOrNull;
     if (format == null) throw _UsageError('unknown format $name (${DrawingFormat.values.map((f) => f.name).join(', ')})');
     if (project.entities.isEmpty) throw _Failure(OciExit.failed, t('msg.nothingToExport'));
     final georef = a.values['georef'];
@@ -841,10 +856,18 @@ class _Session {
   }
 
   void _summary(Project project, DesignResults r, String what) {
+    out.writeln('$appName $appVersionFull · $what · ${project.meta.name}');
+    out.write(reportTablesToText(summaryTables(project, r)));
+    out.writeln('${t('rep.total')} (${project.params.currency}): ${fmt(r.capitalCost, 2)} · ${t('reports.bom')}: ${r.bom.length}');
+    _printAdvice(project, buildAdvice(project, results: r));
+  }
+
+  /// The zones, system flows and pivots of a design, as [_summary] prints
+  /// them (and the MCP server gives them).
+  List<ReportTable> summaryTables(Project project, DesignResults r) {
     final u = project.params.units;
     final p = u.pressureLabel;
-    out.writeln('$appName $appVersionFull · $what · ${project.meta.name}');
-    final tables = <ReportTable>[
+    return <ReportTable>[
       if (r.zones.isNotEmpty)
         ReportTable(
           key: 'zones',
@@ -888,9 +911,6 @@ class _Session {
           ],
         ),
     ];
-    out.write(reportTablesToText(tables));
-    out.writeln('${t('rep.total')} (${project.params.currency}): ${fmt(r.capitalCost, 2)} · ${t('reports.bom')}: ${r.bom.length}');
-    _printAdvice(project, buildAdvice(project, results: r));
   }
 
   ReportFormat _reportFormat(String path) {
@@ -973,4 +993,174 @@ class _Session {
     final s = input.replaceAll(RegExp(r'\.oci\.json$|\.json$', caseSensitive: false), '');
     return s;
   }
+}
+
+// ------------------------------------------------------------------ mcp (1.7.0)
+
+/// mcp: the Model Context Protocol server over stdin and [out] (docs/MCP.md).
+Future<int> _mcp(_Args a, StringSink out, StringSink err, String? home, String lang) async {
+  if (a.positional.isNotEmpty) throw _UsageError('mcp takes no files: --root <folder> is where they are');
+  final folder = a.values['root'];
+  if (folder == null) throw _UsageError('mcp needs --root <folder>: the folder the AI application may read and write');
+  final McpRootDirectory root;
+  try {
+    root = McpRootDirectory.open(folder);
+  } on FileSystemException catch (x) {
+    throw _Failure(OciExit.io, '$folder: ${x.message}');
+  }
+  final readOnly = a.flags.contains('read-only');
+  err.writeln(
+    'oci mcp: $appName $appVersionFull serving ${root.path}${readOnly ? ' (read-only)' : ''}, protocol ${mcpSupportedVersions.join(', ')}, language $lang; '
+    'one JSON-RPC message per line on stdin, closing it stops the server',
+  );
+  await serveMcpStdio(
+    (send, log) => ociMcpServer(root: root, home: home, lang: lang, readOnly: readOnly, send: send, log: log),
+    output: out,
+    errors: err,
+  );
+  return OciExit.ok;
+}
+
+/// The MCP server of the command line over [root]: the tools of
+/// lib/core/mcp/oci_mcp_tools.dart on the command line's own functions.
+/// [send] receives each outgoing message; the tests drive it line by line.
+McpServer ociMcpServer({
+  required McpRootDirectory root,
+  required void Function(String message) send,
+  String? home,
+  String lang = 'en',
+  bool readOnly = false,
+  McpExecutor? executor,
+  void Function(String line)? log,
+  Duration timeLimit = const Duration(minutes: 15),
+}) {
+  final tools = OciMcpTools(_OciMcpHost(root, home ?? _findHome(), lang), readOnly: readOnly);
+  return McpServer(
+    info: McpImplementation(
+      name: 'opencadirrigation',
+      title: appName,
+      version: appVersionFull,
+      description: 'Pressurised irrigation design on this computer: hydraulics, pipe sizing, bill of materials, drawings and reports.',
+      websiteUrl: 'https://opencadirrigation.com',
+    ),
+    tools: tools.tools,
+    resources: tools.resources,
+    prompts: tools.prompts,
+    instructions: tools.instructions,
+    executor: executor ?? IsolateExecutor(log: log),
+    timeLimit: timeLimit,
+    send: send,
+    log: log,
+  );
+}
+
+/// What the MCP tools reach: [root] for the files, the command line's
+/// session for the rest. Plain data, so that a tool call can take it to an
+/// isolate of its own.
+final class _OciMcpHost implements OciMcpHost {
+  _OciMcpHost(this.root, this.home, this.lang);
+  final McpRootDirectory root;
+  final String? home;
+  @override
+  final String lang;
+
+  _Session _fresh() => _Session(StringBuffer(), StringBuffer(), home, lang);
+  _Session? _s;
+  _Session get _session => _s ??= _fresh();
+
+  @override
+  List<String> get languages => supportedLanguages;
+
+  @override
+  String get rootPath => root.path;
+
+  @override
+  Future<void> prepare() => _session.loadLanguage();
+
+  @override
+  McpFile resolve(String path) => root.resolve(path);
+
+  @override
+  List<McpFile> list(McpFile folder, {required bool recursive, required int limit}) => root.list(folder, recursive: recursive, limit: limit);
+
+  @override
+  Uint8List read(McpFile file, {required int maxBytes}) => root.read(file, maxBytes: maxBytes);
+
+  @override
+  void write(McpFile file, List<int> bytes) => root.write(file, bytes);
+
+  @override
+  McpFile makeFolders(McpFile file) => root.makeFolders(file);
+
+  @override
+  String? assetPath(String relative) {
+    final h = home;
+    if (h == null || relative.split('/').contains('..')) return null;
+    final f = File('$h/$relative');
+    return f.existsSync() ? f.path : null;
+  }
+
+  @override
+  Uint8List? asset(String relative) {
+    final p = assetPath(relative);
+    return p == null ? null : File(p).readAsBytesSync();
+  }
+
+  @override
+  Future<OciRun> run(List<String> args) async {
+    final o = StringBuffer(), e = StringBuffer();
+    final code = await runOci([...args, '--lang', lang], out: o, err: e, home: home);
+    return OciRun(code, '$o', '$e');
+  }
+
+  @override
+  (Project, List<String>) readProject(McpFile file) {
+    final s = _fresh();
+    try {
+      final p = s.readProject(file.absolute);
+      return (p, [for (final n in s.report.notes) s._note(n)]);
+    } on _Failure catch (x) {
+      throw McpToolError(x.message);
+    }
+  }
+
+  @override
+  List<String> settings(Project project, {String? units, String? currency, String? hz, String? name, String? georef}) {
+    final s = _fresh();
+    final a = _Args();
+    for (final (k, v) in [('units', units), ('currency', currency), ('hz', hz), ('name', name), ('georef', georef)]) {
+      if (v != null) a.values[k] = v;
+    }
+    try {
+      s._settings(project, a);
+    } on _UsageError catch (x) {
+      throw McpToolError(x.message.replaceAll('--', ''));
+    }
+    return [for (final l in const LineSplitter().convert('${s.err}')) l.replaceFirst('oci: ', '')];
+  }
+
+  @override
+  DesignResults? design(Project project, {required bool size}) {
+    try {
+      return _session.run(project, size: size);
+    } on _Failure catch (x) {
+      // the message, not the whole stack
+      throw McpToolError(const LineSplitter().convert(x.message).take(3).join('\n'));
+    }
+  }
+
+  @override
+  ProjectExporter exporter(Project project, DesignResults? results) => _session.exporter(project, results);
+
+  @override
+  String adviceText(Project project, Advice advice) => _session.adviceText(project, advice);
+
+  @override
+  List<ReportTable> summaryTables(Project project, DesignResults results) => _session.summaryTables(project, results);
+
+  @override
+  String text(String key, [Map<String, String>? args]) => _session.t(key, args);
+
+  @override
+  bool hasText(String key) => _session.t.has(key);
 }
