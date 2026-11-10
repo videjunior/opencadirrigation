@@ -207,6 +207,8 @@ class _PlayerPanelState extends State<_PlayerPanel> with SingleTickerProviderSta
     if (_covered) return const Positioned(left: 0, bottom: 0, child: SizedBox.shrink());
     final pb = pl.playback;
     final phone = shellLayoutOf(context) == ShellLayout.phone;
+    // (on a phone the hint of the tool sits in the corner of the clock panel: the panel goes below it)
+    pl.panelTop = phone ? 58 : 12;
     final pad = MediaQuery.paddingOf(context);
     final body = pb == null ? _staleBody() : _body(context, pb, phone);
     return Positioned(

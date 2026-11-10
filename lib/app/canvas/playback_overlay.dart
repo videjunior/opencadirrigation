@@ -30,6 +30,11 @@ import 'camera.dart';
 /// whether it shows on the drawing (the canvas repaints when it changes).
 class ProgrammePlayer extends ChangeNotifier {
   ProgrammePlayback? _playback;
+
+  /// Where the clock panel starts, from the top of the drawing: lower on a
+  /// phone, whose hint of the tool sits in that corner (set by the player's
+  /// panel, which knows the layout).
+  double panelTop = 12;
   double _hour = 0;
   PlaybackFrame? _frame;
   bool _shown = false;
@@ -101,7 +106,10 @@ class PlaybackPaintView {
 /// What the overlay draws besides the system: the veil over what rests,
 /// the panel of the moment, the bar of the cycle at the bottom.
 class PlaybackLook {
-  const PlaybackLook({this.veil = true, this.panel = true, this.timeBar = false, this.decimalPoint = false});
+  const PlaybackLook({this.veil = true, this.panel = true, this.timeBar = false, this.decimalPoint = false, this.panelTop = 12});
+
+  /// Distance of the clock panel from the top of the picture.
+  final double panelTop;
 
   /// Dims the drawing so the running groups stand out (the screen and the
   /// animations; the assistant's pictures keep the drawing as it is).
@@ -121,7 +129,7 @@ void paintProgrammePlayer(Canvas canvas, Size size, Camera cam, ProjectControlle
   final f = pl.frame;
   final pb = pl.playback;
   if (f == null || pb == null) return;
-  paintPlayback(canvas, PlaybackPaintView.ofCamera(cam, size), c, pb, f);
+  paintPlayback(canvas, PlaybackPaintView.ofCamera(cam, size), c, pb, f, look: PlaybackLook(panelTop: pl.panelTop));
 }
 
 /// Water on the drawing: the tint of the areas and the wet sprinklers.
@@ -359,7 +367,7 @@ void _panel(Canvas canvas, Size size, ProjectController c, ProgrammePlayback pb,
     w = math.max(w, r.width);
     h += r.height + 1;
   }
-  const o = Offset(12, 12);
+  final o = Offset(12, look.panelTop);
   final box = RRect.fromRectAndRadius(Rect.fromLTWH(o.dx, o.dy, math.min(maxW, w + 16), h + 12), const Radius.circular(6));
   canvas.drawRRect(box, Paint()..color = Cad.canvas.withValues(alpha: 0.82));
   canvas.drawRRect(
