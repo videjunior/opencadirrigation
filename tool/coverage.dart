@@ -11,7 +11,9 @@
 /// The report merges the lcov files (the shards of CI), prints the line
 /// coverage of every folder two levels under lib/ and the least covered
 /// files, and exits with code 1 when a folder given with --floor is below
-/// its percentage. CI runs both steps; the generated test is not committed.
+/// its percentage (on GitHub Actions the folders below are also an
+/// annotation of the run). CI runs both steps; the generated test is not
+/// committed.
 library;
 
 import 'dart:io';
@@ -63,6 +65,8 @@ void main(List<String> args) {
   if (summary != null) File(summary).writeAsStringSync(report.text);
   if (report.failed.isNotEmpty) {
     stderr.writeln('below the floor: ${report.failed.join(', ')}');
+    // on GitHub Actions an annotation of the run, read without opening the log
+    if (Platform.environment['GITHUB_ACTIONS'] == 'true') stdout.writeln('::error title=Line coverage below the floor::${report.failed.map((f) => f.replaceAll('%', '%25')).join('%0A')}');
     exitCode = 1;
   }
 }

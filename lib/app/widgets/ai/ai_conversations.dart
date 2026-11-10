@@ -57,7 +57,10 @@ class _ConversationsState extends State<_Conversations> {
   ProjectController get c => widget.c;
   AiAssistant get ai => widget.ai;
 
-  void _reload() => setState(() => list = ai.projectConversations());
+  // a block, not an arrow: the callback of setState may not return the future
+  void _reload() => setState(() {
+    list = ai.projectConversations();
+  });
 
   Future<void> _delete(AiConversationInfo x) async {
     final t = c.t;
