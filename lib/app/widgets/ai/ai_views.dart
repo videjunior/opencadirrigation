@@ -33,6 +33,7 @@ import 'ai_conversations.dart';
 import 'ai_drop.dart';
 import 'ai_markdown.dart';
 import 'ai_marks_bar.dart';
+import 'ai_model_catalog.dart';
 import 'ai_steps.dart';
 import 'ai_voice.dart';
 
@@ -1747,6 +1748,7 @@ class _AiSettingsViewState extends State<AiSettingsView> {
       if (!m.priced) t('ai.model.router') else t('ai.model.price', {'t': _tier(m.tier), 'i': usd(m.input * f), 'o': usd(m.output * f), 'r': usd(m.cacheRead * f), 'w': usd(m.cacheWrite * f)}),
       if (ends != null) t('ai.model.intro', {'d': ends.toIso8601String().substring(0, 10), 'i': usd(m.input), 'o': usd(m.output)}),
       if (m.freeTier) t('ai.model.freeHint'),
+      if (!m.tools) t('ai.model.noTools'),
       if (!m.vision) t('ai.model.noVision'),
       if (m.longAbove > 0) t('ai.model.long', {'n': '${m.longAbove ~/ 1000}', 'a': '${m.longInput}'.replaceFirst('.0', ''), 'b': '${m.longOutput}'.replaceFirst('.0', '')}),
       if (m.longTurns) t('ai.model.longTurns'),
@@ -1780,6 +1782,28 @@ class _AiSettingsViewState extends State<AiSettingsView> {
             if (noKey) _keySection(m.provider),
             SectionTitle(t('ai.model')),
             _modelPicker(),
+            // 1.7.0: any other model of OpenRouter's list (downloaded when asked)
+            if (m.provider == AiProvider.openrouter)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Tooltip(
+                  message: t('ai.model.browse.hint'),
+                  child: TextButton.icon(
+                    key: const Key('ai_model_browse'),
+                    onPressed: () async {
+                      final x = await showOpenRouterCatalog(context, c);
+                      // added to (or taken out of) the user's list there
+                      AiAssistant.modelsChanged();
+                      if (!mounted) return;
+                      setState(() {
+                        if (x != null) ai.model = x;
+                      });
+                    },
+                    icon: const Icon(Icons.travel_explore, size: 16),
+                    label: Text(t('ai.model.browse'), style: const TextStyle(fontSize: 12)),
+                  ),
+                ),
+              ),
             Text(
               _modelHint(m),
               key: const Key('ai_model_hint'),

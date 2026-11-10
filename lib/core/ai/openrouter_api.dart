@@ -273,14 +273,16 @@ class OpenRouterClient extends OpenAiClient {
   /// US$ OpenRouter charged for the last answer read (its `usage.cost`; 0 for
   /// a free model, only OpenRouter's fee with the user's own provider key);
   /// null when the usage had none. The app prices tokens with its own table
-  /// of list prices; this is the figure of OpenRouter's activity page.
+  /// of list prices; this is the figure of OpenRouter's activity page, which
+  /// goes with the usage ([AiUsage.charged]) and prices the answer of a
+  /// model the table does not know (a router's pick).
   double? lastCost;
 
   @override
   AiUsage usageOf(Map<String, dynamic> usage) {
     final c = usage['cost'];
     lastCost = c is num ? c.toDouble() : null;
-    return super.usageOf(usage);
+    return super.usageOf(usage).withCharged(lastCost);
   }
 
   /// Policy codes of a failed response that mean the request was declined

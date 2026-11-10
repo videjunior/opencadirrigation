@@ -36,6 +36,7 @@ import '../../core/ai/image_prep.dart';
 import '../../core/ai/meta_api.dart';
 import '../../core/ai/openai_api.dart';
 import '../../core/ai/openrouter_api.dart';
+import '../../core/ai/openrouter_catalog.dart';
 import '../../core/ai/xai_api.dart';
 import '../../core/ai/project_context.dart';
 import '../../core/io/pdf_reader.dart';
@@ -83,6 +84,10 @@ class AiAttachment {
   static const importable = {'dxf', 'dwg', 'dgn', 'kml', 'kmz', 'shp', 'zip', 'geojson', 'gpx', 'xml', 'landxml', 'inp', 'las', 'tif', 'tiff'};
 
   bool get isImage => mime.startsWith('image/');
+
+  /// The model of this message does not read pictures: the picture stays
+  /// out of it, and the model is told one was attached.
+  bool unread = false;
 
   /// Where the photo was taken, for the model (see
   /// [AiAssistant.photoPlaceNote]); '' when unknown.
@@ -202,6 +207,13 @@ class AiAttachment {
       ];
     }
     if (isImage) {
+      if (unread) {
+        return [
+          AiTextPart('<attachment name="$n">A picture the user attached. This model does not read pictures, so it was not sent: say so if the answer depends on it.</attachment>'),
+          if (note.isNotEmpty) AiTextPart(note),
+          if (place.isNotEmpty) AiTextPart(place),
+        ];
+      }
       final p = modelImage;
       if (p == null) return [AiTextPart('<attachment name="$n">This file could not be read as a picture.</attachment>')];
       return [AiImagePart(p.mediaType, base64Encode(p.bytes)), if (note.isNotEmpty) AiTextPart(note), if (place.isNotEmpty) AiTextPart(place)];
@@ -452,11 +464,15 @@ typedef _Kept = ({
 /// controller's history changes made from anywhere else are the user's, and
 /// close the group first. [removed] gets the items a change took out.
 class _Tracked extends AgentTool {
-  _Tracked(this.inner, this.owner, this.before, this.removed);
+  _Tracked(this.inner, this.owner, this.before, this.removed, {this.pictures = true});
   final AgentTool inner;
   final AiAssistant owner;
   final void Function() before;
   final void Function(int n) removed;
+
+  /// The model reads pictures (false: those of a result are left out, and
+  /// the result says so).
+  final bool pictures;
   @override
   String get name => inner.name;
   @override
@@ -480,7 +496,15 @@ class _Tracked extends AgentTool {
     final c = owner.c;
     final ids = write ? {for (final e in c.project.entities) e.id} : null;
     try {
-      return await inner.run(input);
+      final out = await inner.run(input);
+      if (pictures || out.images.isEmpty) return out;
+      return ToolOutput(
+        '${out.text}\n(${out.images.length == 1 ? 'The picture' : 'The ${out.images.length} pictures'} of this result did not go: this model does not read pictures. Work from the text and the numbers.)',
+        isError: out.isError,
+        spent: out.spent,
+        spentCost: out.spentCost,
+        spentModel: out.spentModel,
+      );
     } finally {
       if (ids != null) {
         for (final e in c.project.entities) {
@@ -494,6 +518,7 @@ class _Tracked extends AgentTool {
 
 class AiAssistant extends ChangeNotifier {
   AiAssistant(this.c) : _uid = c.project.meta.uid {
+    restoreModels();
     _live.add(this);
     // the call back of a task waiting or ending in the background
     AiAttention.ensure();
@@ -535,6 +560,26 @@ class AiAssistant extends ChangeNotifier {
   /// The assistant of project tab [c] (its conversation survives closing
   /// the panel).
   static AiAssistant of(ProjectController c) => _of[c] ??= AiAssistant(c);
+
+  /// The list of models the user added from OpenRouter's, as last read from
+  /// the settings.
+  static String? _modelsKept;
+
+  /// Offers again the models the user added from OpenRouter's list (kept in
+  /// the settings): before the first assistant reads the model chosen — an
+  /// added one would otherwise fall back to the standard model — and again
+  /// when the list kept changed (another tab added one). After a change
+  /// made here ([showOpenRouterCatalog]) the list is already offered:
+  /// [modelsChanged] only notes it.
+  static void restoreModels() {
+    final kept = getPref(OpenRouterCatalog.prefKey) ?? '';
+    if (kept == _modelsKept) return;
+    _modelsKept = kept;
+    if (kept.isNotEmpty) OpenRouterCatalog.restore(getPref);
+  }
+
+  /// The list of added models was changed in this tab.
+  static void modelsChanged() => _modelsKept = getPref(OpenRouterCatalog.prefKey) ?? '';
 
   /// Replaced by tests: the HTTP exchange, the waits between retries, the
   /// pictures and the browser flag.
@@ -1124,7 +1169,17 @@ class AiAssistant extends ChangeNotifier {
 
   /// The system prompt of the conversation (fixed from its first message:
   /// a change would invalidate the model's earlier reasoning).
-  String get systemPrompt => _system ?? aiSystemPrompt(c, instructions: instructions);
+  String get systemPrompt => _system ?? _systemFor(_convModel ?? model);
+
+  /// What a model that cannot call tools is told after the system prompt
+  /// (one added from OpenRouter's list: it only talks).
+  static const noToolsNote =
+      '\n\nIn this conversation you have no tools: the model chosen cannot call them. You cannot read more of the project than the data given in the conversation, and you cannot change it, '
+      'measure on it or run a calculation. Answer from that data and from what you know; never write a tool call or pretend one ran. When something has to be done in the program, give the '
+      'user the menu and the steps; when the answer needs a calculation of the program, say which one to run. For the assistant to work on the project itself, the user must choose a model that calls tools.';
+
+  /// The system prompt of a conversation with [m].
+  String _systemFor(AiModel m) => aiSystemPrompt(c, instructions: instructions) + (m.tools ? '' : noToolsNote);
 
   AgentToolbox get toolbox => _toolbox ??= AgentToolbox(c, snapshots: debugSnapshots ?? const CanvasSnapshots(), host: _host, pictures: PictureLimits.of(_convModel ?? model));
 
@@ -1489,7 +1544,7 @@ class AiAssistant extends ChangeNotifier {
     _restore(StoredConversation(json, when), kept: k);
     // the notice of a conversation brought back gives way to the import's
     if (items.isNotEmpty && items.last.transient) items.removeLast();
-    final own = aiSystemPrompt(c, instructions: instructions);
+    final own = _systemFor(_convModel ?? model);
     if (_system != null && _system != own) {
       _system = own;
       if ((_convModel ?? model).provider == AiProvider.anthropic) {
@@ -1857,6 +1912,10 @@ class AiAssistant extends ChangeNotifier {
 
   // ---------------------------------------------------------------- texts
 
+  /// What the user reads for the error [e] of a request to [m] (for tests).
+  @visibleForTesting
+  String debugErrorText(AiError e, AiModel m) => _errorText(e, m);
+
   String _errorText(AiError e, AiModel m) {
     final args = {'p': m.provider.company, 'h': m.provider.host, 'm': m.label, 'u': m.provider.billingUrl};
     // a wait the provider asked for, in s, min or h
@@ -1876,7 +1935,22 @@ class AiAssistant extends ChangeNotifier {
         'cyber' => t('ai.err.cat.cyber'),
         'bio' || 'bio_policy' => t('ai.err.cat.bio'),
         'frontier_llm' => t('ai.err.cat.frontier'),
-        'content_filter' || 'image_content_policy_violation' => t('ai.err.cat.filter'),
+        // an answer with nothing in it (Gemini): no category to name
+        'empty' => null,
+        'content_filter' ||
+        'image_content_policy_violation' ||
+        // Gemini's blocks, and OpenRouter's moderation
+        'safety' ||
+        'jailbreak' ||
+        'blocklist' ||
+        'prohibited_content' ||
+        'spii' ||
+        'image_safety' ||
+        'image_prohibited_content' ||
+        'content_blocked' ||
+        'moderation' => t('ai.err.cat.filter'),
+        'recitation' || 'image_recitation' => t('ai.err.cat.recitation'),
+        'language' => t('ai.err.cat.language'),
         _ => t('ai.err.cat.policy'),
       };
       final r = e.recommendedModel ?? '';
@@ -1889,19 +1963,23 @@ class AiAssistant extends ChangeNotifier {
       ].join(' ');
     }
 
+    // OpenRouter's own words are the part to act on (the free models' daily
+    // limit and how to raise it, a budget and its reset, the data policy that
+    // left no provider for the model): they go after the app's text
+    String own(String text) => m.provider == AiProvider.openrouter && e.message.isNotEmpty ? '$text (${e.message})' : text;
     final text = switch (e.kind) {
       AiErrorKind.noKey => t('ai.err.noKey', args),
       AiErrorKind.auth => t('ai.err.auth', args),
-      AiErrorKind.permission => t('ai.err.permission', args),
-      AiErrorKind.billing => t('ai.err.billing', args),
-      AiErrorKind.credit => t('ai.err.credit', args),
+      AiErrorKind.permission => own(t('ai.err.permission', args)),
+      AiErrorKind.billing => own(t('ai.err.billing', args)),
+      AiErrorKind.credit => own(t('ai.err.credit', args)),
       AiErrorKind.spendLimit => [t('ai.err.spendLimit', args), if (e.message.isNotEmpty) '(${e.message})'].join(' '),
-      AiErrorKind.notFound => t(m.needsRetention ? 'ai.err.retention' : 'ai.err.model', args),
+      AiErrorKind.notFound => own(t(m.needsRetention ? 'ai.err.retention' : 'ai.err.model', args)),
       AiErrorKind.retention => t('ai.err.retention', args),
       AiErrorKind.invalidRequest => t('ai.err.invalid', {'m': e.message}),
       AiErrorKind.tooLarge => e.size == null ? t('ai.err.tooLarge') : t('ai.err.tooLargeConv', {'s': mb(e.size!), 'l': mb(e.limit ?? AiHttpClient.maxRequestBytes)}),
       AiErrorKind.contextWindow => t('ai.err.context', args),
-      AiErrorKind.rateLimit => e.retryAfter == null ? t('ai.err.rateLimit', args) : t('ai.err.rateLimitWait', {...args, 'w': wait(e.retryAfter!)}),
+      AiErrorKind.rateLimit => own(e.retryAfter == null ? t('ai.err.rateLimit', args) : t('ai.err.rateLimitWait', {...args, 'w': wait(e.retryAfter!)})),
       AiErrorKind.overloaded => t('ai.err.overloaded', args),
       AiErrorKind.server => t('ai.err.server', args),
       AiErrorKind.network => t(m.provider == AiProvider.openai && _browser ? 'ai.err.networkKey' : 'ai.err.network', args),
@@ -2070,15 +2148,16 @@ class AiAssistant extends ChangeNotifier {
       _convEffort = null;
     }
     _convModel ??= m;
-    _system ??= aiSystemPrompt(c, instructions: instructions);
+    _system ??= _systemFor(m);
     _stopWarm();
     final client = _client(m.provider, key);
-    // a model that does not read a PDF whole gets the text read from it here
-    if (!m.pdf) {
-      for (final a in files) {
-        if (a.isPdf) a.asText = true;
-      }
+    // a model that does not read a PDF whole gets the text read from it here;
+    // one that does not read pictures is told a picture was attached
+    for (final a in files) {
+      if (a.isPdf && !m.pdf) a.asText = true;
+      if (a.isImage) a.unread = !m.vision;
     }
+    if (!m.vision && files.any((a) => a.isImage)) items.insert(items.length - 1, AiItem.notice(t('ai.attach.noVision', {'m': m.label}))..transient = true);
     final message = client.userMessage([for (final a in files) ...a.parts(), AiTextPart(composeText(q.isEmpty ? t('ai.q.attachment') : q, ctx))]);
     // the effort: the conversation's first stays the request's own (a change
     // there would rewrite the whole cached conversation); a change goes as an
@@ -2104,7 +2183,7 @@ class AiAssistant extends ChangeNotifier {
       ..running = true
       ..started = DateTime.now()
       ..status = t('ai.st.thinking', {'m': m.label})
-      ..pictures = files.where((a) => a.isImage).length;
+      ..pictures = m.vision ? files.where((a) => a.isImage).length : 0;
     notifyListeners();
     // kept with the question in it before the request goes: should the page
     // close during the turn, the question comes back with Try again
@@ -2123,7 +2202,11 @@ class AiAssistant extends ChangeNotifier {
       api: client,
       // every tool runs as the assistant's (a read may still touch the history: an analysis
       // records a step); a change opens the turn's undo group first
-      tools: [for (final tool in box.tools) _Tracked(tool, this, beforeWrite, (n) => box.removedThisTask += n)],
+      // (none for a model that cannot call them: it only talks, and its system prompt says so)
+      tools: [
+        if (m.tools)
+          for (final tool in box.tools) _Tracked(tool, this, beforeWrite, (n) => box.removedThisTask += n, pictures: m.vision),
+      ],
     );
     final usage0 = usage, cost0 = cost;
     final cap = costCap;
@@ -2222,7 +2305,8 @@ class AiAssistant extends ChangeNotifier {
           },
           afterRound: (round) async {
             try {
-              if (!showChanges) return null;
+              // (no picture for a model that does not read them)
+              if (!showChanges || !m.vision) return null;
               // a picture that takes too long (tiles that do not come) is
               // no reason to hold the task
               final img = await feedbackPicture(box).timeout(const Duration(seconds: 30), onTimeout: () => null);
@@ -2273,7 +2357,7 @@ class AiAssistant extends ChangeNotifier {
       }
       _history.addAll(turn.messages);
       if (turn.messages.isNotEmpty && !ctx.isEmpty) attachContext = false;
-      answer.pictures += _picturesIn(turn);
+      if (m.vision) answer.pictures += _picturesIn(turn);
       pictures += answer.pictures;
       answer.droppedThinking = turn.prefixDrops;
       if (turn.prefixDrops > 0) debugPrint('AI: the API dropped ${turn.prefixDrops} thinking blocks: the conversation before them had changed (prefix_binding_mismatch).');

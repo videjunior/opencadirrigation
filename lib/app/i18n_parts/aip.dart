@@ -52,6 +52,23 @@ const _aip = <String, (String, String, String)>{
     'Este modelo no lee imágenes: el asistente trabaja sin ver el dibujo ni el mapa.',
   ),
   'ai.model.browse': ('Mais modelos…', 'More models…', 'Más modelos…'),
+  'ai.model.browse.hint': (
+    'Abre a lista completa da OpenRouter (centenas de modelos, alguns gratuitos) para escolher outro.',
+    'Opens OpenRouter\'s whole list (hundreds of models, some of them free) to choose another one.',
+    'Abre la lista completa de OpenRouter (cientos de modelos, algunos gratuitos) para elegir otro.',
+  ),
+  'ai.model.noTools': (
+    'Este modelo não usa ferramentas: ele só conversa, com os dados do projeto anexados; não lê mais do projeto nem o altera.',
+    'This model does not call tools: it only talks, with the project data attached; it reads nothing else of the project and changes nothing.',
+    'Este modelo no usa herramientas: solo conversa, con los datos del proyecto adjuntos; no lee nada más del proyecto ni lo modifica.',
+  ),
+  'ai.attach.noVision': (
+    'O {m} não lê imagens: as imagens anexadas não foram enviadas.',
+    '{m} does not read pictures: the pictures attached were not sent.',
+    '{m} no lee imágenes: las imágenes adjuntas no se enviaron.',
+  ),
+  'ai.err.cat.recitation': ('repetição de texto protegido', 'repetition of protected text', 'repetición de texto protegido'),
+  'ai.err.cat.language': ('idioma não atendido pelo modelo', 'a language the model does not serve', 'idioma que el modelo no atiende'),
   // ---- a second opinion: another model checks the last answer
   'ai.cmd.second': (
     'pede a outro modelo uma segunda opinião sobre a última resposta',

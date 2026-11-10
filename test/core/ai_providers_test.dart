@@ -26,8 +26,8 @@ void main() {
     expect(AiProvider.ofKey('sk-proj-xxxx'), AiProvider.openai);
     expect(AiProvider.ofKey('xai-xxxx'), AiProvider.xai);
     expect(AiProvider.ofKey('AIzaSyXXXX'), AiProvider.google);
+    expect(AiProvider.ofKey('LLM_1607358788850350_xxxx'), AiProvider.meta, reason: 'Meta documents this start');
     expect(AiProvider.ofKey('something-else'), isNull);
-    expect(AiProvider.meta.keyPrefix, isEmpty, reason: 'Meta keys have no fixed start: never guessed');
   });
 
   test('every company has its own host, a place to make keys, and a top and a fast model', () {
@@ -58,6 +58,45 @@ void main() {
     expect(million.cost(AiModel.museEmber), closeTo((0.1 + 0.5) * 3, 1e-9), reason: 'over 200K input tokens Muse Ember costs three times as much');
     expect(const AiUsage(cacheRead: 1000000).cost(AiModel.museEmber), closeTo(0.004 * 3, 1e-9));
     expect(million.cost(AiModel.orFable52), million.cost(AiModel.fable52), reason: 'OpenRouter charges the maker\'s price');
+    // OpenRouter lists the makers' long-prompt prices too
+    for (final (or, own) in [(AiModel.orGpt6Astra, AiModel.gpt6Astra), (AiModel.orGpt61Sol, AiModel.gpt61Sol), (AiModel.orGpt61Terra, AiModel.gpt61Terra), (AiModel.orHaiku55, AiModel.haiku55)]) {
+      expect(million.cost(or), closeTo(million.cost(own), 1e-9), reason: or.id);
+      expect(or.longAbove, own.longAbove, reason: or.id);
+    }
+  });
+
+  test('where keys and billing are, and the largest answers', () {
+    expect(AiProvider.google.billingUrl, 'https://aistudio.google.com/billing');
+    expect(AiProvider.meta.keysUrl, 'https://dev.meta.ai/api-keys');
+    expect(AiProvider.meta.billingUrl, 'https://dev.meta.ai/billing');
+    expect(AiModel.museSpark.maxOutput, 131072);
+    expect(AiModel.museEmber.maxOutput, 131072);
+    expect(AiModel.museWonder.maxOutput, 64000, reason: 'Meta documents none: the default');
+    // OpenRouter holds the price of the largest answer allowed while a request runs: kept near US$ 1.30
+    for (final m in AiModel.offered(AiProvider.openrouter)) {
+      expect(m.maxOutput * m.output / 1e6, lessThanOrEqualTo(1.61), reason: m.id);
+    }
+    expect(AiModel.orFable52.maxOutput, 32000);
+    expect(AiModel.orOpus55.maxOutput, 64000);
+    expect(AiModel.orSonnet55.maxOutput, 128000);
+  });
+
+  test('what the provider says it charged prices only an answer the table cannot price', () {
+    AiReply reply(String model, AiUsage usage) => AiReply(items: const [], text: 'x', calls: const [], stop: AiStop.end, model: model, usage: usage);
+    const u = AiUsage(input: 1000000, output: 100000, charged: 0.42);
+    // a router's pick that is not offered here: OpenRouter's figure
+    expect(reply('deepseek/unknown-model', u).cost(AiModel.orAuto), 0.42);
+    // one the table knows: the table's list prices, as for every other answer
+    expect(reply('anthropic/claude-sonnet-5.5', u).cost(AiModel.orAuto), closeTo(2 + 1, 1e-9));
+    expect(reply('anthropic/claude-sonnet-5.5', u).cost(AiModel.orSonnet55), closeTo(2 + 1, 1e-9));
+    // nothing said: nothing known (the settings say the meter cannot price a router's unknown pick)
+    expect(reply('deepseek/unknown-model', const AiUsage(input: 1000000)).cost(AiModel.orAuto), 0);
+    // summed over the requests of a task; absent stays absent
+    expect((u + const AiUsage(input: 5, charged: 0.08)).charged, closeTo(0.5, 1e-12));
+    expect((u + const AiUsage(input: 5)).charged, 0.42);
+    expect((const AiUsage(input: 5) + const AiUsage(output: 5)).charged, isNull);
+    expect(u.withCharged(null).charged, isNull);
+    expect(u.withCharged(1).input, 1000000);
   });
 
   test('an introductory price halves every price until its last day, and the settings say when it ends', () {

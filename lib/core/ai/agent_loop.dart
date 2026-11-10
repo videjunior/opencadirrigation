@@ -705,8 +705,11 @@ class AgentLoop {
         if (costCap != null) {
           final left = costCap - cost;
           final price = model.output * (model.longAbove > 0 ? model.longOutput : 1);
-          final room = left <= 0 ? 0 : (left / price * 1e6).floor();
-          if (room < model.maxOutput) maxTokens = room < minCappedOutput ? minCappedOutput : room;
+          // (a free model has no price to divide the cap by: nothing to limit)
+          if (price > 0) {
+            final room = left <= 0 ? 0 : (left / price * 1e6).floor();
+            if (room < model.maxOutput) maxTokens = room < minCappedOutput ? minCappedOutput : room;
+          }
         }
         // the effort the step runs at: the last effort message's, else the request's own
         final stepEffort = effortAfter(kept, effortAfter(past, requestEffort));

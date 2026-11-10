@@ -32,6 +32,7 @@ export 'ai/llm_formats.dart';
 export 'ai/meta_api.dart';
 export 'ai/openai_api.dart';
 export 'ai/openrouter_api.dart';
+export 'ai/openrouter_catalog.dart';
 export 'ai/project_context.dart';
 export 'ai/xai_api.dart';
 export 'design/advisor.dart';

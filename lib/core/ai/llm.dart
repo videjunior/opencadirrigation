@@ -20,9 +20,9 @@ import 'dart:math' as math;
 enum AiProvider {
   anthropic('Anthropic', 'Claude', 'api.anthropic.com', 'https://console.anthropic.com/settings/keys', 'sk-ant-', 'https://platform.claude.com/settings/billing'),
   openai('OpenAI', 'GPT', 'api.openai.com', 'https://platform.openai.com/api-keys', 'sk-', 'https://platform.openai.com/settings/organization/billing/overview'),
-  google('Google', 'Gemini', 'generativelanguage.googleapis.com', 'https://aistudio.google.com/apikey', 'AIza', 'https://aistudio.google.com/usage'),
+  google('Google', 'Gemini', 'generativelanguage.googleapis.com', 'https://aistudio.google.com/apikey', 'AIza', 'https://aistudio.google.com/billing'),
   xai('xAI', 'Grok', 'api.x.ai', 'https://console.x.ai/team/default/api-keys', 'xai-', 'https://console.x.ai/team/default/billing'),
-  meta('Meta', 'Muse', 'api.meta.ai', 'https://dev.meta.ai/', '', 'https://dev.meta.ai/'),
+  meta('Meta', 'Muse', 'api.meta.ai', 'https://dev.meta.ai/api-keys', 'LLM_', 'https://dev.meta.ai/billing'),
   openrouter('OpenRouter', 'OpenRouter', 'openrouter.ai', 'https://openrouter.ai/settings/keys', 'sk-or-', 'https://openrouter.ai/settings/credits');
 
   const AiProvider(this.company, this.family, this.host, this.keysUrl, this.keyPrefix, this.billingUrl);
@@ -483,10 +483,24 @@ class AiModel {
   );
 
   // Meta (Meta Model API pricing page, Standard mode: the content is not
-  // used to train models; caching is automatic). Muse Ember costs three
-  // times these prices when the request has more than 200K input tokens.
+  // used to train models; caching is automatic and writing to it is not
+  // billed). Muse Ember costs three times these prices when the request has
+  // more than 200K input tokens. Meta gives no output limit for Muse
+  // Wonder: it keeps the default here (the client lowers a limit Meta
+  // turns down).
   static const museWonder = AiModel(AiProvider.meta, 'muse-wonder-1.0', 'Muse Wonder', AiTier.top, input: 4, output: 20, cacheRead: 0.2, cacheWrite: 4, longTurns: true, compaction: false);
-  static const museSpark = AiModel(AiProvider.meta, 'muse-spark-1.3', 'Muse Spark 1.3', AiTier.intermediate, input: 1.25, output: 4.25, cacheRead: 0.15, cacheWrite: 1.25, compaction: false);
+  static const museSpark = AiModel(
+    AiProvider.meta,
+    'muse-spark-1.3',
+    'Muse Spark 1.3',
+    AiTier.intermediate,
+    input: 1.25,
+    output: 4.25,
+    cacheRead: 0.15,
+    cacheWrite: 1.25,
+    maxOutput: 131072,
+    compaction: false,
+  );
   static const museEmber = AiModel(
     AiProvider.meta,
     'muse-ember-1.0',
@@ -499,14 +513,18 @@ class AiModel {
     longAbove: 200000,
     longInput: 3,
     longOutput: 3,
+    maxOutput: 131072,
     compaction: false,
   );
 
   // OpenRouter (its models list, `GET /api/v1/models`: the prices of the
   // models' makers, charged to the OpenRouter account). These are the ones
-  // offered before the list is downloaded; any other model of the list that
-  // calls tools can be added ([register]). The two routers pick a model
-  // themselves and are billed at that model's prices.
+  // offered before the list is downloaded; any other model of the list can
+  // be added ([register]). The two routers pick a model themselves and are
+  // billed at that model's prices. OpenRouter holds the price of the
+  // largest answer a request allows while it runs (newer accounts and those
+  // with a small balance are refused when the hold does not fit): the
+  // output limits here keep that hold near US$ 1.30 a request.
   static const orFable52 = AiModel(
     AiProvider.openrouter,
     'anthropic/claude-fable-5.2',
@@ -517,7 +535,7 @@ class AiModel {
     cacheRead: 0.2,
     cacheWrite: 10,
     longTurns: true,
-    maxOutput: 128000,
+    maxOutput: 32000,
     compaction: false,
   );
   static const orOpus55 = AiModel(
@@ -529,7 +547,7 @@ class AiModel {
     output: 20,
     cacheRead: 0.2,
     cacheWrite: 5,
-    maxOutput: 128000,
+    maxOutput: 64000,
     compaction: false,
   );
   static const orSonnet55 = AiModel(
@@ -553,6 +571,9 @@ class AiModel {
     output: 0.5,
     cacheRead: 0.01,
     cacheWrite: 0.125,
+    longAbove: 100000,
+    longInput: 5,
+    longOutput: 5,
     maxOutput: 128000,
     compaction: false,
   );
@@ -565,8 +586,11 @@ class AiModel {
     output: 50,
     cacheRead: 1,
     cacheWrite: 12.5,
+    longAbove: 272000,
+    longInput: 2,
+    longOutput: 1.5,
     longTurns: true,
-    maxOutput: 128000,
+    maxOutput: 32000,
     compaction: false,
   );
   static const orGpt61Sol = AiModel(
@@ -578,6 +602,9 @@ class AiModel {
     output: 10,
     cacheRead: 0.1,
     cacheWrite: 2.5,
+    longAbove: 272000,
+    longInput: 2,
+    longOutput: 1.5,
     maxOutput: 128000,
     compaction: false,
   );
@@ -590,6 +617,9 @@ class AiModel {
     output: 5,
     cacheRead: 0.05,
     cacheWrite: 1.25,
+    longAbove: 272000,
+    longInput: 2,
+    longOutput: 1.5,
     maxOutput: 128000,
     compaction: false,
   );
@@ -659,6 +689,7 @@ class AiModel {
     output: 0,
     cacheRead: 0,
     cacheWrite: 0,
+    maxOutput: 32000,
     compaction: false,
     priced: false,
   );
@@ -671,6 +702,7 @@ class AiModel {
     output: 0,
     cacheRead: 0,
     cacheWrite: 0,
+    maxOutput: 32000,
     compaction: false,
     freeTier: true,
   );
@@ -761,8 +793,8 @@ class AiModel {
   /// for about twice what the cap allows and be stopped mid-task. Constant
   /// for a given cap, so it does not change the conversation's cached
   /// prefix from one task to the next. The client raises it to the API's
-  /// minimum (20 000).
-  int taskBudgetFor(double usd, {double outputShare = 0.5}) => (usd * outputShare / output * 1e6).round();
+  /// minimum (20 000). 0 for a model without a price (a free one).
+  int taskBudgetFor(double usd, {double outputShare = 0.5}) => output > 0 ? (usd * outputShare / output * 1e6).round() : 0;
 
   /// Price per million tokens of input and output today, for the settings.
   String get priceText => '${_usd(input * priceFactor)} / ${_usd(output * priceFactor)}';
@@ -774,8 +806,18 @@ class AiModel {
 
 /// Tokens of one or more requests.
 class AiUsage {
-  const AiUsage({this.input = 0, this.output = 0, this.cacheWrite = 0, this.cacheRead = 0, this.cacheWriteHour = 0});
+  const AiUsage({this.input = 0, this.output = 0, this.cacheWrite = 0, this.cacheRead = 0, this.cacheWriteHour = 0, this.charged});
   static const zero = AiUsage();
+
+  /// US$ the provider says it charged for these tokens, when it says
+  /// (OpenRouter's `usage.cost`: 0 for a free model); null otherwise. The
+  /// meter prices tokens with the table's list prices and uses this figure
+  /// only for an answer of a model the table does not price (a router's
+  /// pick): see [AiReply.cost].
+  final double? charged;
+
+  /// These tokens with what the provider says it charged for them.
+  AiUsage withCharged(double? usd) => AiUsage(input: input, output: output, cacheWrite: cacheWrite, cacheRead: cacheRead, cacheWriteHour: cacheWriteHour, charged: usd);
 
   /// Input tokens neither read from nor written to the cache.
   final int input;
@@ -789,8 +831,14 @@ class AiUsage {
 
   bool get isZero => totalInput == 0 && output == 0;
 
-  AiUsage operator +(AiUsage o) =>
-      AiUsage(input: input + o.input, output: output + o.output, cacheWrite: cacheWrite + o.cacheWrite, cacheRead: cacheRead + o.cacheRead, cacheWriteHour: cacheWriteHour + o.cacheWriteHour);
+  AiUsage operator +(AiUsage o) => AiUsage(
+    input: input + o.input,
+    output: output + o.output,
+    cacheWrite: cacheWrite + o.cacheWrite,
+    cacheRead: cacheRead + o.cacheRead,
+    cacheWriteHour: cacheWriteHour + o.cacheWriteHour,
+    charged: charged == null && o.charged == null ? null : (charged ?? 0) + (o.charged ?? 0),
+  );
 
   /// Estimated cost at [m]'s list prices (US$).
   double cost(AiModel m) {
@@ -1165,9 +1213,16 @@ class AiReply {
   final List<Map<String, dynamic>>? history;
 
   /// Estimated cost (US$) at list prices, each attempt at the prices of
-  /// the model that ran it ([requested]'s when it is not one offered).
+  /// the model that ran it ([requested]'s when it is not one offered). An
+  /// answer of a model the table does not price (a router picked one that
+  /// is not offered here) costs what the provider says it charged, when it
+  /// says.
   double cost(AiModel requested) {
-    if (billed.isEmpty) return usage.cost(AiModel.served(model, requested));
+    if (billed.isEmpty) {
+      final m = AiModel.served(model, requested);
+      final charged = usage.charged;
+      return !m.priced && charged != null ? charged : usage.cost(m);
+    }
     var c = 0.0;
     for (final (id, u) in billed) {
       c += u.cost(AiModel.served(id, requested));
