@@ -248,7 +248,7 @@ class SiteText {
 /// internet was reached only on request, which the fonts and the visit
 /// statistics contradicted).
 const faqCloudAnswerEn =
-    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The fonts of every script and symbol come from this site itself. The browser does reach other services: base maps, online elevation and climate, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the provider you chose, Anthropic or OpenAI) go to their services when you use them; and the site and the app count visits with Google Analytics, which uses cookies (Cookie settings, at the foot of the pages, turns it off). The privacy policy lists each service and what it receives.';
+    'No. Projects are saved in your browser and as .oci.json files you keep wherever you like; a share link carries the project inside the address itself, so nothing is uploaded, and OpenCADIrrigation has no server that could keep a copy. The fonts of every script and symbol come from this site itself. The browser does reach other services: base maps, online elevation and climate, the weather forecast, address search, catalogues loaded by URL and, if you use it, the AI assistant (only the company you chose: Anthropic, OpenAI, Google, xAI, Meta or OpenRouter) go to their services when you use them; and the site and the app count visits with Google Analytics, which uses cookies (Cookie settings, at the foot of the pages, turns it off). The privacy policy lists each service and what it receives.';
 
 const _pt = SiteText(
   title: 'OpenCADIrrigation: software grátis de projeto de irrigação com IA',
@@ -256,7 +256,7 @@ const _pt = SiteText(
   keywords: 'projeto de irrigação com IA, inteligência artificial projeto de irrigação, software de projeto de irrigação, projeto de irrigação, software de irrigação grátis, software de irrigação de código aberto, projeto automático de irrigação, distribuição automática de aspersores, CAD irrigação, software de irrigação, gotejamento, microaspersão, aspersão, pivô central, dimensionamento hidráulico, dimensionamento de tubulação, uniformidade de irrigação, DXF, DWG, irrigação de jardim, irrigação agrícola',
   h1: 'Software gratuito e de código aberto para projeto de irrigação com assistente de IA',
   tagline: 'Descreva o talhão, o jardim ou o campo e deixe o assistente de IA distribuir os aspersores e o gotejamento, traçar os tubos e dimensionar o sistema; ou desenhe você mesmo com as ferramentas automáticas. Gotejamento, microaspersão, aspersão e pivô central, direto no navegador, sem instalar nada, com os projetos guardados no seu computador.',
-  intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica, o cálculo e um assistente de IA. Trace a área, ou deixe a IA localizar o terreno na imagem de satélite; lance laterais, válvulas e linha principal à mão, com os geradores de um clique ou pedindo à IA; aperte F5 e receba diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. O assistente usa modelos Claude (Anthropic) ou GPT (OpenAI) com a sua própria chave de API, direto do navegador. Funciona em 20 idiomas e segue o idioma do seu computador.',
+  intro: 'O OpenCADIrrigation reúne num só lugar o desenho CAD, a rede hidráulica, o cálculo e um assistente de IA. Trace a área, ou deixe a IA localizar o terreno na imagem de satélite; lance laterais, válvulas e linha principal à mão, com os geradores de um clique ou pedindo à IA; aperte F5 e receba diâmetros, pressões, uniformidade, turnos de operação, lista de materiais e relatórios prontos para imprimir. O assistente usa modelos Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) ou, pela OpenRouter, centenas de outros, com a sua própria chave de API, direto do navegador. Funciona em 20 idiomas e segue o idioma do seu computador.',
   openApp: 'Abrir o app',
   tutorial: 'Tutorial interativo',
   seeExamples: 'Ver exemplos prontos',
@@ -277,7 +277,7 @@ const _pt = SiteText(
     ),
     (
       'Sua chave, seu controle',
-      'Modelos Claude (Anthropic) ou GPT (OpenAI) nos níveis topo, intermediário e rápido, com a sua própria chave de API, chamados direto do navegador, sem servidor no meio. Modos somente leitura, planejar antes, perguntar antes de cada alteração ou automático, limite de passos e de gasto por tarefa, desfazer para cada resposta e nada enviado antes de você clicar em Enviar.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) ou centenas de modelos pela OpenRouter, alguns gratuitos, com a sua própria chave de API, chamados direto do navegador, sem servidor no meio. Modos somente leitura, planejar antes, perguntar antes de cada alteração ou automático, limite de passos e de gasto por tarefa, desfazer para cada resposta, segunda opinião de outro modelo e nada enviado antes de você clicar em Enviar.',
     ),
   ],
   aiCta: 'Abrir o assistente de IA',
@@ -285,11 +285,11 @@ const _pt = SiteText(
   features: [
     (
       'Assistente de IA',
-      'Opcional: pergunte à IA sobre o projeto ou deixe que ela desenhe e projete por você. Ela distribui aspersores e gotejamento, divide talhões, traça tubos, roda o dimensionamento e as ferramentas automáticas, olhando a imagem de satélite e o terreno, com modelos Claude (Anthropic) ou GPT (OpenAI) e a sua própria chave de API, direto do navegador, sem servidor no meio. Nada é enviado antes de você clicar em Enviar, e cada alteração espera a sua aprovação (ou é aplicada automaticamente, se você preferir) e pode ser desfeita.',
+      'Opcional: pergunte à IA sobre o projeto ou deixe que ela desenhe e projete por você. Ela distribui aspersores e gotejamento, divide talhões, traça tubos, roda o dimensionamento e as ferramentas automáticas, olhando a imagem de satélite e o terreno, com os modelos da Anthropic, da OpenAI, do Google, da xAI, da Meta ou da OpenRouter e a sua própria chave de API, direto do navegador, sem servidor no meio. Nada é enviado antes de você clicar em Enviar, e cada alteração espera a sua aprovação (ou é aplicada automaticamente, se você preferir) e pode ser desfeita.',
     ),
     (
       'Projeto e dimensionamento automáticos',
-      'Blocos de laterais e grades de aspersores com um clique, distribuição de aspersores com precipitação equilibrada, divisão em zonas pela vazão, traçado de tubos e válvulas, divisão de talhões em blocos, ajuste de pivô e detecção de vegetação em imagens aéreas; tubos dimensionados por programação linear dentro da janela de pressão dos emissores e da classe de pressão dos tubos, com balanço entre custo de tubulação e energia.',
+      'Blocos de laterais e grades de aspersores com um clique, distribuição de aspersores com precipitação equilibrada, divisão em zonas pela vazão, traçado de tubos e válvulas, divisão de talhões em blocos, ajuste de pivô, e vegetação e fileiras de plantio (direção, espaçamento e número) lidas em imagens aéreas; tubos dimensionados por programação linear dentro da janela de pressão dos emissores e da classe de pressão dos tubos, com balanço entre custo de tubulação e energia.',
     ),
     (
       'Desenho CAD completo',
@@ -308,6 +308,18 @@ const _pt = SiteText(
       'Curvas de nível, cotas de ponto, modelo do terreno por triangulação com linhas de quebra, elevação baixada da internet, nuvens de pontos LAS, mapas de declividade e perfis; clima do local baixado ou digitado, culturas da FAO-56 por fase, solos, chuva efetiva e lixiviação para a necessidade hídrica, além do orçamento hídrico do paisagismo.',
     ),
     (
+      'Risco climático e previsão de irrigação',
+      'Confere o projeto com o clima diário do local desde 1984: a necessidade de água de um ano seco, com que frequência o sistema projetado ficaria devendo, os piores anos e os veranicos. E transforma a previsão do tempo do local no que irrigar nos próximos dias: regar ou pular, lâmina, tempo de rega e o ajuste percentual (water budget) do controlador.',
+    ),
+    (
+      'O programa de rega reproduzido na planta',
+      'Reproduz o programa de irrigação sobre o desenho: as zonas que irrigam, os tubos pela velocidade e pela vazão, as bombas e o nível do reservatório a cada momento. Exporta o ciclo como GIF animado e o programa como arquivo de calendário para o celular.',
+    ),
+    (
+      'Boletim de qualidade do projeto',
+      'Dá ao projeto calculado uma nota de 0 a 100 e um conceito de A a E em sete categorias (uniformidade, hidráulica, energia, água e solo, economia, robustez e completude), com o alvo de cada indicador e de onde ele vem, e diz o que melhorar primeiro.',
+    ),
+    (
       'Relatórios, pranchas e materiais',
       'Zonas, tubos, emissores, uniformidade (CU, DU, EU), programa do controlador e fiação das válvulas; lista de materiais com conexões e orçamento com mão de obra, impostos e retorno do investimento; conjuntos de pranchas em PDF com detalhes construtivos e gráficos, em qualquer um dos 20 idiomas, e todas as tabelas em Excel, CSV e TXT.',
     ),
@@ -316,8 +328,12 @@ const _pt = SiteText(
       'Importa DXF, DWG, plantas em PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF e imagens; exporta DXF 2000 com entidades nativas (ou R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp e IFC.',
     ),
     (
+      'Motor aberto para scripts e agentes de IA',
+      'O motor de cálculo é Dart puro, com linha de comando, e fala o Model Context Protocol (MCP): outros aplicativos de IA podem criar, dimensionar e verificar projetos com ele no seu próprio computador, restritos a uma pasta que você escolhe.',
+    ),
+    (
       'Catálogos de fabricantes',
-      'Catálogos de fabricantes em JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prontos para usar, além de pacotes próprios carregados por arquivo ou URL.',
+      'Catálogos de fabricantes em JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prontos para usar, além de pacotes próprios carregados por arquivo ou URL e de curvas de bomba, de emissor e de aspersor digitalizadas a partir de uma imagem da folha de dados.',
     ),
     (
       'Sem internet e no campo',
@@ -367,15 +383,19 @@ const _pt = SiteText(
     ),
     (
       'Quais modelos de IA ele usa?',
-      'Modelos Claude da Anthropic (Claude Opus 5.5 por padrão, Claude Fable 5.1, Claude Sonnet 5.5 e Claude Haiku 5.5) e modelos GPT da OpenAI (GPT-6 Astra, GPT-6.1 Sol e GPT-6 Luna): um nível topo, um intermediário e um rápido de cada empresa, cada um com cinco profundidades de raciocínio. Você escolhe o modelo nas configurações do assistente e cola a sua própria chave de API; o painel mostra os tokens e o custo estimado de cada resposta, e um limite de passos e um teto de gasto encerram uma tarefa que se alonga.',
+      'Os modelos de seis empresas, com a sua própria chave de API: Claude, da Anthropic (Claude Opus 5.5 por padrão, Claude Fable 5.2, Claude Sonnet 5.5 e Claude Haiku 5.5); GPT, da OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra e GPT-6 Luna); Gemini, do Google (Gemini 4 Argon, Gemini 3.8 Flash e Gemini 3.5 Flash-Lite); Grok, da xAI (Grok 4.7 e Grok 4.3); Muse, da Meta (Muse Wonder, Muse Spark e Muse Ember); e, com uma só chave da OpenRouter, qualquer um das centenas de modelos da lista dela. Você escolhe a empresa e o modelo nas configurações do assistente e cola a sua chave; o painel mostra os tokens e o custo estimado de cada resposta, um limite de passos e um teto de gasto encerram uma tarefa que se alonga, e outro modelo pode dar uma segunda opinião sobre uma resposta.',
+    ),
+    (
+      'Posso usar o assistente de IA sem pagar?',
+      'O programa é gratuito; o assistente precisa de uma chave de uma empresa de IA, que cobra o que você usar. Dois caminhos não custam nada dentro dos seus limites: o nível gratuito dos modelos Gemini Flash, do Google (onde o Google o oferece), e os modelos gratuitos da OpenRouter. Esses limites são definidos pelas empresas, e num nível gratuito elas podem usar o que você envia para melhorar os seus produtos: leia os termos delas antes de enviar um projeto confidencial.',
     ),
     (
       'O que o assistente de IA envia, e para onde?',
-      'Nada até você clicar em Enviar. Então a sua mensagem, os arquivos anexados e os dados do projeto que você marcar vão direto do seu navegador para a API do provedor escolhido, Anthropic ou OpenAI, sem nenhum servidor do OpenCADIrrigation no meio, junto com os resultados das ferramentas que ele usa enquanto responde, inclusive imagens do desenho. O provedor cobra o uso na sua conta. A chave fica só na memória durante a sessão, a menos que você escolha lembrá-la no aparelho, e nunca vai para arquivos de projeto, links de compartilhamento ou exportações. O ditado por voz, se você usar, é feito pelo reconhecimento de fala do próprio navegador, que envia o áudio para a empresa do navegador (Google no Chrome, Microsoft no Edge, Apple no Safari). As conversas guardadas ficam no seu navegador, nunca em arquivos de projeto ou links.',
+      'Nada até você clicar em Enviar. Então a sua mensagem, os arquivos anexados e os dados do projeto que você marcar vão direto do seu navegador para a API da empresa escolhida (Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter, que repassa o pedido à empresa que opera o modelo), sem nenhum servidor do OpenCADIrrigation no meio, junto com os resultados das ferramentas que ele usa enquanto responde, inclusive imagens do desenho. O provedor cobra o uso na sua conta. A chave fica só na memória durante a sessão, a menos que você escolha lembrá-la no aparelho, e nunca vai para arquivos de projeto, links de compartilhamento ou exportações. O ditado por voz, se você usar, é feito pelo reconhecimento de fala do próprio navegador, que envia o áudio para a empresa do navegador (Google no Chrome, Microsoft no Edge, Apple no Safari). As conversas guardadas ficam no seu navegador, nunca em arquivos de projeto ou links. Uma segunda opinião, quando você pede, envia a pergunta, a resposta e os dados do projeto à empresa do modelo que a dá.',
     ),
     (
       'O OpenCADIrrigation é gratuito?',
-      'Sim. É gratuito para uso profissional, acadêmico e pessoal, sem cadastro. Também é de código aberto, sob a licença MIT, com o código-fonte publicado no GitHub. O assistente de IA, que é opcional, usa a sua própria conta da Anthropic ou da OpenAI, e o provedor cobra o uso nessa conta.',
+      'Sim. É gratuito para uso profissional, acadêmico e pessoal, sem cadastro. Também é de código aberto, sob a licença MIT, com o código-fonte publicado no GitHub. O assistente de IA, que é opcional, usa a sua própria conta numa empresa de IA (Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter), que cobra o uso nessa conta; alguns dos modelos delas podem ser usados sem custo, dentro de limites.',
     ),
     (
       'Para quem ele é?',
@@ -387,11 +407,11 @@ const _pt = SiteText(
     ),
     (
       'Funciona sem internet?',
-      'Sim, depois da primeira visita: o app guarda uma cópia de si mesmo no navegador (cerca de 20 MB, uma vez por versão), e a próxima abertura, do app instalado ou do site, funciona sem rede, no escritório ou no campo. Mapas base, elevação e clima online, catálogos carregados por URL e o assistente de IA continuam precisando de conexão; uma versão nova é baixada em segundo plano: o app oferece recarregar nela, ou ela é usada a partir da abertura seguinte.',
+      'Sim, depois da primeira visita: o app guarda uma cópia de si mesmo no navegador (cerca de 20 MB, uma vez por versão), e a próxima abertura, do app instalado ou do site, funciona sem rede, no escritório ou no campo. Mapas base, elevação e clima online, a previsão do tempo, catálogos carregados por URL e o assistente de IA continuam precisando de conexão; uma versão nova é baixada em segundo plano: o app oferece recarregar nela, ou ela é usada a partir da abertura seguinte.',
     ),
     (
       'Meus projetos ficam na nuvem?',
-      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. As fontes de todas as escritas e símbolos vêm do próprio site. O navegador acessa outros serviços: mapas base, elevação e clima online, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só o provedor que você escolheu, Anthropic ou OpenAI) vão aos seus serviços quando você os usa; e o site e o app contam as visitas com o Google Analytics, que usa cookies (Preferências de cookies, no rodapé das páginas, o desliga). A política de privacidade lista cada serviço e o que ele recebe.',
+      'Não. Os projetos são salvos no seu navegador e em arquivos .oci.json que você guarda onde quiser; um link de compartilhamento leva o projeto dentro do próprio endereço, sem enviar nada, e o OpenCADIrrigation não tem servidor que pudesse guardar uma cópia. As fontes de todas as escritas e símbolos vêm do próprio site. O navegador acessa outros serviços: mapas base, elevação e clima online, a previsão do tempo, busca de endereços, catálogos carregados por URL e, se você usar, o assistente de IA (só a empresa que você escolheu: Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter) vão aos seus serviços quando você os usa; e o site e o app contam as visitas com o Google Analytics, que usa cookies (Preferências de cookies, no rodapé das páginas, o desliga). A política de privacidade lista cada serviço e o que ele recebe.',
     ),
     (
       'Como é feito o cálculo hidráulico?',
@@ -425,7 +445,7 @@ const _en = SiteText(
   keywords: 'AI irrigation design, AI irrigation design software, irrigation design software, free irrigation design software, open-source irrigation software, irrigation CAD, automatic irrigation design, automatic sprinkler layout, irrigation AI assistant, drip irrigation design, sprinkler design, centre pivot, hydraulic design, pipe sizing, irrigation uniformity, DXF, DWG, landscape irrigation, agricultural irrigation, free irrigation software',
   h1: 'Free, open-source irrigation design software with an AI assistant',
   tagline: 'Describe the field, the garden or the pitch and let the AI assistant lay out the heads and the drip, route the pipes and size the system; or draw it yourself with the automatic tools. Drip, micro-sprinkler, sprinkler and centre-pivot systems, right in the browser, nothing to install, with your projects kept on your own computer.',
-  intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network, the calculation and an AI assistant together. Trace the area, or let the AI find the site on the satellite image; lay out laterals, valves and the mainline by hand, with the one-click generators or by asking the AI; press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. The assistant runs Claude (Anthropic) or GPT (OpenAI) models with your own API key, straight from the browser. Available in 20 languages, following your computer\'s language.',
+  intro: 'OpenCADIrrigation brings CAD drawing, the hydraulic network, the calculation and an AI assistant together. Trace the area, or let the AI find the site on the satellite image; lay out laterals, valves and the mainline by hand, with the one-click generators or by asking the AI; press F5 and get pipe sizes, pressures, uniformity, operating shifts, a bill of materials and printable reports. The assistant runs on Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) or, through OpenRouter, hundreds of other models, with your own API key, straight from the browser. Available in 20 languages, following your computer\'s language.',
   openApp: 'Open the app',
   tutorial: 'Interactive tutorial',
   seeExamples: 'See ready examples',
@@ -446,7 +466,7 @@ const _en = SiteText(
     ),
     (
       'Your key, your control',
-      'Claude (Anthropic) or GPT (OpenAI) models in top, intermediate and fast tiers, with your own API key, called straight from the browser with no server in between. Read-only, plan-first, ask-before-each-change or automatic modes, a step limit and a spending cap per task, undo for every answer, and nothing sent before you press Send.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) or hundreds of models through OpenRouter, some of them free, with your own API key, called straight from the browser with no server in between. Read-only, plan-first, ask-before-each-change or automatic modes, a step limit and a spending cap per task, undo for every answer, a second opinion from another model, and nothing sent before you press Send.',
     ),
   ],
   aiCta: 'Open the AI assistant',
@@ -454,11 +474,11 @@ const _en = SiteText(
   features: [
     (
       'AI assistant',
-      'Optional: ask the AI about the project, or let it draw and design for you. It lays out heads and drip, divides fields, routes pipes, runs the sizing and the automatic tools, looking at the satellite image and the terrain, with Claude (Anthropic) or GPT (OpenAI) models and your own API key, straight from the browser with no server in between. Nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.',
+      'Optional: ask the AI about the project, or let it draw and design for you. It lays out heads and drip, divides fields, routes pipes, runs the sizing and the automatic tools, looking at the satellite image and the terrain, with the models of Anthropic, OpenAI, Google, xAI, Meta or OpenRouter and your own API key, straight from the browser with no server in between. Nothing is sent before you press Send, and every change waits for your approval (or applies automatically, if you choose) and can be undone.',
     ),
     (
       'Automatic design and sizing',
-      'Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit and vegetation detection in aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.',
+      'Lateral blocks and sprinkler grids in one click, head layout with matched precipitation, zoning by flow, pipe and valve routing, field subdivision, pivot fit, and vegetation and crop rows (direction, spacing and count) read from aerial images; pipes sized by linear programming within the emitter pressure window and the pipe pressure class, trading pipe cost against energy.',
     ),
     (
       'Full CAD drawing',
@@ -477,6 +497,18 @@ const _en = SiteText(
       'Contours, spot heights, a triangulated terrain model with breaklines, online elevation, LAS point clouds, slope maps and profiles; site climate downloaded or typed in, FAO-56 crops by stage, soils, effective rain and leaching for the water requirement, plus landscape water budgets.',
     ),
     (
+      'Climate risk and irrigation forecast',
+      'Checks the design against the daily climate of the site since 1984: the water need of a dry year, how often the designed system would fall short, the worst years and the dry spells. And turns the weather forecast of the site into what to irrigate in the coming days: irrigate or skip, depth, run time and the water budget % for the controller.',
+    ),
+    (
+      'The programme played on the plan',
+      'Plays the irrigation programme over the drawing: the zones that run, the pipes by velocity and flow, the pumps and the reservoir level at every moment. Exports the cycle as an animated GIF and the programme as a calendar file for the phone.',
+    ),
+    (
+      'Design scorecard',
+      'Grades the designed project from 0 to 100 and from A to E in seven categories (uniformity, hydraulics, energy, water and soil, economy, robustness and completeness), with the target of each indicator and where it comes from, and says what to improve first.',
+    ),
+    (
       'Reports, plans and materials',
       'Zones, pipes, emitters, uniformity (CU, DU, EU), controller programme and valve wiring; a bill of materials with fittings and a quote with labour, taxes and payback; PDF sheet sets with construction details and charts, in any of the 20 languages, and every table in Excel, CSV and TXT.',
     ),
@@ -485,8 +517,12 @@ const _en = SiteText(
       'Imports DXF, DWG, PDF plans, KML/KMZ, shapefiles, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF and images; exports DXF 2000 with native entities (or R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefiles, GPX, LandXML, EPANET .inp and IFC.',
     ),
     (
+      'Open engine for scripts and AI agents',
+      'The calculation engine is pure Dart with a command line, and it speaks the Model Context Protocol (MCP): other AI applications can create, size and check projects with it on your own computer, confined to a folder you choose.',
+    ),
+    (
       'Manufacturer catalogues',
-      'Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ready to use, plus your own packs loaded from a file or a URL.',
+      'Manufacturer catalogues in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ready to use, plus your own packs loaded from a file or a URL, and pump, emitter and sprinkler curves digitised from a picture of a data sheet.',
     ),
     (
       'Offline and in the field',
@@ -536,15 +572,19 @@ const _en = SiteText(
     ),
     (
       'Which AI models does it use?',
-      'Claude models from Anthropic (Claude Opus 5.5 by default, Claude Fable 5.1, Claude Sonnet 5.5 and Claude Haiku 5.5) and GPT models from OpenAI (GPT-6 Astra, GPT-6.1 Sol and GPT-6 Luna): a top, an intermediate and a fast tier of each company, each with five depths of reasoning. You choose the model in the assistant\'s settings and paste your own API key; the panel shows the tokens and the estimated cost of every answer, and a step limit and a spending cap end a task that runs long.',
+      'The models of six companies, with your own API key: Claude from Anthropic (Claude Opus 5.5 by default, Claude Fable 5.2, Claude Sonnet 5.5 and Claude Haiku 5.5), GPT from OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra and GPT-6 Luna), Gemini from Google (Gemini 4 Argon, Gemini 3.8 Flash and Gemini 3.5 Flash-Lite), Grok from xAI (Grok 4.7 and Grok 4.3), Muse from Meta (Muse Wonder, Muse Spark and Muse Ember) and, with one OpenRouter key, any of the hundreds of models on its list. You choose the company and the model in the assistant\'s settings and paste your key; the panel shows the tokens and the estimated cost of every answer, a step limit and a spending cap end a task that runs long, and another model can give a second opinion on an answer.',
+    ),
+    (
+      'Can I use the AI assistant without paying?',
+      'The program is free; the assistant needs a key from an AI company, which bills what you use. Two ways cost nothing within their limits: the free tier of Google\'s Gemini Flash models (where Google offers it) and the free models of OpenRouter. Those limits are set by the companies, and on a free tier they may use what you send to improve their products, so read their terms before sending a confidential project.',
     ),
     (
       'What does the AI assistant send, and where?',
-      'Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the provider you chose, Anthropic or OpenAI, with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports. Voice dictation, if you use it, is done by the browser\'s own speech recognition, which sends the audio to the browser maker (Google in Chrome, Microsoft in Edge, Apple in Safari). Saved conversations stay in your browser, never in project files or links.',
+      'Nothing until you press Send. Then your message, the files you attach and the project data you tick go straight from your browser to the API of the company you chose (Anthropic, OpenAI, Google, xAI, Meta or OpenRouter, which passes the request on to the company that runs the model), with no server of OpenCADIrrigation in between, together with the results of the tools it uses while answering, pictures of the drawing included. The provider bills the use to your account. The key stays in memory for the session unless you choose to remember it on the device, and it never goes into project files, share links or exports. Voice dictation, if you use it, is done by the browser\'s own speech recognition, which sends the audio to the browser maker (Google in Chrome, Microsoft in Edge, Apple in Safari). Saved conversations stay in your browser, never in project files or links. A second opinion, when you ask for one, sends the question, the answer and the project data to the company of the model that gives it.',
     ),
     (
       'Is OpenCADIrrigation free?',
-      'Yes. It is free for professional, academic and personal use, with no sign-up. It is also open source under the MIT licence, with the source code published on GitHub. The optional AI assistant uses your own Anthropic or OpenAI account, and the provider bills its use to that account.',
+      'Yes. It is free for professional, academic and personal use, with no sign-up. It is also open source under the MIT licence, with the source code published on GitHub. The optional AI assistant uses your own account with an AI company (Anthropic, OpenAI, Google, xAI, Meta or OpenRouter), which bills its use to that account; some of their models can be used free of charge within limits.',
     ),
     (
       'Who is it for?',
@@ -553,7 +593,7 @@ const _en = SiteText(
     ('Do I need to install anything?', 'No. It runs in Chrome, Edge, Firefox and Safari on desktop, tablet and phone, and can be installed as an app (PWA) to open in its own window.'),
     (
       'Does it work offline?',
-      'Yes, after the first visit: the app keeps a copy of itself in the browser (about 20 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background: the app offers to reload into it, or it is used from the next start.',
+      'Yes, after the first visit: the app keeps a copy of itself in the browser (about 20 MB, once per version), so the next start, of the installed app or of the site, works without a network, in the office or in the field. Base maps, online elevation and climate, the weather forecast, catalogues loaded by URL and the AI assistant still need a connection; a new version downloads in the background: the app offers to reload into it, or it is used from the next start.',
     ),
     ('Are my projects stored in the cloud?', faqCloudAnswerEn),
     (
@@ -588,7 +628,7 @@ const _es = SiteText(
   keywords: 'diseño de riego con IA, inteligencia artificial diseño de riego, software de diseño de riego, diseño de riego, software de riego gratis, software de riego de código abierto, diseño automático de riego, distribución automática de aspersores, software de riego, CAD riego, riego presurizado, riego por goteo, microaspersión, aspersión, pivote central, dimensionamiento hidráulico, cálculo de tuberías, uniformidad de riego, DXF, DWG, riego de jardines, riego agrícola',
   h1: 'Software gratuito y de código abierto para diseño de riego con asistente de IA',
   tagline: 'Describa la parcela, el jardín o el campo y deje que el asistente de IA distribuya los aspersores y el goteo, trace las tuberías y dimensione el sistema; o dibújelo usted mismo con las herramientas automáticas. Goteo, microaspersión, aspersión y pivote central, directamente en el navegador, sin instalar nada, con los proyectos guardados en su propio equipo.',
-  intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica, el cálculo y un asistente de IA. Trace el área, o deje que la IA localice el terreno en la imagen satelital; coloque laterales, válvulas y línea principal a mano, con los generadores de un clic o pidiéndoselo a la IA; pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. El asistente usa modelos Claude (Anthropic) o GPT (OpenAI) con su propia clave de API, directamente desde el navegador. Disponible en 20 idiomas, según el idioma de su equipo.',
+  intro: 'OpenCADIrrigation reúne en un solo lugar el dibujo CAD, la red hidráulica, el cálculo y un asistente de IA. Trace el área, o deje que la IA localice el terreno en la imagen satelital; coloque laterales, válvulas y línea principal a mano, con los generadores de un clic o pidiéndoselo a la IA; pulse F5 y obtenga diámetros, presiones, uniformidad, turnos de operación, lista de materiales e informes listos para imprimir. El asistente usa modelos Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) o, a través de OpenRouter, cientos de otros, con su propia clave de API, directamente desde el navegador. Disponible en 20 idiomas, según el idioma de su equipo.',
   openApp: 'Abrir la aplicación',
   tutorial: 'Tutorial interactivo',
   seeExamples: 'Ver ejemplos listos',
@@ -609,7 +649,7 @@ const _es = SiteText(
     ),
     (
       'Su clave, su control',
-      'Modelos Claude (Anthropic) o GPT (OpenAI) en niveles superior, intermedio y rápido, con su propia clave de API, llamados directamente desde el navegador, sin servidor intermedio. Modos de solo lectura, planificar primero, preguntar antes de cada cambio o automático, límite de pasos y de gasto por tarea, deshacer para cada respuesta y nada enviado antes de pulsar Enviar.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) o cientos de modelos a través de OpenRouter, algunos gratuitos, con su propia clave de API, llamados directamente desde el navegador, sin servidor intermedio. Modos de solo lectura, planificar primero, preguntar antes de cada cambio o automático, límite de pasos y de gasto por tarea, deshacer para cada respuesta, segunda opinión de otro modelo y nada enviado antes de pulsar Enviar.',
     ),
   ],
   aiCta: 'Abrir el asistente de IA',
@@ -617,11 +657,11 @@ const _es = SiteText(
   features: [
     (
       'Asistente de IA',
-      'Opcional: pregunte a la IA sobre el proyecto o deje que dibuje y diseñe por usted. Distribuye aspersores y goteo, divide parcelas, traza tuberías, ejecuta el dimensionamiento y las herramientas automáticas, mirando la imagen satelital y el terreno, con modelos Claude (Anthropic) o GPT (OpenAI) y su propia clave de API, directamente desde el navegador y sin servidor intermedio. No se envía nada antes de pulsar Enviar, y cada cambio espera su aprobación (o se aplica automáticamente, si así lo elige) y se puede deshacer.',
+      'Opcional: pregunte a la IA sobre el proyecto o deje que dibuje y diseñe por usted. Distribuye aspersores y goteo, divide parcelas, traza tuberías, ejecuta el dimensionamiento y las herramientas automáticas, mirando la imagen satelital y el terreno, con los modelos de Anthropic, OpenAI, Google, xAI, Meta u OpenRouter y su propia clave de API, directamente desde el navegador y sin servidor intermedio. No se envía nada antes de pulsar Enviar, y cada cambio espera su aprobación (o se aplica automáticamente, si así lo elige) y se puede deshacer.',
     ),
     (
       'Diseño y dimensionamiento automáticos',
-      'Bloques de laterales y mallas de aspersores con un clic, distribución de aspersores con precipitación equilibrada, zonificación por caudal, trazado de tuberías y válvulas, división de parcelas en bloques, ajuste de pivotes y detección de vegetación en imágenes aéreas; tuberías dimensionadas por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, equilibrando coste de tubería y energía.',
+      'Bloques de laterales y mallas de aspersores con un clic, distribución de aspersores con precipitación equilibrada, zonificación por caudal, trazado de tuberías y válvulas, división de parcelas en bloques, ajuste de pivotes, y vegetación e hileras de cultivo (dirección, espaciamiento y número) leídas en imágenes aéreas; tuberías dimensionadas por programación lineal dentro de la ventana de presión de los emisores y la clase de presión de las tuberías, equilibrando coste de tubería y energía.',
     ),
     (
       'Dibujo CAD completo',
@@ -640,6 +680,18 @@ const _es = SiteText(
       'Curvas de nivel, cotas, modelo del terreno por triangulación con líneas de quiebre, elevación descargada de internet, nubes de puntos LAS, mapas de pendientes y perfiles; clima del sitio descargado o introducido a mano, cultivos de la FAO-56 por etapa, suelos, lluvia efectiva y lavado de sales para las necesidades de agua, además del presupuesto hídrico del paisajismo.',
     ),
     (
+      'Riesgo climático y pronóstico de riego',
+      'Comprueba el diseño con el clima diario del lugar desde 1984: la necesidad de agua de un año seco, con qué frecuencia el sistema diseñado se quedaría corto, los peores años y los veranillos. Y convierte el pronóstico del tiempo del lugar en lo que hay que regar en los próximos días: regar o saltar, lámina, tiempo de riego y el ajuste porcentual (water budget) del programador.',
+    ),
+    (
+      'El programa de riego reproducido en el plano',
+      'Reproduce el programa de riego sobre el dibujo: las zonas que riegan, las tuberías por velocidad y caudal, las bombas y el nivel del embalse en cada momento. Exporta el ciclo como GIF animado y el programa como archivo de calendario para el móvil.',
+    ),
+    (
+      'Boletín de calidad del diseño',
+      'Califica el diseño calculado de 0 a 100 y de la A a la E en siete categorías (uniformidad, hidráulica, energía, agua y suelo, economía, robustez y completitud), con el objetivo de cada indicador y de dónde procede, y dice qué mejorar primero.',
+    ),
+    (
       'Informes, planos y materiales',
       'Zonas, tuberías, emisores, uniformidad (CU, DU, EU), programa del controlador y cableado de válvulas; lista de materiales con accesorios y presupuesto con mano de obra, impuestos y retorno de la inversión; juegos de planos en PDF con detalles constructivos y gráficos, en cualquiera de los 20 idiomas, y todas las tablas en Excel, CSV y TXT.',
     ),
@@ -648,8 +700,12 @@ const _es = SiteText(
       'Importa DXF, DWG, planos en PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF e imágenes; exporta DXF 2000 con entidades nativas (o R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp e IFC.',
     ),
     (
+      'Motor abierto para scripts y agentes de IA',
+      'El motor de cálculo es Dart puro, con línea de comandos, y habla el Model Context Protocol (MCP): otras aplicaciones de IA pueden crear, dimensionar y comprobar proyectos con él en su propio equipo, limitadas a una carpeta que usted elige.',
+    ),
+    (
       'Catálogos de fabricantes',
-      'Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL.',
+      'Catálogos de fabricantes en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) listos para usar, además de paquetes propios cargados desde archivo o URL y de curvas de bomba, de emisor y de aspersor digitalizadas a partir de una imagen de la ficha técnica.',
     ),
     (
       'Sin conexión y en campo',
@@ -702,15 +758,19 @@ const _es = SiteText(
     ),
     (
       '¿Qué modelos de IA utiliza?',
-      'Modelos Claude de Anthropic (Claude Opus 5.5 por defecto, Claude Fable 5.1, Claude Sonnet 5.5 y Claude Haiku 5.5) y modelos GPT de OpenAI (GPT-6 Astra, GPT-6.1 Sol y GPT-6 Luna): un nivel superior, uno intermedio y uno rápido de cada empresa, cada uno con cinco profundidades de razonamiento. Usted elige el modelo en los ajustes del asistente y pega su propia clave de API; el panel muestra los tokens y el coste estimado de cada respuesta, y un límite de pasos y un tope de gasto terminan una tarea que se alarga.',
+      'Los modelos de seis empresas, con su propia clave de API: Claude, de Anthropic (Claude Opus 5.5 por defecto, Claude Fable 5.2, Claude Sonnet 5.5 y Claude Haiku 5.5); GPT, de OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra y GPT-6 Luna); Gemini, de Google (Gemini 4 Argon, Gemini 3.8 Flash y Gemini 3.5 Flash-Lite); Grok, de xAI (Grok 4.7 y Grok 4.3); Muse, de Meta (Muse Wonder, Muse Spark y Muse Ember); y, con una sola clave de OpenRouter, cualquiera de los cientos de modelos de su lista. Usted elige la empresa y el modelo en los ajustes del asistente y pega su clave; el panel muestra los tokens y el coste estimado de cada respuesta, un límite de pasos y un tope de gasto terminan una tarea que se alarga, y otro modelo puede dar una segunda opinión sobre una respuesta.',
+    ),
+    (
+      '¿Puedo usar el asistente de IA sin pagar?',
+      'El programa es gratuito; el asistente necesita una clave de una empresa de IA, que factura lo que usted use. Dos caminos no cuestan nada dentro de sus límites: el nivel gratuito de los modelos Gemini Flash, de Google (donde Google lo ofrece), y los modelos gratuitos de OpenRouter. Esos límites los fijan las empresas, y en un nivel gratuito pueden usar lo que usted envía para mejorar sus productos: lea sus términos antes de enviar un proyecto confidencial.',
     ),
     (
       '¿Qué envía el asistente de IA, y adónde?',
-      'Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API del proveedor elegido, Anthropic u OpenAI, sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones. El dictado por voz, si lo usa, lo hace el reconocimiento de voz del propio navegador, que envía el audio a la empresa del navegador (Google en Chrome, Microsoft en Edge, Apple en Safari). Las conversaciones guardadas quedan en su navegador, nunca en archivos de proyecto ni enlaces.',
+      'Nada hasta que pulse Enviar. Entonces su mensaje, los archivos adjuntos y los datos del proyecto que marque van directamente desde su navegador a la API de la empresa elegida (Anthropic, OpenAI, Google, xAI, Meta u OpenRouter, que pasa la solicitud a la empresa que opera el modelo), sin ningún servidor de OpenCADIrrigation de por medio, junto con los resultados de las herramientas que usa mientras responde, imágenes del dibujo incluidas. El proveedor factura el uso en su cuenta. La clave queda solo en la memoria durante la sesión, a menos que elija recordarla en el dispositivo, y nunca va a archivos de proyecto, enlaces de compartir ni exportaciones. El dictado por voz, si lo usa, lo hace el reconocimiento de voz del propio navegador, que envía el audio a la empresa del navegador (Google en Chrome, Microsoft en Edge, Apple en Safari). Las conversaciones guardadas quedan en su navegador, nunca en archivos de proyecto ni enlaces. Una segunda opinión, cuando la pide, envía la pregunta, la respuesta y los datos del proyecto a la empresa del modelo que la da.',
     ),
     (
       '¿OpenCADIrrigation es gratuito?',
-      'Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub. El asistente de IA, que es opcional, usa su propia cuenta de Anthropic o de OpenAI, y el proveedor factura el uso en esa cuenta.',
+      'Sí. Es gratuito para uso profesional, académico y personal, sin registro. Además es de código abierto, con licencia MIT, y el código fuente está publicado en GitHub. El asistente de IA, que es opcional, usa su propia cuenta en una empresa de IA (Anthropic, OpenAI, Google, xAI, Meta u OpenRouter), que factura el uso en esa cuenta; algunos de sus modelos pueden usarse sin coste, dentro de unos límites.',
     ),
     (
       '¿Para quién es?',
@@ -719,11 +779,11 @@ const _es = SiteText(
     ('¿Necesito instalar algo?', 'No. Funciona en Chrome, Edge, Firefox y Safari, en ordenador, tableta y móvil, y puede instalarse como aplicación (PWA) para abrirse en su propia ventana.'),
     (
       '¿Funciona sin conexión?',
-      'Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 20 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano: la aplicación ofrece recargarla, o se usa a partir del siguiente inicio.',
+      'Sí, después de la primera visita: la aplicación guarda una copia de sí misma en el navegador (unos 20 MB, una vez por versión), y el siguiente inicio, de la aplicación instalada o del sitio, funciona sin red, en la oficina o en el campo. Los mapas base, la elevación y el clima en línea, el pronóstico del tiempo, los catálogos cargados por URL y el asistente de IA siguen necesitando conexión; una versión nueva se descarga en segundo plano: la aplicación ofrece recargarla, o se usa a partir del siguiente inicio.',
     ),
     (
       '¿Mis proyectos se guardan en la nube?',
-      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. Las fuentes de todas las escrituras y símbolos vienen del propio sitio. El navegador sí accede a otros servicios: los mapas base, la elevación y el clima en línea, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo el proveedor que usted eligió, Anthropic u OpenAI) van a sus servicios cuando los usa; y el sitio y la aplicación cuentan las visitas con Google Analytics, que usa cookies (Preferencias de cookies, al pie de las páginas, lo desactiva). La política de privacidad enumera cada servicio y lo que recibe.',
+      'No. Los proyectos se guardan en su navegador y en archivos .oci.json que usted conserva donde quiera; un enlace para compartir lleva el proyecto dentro de la propia dirección, sin subir nada, y OpenCADIrrigation no tiene ningún servidor que pudiera guardar una copia. Las fuentes de todas las escrituras y símbolos vienen del propio sitio. El navegador sí accede a otros servicios: los mapas base, la elevación y el clima en línea, el pronóstico del tiempo, la búsqueda de direcciones, los catálogos cargados por URL y, si lo usa, el asistente de IA (solo la empresa que usted eligió: Anthropic, OpenAI, Google, xAI, Meta u OpenRouter) van a sus servicios cuando los usa; y el sitio y la aplicación cuentan las visitas con Google Analytics, que usa cookies (Preferencias de cookies, al pie de las páginas, lo desactiva). La política de privacidad enumera cada servicio y lo que recibe.',
     ),
     (
       '¿Cómo se hace el cálculo hidráulico?',
