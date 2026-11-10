@@ -193,8 +193,13 @@ cada grupo garante:
   determina; uma verificação que um navegador não consegue rodar é informada como pulada, nunca como
   aprovada.
 - **Imagens golden** (`test/goldens`, marca `golden`): a prancheta clara e escura, linhas finas densas
-  numa tela 2×, um diálogo no celular e o SVG de uma prancha, comparados com tolerância ao serrilhado de
-  outras plataformas.
+  numa tela 2×, um diálogo no celular e o SVG de uma prancha. As imagens são feitas no macOS e a CI as
+  compara no Linux, onde as formas saem iguais pixel a pixel e os blocos da fonte de teste um pixel mais
+  altos; por isso o comparador aceita uma borda que fica a um pixel de distância (até 1 % dos pixels) e
+  recusa o que um pixel vizinho não explica (0,02 % no máximo): um item que falta, que sobra, que andou
+  dois pixels ou que mudou de cor. Uma recusa diz quantos pixels diferem, de quanto e onde, com um mapa
+  grosseiro, e a CI guarda a imagem que ela fez, a golden e a diferença entre as duas como artefato da
+  execução (`golden-failures-N`).
 - **Hooks** (`git config core.hooksPath tool/hooks`): o hook de pre-commit recusa arquivos Dart
   preparados que não estejam formatados e qualquer nome proibido nas linhas que um commit acrescenta
   (a lista única `tool/hooks/banned-names.sha256`, mais uma lista local em texto claro em

@@ -189,8 +189,13 @@ group guarantees:
   chromium,webkit,firefox` uses the installed Chrome and the WebKit and Firefox builds the pinned
   version fixes; a check a browser cannot run is reported as skipped, never as passed.
 - **Golden images** (`test/goldens`, tag `golden`): the drawing board light and dark, dense hairlines
-  on a 2× screen, a dialog on a phone and the SVG of a sheet, compared with a tolerance for the
-  anti-aliasing of other platforms.
+  on a 2× screen, a dialog on a phone and the SVG of a sheet. The images are made on macOS and CI
+  compares them on Linux, where shapes come out the same to the pixel and the blocks of the test font
+  a pixel taller; so the comparator takes an edge that sits a pixel away (up to 1 % of the pixels)
+  and refuses what a neighbouring pixel does not explain (0.02 % at most): an item missing, extra,
+  moved by two pixels or in another colour. A refusal says how many pixels differ, by how much and
+  where, with a coarse map, and CI keeps the picture it made, the golden and their difference as an
+  artifact of the run (`golden-failures-N`).
 - **Hooks** (`git config core.hooksPath tool/hooks`): the pre-commit hook refuses staged Dart files
   that are not formatted and any forbidden name in the lines a commit adds (the one list
   `tool/hooks/banned-names.sha256`, plus a local plain list in `.git/info/banned-words`) and warns

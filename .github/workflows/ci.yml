@@ -87,6 +87,14 @@ jobs:
       - name: The tests that did not pass, as annotations and in the summary
         if: failure()
         run: dart run tool/test_failures.dart build/test-report.json --summary "$GITHUB_STEP_SUMMARY"
+      # the picture a golden test made here, its golden and their difference
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: golden-failures-${{ matrix.shard }}
+          path: test/goldens/failures
+          if-no-files-found: ignore
+          retention-days: 14
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: lcov-${{ matrix.shard }}
