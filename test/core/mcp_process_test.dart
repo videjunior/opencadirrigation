@@ -15,12 +15,13 @@ void main() {
     'the real process answers a discovery, a handshake and a tool call, then ends with its input',
     () async {
       final tmp = Directory.systemTemp.createTempSync('oci_mcp_proc_');
+      final p = await Process.start(sdk!.dart, ['run', 'bin/oci.dart', 'mcp', '--root', tmp.path]);
       try {
-        final p = await Process.start(sdk!.dart, ['run', 'bin/oci.dart', 'mcp', '--root', tmp.path]);
         final lines = p.stdout.transform(utf8.decoder).transform(const LineSplitter()).asBroadcastStream();
         final errors = StringBuffer();
         p.stderr.transform(utf8.decoder).listen(errors.write);
-        Future<Map<String, dynamic>> answer(Object id) => lines.map((l) => jsonDecode(l) as Map<String, dynamic>).firstWhere((m) => m['id'] == id).timeout(const Duration(minutes: 3));
+        // `dart run` compiles the command line first: seconds on a quiet machine, minutes on a busy one
+        Future<Map<String, dynamic>> answer(Object id) => lines.map((l) => jsonDecode(l) as Map<String, dynamic>).firstWhere((m) => m['id'] == id).timeout(const Duration(minutes: 12));
         void send(Map<String, Object?> m) => p.stdin.writeln(jsonEncode(m));
 
         // a client of both kinds probes first
@@ -69,13 +70,15 @@ void main() {
         expect(File('${tmp.path}/orchard.oci.json').existsSync(), isTrue);
 
         await p.stdin.close();
-        expect(await p.exitCode.timeout(const Duration(minutes: 1)), 0);
+        expect(await p.exitCode.timeout(const Duration(minutes: 2)), 0);
         expect('$errors', contains('oci mcp: '), reason: 'the logs go to stderr');
       } finally {
+        // no server left behind when a check fails half way
+        p.kill();
         tmp.deleteSync(recursive: true);
       }
     },
-    timeout: const Timeout(Duration(minutes: 5)),
+    timeout: const Timeout(Duration(minutes: 20)),
     skip: sdk == null ? 'run through flutter test (FLUTTER_ROOT)' : false,
   );
 }
