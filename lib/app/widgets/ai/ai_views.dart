@@ -804,6 +804,21 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // another model's check of the answer before it
+          if (it.second)
+            Row(
+              children: [
+                Icon(Icons.fact_check_outlined, size: 14, color: Cad.fg60),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    t('ai.second.by', {'m': it.model}),
+                    key: const Key('ai_second_title'),
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Cad.fg70),
+                  ),
+                ),
+              ],
+            ),
           for (final call in it.calls) _callRow(call),
           if (it.text.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 2), child: aiRichText(it.text)),
           if (it.running)
@@ -909,12 +924,62 @@ class _AiChatViewState extends State<AiChatView> implements AiPasteTarget {
                     onPressed: () => _insertText(aiPlainText(it.text)),
                   ),
                 ],
+                // a second opinion on the last answer, from another model
+                if (!it.second && it.text.isNotEmpty && identical(it, _lastOwnAnswer()) && ai.canAskSecondOpinion) _secondButton(),
+                // and the conversation's own model answering it
+                if (it.second && it.text.isNotEmpty && !ai.busy && identical(it, ai.items.last))
+                  TextButton.icon(
+                    key: const Key('ai_second_answer'),
+                    onPressed: () => ai.answerSecondOpinion(it),
+                    icon: const Icon(Icons.reply, size: 15),
+                    label: Text(t('ai.second.forward'), style: const TextStyle(fontSize: 12)),
+                  ),
               ],
             ),
           // the costs and the cache by step
           if (!it.running && it.steps.isNotEmpty) AiStepCosts(key: ObjectKey(it), c: c, item: it),
         ],
       ),
+    );
+  }
+
+  /// The last answer of the conversation's own model (not a second opinion).
+  AiItem? _lastOwnAnswer() {
+    for (var i = ai.items.length - 1; i >= 0; i--) {
+      final x = ai.items[i];
+      if (x.kind == AiItemKind.assistant && !x.second) return x;
+    }
+    return null;
+  }
+
+  /// The second opinion: the models that can give one, the other companies'
+  /// first; choosing one sends it the question, the answer and the project.
+  Widget _secondButton() {
+    final t = c.t;
+    final models = ai.secondOpinionModels().take(10).toList();
+    return PopupMenuButton<AiModel>(
+      key: const Key('ai_second'),
+      tooltip: t('ai.second'),
+      padding: EdgeInsets.zero,
+      icon: const Icon(Icons.fact_check_outlined, size: 16),
+      onSelected: (m) => ai.secondOpinion(by: m),
+      itemBuilder: (_) => [
+        PopupMenuItem<AiModel>(
+          enabled: false,
+          height: 36,
+          child: SizedBox(
+            width: 260,
+            child: Text(t('ai.second.sends'), style: TextStyle(fontSize: 11, color: Cad.fg60)),
+          ),
+        ),
+        for (final m in models)
+          PopupMenuItem<AiModel>(
+            key: Key('ai_second_${m.id}'),
+            value: m,
+            height: 36,
+            child: Text('${m.label.replaceFirst(' (${m.provider.company})', '')} · ${m.provider.company}', style: const TextStyle(fontSize: 12.5)),
+          ),
+      ],
     );
   }
 

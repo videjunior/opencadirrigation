@@ -52,4 +52,25 @@ const _aip = <String, (String, String, String)>{
     'Este modelo no lee imágenes: el asistente trabaja sin ver el dibujo ni el mapa.',
   ),
   'ai.model.browse': ('Mais modelos…', 'More models…', 'Más modelos…'),
+  // ---- a second opinion: another model checks the last answer
+  'ai.cmd.second': (
+    'pede a outro modelo uma segunda opinião sobre a última resposta',
+    'asks another model for a second opinion on the last answer',
+    'pide a otro modelo una segunda opinión sobre la última respuesta',
+  ),
+  'ai.second': ('Segunda opinião', 'Second opinion', 'Segunda opinión'),
+  'ai.second.by': ('Segunda opinião de {m}', 'Second opinion from {m}', 'Segunda opinión de {m}'),
+  'ai.second.none': ('Ainda não há uma resposta para revisar.', 'There is no answer to review yet.', 'Aún no hay una respuesta que revisar.'),
+  'ai.second.status': ('{m} está revisando a resposta…', '{m} is reviewing the answer…', '{m} está revisando la respuesta…'),
+  'ai.second.sends': (
+    'Outro modelo confere a resposta: a pergunta, a resposta e os dados do projeto vão para a empresa dele.',
+    'Another model checks the answer: the question, the answer and the project data go to its company.',
+    'Otro modelo comprueba la respuesta: la pregunta, la respuesta y los datos del proyecto van a su empresa.',
+  ),
+  'ai.second.forward': ('Responder à revisão', 'Answer the review', 'Responder a la revisión'),
+  'ai.second.forward.prompt': (
+    'Outro modelo ({m}) revisou a sua última resposta. Confira cada ponto no projeto, com as ferramentas, diga quais procedem e corrija o que for preciso.',
+    'Another model ({m}) reviewed your last answer. Check each point against the project, with the tools, say which ones hold and correct what needs correcting.',
+    'Otro modelo ({m}) revisó su última respuesta. Compruebe cada punto en el proyecto, con las herramientas, diga cuáles proceden y corrija lo que haga falta.',
+  ),
 };

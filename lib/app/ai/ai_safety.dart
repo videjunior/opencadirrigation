@@ -8,7 +8,7 @@
 library;
 
 /// The tags the app wraps content in, in the messages to the model.
-const aiWrapperTags = ['attachment', 'project_data', 'project_notes', 'user_marks', 'photo_place', 'user_instructions', 'attachment_page'];
+const aiWrapperTags = ['attachment', 'project_data', 'project_notes', 'user_marks', 'photo_place', 'user_instructions', 'attachment_page', 'second_opinion', 'question', 'answer'];
 
 final _tagLike = RegExp('<(/?)\\s*(${aiWrapperTags.join('|')})\\b', caseSensitive: false);
 

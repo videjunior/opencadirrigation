@@ -6858,9 +6858,9 @@ const _base = <String, (String, String, String)>{
   'ai.panel.show': ('Mostrar o assistente de IA', 'Show the AI assistant', 'Mostrar el asistente de IA'),
   'ai.panel.hide': ('Ocultar o assistente de IA', 'Hide the AI assistant', 'Ocultar el asistente de IA'),
   'ai.cmd.hint': (
-    'Comandos rápidos: /design, /check, /review, /report, /quote, /export, /plan, /new, /clear, /cost.',
-    'Quick commands: /design, /check, /review, /report, /quote, /export, /plan, /new, /clear, /cost.',
-    'Comandos rápidos: /design, /check, /review, /report, /quote, /export, /plan, /new, /clear, /cost.',
+    'Comandos rápidos: /design, /check, /review, /second, /report, /quote, /export, /plan, /new, /clear, /cost.',
+    'Quick commands: /design, /check, /review, /second, /report, /quote, /export, /plan, /new, /clear, /cost.',
+    'Comandos rápidos: /design, /check, /review, /second, /report, /quote, /export, /plan, /new, /clear, /cost.',
   ),
   'ai.cmd.new': ('começa uma conversa nova', 'starts a new conversation', 'empieza una conversación nueva'),
   'ai.cmd.clear': ('limpa a conversa', 'clears the conversation', 'limpia la conversación'),
