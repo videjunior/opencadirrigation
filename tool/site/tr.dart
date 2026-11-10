@@ -6,7 +6,7 @@ const _tr = SiteText(
   keywords: 'yapay zekâ ile sulama projesi, yapay zeka ile sulama projesi, yapay zekâ destekli sulama projelendirme yazılımı, otomatik sulama projelendirmesi, otomatik yağmurlayıcı yerleşimi, sulama için yapay zekâ asistanı, sulama projesi, sulama projelendirme yazılımı, açık kaynak sulama yazılımı, sulama yazılımı, sulama CAD, basınçlı sulama, damla sulama, mini yağmurlayıcı, yağmurlama sulama, center pivot, hidrolik hesap, boru çapı hesabı, sulama üniformitesi, DXF, DWG, bahçe sulama, tarımsal sulama, ücretsiz sulama programı',
   h1: 'Yapay zekâ asistanlı, ücretsiz ve açık kaynaklı sulama projelendirme yazılımı',
   tagline: 'Tarlayı, bahçeyi ya da sahayı tarif edin ve bırakın yapay zekâ asistanı yağmurlayıcıları ve damla hatlarını yerleştirsin, boru güzergâhlarını çizsin, sistemi boyutlandırsın; ya da otomatik araçlarla kendiniz çizin. Damla, mini yağmurlayıcı, yağmurlama ve center pivot sistemleri için, doğrudan tarayıcıda, hiçbir şey kurmadan, projeleriniz kendi bilgisayarınızda kalarak.',
-  intro: 'OpenCADIrrigation, CAD çizimini, hidrolik şebekeyi, hesabı ve bir yapay zekâ asistanını tek bir yerde toplar. Alanı çizin ya da yapay zekânın araziyi uydu görüntüsünde bulmasına izin verin; lateralleri, vanaları ve ana hattı elle, tek tıkla çalışan oluşturucularla ya da yapay zekâdan isteyerek yerleştirin; F5 tuşuna basın ve boru çapları, basınçlar, üniformite, sulama vardiyaları, malzeme listesi ve yazdırmaya hazır raporlar elde edin. Asistan, kendi API anahtarınızla ve doğrudan tarayıcıdan Claude (Anthropic) veya GPT (OpenAI) modelleriyle çalışır. 20 dilde kullanılabilir ve bilgisayarınızın dilini izler.',
+  intro: 'OpenCADIrrigation, CAD çizimini, hidrolik şebekeyi, hesabı ve bir yapay zekâ asistanını tek bir yerde toplar. Alanı çizin ya da yapay zekânın araziyi uydu görüntüsünde bulmasına izin verin; lateralleri, vanaları ve ana hattı elle, tek tıkla çalışan oluşturucularla ya da yapay zekâdan isteyerek yerleştirin; F5 tuşuna basın ve boru çapları, basınçlar, üniformite, sulama vardiyaları, malzeme listesi ve yazdırmaya hazır raporlar elde edin. Asistan, kendi API anahtarınızla ve doğrudan tarayıcıdan Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) modelleriyle ya da OpenRouter üzerinden yüzlerce başka modelle çalışır. 20 dilde kullanılabilir ve bilgisayarınızın dilini izler.',
   openApp: 'Uygulamayı aç',
   tutorial: 'Etkileşimli eğitim',
   seeExamples: 'Hazır örnekleri gör',
@@ -27,7 +27,7 @@ const _tr = SiteText(
     ),
     (
       'Anahtar sizin, kontrol sizde',
-      'En üst, orta ve hızlı sınıflardaki Claude (Anthropic) veya GPT (OpenAI) modelleri, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan çağrılır. Salt okunur, önce plan, her değişiklikten önce sorma ya da otomatik uygulama modları, görev başına adım sınırı ve harcama sınırı vardır; her yanıt geri alınabilir ve Gönder’e basmadan hiçbir şey gönderilmez.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) modelleri ya da OpenRouter üzerinden bazıları ücretsiz yüzlerce model, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan çağrılır. Salt okunur, önce plan, her değişiklikten önce sorma ya da otomatik uygulama modları, görev başına adım sınırı ve harcama sınırı vardır; her yanıt geri alınabilir, başka bir model ikinci görüş verebilir ve Gönder’e basmadan hiçbir şey gönderilmez.',
     ),
   ],
   aiCta: 'Yapay zekâ asistanını aç',
@@ -35,11 +35,11 @@ const _tr = SiteText(
   features: [
     (
       'Yapay zekâ asistanı',
-      'İsteğe bağlı: yapay zekâya proje hakkında sorular sorun ya da sizin yerinize çizmesine ve projelendirmesine izin verin. Uydu görüntüsüne ve araziye bakarak yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, boru güzergâhlarını çizer, boyutlandırmayı ve otomatik araçları çalıştırır; bunu Claude (Anthropic) veya GPT (OpenAI) modelleriyle, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan yapar. Gönder düğmesine basmadan hiçbir şey gönderilmez; her değişiklik onayınızı bekler (ya da isterseniz otomatik uygulanır) ve geri alınabilir.',
+      'İsteğe bağlı: yapay zekâya proje hakkında sorular sorun ya da sizin yerinize çizmesine ve projelendirmesine izin verin. Uydu görüntüsüne ve araziye bakarak yağmurlayıcıları ve damla hatlarını yerleştirir, tarlaları bloklara böler, boru güzergâhlarını çizer, boyutlandırmayı ve otomatik araçları çalıştırır; bunu Anthropic, OpenAI, Google, xAI, Meta veya OpenRouter modelleriyle, kendi API anahtarınızla ve arada hiçbir sunucu olmadan doğrudan tarayıcıdan yapar. Gönder düğmesine basmadan hiçbir şey gönderilmez; her değişiklik onayınızı bekler (ya da isterseniz otomatik uygulanır) ve geri alınabilir.',
     ),
     (
       'Otomatik projelendirme ve boyutlandırma',
-      'Tek tıkla lateral blokları ve yağmurlayıcı ızgaraları, eşit yağmurlama hızlı memelerle yağmurlayıcı yerleşimi, debiye göre bölgeleme, boru ve vana güzergâhlandırma, tarlanın bloklara bölünmesi, pivotun tarlaya uydurulması ve hava görüntülerinde bitki örtüsü tespiti; borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde, boru maliyeti ile enerji dengelenerek doğrusal programlamayla boyutlandırılır.',
+      'Tek tıkla lateral blokları ve yağmurlayıcı ızgaraları, eşit yağmurlama hızlı memelerle yağmurlayıcı yerleşimi, debiye göre bölgeleme, boru ve vana güzergâhlandırma, tarlanın bloklara bölünmesi, pivotun tarlaya uydurulması ve hava görüntülerinden bitki örtüsünün ve dikim sıralarının (yön, aralık ve sayı) okunması; borular, damlatıcı basınç aralığı ve boru basınç sınıfı içinde, boru maliyeti ile enerji dengelenerek doğrusal programlamayla boyutlandırılır.',
     ),
     (
       'Tam CAD çizimi',
@@ -58,6 +58,18 @@ const _tr = SiteText(
       'Eş yükselti eğrileri, kot noktaları, kırılma hatlarıyla üçgenlenmiş sayısal arazi modeli, çevrimiçi yükseklik verisi, LAS nokta bulutları, eğim haritaları ve boy kesitler; indirilen ya da elle girilen saha iklimi, su ihtiyacı hesabı için gelişme dönemlerine göre FAO-56 bitkileri, toprak türleri, etkili yağış ve tuz yıkama, ayrıca peyzaj su bütçeleri.',
     ),
     (
+      'İklim riski ve sulama tahmini',
+      'Tasarımı sahanın 1984’ten bu yana günlük iklimiyle sınar: kurak bir yılın su ihtiyacı, tasarlanan sistemin ne sıklıkla yetersiz kalacağı, en kötü yıllar ve kurak dönemler. Ayrıca sahanın hava tahminini önümüzdeki günlerde neyin sulanacağına dönüştürür: sula veya atla, derinlik, çalışma süresi ve kontrol ünitesi için yüzde ayar (water budget).',
+    ),
+    (
+      'Plan üzerinde oynatılan program',
+      'Sulama programını çizim üzerinde oynatır: her an çalışan bölgeler, hıza ve debiye göre borular, pompalar ve rezervuar seviyesi. Döngüyü hareketli GIF olarak, programı da telefon için bir takvim dosyası olarak dışa aktarır.',
+    ),
+    (
+      'Tasarım karnesi',
+      'Tasarlanan projeye yedi kategoride (düzgünlük, hidrolik, enerji, su ve toprak, ekonomi, sağlamlık ve eksiksizlik) 0’dan 100’e puan ve A’dan E’ye harf notu verir; her göstergenin hedefini ve bu hedefin nereden geldiğini gösterir ve önce neyin iyileştirileceğini söyler.',
+    ),
+    (
       'Raporlar, paftalar ve malzemeler',
       'Bölgeler, borular, damlatıcılar, üniformite (CU, DU, EU), kontrol ünitesi programı ve vana kablolaması; bağlantı parçalarını içeren malzeme listesi ile işçilik, vergi ve geri ödeme süresini kapsayan fiyat teklifi; yapım detayları ve grafikler içeren PDF pafta setleri (20 dilden herhangi birinde) ve her tablo için Excel, CSV ve TXT çıktısı.',
     ),
@@ -66,8 +78,12 @@ const _tr = SiteText(
       'DXF, DWG, PDF çizimler, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF ve görüntüleri içe aktarır; özgün CAD nesneleriyle DXF 2000 (veya R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp ve IFC dışa aktarır.',
     ),
     (
+      'Betikler ve yapay zekâ ajanları için açık motor',
+      'Hesap motoru saf Dart ile yazılmıştır, bir komut satırı arayüzü vardır ve Model Context Protocol (MCP) ile konuşur: başka yapay zekâ uygulamaları onunla kendi bilgisayarınızda, seçtiğiniz bir klasörle sınırlı olarak proje oluşturabilir, boyutlandırabilir ve denetleyebilir.',
+    ),
+    (
       'Üretici katalogları',
-      'JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) ve dosyadan ya da URL’den yüklenen kendi paketleriniz.',
+      'JSON biçiminde kullanıma hazır üretici katalogları (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit), dosyadan ya da URL’den yüklenen kendi paketleriniz ve bir veri sayfasının görüntüsünden sayısallaştırılan pompa, emitör ve yağmurlayıcı eğrileri.',
     ),
     (
       'Çevrimdışı ve arazide',
@@ -128,15 +144,19 @@ const _tr = SiteText(
     ),
     (
       'Hangi yapay zekâ modellerini kullanır?',
-      'Anthropic’in Claude modelleri (varsayılan olarak Claude Opus 5.5, ayrıca Claude Fable 5.1, Claude Sonnet 5.5 ve Claude Haiku 5.5) ve OpenAI’ın GPT modelleri (GPT-6 Astra, GPT-6.1 Sol ve GPT-6 Luna): her iki şirketten de en üst, orta ve hızlı sınıfta modeller; her biri beş akıl yürütme derinliği sunar. Modeli asistanın ayarlarından seçer ve kendi API anahtarınızı yapıştırırsınız; panel her yanıtın token sayısını ve tahmini maliyetini gösterir, adım sınırı ve harcama sınırı da uzayan bir görevi durdurur.',
+      'Kendi API anahtarınızla altı şirketin modelleri: Anthropic’in Claude modelleri (varsayılan olarak Claude Opus 5.5, ayrıca Claude Fable 5.2, Claude Sonnet 5.5 ve Claude Haiku 5.5), OpenAI’ın GPT modelleri (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra ve GPT-6 Luna), Google’ın Gemini modelleri (Gemini 4 Argon, Gemini 3.8 Flash ve Gemini 3.5 Flash-Lite), xAI’ın Grok modelleri (Grok 4.7 ve Grok 4.3), Meta’nın Muse modelleri (Muse Wonder, Muse Spark ve Muse Ember) ve tek bir OpenRouter anahtarıyla, onun listesindeki yüzlerce modelden herhangi biri. Şirketi ve modeli asistanın ayarlarından seçer ve anahtarınızı yapıştırırsınız; panel her yanıtın token sayısını ve tahmini maliyetini gösterir, adım sınırı ve harcama sınırı uzayan bir görevi durdurur, başka bir model de bir yanıt hakkında ikinci görüş verebilir.',
+    ),
+    (
+      'Yapay zekâ asistanını ücretsiz kullanabilir miyim?',
+      'Program ücretsizdir; asistanın ise kullandığınızı faturalandıran bir yapay zekâ şirketinden alınmış bir anahtara ihtiyacı vardır. Sınırları içinde hiçbir ücret gerektirmeyen iki yol vardır: Google’ın Gemini Flash modellerinin ücretsiz katmanı (Google’ın sunduğu yerlerde) ve OpenRouter’ın ücretsiz modelleri. Bu sınırları şirketler belirler ve ücretsiz bir katmanda gönderdiklerinizi ürünlerini geliştirmek için kullanabilirler; bu yüzden gizli bir projeyi göndermeden önce koşullarını okuyun.',
     ),
     (
       'Yapay zekâ asistanı neyi, nereye gönderir?',
-      'Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz hizmet sağlayıcının (Anthropic veya OpenAI) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez. Sesle dikteyi kullanırsanız bu işi tarayıcının kendi konuşma tanıma özelliği yapar ve sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple). Kaydedilen sohbetler tarayıcınızda kalır, hiçbir zaman proje dosyalarına veya bağlantılara girmez.',
+      'Gönder’e basana kadar hiçbir şey. Bastığınızda mesajınız, eklediğiniz dosyalar ve işaretlediğiniz proje verileri, asistanın yanıt verirken kullandığı araçların sonuçlarıyla (çizimin görüntüleri dahil) birlikte, arada OpenCADIrrigation’ın hiçbir sunucusu olmadan doğrudan tarayıcınızdan seçtiğiniz şirketin (Anthropic, OpenAI, Google, xAI, Meta ya da isteği modeli çalıştıran şirkete ileten OpenRouter) API’sine gider. Hizmet sağlayıcı kullanımı hesabınıza faturalandırır. Anahtar, cihazda hatırlanmasını seçmediğiniz sürece oturum boyunca yalnızca bellekte kalır ve hiçbir zaman proje dosyalarına, paylaşım bağlantılarına veya dışa aktarılan dosyalara girmez. Sesle dikteyi kullanırsanız bu işi tarayıcının kendi konuşma tanıma özelliği yapar ve sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple). Kaydedilen sohbetler tarayıcınızda kalır, hiçbir zaman proje dosyalarına veya bağlantılara girmez. İkinci görüş istediğinizde soru, yanıt ve proje verileri, ikinci görüşü veren modelin şirketine gönderilir.',
     ),
     (
       'OpenCADIrrigation ücretsiz mi?',
-      'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez. Ayrıca MIT lisansıyla açık kaynaklıdır; kaynak kodu GitHub’da yayımlanmıştır. İsteğe bağlı yapay zekâ asistanı kendi Anthropic veya OpenAI hesabınızı kullanır ve hizmet sağlayıcı bu kullanımı o hesaba faturalandırır.',
+      'Evet. Mesleki, akademik ve kişisel kullanım için ücretsizdir; kayıt gerekmez. Ayrıca MIT lisansıyla açık kaynaklıdır; kaynak kodu GitHub’da yayımlanmıştır. İsteğe bağlı yapay zekâ asistanı bir yapay zekâ şirketindeki (Anthropic, OpenAI, Google, xAI, Meta veya OpenRouter) kendi hesabınızı kullanır ve şirket bu kullanımı o hesaba faturalandırır; bu şirketlerin bazı modelleri sınırlar dahilinde ücretsiz kullanılabilir.',
     ),
     (
       'Kimler için?',
@@ -145,11 +165,11 @@ const _tr = SiteText(
     ('Bir şey kurmam gerekiyor mu?', 'Hayır. Chrome, Edge, Firefox ve Safari’de, bilgisayarda, tablette ve telefonda çalışır; kendi penceresinde açılan bir uygulama (PWA) olarak da kurulabilir.'),
     (
       'Çevrimdışı çalışır mı?',
-      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 20 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
+      'Evet, ilk ziyaretten sonra: uygulama kendi kopyasını tarayıcıda saklar (yaklaşık 20 MB, her sürüm için bir kez); böylece kurulu uygulamanın ya da sitenin sonraki açılışı, ofiste veya arazide, ağ bağlantısı olmadan çalışır. Altlık haritalar, çevrimiçi yükseklik ve iklim verileri, hava tahmini, URL’den yüklenen kataloglar ve yapay zekâ asistanı ise yine bağlantı gerektirir; yeni bir sürüm arka planda indirilir ve bir sonraki açılıştan itibaren kullanılır.',
     ),
     (
       'Projelerim bulutta mı saklanıyor?',
-      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde sakladığınız .oci.json dosyaları olarak kaydedilir; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey yüklenmez ve OpenCADIrrigation’ın kopya saklayabilecek bir sunucusu yoktur. Her yazı sisteminin ve simgenin yazı tipleri bu sitenin kendisinden gelir. Tarayıcı yine de başka hizmetlere bağlanır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, adres arama, URL’den yüklenen kataloglar ve kullanırsanız yapay zekâ asistanı (yalnızca seçtiğiniz sağlayıcı, Anthropic veya OpenAI) siz kullandığınızda kendi hizmetlerine bağlanır; site ve uygulama da ziyaretleri çerez kullanan Google Analytics ile sayar (bunu sayfaların altındaki Çerez ayarları ile kapatabilirsiniz). Gizlilik politikası her hizmeti ve neyi aldığını listeler.',
+      'Hayır. Projeler tarayıcınızda ve istediğiniz yerde sakladığınız .oci.json dosyaları olarak kaydedilir; paylaşım bağlantısı projeyi adresin kendi içinde taşır, bu yüzden hiçbir şey yüklenmez ve OpenCADIrrigation’ın kopya saklayabilecek bir sunucusu yoktur. Her yazı sisteminin ve simgenin yazı tipleri bu sitenin kendisinden gelir. Tarayıcı yine de başka hizmetlere bağlanır: altlık haritalar, çevrimiçi yükseklik ve iklim verileri, hava tahmini, adres arama, URL’den yüklenen kataloglar ve kullanırsanız yapay zekâ asistanı (yalnızca seçtiğiniz şirket: Anthropic, OpenAI, Google, xAI, Meta veya OpenRouter) siz kullandığınızda kendi hizmetlerine bağlanır; site ve uygulama da ziyaretleri çerez kullanan Google Analytics ile sayar (bunu sayfaların altındaki Çerez ayarları ile kapatabilirsiniz). Gizlilik politikası her hizmeti ve neyi aldığını listeler.',
     ),
     (
       'Hidrolik hesap nasıl yapılır?',
@@ -208,9 +228,11 @@ const _legalTr = LegalText(
     LegalSection('Kullandığınızda tarayıcınızın bağlandığı hizmetler', [
       '- Altlık haritalar: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (kendi anahtarınızla) veya ayarladığınız adres, IP adresini ve ekrandaki harita alanını alır.',
       '- Çevrimiçi yükseklik ve iklim: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData ve NASA POWER alanın koordinatlarını alır, projeden başka hiçbir şey almaz.',
+      '- Hava tahmini (Tasarım → Agronomi → Sulama tahmini): seçtiğiniz MET Norway veya Open-Meteo, sahanın dört ondalık basamağa yuvarlanmış koordinatlarını alır, projeden başka hiçbir şey almaz.',
       '- Adres arama: Nominatim (OpenStreetMap) yazdığınız adresi alır.',
       '- URL’den yüklenen kataloglar: o adresin sunucusu.',
-      '- Yapay zekâ asistanı (isteğe bağlı): kendi anahtarınızla Anthropic veya OpenAI. Gönder’e basmadan hiçbir şey gönderilmez; bastığınızda iletiniz, eklediğiniz dosyalar, işaretlediğiniz proje verileri, önceki iletiler ve asistan çalışırken kullandığı araçların sonuçları (çizimin resimleri dahil) gider. O şirketin bunlarla ne yapacağını onunla yaptığınız sözleşme belirler ve kullanım ücretini şirket hesabınıza yansıtır.',
+      '- Yapay zekâ asistanı (isteğe bağlı): kendi anahtarınızla seçtiğiniz şirket, yani Anthropic, OpenAI, Google, xAI, Meta veya OpenRouter (OpenRouter isteği, seçtiğiniz modeli çalıştıran şirkete iletir ve isteğin OpenCADIrrigation’dan geldiğini bildirir; sizinle ilgili hiçbir şey bildirmez). Gönder’e basmadan hiçbir şey gönderilmez; bastığınızda iletiniz, eklediğiniz dosyalar, işaretlediğiniz proje verileri, önceki iletiler ve asistan çalışırken kullandığı araçların sonuçları (çizimin resimleri dahil) gider. İkinci görüş istediğinizde soru, yanıt ve proje verileri, ikinci görüşü veren modelin şirketine gönderilir. Her şirketin bunlarla ne yapacağını onunla yaptığınız sözleşme belirler ve kullanım ücretini şirket hesabınıza yansıtır; ücretsiz bir katmanda (Google’ın Gemini Flash modelleri, OpenRouter’ın ücretsiz modelleri) şirket, gönderdiklerinizi ürünlerini geliştirmek için kullanabilir.',
+      '- OpenRouter’ın model listesi: asistanın ayarlarında “Daha fazla model…” seçeneğini açtığınızda, anahtarınız olmadan OpenRouter’dan indirilir.',
       '- Sesle dikte: tarayıcının konuşma tanıma özelliği sesi tarayıcının üreticisine gönderir (Chrome’da Google, Edge’de Microsoft, Safari’de Apple).',
       'Bu hizmetlerin her birinin kendi gizlilik politikası vardır ve verileri ülkenizin dışında işleyebilir.',
     ]),
@@ -234,9 +256,9 @@ const _legalTr = LegalText(
       'Yazılım, ticari elverişlilik, belirli bir amaca uygunluk ve hak ihlali bulunmaması garantileri dahil, açık veya örtük hiçbir garanti olmaksızın “olduğu gibi” sağlanır. Yazarlar veya telif hakkı sahipleri, yazılımdan veya kullanımından doğan hiçbir talep, zarar veya başka bir yükümlülükten hiçbir durumda sorumlu tutulamaz (MIT lisansının koşulları).',
     ]),
     LegalSection('Başkalarının verileri ve hizmetleri', [
-      'Haritalar, görüntüler, yükseklik, iklim, adres arama ve üretici katalogları, kendi koşulları ve lisanslarıyla üçüncü taraflardan gelir (uygulamada Yardım → Hakkında’ya bakın). Katalog verileri yayımlanmış tablolardan alınır ve güncelliğini yitirmiş olabilir: satın almadan önce modelleri, eğrileri ve fiyatları güncel veri sayfalarıyla doğrulayın.',
-      'Profesyonel işlerde her kaynağı kendi koşulları içinde kullanın: uygulamadaki Yardım → Veri kullanım koşulları, her birinin ücretsiz kullanımının neye izin verdiğini söyler. Bazı ücretsiz hizmetler yalnızca ticari olmayan kullanım içindir (ücretsiz Open-Meteo hizmetleri ve CARTO altlık haritaları); bu yüzden uygulama varsayılan olarak iklimi NASA POWER’dan, yüksekliği Terrain Tiles’tan indirir. OpenStreetMap Vakfı’nın karo sunucusu yoğun kullanımı ve çevrimdışı kullanım için alan indirmeyi yasaklar; bu yüzden arazi için saklanan harita yalnızca daha önce gösterilmiş karoları kullanır. Paftalar, PDF’ler ve rapor her kaynağın atfını taşır: işi teslim ederken veya yayımlarken bunu koruyun.',
-      'İsteğe bağlı yapay zekâ asistanı, Anthropic veya OpenAI’daki kendi hesabınızla, o şirketin koşulları altında çalışır ve kullanımı o şirket faturalandırır. Bir model yanılabilir: önerdiği değişiklikleri bilerek onaylayın ve yaptığı işi kontrol edin.',
+      'Haritalar, görüntüler, yükseklik, iklim, hava tahmini, adres arama ve üretici katalogları, kendi koşulları ve lisanslarıyla üçüncü taraflardan gelir (uygulamada Yardım → Hakkında’ya bakın). Katalog verileri yayımlanmış tablolardan alınır ve güncelliğini yitirmiş olabilir: satın almadan önce modelleri, eğrileri ve fiyatları güncel veri sayfalarıyla doğrulayın.',
+      'Profesyonel işlerde her kaynağı kendi koşulları içinde kullanın: uygulamadaki Yardım → Veri kullanım koşulları, her birinin ücretsiz kullanımının neye izin verdiğini söyler. Bazı ücretsiz hizmetler yalnızca ticari olmayan kullanım içindir (ücretsiz Open-Meteo hizmetleri ve CARTO altlık haritaları); bu yüzden uygulama varsayılan olarak iklimi NASA POWER’dan, hava tahminini MET Norway’den, yüksekliği Terrain Tiles’tan indirir. OpenStreetMap Vakfı’nın karo sunucusu yoğun kullanımı ve çevrimdışı kullanım için alan indirmeyi yasaklar; bu yüzden arazi için saklanan harita yalnızca daha önce gösterilmiş karoları kullanır. Paftalar, PDF’ler ve rapor her kaynağın atfını taşır: işi teslim ederken veya yayımlarken bunu koruyun.',
+      'İsteğe bağlı yapay zekâ asistanı, seçtiğiniz yapay zekâ şirketindeki (Anthropic, OpenAI, Google, xAI, Meta veya OpenRouter) kendi hesabınızla, o şirketin koşulları altında çalışır ve kullanımı o şirket faturalandırır. Bir model yanılabilir: önerdiği değişiklikleri bilerek onaylayın ve yaptığı işi kontrol edin.',
     ]),
     LegalSection('İçeriğiniz', ['Projeleriniz, çizimleriniz, görüntüleriniz ve dosyalarınız size aittir: bunlardan ve içe aktardıklarınızı kullanma hakkına sahip olmaktan siz sorumlusunuz.']),
     LegalSection('İletişim', ['Sorular ve sorunlar: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Verilerinizin nasıl işlendiği: gizlilik politikası.']),

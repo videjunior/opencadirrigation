@@ -86,6 +86,9 @@
     "lbl.short.headLoss": "symbol",
     "name.report": "file name",
     "bomSel.file": "file name",
+    "fct.file": "file-name stem (ASCII letters, digits and _)",
+    "ply.file": "file-name stem (ASCII letters, digits and _)",
+    "dgz.file": "file-name stem (ASCII letters, digits and _)",
     "hist.aiTool": "format",
     "ai.status.note": "format",
     "ai.elapsed": "seconds",
@@ -143,7 +146,7 @@
     "ja": ["ok"],
     "ur": ["compass.n", "compass.ne", "compass.e", "compass.se", "compass.s", "compass.sw", "compass.w", "compass.nw"]
   },
-  "maxSameAsEnglish": {"de": 126, "fr": 127, "ha": 71, "id": 113, "sw": 25, "tr": 25, "vi": 10},
+  "maxSameAsEnglish": {"de": 127, "fr": 129, "ha": 71, "id": 115, "sw": 25, "tr": 25, "vi": 10},
   "terms": {
     "pt": [
       {"concept": "submain", "use": "linha de derivação", "avoid": ["submain", "submains"]},

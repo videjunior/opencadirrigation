@@ -475,7 +475,10 @@ void main() {
         'Firebase Hosting',
         'no font service is contacted',
         'Nominatim',
-        'Anthropic or OpenAI',
+        // (1.7.0: six AI companies, the weather forecast and OpenRouter's list of models)
+        'Anthropic, OpenAI, Google, xAI, Meta or OpenRouter',
+        'MET Norway or Open-Meteo',
+        'The list of OpenRouter\'s models',
         'LGPD',
         'GDPR',
         'ANPD',

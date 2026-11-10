@@ -6,7 +6,7 @@ const _vi = SiteText(
   keywords: 'thiết kế tưới bằng AI, phần mềm thiết kế tưới bằng AI, thiết kế tưới tự động, bố trí béc phun tự động, trợ lý AI thiết kế tưới, thiết kế tưới, phần mềm thiết kế tưới, phần mềm tưới mã nguồn mở, phần mềm tưới, CAD tưới, tưới có áp, tưới nhỏ giọt, béc phun mini, tưới phun mưa, pivot trung tâm, tính toán thủy lực, chọn đường kính ống, độ đồng đều tưới, DXF, DWG, tưới sân vườn, tưới nông nghiệp, phần mềm tưới miễn phí',
   h1: 'Phần mềm thiết kế tưới miễn phí, mã nguồn mở, có trợ lý AI',
   tagline: 'Mô tả lô ruộng, khu vườn hay sân bóng rồi để trợ lý AI bố trí béc phun và ống nhỏ giọt, vạch tuyến ống và tính kích thước hệ thống; hoặc tự vẽ bằng các công cụ tự động. Dành cho hệ thống tưới nhỏ giọt, béc phun mini, phun mưa và pivot trung tâm, chạy ngay trên trình duyệt, không cần cài đặt, dự án được lưu trên máy tính của bạn.',
-  intro: 'OpenCADIrrigation kết hợp bản vẽ CAD, mạng thủy lực, tính toán và trợ lý AI trong cùng một nơi. Vẽ khu tưới, hoặc để AI tìm khu đất trên ảnh vệ tinh; bố trí ống nhánh (lateral), van và đường ống chính bằng tay, bằng các công cụ tạo tự động chỉ với một cú nhấp hoặc nhờ AI; nhấn F5 và nhận đường kính ống, áp suất, độ đồng đều, ca vận hành, bảng kê vật tư và báo cáo sẵn sàng để in. Trợ lý dùng các mô hình Claude (Anthropic) hoặc GPT (OpenAI) với khóa API của riêng bạn, gọi thẳng từ trình duyệt. Có 20 ngôn ngữ, tự theo ngôn ngữ máy tính của bạn.',
+  intro: 'OpenCADIrrigation kết hợp bản vẽ CAD, mạng thủy lực, tính toán và trợ lý AI trong cùng một nơi. Vẽ khu tưới, hoặc để AI tìm khu đất trên ảnh vệ tinh; bố trí ống nhánh (lateral), van và đường ống chính bằng tay, bằng các công cụ tạo tự động chỉ với một cú nhấp hoặc nhờ AI; nhấn F5 và nhận đường kính ống, áp suất, độ đồng đều, ca vận hành, bảng kê vật tư và báo cáo sẵn sàng để in. Trợ lý chạy trên Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) hoặc, qua OpenRouter, hàng trăm mô hình khác, với khóa API của riêng bạn, gọi thẳng từ trình duyệt. Có 20 ngôn ngữ, tự theo ngôn ngữ máy tính của bạn.',
   openApp: 'Mở ứng dụng',
   tutorial: 'Hướng dẫn tương tác',
   seeExamples: 'Xem các ví dụ có sẵn',
@@ -27,7 +27,7 @@ const _vi = SiteText(
     ),
     (
       'Khóa của bạn, bạn làm chủ',
-      'Các mô hình Claude (Anthropic) hoặc GPT (OpenAI) ở các hạng cao nhất, trung bình và nhanh, dùng khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Các chế độ Chỉ đọc, Lập kế hoạch trước, Hỏi trước mỗi thay đổi hoặc Tự động áp dụng thay đổi; giới hạn số bước và mức trần chi phí cho mỗi tác vụ; hoàn tác cho từng câu trả lời; và không có gì được gửi đi trước khi bạn nhấn Gửi.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) hoặc hàng trăm mô hình qua OpenRouter, một số miễn phí, dùng khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Các chế độ Chỉ đọc, Lập kế hoạch trước, Hỏi trước mỗi thay đổi hoặc Tự động áp dụng thay đổi; giới hạn số bước và mức trần chi phí cho mỗi tác vụ; hoàn tác cho từng câu trả lời; ý kiến thứ hai từ một mô hình khác; và không có gì được gửi đi trước khi bạn nhấn Gửi.',
     ),
   ],
   aiCta: 'Mở trợ lý AI',
@@ -35,11 +35,11 @@ const _vi = SiteText(
   features: [
     (
       'Trợ lý AI',
-      'Tùy chọn: hỏi AI về dự án, hoặc để AI vẽ và thiết kế thay bạn. Trợ lý xem ảnh vệ tinh và địa hình, bố trí béc phun và ống nhỏ giọt, chia thửa ruộng, vạch tuyến ống, chạy tính toán thiết kế và các công cụ tự động, với các mô hình Claude (Anthropic) hoặc GPT (OpenAI) và khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Không có gì được gửi đi trước khi bạn nhấn Gửi, và mọi thay đổi đều chờ bạn phê duyệt (hoặc tự động áp dụng, nếu bạn chọn) và có thể hoàn tác.',
+      'Tùy chọn: hỏi AI về dự án, hoặc để AI vẽ và thiết kế thay bạn. Trợ lý xem ảnh vệ tinh và địa hình, bố trí béc phun và ống nhỏ giọt, chia thửa ruộng, vạch tuyến ống, chạy tính toán thiết kế và các công cụ tự động, với các mô hình của Anthropic, OpenAI, Google, xAI, Meta hoặc OpenRouter và khóa API của riêng bạn, gọi thẳng từ trình duyệt, không qua máy chủ trung gian. Không có gì được gửi đi trước khi bạn nhấn Gửi, và mọi thay đổi đều chờ bạn phê duyệt (hoặc tự động áp dụng, nếu bạn chọn) và có thể hoàn tác.',
     ),
     (
       'Tự động thiết kế và chọn kích thước',
-      'Khối ống nhánh và lưới béc phun chỉ với một cú nhấp, bố trí béc với cường độ mưa cân bằng, chia khu theo lưu lượng, vạch tuyến ống và van, chia thửa ruộng thành lô, khớp pivot vào thửa ruộng và nhận diện thảm thực vật trên ảnh hàng không; đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống, cân bằng chi phí ống và năng lượng.',
+      'Khối ống nhánh và lưới béc phun chỉ với một cú nhấp, bố trí béc với cường độ mưa cân bằng, chia khu theo lưu lượng, vạch tuyến ống và van, chia thửa ruộng thành lô, khớp pivot vào thửa ruộng, cùng thảm thực vật và hàng cây trồng (hướng, khoảng cách và số hàng) đọc từ ảnh hàng không; đường kính ống được chọn bằng quy hoạch tuyến tính trong dải áp suất của đầu tưới và cấp áp của ống, cân bằng chi phí ống và năng lượng.',
     ),
     (
       'Bản vẽ CAD đầy đủ',
@@ -58,6 +58,18 @@ const _vi = SiteText(
       'Đường đồng mức, điểm cao độ, mô hình số địa hình tam giác hóa có đường gãy, cao độ trực tuyến, đám mây điểm LAS, bản đồ độ dốc và mặt cắt dọc; khí hậu địa điểm tải về hoặc nhập tay, cây trồng FAO-56 theo giai đoạn sinh trưởng, loại đất, mưa hiệu quả và rửa mặn để tính nhu cầu nước, cùng ngân sách nước cảnh quan.',
     ),
     (
+      'Rủi ro khí hậu và dự báo tưới',
+      'Đối chiếu thiết kế với khí hậu theo ngày của địa điểm từ năm 1984: nhu cầu nước của một năm khô hạn, hệ thống đã thiết kế sẽ thiếu nước thường xuyên đến mức nào, những năm tệ nhất và các đợt khô hạn. Đồng thời chuyển dự báo thời tiết của địa điểm thành việc cần tưới trong những ngày tới: tưới hay không tưới, lượng tưới, thời gian tưới và % điều chỉnh (water budget) cho bộ điều khiển.',
+    ),
+    (
+      'Chương trình tưới phát trên mặt bằng',
+      'Phát chương trình tưới trên bản vẽ: các khu đang chạy, đường ống theo vận tốc và lưu lượng, máy bơm và mực nước hồ chứa ở từng thời điểm. Xuất chu kỳ thành ảnh GIF động và chương trình tưới thành tệp lịch cho điện thoại.',
+    ),
+    (
+      'Bảng điểm thiết kế',
+      'Chấm điểm dự án đã thiết kế từ 0 đến 100 và xếp loại từ A đến E theo bảy hạng mục (độ đồng đều, thủy lực, năng lượng, nước và đất, kinh tế, độ bền vững và độ hoàn chỉnh), kèm mục tiêu của từng chỉ số và nguồn gốc của mục tiêu đó, và cho biết cần cải thiện gì trước.',
+    ),
+    (
       'Báo cáo, bản vẽ và vật tư',
       'Khu vực, ống, đầu tưới, độ đồng đều (CU, DU, EU), chương trình bộ điều khiển và đi dây van; bảng kê vật tư kèm phụ kiện và báo giá gồm nhân công, thuế và thời gian hoàn vốn; bộ bản vẽ PDF kèm chi tiết thi công và biểu đồ, bằng bất kỳ ngôn ngữ nào trong số 20 ngôn ngữ, và mọi bảng đều xuất được ra Excel, CSV và TXT.',
     ),
@@ -66,8 +78,12 @@ const _vi = SiteText(
       'Nhập DXF, DWG, bản vẽ PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF và hình ảnh; xuất DXF 2000 với đối tượng CAD nguyên bản (hoặc R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp và IFC.',
     ),
     (
+      'Bộ máy tính toán mở cho tập lệnh và tác tử AI',
+      'Bộ máy tính toán viết hoàn toàn bằng Dart, có giao diện dòng lệnh và giao tiếp bằng Model Context Protocol (MCP): các ứng dụng AI khác có thể tạo, tính kích thước và kiểm tra dự án bằng nó ngay trên máy tính của bạn, chỉ trong phạm vi một thư mục do bạn chọn.',
+    ),
+    (
       'Danh mục nhà sản xuất',
-      'Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL.',
+      'Danh mục nhà sản xuất dạng JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) dùng được ngay, cùng các gói riêng của bạn tải từ tệp hoặc URL, và các đường đặc tính bơm, đầu tưới và béc phun được số hóa từ ảnh của bảng thông số.',
     ),
     (
       'Ngoại tuyến và ngoài thực địa',
@@ -121,15 +137,19 @@ const _vi = SiteText(
     ),
     (
       'Ứng dụng dùng những mô hình AI nào?',
-      'Các mô hình Claude của Anthropic (Claude Opus 5.5 theo mặc định, Claude Fable 5.1, Claude Sonnet 5.5 và Claude Haiku 5.5) và các mô hình GPT của OpenAI (GPT-6 Astra, GPT-6.1 Sol và GPT-6 Luna): mỗi công ty có một hạng cao nhất, một hạng trung bình và một hạng nhanh, mỗi mô hình có năm mức độ sâu suy luận. Bạn chọn mô hình trong phần cài đặt của trợ lý và dán khóa API của riêng bạn; khung trợ lý hiển thị số token và chi phí ước tính của từng câu trả lời, còn giới hạn số bước và mức trần chi phí sẽ dừng một tác vụ kéo dài quá lâu.',
+      'Các mô hình của sáu công ty, dùng khóa API của riêng bạn: Claude của Anthropic (Claude Opus 5.5 theo mặc định, Claude Fable 5.2, Claude Sonnet 5.5 và Claude Haiku 5.5), GPT của OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra và GPT-6 Luna), Gemini của Google (Gemini 4 Argon, Gemini 3.8 Flash và Gemini 3.5 Flash-Lite), Grok của xAI (Grok 4.7 và Grok 4.3), Muse của Meta (Muse Wonder, Muse Spark và Muse Ember) và, với một khóa OpenRouter, bất kỳ mô hình nào trong hàng trăm mô hình có trong danh sách của OpenRouter. Bạn chọn công ty và mô hình trong phần cài đặt của trợ lý và dán khóa của bạn; khung trợ lý hiển thị số token và chi phí ước tính của từng câu trả lời, giới hạn số bước và mức trần chi phí sẽ dừng một tác vụ kéo dài quá lâu, và một mô hình khác có thể đưa ra ý kiến thứ hai về một câu trả lời.',
+    ),
+    (
+      'Có thể dùng trợ lý AI mà không phải trả tiền không?',
+      'Phần mềm miễn phí; trợ lý cần khóa của một công ty AI, công ty này tính phí theo mức bạn sử dụng. Có hai cách không tốn tiền trong phạm vi giới hạn: gói miễn phí của các mô hình Gemini Flash của Google (ở nơi Google cung cấp) và các mô hình miễn phí của OpenRouter. Các giới hạn đó do các công ty đặt ra, và với gói miễn phí, họ có thể dùng những gì bạn gửi để cải thiện sản phẩm của mình, vì vậy hãy đọc điều khoản của họ trước khi gửi một dự án cần bảo mật.',
     ),
     (
       'Trợ lý AI gửi những gì, và gửi đến đâu?',
-      'Không gửi gì cho đến khi bạn nhấn Gửi. Khi đó, tin nhắn của bạn, các tệp bạn đính kèm và dữ liệu dự án bạn đánh dấu được gửi thẳng từ trình duyệt của bạn đến API của nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI, không qua bất kỳ máy chủ nào của OpenCADIrrigation, cùng với kết quả của các công cụ mà trợ lý dùng trong khi trả lời, kể cả hình ảnh bản vẽ. Nhà cung cấp tính phí sử dụng vào tài khoản của bạn. Khóa chỉ nằm trong bộ nhớ trong suốt phiên làm việc, trừ khi bạn chọn ghi nhớ khóa trên thiết bị, và không bao giờ được đưa vào tệp dự án, liên kết chia sẻ hay tệp xuất. Nếu bạn dùng tính năng nhập bằng giọng nói, việc nhận dạng do chính trình duyệt đảm nhận và âm thanh được gửi đến hãng làm trình duyệt (Google với Chrome, Microsoft với Edge, Apple với Safari). Các cuộc trò chuyện đã lưu chỉ nằm trong trình duyệt của bạn, không bao giờ vào tệp dự án hay liên kết.',
+      'Không gửi gì cho đến khi bạn nhấn Gửi. Khi đó, tin nhắn của bạn, các tệp bạn đính kèm và dữ liệu dự án bạn đánh dấu được gửi thẳng từ trình duyệt của bạn đến API của công ty bạn đã chọn (Anthropic, OpenAI, Google, xAI, Meta hoặc OpenRouter, nơi chuyển yêu cầu tới công ty vận hành mô hình), không qua bất kỳ máy chủ nào của OpenCADIrrigation, cùng với kết quả của các công cụ mà trợ lý dùng trong khi trả lời, kể cả hình ảnh bản vẽ. Nhà cung cấp tính phí sử dụng vào tài khoản của bạn. Khóa chỉ nằm trong bộ nhớ trong suốt phiên làm việc, trừ khi bạn chọn ghi nhớ khóa trên thiết bị, và không bao giờ được đưa vào tệp dự án, liên kết chia sẻ hay tệp xuất. Nếu bạn dùng tính năng nhập bằng giọng nói, việc nhận dạng do chính trình duyệt đảm nhận và âm thanh được gửi đến hãng làm trình duyệt (Google với Chrome, Microsoft với Edge, Apple với Safari). Các cuộc trò chuyện đã lưu chỉ nằm trong trình duyệt của bạn, không bao giờ vào tệp dự án hay liên kết. Khi bạn yêu cầu ý kiến thứ hai, câu hỏi, câu trả lời và dữ liệu dự án được gửi tới công ty của mô hình đưa ra ý kiến đó.',
     ),
     (
       'OpenCADIrrigation có miễn phí không?',
-      'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký. Phần mềm cũng là mã nguồn mở theo giấy phép MIT, với mã nguồn được công bố trên GitHub. Trợ lý AI tùy chọn dùng tài khoản Anthropic hoặc OpenAI của riêng bạn, và nhà cung cấp dịch vụ tính phí sử dụng vào tài khoản đó.',
+      'Có. Miễn phí cho mục đích chuyên nghiệp, học thuật và cá nhân, không cần đăng ký. Phần mềm cũng là mã nguồn mở theo giấy phép MIT, với mã nguồn được công bố trên GitHub. Trợ lý AI tùy chọn dùng tài khoản riêng của bạn tại một công ty AI (Anthropic, OpenAI, Google, xAI, Meta hoặc OpenRouter), công ty này tính phí sử dụng vào tài khoản đó; một số mô hình của họ có thể dùng miễn phí trong phạm vi giới hạn.',
     ),
     (
       'Ứng dụng dành cho ai?',
@@ -141,11 +161,11 @@ const _vi = SiteText(
     ),
     (
       'Có dùng được ngoại tuyến không?',
-      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 20 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
+      'Có, sau lần truy cập đầu tiên: ứng dụng lưu một bản sao của chính nó trong trình duyệt (khoảng 20 MB, mỗi phiên bản một lần), nên lần khởi động tiếp theo, dù là ứng dụng đã cài hay trang web, đều chạy được mà không cần mạng, ở văn phòng hay ngoài thực địa. Bản đồ nền, cao độ và khí hậu trực tuyến, dự báo thời tiết, danh mục tải từ URL và trợ lý AI vẫn cần kết nối; phiên bản mới được tải về trong nền và được dùng từ lần khởi động sau.',
     ),
     (
       'Dự án của tôi có được lưu trên đám mây không?',
-      'Không. Dự án được lưu trong trình duyệt của bạn và dưới dạng tệp .oci.json mà bạn cất ở bất cứ đâu tùy ý; liên kết chia sẻ mang dự án ngay trong chính địa chỉ, nên không có gì được tải lên, và OpenCADIrrigation không có máy chủ nào có thể giữ bản sao. Phông chữ của mọi hệ chữ viết và ký hiệu đều lấy từ chính trang web này. Trình duyệt vẫn kết nối tới các dịch vụ khác: bản đồ nền, cao độ và khí hậu trực tuyến, tìm địa chỉ, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI (chỉ nhà cung cấp bạn đã chọn, Anthropic hoặc OpenAI) gửi yêu cầu tới dịch vụ của chúng khi bạn sử dụng; còn trang web và ứng dụng đếm lượt truy cập bằng Google Analytics, một công cụ dùng cookie (bạn có thể tắt nó bằng Cài đặt cookie, ở cuối các trang). Chính sách quyền riêng tư liệt kê từng dịch vụ và những gì dịch vụ đó nhận được.',
+      'Không. Dự án được lưu trong trình duyệt của bạn và dưới dạng tệp .oci.json mà bạn cất ở bất cứ đâu tùy ý; liên kết chia sẻ mang dự án ngay trong chính địa chỉ, nên không có gì được tải lên, và OpenCADIrrigation không có máy chủ nào có thể giữ bản sao. Phông chữ của mọi hệ chữ viết và ký hiệu đều lấy từ chính trang web này. Trình duyệt vẫn kết nối tới các dịch vụ khác: bản đồ nền, cao độ và khí hậu trực tuyến, dự báo thời tiết, tìm địa chỉ, danh mục tải từ URL và, nếu bạn dùng, trợ lý AI (chỉ công ty bạn đã chọn: Anthropic, OpenAI, Google, xAI, Meta hoặc OpenRouter) gửi yêu cầu tới dịch vụ của chúng khi bạn sử dụng; còn trang web và ứng dụng đếm lượt truy cập bằng Google Analytics, một công cụ dùng cookie (bạn có thể tắt nó bằng Cài đặt cookie, ở cuối các trang). Chính sách quyền riêng tư liệt kê từng dịch vụ và những gì dịch vụ đó nhận được.',
     ),
     (
       'Tính toán thủy lực được thực hiện thế nào?',
@@ -204,9 +224,11 @@ const _legalVi = LegalText(
     LegalSection('Các dịch vụ mà trình duyệt của bạn kết nối khi bạn sử dụng chúng', [
       '- Bản đồ nền: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (với khóa của riêng bạn) hoặc địa chỉ bạn đặt nhận địa chỉ IP và vùng bản đồ trên màn hình.',
       '- Cao độ và khí hậu trực tuyến: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData và NASA POWER nhận tọa độ của khu vực, không nhận gì khác của dự án.',
+      '- Dự báo thời tiết (Thiết kế → Nông học → Dự báo tưới): MET Norway hoặc Open-Meteo, tùy bạn chọn, nhận tọa độ của địa điểm được làm tròn đến bốn chữ số thập phân, không nhận gì khác của dự án.',
       '- Tìm địa chỉ: Nominatim (OpenStreetMap) nhận địa chỉ bạn gõ.',
       '- Danh mục tải từ URL: máy chủ của địa chỉ đó.',
-      '- Trợ lý AI (tùy chọn): Anthropic hoặc OpenAI, với khóa của riêng bạn. Không có gì được gửi trước khi bạn bấm Gửi; sau đó, tin nhắn của bạn, các tệp bạn đính kèm, dữ liệu dự án bạn đánh dấu, các tin nhắn trước đó và, trong khi trợ lý làm việc, kết quả của các công cụ nó dùng, kể cả ảnh bản vẽ, sẽ được gửi đi. Thỏa thuận giữa bạn và công ty đó quy định những gì công ty làm với các dữ liệu này, và công ty tính phí vào tài khoản của bạn.',
+      '- Trợ lý AI (tùy chọn): công ty bạn chọn, với khóa của riêng bạn: Anthropic, OpenAI, Google, xAI, Meta hoặc OpenRouter (nơi chuyển yêu cầu tới công ty vận hành mô hình bạn đã chọn, và chỉ được biết rằng yêu cầu đến từ OpenCADIrrigation, không biết gì về bạn). Không có gì được gửi trước khi bạn bấm Gửi; sau đó, tin nhắn của bạn, các tệp bạn đính kèm, dữ liệu dự án bạn đánh dấu, các tin nhắn trước đó và, trong khi trợ lý làm việc, kết quả của các công cụ nó dùng, kể cả ảnh bản vẽ, sẽ được gửi đi. Khi bạn yêu cầu ý kiến thứ hai, câu hỏi, câu trả lời và dữ liệu dự án được gửi tới công ty của mô hình đưa ra ý kiến đó. Thỏa thuận giữa bạn và từng công ty quy định những gì công ty làm với các dữ liệu này, và công ty tính phí vào tài khoản của bạn; với gói miễn phí (các mô hình Gemini Flash của Google, các mô hình miễn phí của OpenRouter), công ty có thể dùng những gì bạn gửi để cải thiện sản phẩm của mình.',
+      '- Danh sách mô hình của OpenRouter: được tải từ OpenRouter khi bạn mở Thêm mô hình… trong phần cài đặt của trợ lý, không kèm khóa của bạn.',
       '- Nhập liệu bằng giọng nói: tính năng nhận dạng giọng nói của trình duyệt gửi âm thanh tới nhà sản xuất trình duyệt (Google trên Chrome, Microsoft trên Edge, Apple trên Safari).',
       'Mỗi dịch vụ này có chính sách quyền riêng tư riêng và có thể xử lý dữ liệu bên ngoài quốc gia của bạn.',
     ]),
@@ -230,9 +252,9 @@ const _legalVi = LegalText(
       'Phần mềm được cung cấp “nguyên trạng”, không có bất kỳ bảo đảm nào, dù rõ ràng hay ngụ ý, bao gồm cả bảo đảm về khả năng thương mại, sự phù hợp cho một mục đích cụ thể và không vi phạm quyền. Trong mọi trường hợp, tác giả hoặc chủ sở hữu bản quyền không chịu trách nhiệm đối với bất kỳ khiếu nại, thiệt hại hay trách nhiệm pháp lý nào khác phát sinh từ phần mềm hoặc việc sử dụng phần mềm (các điều khoản của giấy phép MIT).',
     ]),
     LegalSection('Dữ liệu và dịch vụ của bên khác', [
-      'Bản đồ, ảnh, cao độ, khí hậu, tìm địa chỉ và danh mục của nhà sản xuất đến từ bên thứ ba, theo điều khoản và giấy phép riêng của họ (xem Trợ giúp → Giới thiệu trong ứng dụng). Dữ liệu danh mục được lấy từ các bảng đã công bố và có thể đã lỗi thời: hãy xác nhận mẫu, đường đặc tính và giá theo bảng thông số hiện hành trước khi mua.',
-      'Trong công việc chuyên nghiệp, hãy dùng mỗi nguồn trong phạm vi điều khoản của nó: Trợ giúp → Điều khoản dữ liệu trong ứng dụng cho biết việc dùng miễn phí từng nguồn được phép đến đâu. Một số dịch vụ miễn phí chỉ dành cho mục đích phi thương mại (các dịch vụ miễn phí của Open-Meteo và bản đồ nền CARTO), vì vậy theo mặc định ứng dụng tải khí hậu từ NASA POWER và cao độ từ Terrain Tiles; máy chủ ô bản đồ của OpenStreetMap Foundation cấm dùng nhiều và tải cả vùng để dùng ngoại tuyến, vì vậy bản đồ lưu cho hiện trường chỉ dùng các ô đã hiển thị. Các tờ bản vẽ, PDF và báo cáo mang ghi công của mọi nguồn: hãy giữ lại khi bàn giao hoặc công bố sản phẩm.',
-      'Trợ lý AI tùy chọn chạy trên tài khoản riêng của bạn tại Anthropic hoặc OpenAI, theo điều khoản của công ty đó, và công ty đó tính phí sử dụng. Mô hình có thể sai: hãy phê duyệt các thay đổi nó đề xuất khi đã hiểu rõ và kiểm tra công việc của nó.',
+      'Bản đồ, ảnh, cao độ, khí hậu, dự báo thời tiết, tìm địa chỉ và danh mục của nhà sản xuất đến từ bên thứ ba, theo điều khoản và giấy phép riêng của họ (xem Trợ giúp → Giới thiệu trong ứng dụng). Dữ liệu danh mục được lấy từ các bảng đã công bố và có thể đã lỗi thời: hãy xác nhận mẫu, đường đặc tính và giá theo bảng thông số hiện hành trước khi mua.',
+      'Trong công việc chuyên nghiệp, hãy dùng mỗi nguồn trong phạm vi điều khoản của nó: Trợ giúp → Điều khoản dữ liệu trong ứng dụng cho biết việc dùng miễn phí từng nguồn được phép đến đâu. Một số dịch vụ miễn phí chỉ dành cho mục đích phi thương mại (các dịch vụ miễn phí của Open-Meteo và bản đồ nền CARTO), vì vậy theo mặc định ứng dụng tải khí hậu từ NASA POWER, dự báo thời tiết từ MET Norway và cao độ từ Terrain Tiles; máy chủ ô bản đồ của OpenStreetMap Foundation cấm dùng nhiều và tải cả vùng để dùng ngoại tuyến, vì vậy bản đồ lưu cho hiện trường chỉ dùng các ô đã hiển thị. Các tờ bản vẽ, PDF và báo cáo mang ghi công của mọi nguồn: hãy giữ lại khi bàn giao hoặc công bố sản phẩm.',
+      'Trợ lý AI tùy chọn chạy trên tài khoản riêng của bạn tại công ty AI bạn chọn (Anthropic, OpenAI, Google, xAI, Meta hoặc OpenRouter), theo điều khoản của công ty đó, và công ty đó tính phí sử dụng. Mô hình có thể sai: hãy phê duyệt các thay đổi nó đề xuất khi đã hiểu rõ và kiểm tra công việc của nó.',
     ]),
     LegalSection('Nội dung của bạn', ['Dự án, bản vẽ, hình ảnh và tệp của bạn thuộc về bạn: bạn chịu trách nhiệm về chúng và về việc có quyền sử dụng những gì bạn nhập vào.']),
     LegalSection('Liên hệ', ['Câu hỏi và sự cố: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Cách dữ liệu của bạn được xử lý: xem chính sách quyền riêng tư.']),

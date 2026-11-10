@@ -6,7 +6,7 @@ const _de = SiteText(
   keywords: 'Bewässerungsplanung mit KI, KI-Software für Bewässerungsplanung, automatische Bewässerungsplanung, automatische Regneranordnung, KI-Assistent für Bewässerung, Bewässerungsplanung, Software für Bewässerungsplanung, Open-Source-Bewässerungssoftware, Bewässerungssoftware, CAD Bewässerung, Tropfbewässerung, Mikroberegnung, Beregnung, Center-Pivot, hydraulische Berechnung, Rohrdimensionierung, Gleichmäßigkeit der Bewässerung, DXF, DWG, Gartenbewässerung, landwirtschaftliche Bewässerung, kostenlose Bewässerungssoftware',
   h1: 'Kostenlose Open-Source-Software für die Bewässerungsplanung mit KI-Assistent',
   tagline: 'Beschreiben Sie Feld, Garten oder Sportplatz und lassen Sie den KI-Assistenten Regner und Tropfleitungen anordnen, die Rohre verlegen und die Anlage dimensionieren – oder zeichnen Sie sie selbst mit den automatischen Werkzeugen. Tropf-, Mikroregner-, Regner- und Center-Pivot-Anlagen direkt im Browser, ohne Installation, mit den Projekten auf Ihrem eigenen Computer.',
-  intro: 'OpenCADIrrigation vereint CAD-Zeichnung, hydraulisches Netz, Berechnung und einen KI-Assistenten. Umreißen Sie die Fläche oder lassen Sie die KI den Standort im Satellitenbild finden; erstellen Sie Laterale, Ventile und Hauptleitung von Hand, mit den Ein-Klick-Generatoren oder indem Sie die KI darum bitten; drücken Sie F5 und erhalten Sie Rohrdurchmesser, Drücke, Gleichmäßigkeit, Betriebsschichten, Stückliste und druckfertige Berichte. Der Assistent arbeitet mit Claude-Modellen (Anthropic) oder GPT-Modellen (OpenAI) und Ihrem eigenen API-Schlüssel, direkt aus dem Browser. In 20 Sprachen verfügbar, passend zur Sprache Ihres Computers.',
+  intro: 'OpenCADIrrigation vereint CAD-Zeichnung, hydraulisches Netz, Berechnung und einen KI-Assistenten. Umreißen Sie die Fläche oder lassen Sie die KI den Standort im Satellitenbild finden; erstellen Sie Laterale, Ventile und Hauptleitung von Hand, mit den Ein-Klick-Generatoren oder indem Sie die KI darum bitten; drücken Sie F5 und erhalten Sie Rohrdurchmesser, Drücke, Gleichmäßigkeit, Betriebsschichten, Stückliste und druckfertige Berichte. Der Assistent arbeitet mit Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) oder, über OpenRouter, Hunderten weiteren Modellen und Ihrem eigenen API-Schlüssel, direkt aus dem Browser. In 20 Sprachen verfügbar, passend zur Sprache Ihres Computers.',
   openApp: 'App öffnen',
   tutorial: 'Interaktives Tutorial',
   seeExamples: 'Fertige Beispiele ansehen',
@@ -27,7 +27,7 @@ const _de = SiteText(
     ),
     (
       'Ihr Schlüssel, Ihre Kontrolle',
-      'Claude-Modelle von Anthropic oder GPT-Modelle von OpenAI in den Klassen Spitzenmodell, Mittelklasse und schnell, mit Ihrem eigenen API-Schlüssel direkt aus dem Browser aufgerufen, ohne zwischengeschalteten Server. Vier Modi („Nur lesen“, „Erst planen“, „Vor jeder Änderung fragen“, „Änderungen automatisch anwenden“), Schritt- und Ausgabenlimit pro Aufgabe; jede Antwort lässt sich rückgängig machen, und nichts wird gesendet, bevor Sie auf Senden klicken.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) oder Hunderte von Modellen über OpenRouter, einige davon kostenlos, mit Ihrem eigenen API-Schlüssel direkt aus dem Browser aufgerufen, ohne zwischengeschalteten Server. Vier Modi („Nur lesen“, „Erst planen“, „Vor jeder Änderung fragen“, „Änderungen automatisch anwenden“), Schritt- und Ausgabenlimit pro Aufgabe; jede Antwort lässt sich rückgängig machen, ein anderes Modell kann eine Zweitmeinung abgeben, und nichts wird gesendet, bevor Sie auf Senden klicken.',
     ),
   ],
   aiCta: 'KI-Assistent öffnen',
@@ -35,11 +35,11 @@ const _de = SiteText(
   features: [
     (
       'KI-Assistent',
-      'Optional: Stellen Sie der KI Fragen zum Projekt oder lassen Sie sie für Sie zeichnen und planen. Sie ordnet Regner und Tropfleitungen an, teilt Felder auf, verlegt Rohre und startet die Dimensionierung und die automatischen Werkzeuge; dabei sieht sie sich Satellitenbild und Gelände an und nutzt Claude-Modelle (Anthropic) oder GPT-Modelle (OpenAI) mit Ihrem eigenen API-Schlüssel, direkt aus dem Browser und ohne zwischengeschalteten Server. Nichts wird gesendet, bevor Sie auf Senden klicken, und jede Änderung wartet auf Ihre Zustimmung (oder wird auf Wunsch automatisch angewendet) und lässt sich rückgängig machen.',
+      'Optional: Stellen Sie der KI Fragen zum Projekt oder lassen Sie sie für Sie zeichnen und planen. Sie ordnet Regner und Tropfleitungen an, teilt Felder auf, verlegt Rohre und startet die Dimensionierung und die automatischen Werkzeuge; dabei sieht sie sich Satellitenbild und Gelände an und nutzt die Modelle von Anthropic, OpenAI, Google, xAI, Meta oder OpenRouter mit Ihrem eigenen API-Schlüssel, direkt aus dem Browser und ohne zwischengeschalteten Server. Nichts wird gesendet, bevor Sie auf Senden klicken, und jede Änderung wartet auf Ihre Zustimmung (oder wird auf Wunsch automatisch angewendet) und lässt sich rückgängig machen.',
     ),
     (
       'Automatischer Entwurf und Dimensionierung',
-      'Lateralblöcke und Regnerraster mit einem Klick, Regneranordnung mit angepasster Niederschlagsrate, Zoneneinteilung nach Durchfluss, Verlegung von Rohren und Ventilen, Aufteilung von Feldern in Blöcke, Einpassen von Pivots und Vegetationserkennung in Luftbildern; Rohrdimensionierung per linearer Optimierung unter Einhaltung des Druckfensters der Auslässe und der Druckstufe der Rohre, mit Abwägung zwischen Rohr- und Energiekosten.',
+      'Lateralblöcke und Regnerraster mit einem Klick, Regneranordnung mit angepasster Niederschlagsrate, Zoneneinteilung nach Durchfluss, Verlegung von Rohren und Ventilen, Aufteilung von Feldern in Blöcke, Einpassen von Pivots sowie das Auslesen von Vegetation und Pflanzreihen (Richtung, Abstand und Anzahl) aus Luftbildern; Rohrdimensionierung per linearer Optimierung unter Einhaltung des Druckfensters der Auslässe und der Druckstufe der Rohre, mit Abwägung zwischen Rohr- und Energiekosten.',
     ),
     (
       'Vollwertiges CAD',
@@ -58,6 +58,18 @@ const _de = SiteText(
       'Höhenlinien, Höhenpunkte, trianguliertes Geländemodell mit Bruchkanten, Online-Geländehöhen, LAS-Punktwolken, Hangneigungskarten und Längsprofile; heruntergeladenes oder selbst eingegebenes Standortklima, FAO-56-Kulturen nach Wachstumsphasen, Böden, effektiver Regen und Auswaschung für den Wasserbedarf, dazu Wasserbudgets für Grünanlagen.',
     ),
     (
+      'Klimarisiko und Bewässerungsprognose',
+      'Prüft die Planung gegen das tägliche Klima des Standorts seit 1984: den Wasserbedarf eines trockenen Jahres, wie oft die ausgelegte Anlage nicht ausreichen würde, die ungünstigsten Jahre und die Trockenperioden. Und macht aus der Wettervorhersage des Standorts, was in den kommenden Tagen zu bewässern ist: bewässern oder aussetzen, Gabe, Laufzeit und die prozentuale Anpassung (Water Budget) für das Steuergerät.',
+    ),
+    (
+      'Das Bewässerungsprogramm im Lageplan',
+      'Spielt das Bewässerungsprogramm über der Zeichnung ab: die laufenden Zonen, die Rohre nach Geschwindigkeit und Durchfluss, die Pumpen und den Wasserstand im Speicherbecken zu jedem Zeitpunkt. Exportiert den Zyklus als animiertes GIF und das Programm als Kalenderdatei für das Smartphone.',
+    ),
+    (
+      'Projektbewertung',
+      'Bewertet das ausgelegte Projekt von 0 bis 100 und von A bis E in sieben Kategorien (Gleichmäßigkeit, Hydraulik, Energie, Wasser und Boden, Wirtschaftlichkeit, Robustheit und Vollständigkeit), mit dem Zielwert jedes Indikators und seiner Herkunft, und sagt, was zuerst zu verbessern ist.',
+    ),
+    (
       'Berichte, Pläne und Material',
       'Zonen, Rohre, Auslässe, Gleichmäßigkeit (CU, DU, EU), Programm des Steuergeräts und Ventilverkabelung; Stückliste mit Formteilen und Angebot mit Arbeitskosten, Steuern und Amortisationszeit; PDF-Plansätze mit Baudetails und Diagrammen in jeder der 20 Sprachen und alle Tabellen als Excel-, CSV- und TXT-Datei.',
     ),
@@ -66,8 +78,12 @@ const _de = SiteText(
       'Importiert DXF, DWG, PDF-Pläne, KML/KMZ, Shapefiles, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF und Bilder; exportiert DXF 2000 mit nativen Objekten (oder R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, Shapefiles, GPX, LandXML, EPANET .inp und IFC.',
     ),
     (
+      'Offener Rechenkern für Skripte und KI-Agenten',
+      'Der Rechenkern ist reines Dart mit einer Kommandozeile und spricht das Model Context Protocol (MCP): Andere KI-Anwendungen können damit auf Ihrem eigenen Computer Projekte erstellen, dimensionieren und prüfen, beschränkt auf einen Ordner, den Sie wählen.',
+    ),
+    (
       'Herstellerkataloge',
-      'Herstellerkataloge in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit), sofort einsatzbereit, dazu eigene Pakete aus einer Datei oder URL.',
+      'Herstellerkataloge in JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit), sofort einsatzbereit, dazu eigene Pakete aus einer Datei oder URL sowie Pumpen-, Auslass- und Regnerkennlinien, aus dem Bild eines Datenblatts digitalisiert.',
     ),
     (
       'Offline und im Feld',
@@ -132,15 +148,19 @@ const _de = SiteText(
     ),
     (
       'Welche KI-Modelle nutzt es?',
-      'Claude-Modelle von Anthropic (standardmäßig Claude Opus 5.5, außerdem Claude Fable 5.1, Claude Sonnet 5.5 und Claude Haiku 5.5) und GPT-Modelle von OpenAI (GPT-6 Astra, GPT-6.1 Sol und GPT-6 Luna): Spitzen-, Mittelklasse- und schnelle Modelle beider Unternehmen, jeweils mit fünf Stufen der Denktiefe. Sie wählen das Modell in den Einstellungen des Assistenten und fügen Ihren eigenen API-Schlüssel ein; das Panel zeigt die Tokens und die geschätzten Kosten jeder Antwort, und ein Schrittlimit sowie ein Ausgabenlimit stoppen eine Aufgabe, die sich in die Länge zieht.',
+      'Die Modelle von sechs Unternehmen, mit Ihrem eigenen API-Schlüssel: Claude von Anthropic (standardmäßig Claude Opus 5.5, außerdem Claude Fable 5.2, Claude Sonnet 5.5 und Claude Haiku 5.5), GPT von OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra und GPT-6 Luna), Gemini von Google (Gemini 4 Argon, Gemini 3.8 Flash und Gemini 3.5 Flash-Lite), Grok von xAI (Grok 4.7 und Grok 4.3), Muse von Meta (Muse Wonder, Muse Spark und Muse Ember) und, mit einem einzigen OpenRouter-Schlüssel, jedes beliebige der Hunderte von Modellen auf dessen Liste. Sie wählen Unternehmen und Modell in den Einstellungen des Assistenten und fügen Ihren Schlüssel ein; das Panel zeigt die Tokens und die geschätzten Kosten jeder Antwort, ein Schrittlimit und ein Ausgabenlimit stoppen eine Aufgabe, die sich in die Länge zieht, und ein anderes Modell kann eine Zweitmeinung zu einer Antwort abgeben.',
+    ),
+    (
+      'Kann ich den KI-Assistenten nutzen, ohne zu bezahlen?',
+      'Das Programm ist kostenlos; der Assistent braucht einen Schlüssel eines KI-Unternehmens, das die Nutzung abrechnet. Zwei Wege kosten innerhalb ihrer Limits nichts: das kostenlose Kontingent der Gemini-Flash-Modelle von Google (wo Google es anbietet) und die kostenlosen Modelle von OpenRouter. Diese Limits legen die Unternehmen fest, und bei einem kostenlosen Kontingent dürfen sie das Gesendete zur Verbesserung ihrer Produkte verwenden; lesen Sie daher ihre Bedingungen, bevor Sie ein vertrauliches Projekt senden.',
     ),
     (
       'Was sendet der KI-Assistent und wohin?',
-      'Nichts, solange Sie nicht auf Senden klicken. Dann gehen Ihre Nachricht, die angehängten Dateien und die von Ihnen angehakten Projektdaten direkt von Ihrem Browser an die API des gewählten Anbieters, Anthropic oder OpenAI, ohne zwischengeschalteten Server von OpenCADIrrigation, zusammen mit den Ergebnissen der Werkzeuge, die der Assistent beim Antworten nutzt, einschließlich Bildern der Zeichnung. Der Anbieter rechnet die Nutzung über Ihr Konto ab. Der Schlüssel bleibt nur für die Dauer der Sitzung im Arbeitsspeicher, es sei denn, Sie lassen ihn auf dem Gerät speichern, und er gelangt nie in Projektdateien, Freigabelinks oder Exporte. Das Diktieren per Sprache übernimmt, wenn Sie es nutzen, die Spracherkennung des Browsers selbst, die den Ton an den Hersteller des Browsers sendet (Google bei Chrome, Microsoft bei Edge, Apple bei Safari). Gespeicherte Gespräche bleiben in Ihrem Browser, nie in Projektdateien oder Links.',
+      'Nichts, solange Sie nicht auf Senden klicken. Dann gehen Ihre Nachricht, die angehängten Dateien und die von Ihnen angehakten Projektdaten direkt von Ihrem Browser an die API des gewählten Unternehmens (Anthropic, OpenAI, Google, xAI, Meta oder OpenRouter, das die Anfrage an das Unternehmen weiterleitet, das das Modell betreibt), ohne zwischengeschalteten Server von OpenCADIrrigation, zusammen mit den Ergebnissen der Werkzeuge, die der Assistent beim Antworten nutzt, einschließlich Bildern der Zeichnung. Der Anbieter rechnet die Nutzung über Ihr Konto ab. Der Schlüssel bleibt nur für die Dauer der Sitzung im Arbeitsspeicher, es sei denn, Sie lassen ihn auf dem Gerät speichern, und er gelangt nie in Projektdateien, Freigabelinks oder Exporte. Das Diktieren per Sprache übernimmt, wenn Sie es nutzen, die Spracherkennung des Browsers selbst, die den Ton an den Hersteller des Browsers sendet (Google bei Chrome, Microsoft bei Edge, Apple bei Safari). Gespeicherte Gespräche bleiben in Ihrem Browser, nie in Projektdateien oder Links. Eine Zweitmeinung sendet, wenn Sie sie anfordern, die Frage, die Antwort und die Projektdaten an das Unternehmen des Modells, das sie abgibt.',
     ),
     (
       'Ist OpenCADIrrigation kostenlos?',
-      'Ja. Es ist kostenlos für berufliche, akademische und private Nutzung, ohne Registrierung. Außerdem ist es Open Source unter der MIT-Lizenz; der Quellcode ist auf GitHub veröffentlicht. Der optionale KI-Assistent nutzt Ihr eigenes Konto bei Anthropic oder OpenAI, über das der jeweilige Anbieter die Nutzung abrechnet.',
+      'Ja. Es ist kostenlos für berufliche, akademische und private Nutzung, ohne Registrierung. Außerdem ist es Open Source unter der MIT-Lizenz; der Quellcode ist auf GitHub veröffentlicht. Der optionale KI-Assistent nutzt Ihr eigenes Konto bei einem KI-Unternehmen (Anthropic, OpenAI, Google, xAI, Meta oder OpenRouter), das die Nutzung über dieses Konto abrechnet; einige ihrer Modelle lassen sich innerhalb von Limits kostenlos nutzen.',
     ),
     (
       'Für wen ist es gedacht?',
@@ -152,11 +172,11 @@ const _de = SiteText(
     ),
     (
       'Funktioniert es offline?',
-      'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 20 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
+      'Ja, nach dem ersten Besuch: Die App speichert eine Kopie von sich selbst im Browser (etwa 20 MB, einmal je Version), sodass der nächste Start – als installierte App oder über die Website – ohne Netzverbindung funktioniert, im Büro wie im Feld. Hintergrundkarten, Online-Geländehöhen und -Klimadaten, die Wettervorhersage, per URL geladene Kataloge und der KI-Assistent brauchen weiterhin eine Verbindung; eine neue Version wird im Hintergrund heruntergeladen und ab dem nächsten Start verwendet.',
     ),
     (
       'Werden meine Projekte in der Cloud gespeichert?',
-      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie aufbewahren, wo Sie möchten; ein Freigabelink trägt das Projekt in der Adresse selbst, sodass nichts hochgeladen wird, und OpenCADIrrigation hat keinen Server, der eine Kopie aufbewahren könnte. Die Schriften für alle Schriftsysteme und Symbole kommen von dieser Website selbst. Andere Dienste erreicht der Browser durchaus: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, Adresssuche, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent (nur der von Ihnen gewählte Anbieter, Anthropic oder OpenAI) wenden sich an ihre Dienste, wenn Sie sie verwenden; und die Website und die App zählen Besuche mit Google Analytics, das Cookies verwendet (mit Cookie-Einstellungen am Fuß der Seiten lässt es sich abschalten). Die Datenschutzerklärung nennt jeden Dienst und was er erhält.',
+      'Nein. Projekte werden in Ihrem Browser und als .oci.json-Dateien gespeichert, die Sie aufbewahren, wo Sie möchten; ein Freigabelink trägt das Projekt in der Adresse selbst, sodass nichts hochgeladen wird, und OpenCADIrrigation hat keinen Server, der eine Kopie aufbewahren könnte. Die Schriften für alle Schriftsysteme und Symbole kommen von dieser Website selbst. Andere Dienste erreicht der Browser durchaus: Hintergrundkarten, Online-Geländehöhen und -Klimadaten, die Wettervorhersage, Adresssuche, per URL geladene Kataloge und, falls Sie ihn nutzen, der KI-Assistent (nur das von Ihnen gewählte Unternehmen: Anthropic, OpenAI, Google, xAI, Meta oder OpenRouter) wenden sich an ihre Dienste, wenn Sie sie verwenden; und die Website und die App zählen Besuche mit Google Analytics, das Cookies verwendet (mit Cookie-Einstellungen am Fuß der Seiten lässt es sich abschalten). Die Datenschutzerklärung nennt jeden Dienst und was er erhält.',
     ),
     (
       'Wie wird die Hydraulik berechnet?',
@@ -215,9 +235,11 @@ const _legalDe = LegalText(
     LegalSection('Dienste, die Ihr Browser kontaktiert, wenn Sie sie nutzen', [
       '- Hintergrundkarten: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (mit Ihrem eigenen Schlüssel) oder die von Ihnen festgelegte Adresse erhalten die IP-Adresse und den Kartenausschnitt auf dem Bildschirm.',
       '- Online-Geländehöhen und -Klima: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData und NASA POWER erhalten die Koordinaten des Gebiets, sonst nichts vom Projekt.',
+      '- Wettervorhersage (Auslegung → Agronomie → Bewässerungsprognose): MET Norway oder Open-Meteo, je nachdem, welchen Dienst Sie wählen, erhält die auf vier Dezimalstellen gerundeten Koordinaten des Standorts, sonst nichts vom Projekt.',
       '- Adresssuche: Nominatim (OpenStreetMap) erhält die Adresse, die Sie eingeben.',
       '- Per URL geladene Kataloge: der Server dieser Adresse.',
-      '- KI-Assistent (optional): Anthropic oder OpenAI, mit Ihrem eigenen Schlüssel. Nichts wird gesendet, bevor Sie auf Senden drücken; dann Ihre Nachricht, die angehängten Dateien, die angehakten Projektdaten, die früheren Nachrichten und, während er arbeitet, die Ergebnisse der Werkzeuge, die er verwendet, einschließlich Bildern der Zeichnung. Ihre Vereinbarung mit diesem Unternehmen regelt, was es damit tut, und es rechnet über Ihr Konto ab.',
+      '- KI-Assistent (optional): das von Ihnen gewählte Unternehmen, mit Ihrem eigenen Schlüssel: Anthropic, OpenAI, Google, xAI, Meta oder OpenRouter (das die Anfrage an das Unternehmen weiterleitet, das das gewählte Modell betreibt, und erfährt, dass die Anfrage von OpenCADIrrigation kommt, aber nichts über Sie). Nichts wird gesendet, bevor Sie auf Senden drücken; dann Ihre Nachricht, die angehängten Dateien, die angehakten Projektdaten, die früheren Nachrichten und, während er arbeitet, die Ergebnisse der Werkzeuge, die er verwendet, einschließlich Bildern der Zeichnung. Eine Zweitmeinung sendet, wenn Sie sie anfordern, die Frage, die Antwort und die Projektdaten an das Unternehmen des Modells, das sie abgibt. Ihre Vereinbarung mit jedem Unternehmen regelt, was es damit tut, und es rechnet über Ihr Konto ab; bei einem kostenlosen Kontingent (die Gemini-Flash-Modelle von Google, die kostenlosen Modelle von OpenRouter) darf das Unternehmen das Gesendete zur Verbesserung seiner Produkte verwenden.',
+      '- Die Liste der Modelle von OpenRouter: wird von OpenRouter heruntergeladen, wenn Sie Weitere Modelle… in den Einstellungen des Assistenten öffnen, ohne Ihren Schlüssel.',
       '- Sprachdiktat: Die Spracherkennung des Browsers sendet den Ton an den Hersteller des Browsers (Google bei Chrome, Microsoft bei Edge, Apple bei Safari).',
       'Jeder dieser Dienste hat eine eigene Datenschutzerklärung und kann Daten außerhalb Ihres Landes verarbeiten.',
     ]),
@@ -241,9 +263,9 @@ const _legalDe = LegalText(
       'Die Software wird „wie besehen“ bereitgestellt, ohne jegliche ausdrückliche oder stillschweigende Gewährleistung, einschließlich der Gewährleistung der Marktgängigkeit, der Eignung für einen bestimmten Zweck und der Nichtverletzung von Rechten Dritter. In keinem Fall haften die Autoren oder Urheberrechtsinhaber für Ansprüche, Schäden oder sonstige Haftung, die sich aus der Software oder ihrer Nutzung ergeben (die Bedingungen der MIT-Lizenz).',
     ]),
     LegalSection('Daten und Dienste Dritter', [
-      'Karten, Luftbilder, Höhen, Klima, Adresssuche und die Herstellerkataloge stammen von Dritten, unter deren eigenen Bedingungen und Lizenzen (siehe Hilfe → Info in der App). Katalogdaten sind veröffentlichten Tabellen entnommen und können veraltet sein: Bestätigen Sie Modelle, Kennlinien und Preise vor dem Kauf anhand der aktuellen Datenblätter.',
-      'Nutzen Sie bei beruflicher Arbeit jede Quelle im Rahmen ihrer Bedingungen: Hilfe → Bedingungen der Daten in der App sagt, was die freie Nutzung jeder Quelle erlaubt. Einige kostenlose Dienste sind nur für nichtkommerzielle Nutzung bestimmt (die kostenlosen Dienste von Open-Meteo und die Hintergrundkarten von CARTO), daher lädt die App das Klima standardmäßig von NASA POWER und die Höhen von Terrain Tiles; der Kachelserver der OpenStreetMap Foundation verbietet intensive Nutzung und das Herunterladen von Gebieten zur Offline-Nutzung, daher verwendet die für das Feld gespeicherte Karte nur die bereits angezeigten Kacheln. Die Blätter, die PDFs und der Bericht tragen den Quellenvermerk jeder Quelle: Behalten Sie ihn bei, wenn Sie die Arbeit abgeben oder veröffentlichen.',
-      'Der optionale KI-Assistent läuft über Ihr eigenes Konto bei Anthropic oder OpenAI, unter den Bedingungen dieses Unternehmens, das die Nutzung abrechnet. Ein Modell kann sich irren: Genehmigen Sie die vorgeschlagenen Änderungen bewusst und prüfen Sie seine Arbeit.',
+      'Karten, Luftbilder, Höhen, Klima, die Wettervorhersage, Adresssuche und die Herstellerkataloge stammen von Dritten, unter deren eigenen Bedingungen und Lizenzen (siehe Hilfe → Info in der App). Katalogdaten sind veröffentlichten Tabellen entnommen und können veraltet sein: Bestätigen Sie Modelle, Kennlinien und Preise vor dem Kauf anhand der aktuellen Datenblätter.',
+      'Nutzen Sie bei beruflicher Arbeit jede Quelle im Rahmen ihrer Bedingungen: Hilfe → Bedingungen der Daten in der App sagt, was die freie Nutzung jeder Quelle erlaubt. Einige kostenlose Dienste sind nur für nichtkommerzielle Nutzung bestimmt (die kostenlosen Dienste von Open-Meteo und die Hintergrundkarten von CARTO), daher lädt die App das Klima standardmäßig von NASA POWER, die Wettervorhersage von MET Norway und die Höhen von Terrain Tiles; der Kachelserver der OpenStreetMap Foundation verbietet intensive Nutzung und das Herunterladen von Gebieten zur Offline-Nutzung, daher verwendet die für das Feld gespeicherte Karte nur die bereits angezeigten Kacheln. Die Blätter, die PDFs und der Bericht tragen den Quellenvermerk jeder Quelle: Behalten Sie ihn bei, wenn Sie die Arbeit abgeben oder veröffentlichen.',
+      'Der optionale KI-Assistent läuft über Ihr eigenes Konto bei dem von Ihnen gewählten KI-Unternehmen (Anthropic, OpenAI, Google, xAI, Meta oder OpenRouter), unter den Bedingungen dieses Unternehmens, das die Nutzung abrechnet. Ein Modell kann sich irren: Genehmigen Sie die vorgeschlagenen Änderungen bewusst und prüfen Sie seine Arbeit.',
     ]),
     LegalSection('Ihre Inhalte', ['Ihre Projekte, Zeichnungen, Bilder und Dateien gehören Ihnen: Sie sind dafür verantwortlich und dafür, das Recht zu haben, das zu nutzen, was Sie importieren.']),
     LegalSection('Kontakt', ['Fragen und Probleme: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Wie Ihre Daten behandelt werden: die Datenschutzerklärung.']),

@@ -6,7 +6,7 @@ const _id = SiteText(
   keywords: 'desain irigasi dengan AI, software desain irigasi AI, desain irigasi otomatis, tata letak sprinkler otomatis, asisten AI irigasi, desain irigasi, software desain irigasi, software irigasi open source, perangkat lunak irigasi, CAD irigasi, irigasi bertekanan, irigasi tetes, mikro sprinkler, irigasi sprinkler, pivot tengah, perhitungan hidraulik, dimensi pipa, keseragaman irigasi, DXF, DWG, irigasi taman, irigasi pertanian, software irigasi gratis',
   h1: 'Software desain irigasi gratis dan sumber terbuka dengan asisten AI',
   tagline: 'Deskripsikan lahan, taman atau lapangan Anda, lalu biarkan asisten AI menata letak sprinkler dan irigasi tetes, menarik jalur pipa dan menghitung ukuran sistem; atau gambar sendiri dengan alat-alat otomatis. Sistem irigasi tetes, mikro sprinkler, sprinkler dan pivot tengah, langsung di peramban, tanpa instalasi, dengan proyek tersimpan di komputer Anda sendiri.',
-  intro: 'OpenCADIrrigation menyatukan gambar CAD, jaringan hidraulik, perhitungan dan asisten AI dalam satu aplikasi. Gambar batas lahan, atau biarkan AI menemukan lokasinya pada citra satelit; pasang lateral, katup dan pipa utama secara manual, dengan generator satu klik atau cukup dengan meminta AI; tekan F5 dan dapatkan diameter pipa, tekanan, keseragaman, giliran operasi, daftar material serta laporan siap cetak. Asisten memakai model Claude (Anthropic) atau GPT (OpenAI) dengan kunci API Anda sendiri, langsung dari peramban. Tersedia dalam 20 bahasa, mengikuti bahasa komputer Anda.',
+  intro: 'OpenCADIrrigation menyatukan gambar CAD, jaringan hidraulik, perhitungan dan asisten AI dalam satu aplikasi. Gambar batas lahan, atau biarkan AI menemukan lokasinya pada citra satelit; pasang lateral, katup dan pipa utama secara manual, dengan generator satu klik atau cukup dengan meminta AI; tekan F5 dan dapatkan diameter pipa, tekanan, keseragaman, giliran operasi, daftar material serta laporan siap cetak. Asisten berjalan dengan Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) atau, melalui OpenRouter, ratusan model lainnya, dengan kunci API Anda sendiri, langsung dari peramban. Tersedia dalam 20 bahasa, mengikuti bahasa komputer Anda.',
   openApp: 'Buka aplikasi',
   tutorial: 'Tutorial interaktif',
   seeExamples: 'Lihat contoh siap pakai',
@@ -27,7 +27,7 @@ const _id = SiteText(
     ),
     (
       'Kunci Anda, kendali Anda',
-      'Model Claude (Anthropic) atau GPT (OpenAI) pada tingkat teratas, menengah dan cepat, dengan kunci API Anda sendiri, dipanggil langsung dari peramban tanpa server perantara. Mode hanya baca, rencanakan dulu, tanya sebelum setiap perubahan, atau otomatis; batas langkah dan batas pengeluaran per tugas; setiap jawaban dapat diurungkan; dan tidak ada yang dikirim sebelum Anda menekan Kirim.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) atau ratusan model melalui OpenRouter, sebagian di antaranya gratis, dengan kunci API Anda sendiri, dipanggil langsung dari peramban tanpa server perantara. Mode hanya baca, rencanakan dulu, tanya sebelum setiap perubahan, atau otomatis; batas langkah dan batas pengeluaran per tugas; setiap jawaban dapat diurungkan; pendapat kedua dari model lain; dan tidak ada yang dikirim sebelum Anda menekan Kirim.',
     ),
   ],
   aiCta: 'Buka asisten AI',
@@ -35,11 +35,11 @@ const _id = SiteText(
   features: [
     (
       'Asisten AI',
-      'Opsional: ajukan pertanyaan tentang proyek kepada AI, atau biarkan AI menggambar dan mendesain untuk Anda. AI menata letak sprinkler dan irigasi tetes, membagi lahan, menarik jalur pipa, serta menjalankan perhitungan desain dan alat-alat otomatis sambil melihat citra satelit dan medan, dengan model Claude (Anthropic) atau GPT (OpenAI) dan kunci API Anda sendiri, langsung dari peramban tanpa server perantara. Tidak ada yang dikirim sebelum Anda menekan Kirim, dan setiap perubahan menunggu persetujuan Anda (atau diterapkan otomatis, jika Anda memilihnya) serta dapat diurungkan.',
+      'Opsional: ajukan pertanyaan tentang proyek kepada AI, atau biarkan AI menggambar dan mendesain untuk Anda. AI menata letak sprinkler dan irigasi tetes, membagi lahan, menarik jalur pipa, serta menjalankan perhitungan desain dan alat-alat otomatis sambil melihat citra satelit dan medan, dengan model dari Anthropic, OpenAI, Google, xAI, Meta atau OpenRouter dan kunci API Anda sendiri, langsung dari peramban tanpa server perantara. Tidak ada yang dikirim sebelum Anda menekan Kirim, dan setiap perubahan menunggu persetujuan Anda (atau diterapkan otomatis, jika Anda memilihnya) serta dapat diurungkan.',
     ),
     (
       'Desain dan penentuan ukuran otomatis',
-      'Blok lateral dan grid sprinkler dengan satu klik, tata letak sprinkler dengan presipitasi seimbang, pembagian zona menurut debit, penarikan jalur pipa dan katup, pembagian lahan menjadi blok, penyesuaian pivot dengan lahan dan deteksi vegetasi pada citra udara; ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dengan menimbang biaya pipa terhadap energi.',
+      'Blok lateral dan grid sprinkler dengan satu klik, tata letak sprinkler dengan presipitasi seimbang, pembagian zona menurut debit, penarikan jalur pipa dan katup, pembagian lahan menjadi blok, penyesuaian pivot dengan lahan, serta vegetasi dan baris tanaman (arah, jarak dan jumlahnya) yang dibaca dari citra udara; ukuran pipa ditentukan dengan pemrograman linear dalam rentang tekanan emitter dan kelas tekanan pipa, dengan menimbang biaya pipa terhadap energi.',
     ),
     (
       'Gambar CAD lengkap',
@@ -58,6 +58,18 @@ const _id = SiteText(
       'Kontur, titik tinggi, model medan hasil triangulasi dengan garis patah, elevasi online, awan titik LAS, peta kemiringan dan profil; iklim lokasi yang diunduh atau diketik, kebutuhan air berdasarkan tanaman FAO-56 per fase pertumbuhan, jenis tanah, hujan efektif dan pencucian garam, ditambah anggaran air lanskap.',
     ),
     (
+      'Risiko iklim dan prakiraan irigasi',
+      'Memeriksa desain terhadap iklim harian lokasi sejak 1984: kebutuhan air pada tahun kering, seberapa sering sistem yang dirancang tidak mencukupi, tahun-tahun terburuk dan periode kering. Juga mengubah prakiraan cuaca lokasi menjadi apa yang perlu diairi dalam beberapa hari ke depan: airi atau lewati, kedalaman, waktu siram dan persentase penyesuaian (water budget) untuk kontroler.',
+    ),
+    (
+      'Program irigasi diputar di denah',
+      'Memutar program irigasi di atas gambar: zona yang berjalan, pipa menurut kecepatan dan debit, pompa, dan level reservoir setiap saat. Mengekspor siklusnya sebagai GIF animasi dan programnya sebagai berkas kalender untuk ponsel.',
+    ),
+    (
+      'Rapor mutu desain',
+      'Menilai proyek yang dirancang dari 0 sampai 100 dan dari A sampai E dalam tujuh kategori (keseragaman, hidrolika, energi, air dan tanah, ekonomi, ketangguhan, serta kelengkapan), dengan target setiap indikator dan asal target itu, lalu menyebutkan apa yang perlu diperbaiki lebih dulu.',
+    ),
+    (
       'Laporan, lembar gambar dan material',
       'Zona, pipa, emitter, keseragaman (CU, DU, EU), program pengendali dan pengabelan katup; daftar material dengan fitting dan penawaran harga yang mencakup upah kerja, pajak dan periode pengembalian modal; set lembar PDF dengan detail konstruksi dan grafik dalam salah satu dari 20 bahasa, serta setiap tabel dalam format Excel, CSV dan TXT.',
     ),
@@ -66,8 +78,12 @@ const _id = SiteText(
       'Mengimpor DXF, DWG, denah PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF dan gambar; mengekspor DXF 2000 dengan entitas CAD asli (atau R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp dan IFC.',
     ),
     (
+      'Mesin terbuka untuk skrip dan agen AI',
+      'Mesin hitung ditulis sepenuhnya dalam Dart dengan baris perintah, dan mendukung Model Context Protocol (MCP): aplikasi AI lain dapat membuat, menentukan ukuran dan memeriksa proyek dengannya di komputer Anda sendiri, terbatas pada folder yang Anda pilih.',
+    ),
+    (
       'Katalog produsen',
-      'Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL.',
+      'Katalog produsen dalam JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) siap dipakai, ditambah paket Anda sendiri yang dimuat dari berkas atau URL, serta kurva pompa, emitter dan sprinkler yang didigitasi dari gambar lembar data.',
     ),
     (
       'Offline dan di lapangan',
@@ -136,15 +152,19 @@ const _id = SiteText(
     ),
     (
       'Model AI apa saja yang dipakai?',
-      'Model Claude dari Anthropic (Claude Opus 5.5 sebagai bawaan, Claude Fable 5.1, Claude Sonnet 5.5 dan Claude Haiku 5.5) dan model GPT dari OpenAI (GPT-6 Astra, GPT-6.1 Sol dan GPT-6 Luna): tingkat teratas, menengah dan cepat dari tiap perusahaan, masing-masing dengan lima pilihan kedalaman penalaran. Anda memilih model di pengaturan asisten dan menempelkan kunci API Anda sendiri; panel menampilkan token dan perkiraan biaya setiap jawaban, dan batas langkah serta batas pengeluaran menghentikan tugas yang berlarut-larut.',
+      'Model dari enam perusahaan, dengan kunci API Anda sendiri: Claude dari Anthropic (Claude Opus 5.5 sebagai bawaan, Claude Fable 5.2, Claude Sonnet 5.5 dan Claude Haiku 5.5), GPT dari OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra dan GPT-6 Luna), Gemini dari Google (Gemini 4 Argon, Gemini 3.8 Flash dan Gemini 3.5 Flash-Lite), Grok dari xAI (Grok 4.7 dan Grok 4.3), Muse dari Meta (Muse Wonder, Muse Spark dan Muse Ember) dan, dengan satu kunci OpenRouter, model mana pun dari ratusan model dalam daftarnya. Anda memilih perusahaan dan model di pengaturan asisten lalu menempelkan kunci Anda; panel menampilkan token dan perkiraan biaya setiap jawaban, batas langkah serta batas pengeluaran menghentikan tugas yang berlarut-larut, dan model lain dapat memberikan pendapat kedua atas suatu jawaban.',
+    ),
+    (
+      'Apakah saya bisa memakai asisten AI tanpa membayar?',
+      'Programnya gratis; asisten memerlukan kunci dari perusahaan AI, yang menagih apa yang Anda pakai. Ada dua cara yang tidak berbiaya dalam batas pemakaiannya: tingkat gratis model Gemini Flash dari Google (di tempat Google menawarkannya) dan model gratis OpenRouter. Batas itu ditetapkan oleh perusahaan-perusahaan tersebut, dan pada tingkat gratis mereka dapat memakai apa yang Anda kirim untuk menyempurnakan produknya, jadi bacalah ketentuannya sebelum mengirim proyek yang bersifat rahasia.',
     ),
     (
       'Apa yang dikirim asisten AI, dan ke mana?',
-      'Tidak ada, sampai Anda menekan Kirim. Saat itu, pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim langsung dari peramban Anda ke API penyedia layanan yang Anda pilih, Anthropic atau OpenAI, tanpa melalui server OpenCADIrrigation mana pun, bersama hasil alat-alat yang dipakai asisten selama menjawab, termasuk tangkapan gambar proyek. Penyedia layanan menagih penggunaannya ke akun Anda. Kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya di perangkat, dan tidak pernah masuk ke berkas proyek, tautan berbagi, atau ekspor. Dikte suara, jika Anda memakainya, dikerjakan oleh pengenalan suara milik peramban itu sendiri, yang mengirim audionya ke pembuat peramban (Google di Chrome, Microsoft di Edge, Apple di Safari). Percakapan yang disimpan tetap berada di peramban Anda, tidak pernah masuk ke berkas proyek atau tautan.',
+      'Tidak ada, sampai Anda menekan Kirim. Saat itu, pesan Anda, berkas yang Anda lampirkan, dan data proyek yang Anda centang dikirim langsung dari peramban Anda ke API perusahaan yang Anda pilih (Anthropic, OpenAI, Google, xAI, Meta atau OpenRouter, yang meneruskan permintaan ke perusahaan yang menjalankan model), tanpa melalui server OpenCADIrrigation mana pun, bersama hasil alat-alat yang dipakai asisten selama menjawab, termasuk tangkapan gambar proyek. Penyedia layanan menagih penggunaannya ke akun Anda. Kunci hanya tersimpan di memori selama sesi, kecuali Anda memilih untuk mengingatnya di perangkat, dan tidak pernah masuk ke berkas proyek, tautan berbagi, atau ekspor. Dikte suara, jika Anda memakainya, dikerjakan oleh pengenalan suara milik peramban itu sendiri, yang mengirim audionya ke pembuat peramban (Google di Chrome, Microsoft di Edge, Apple di Safari). Percakapan yang disimpan tetap berada di peramban Anda, tidak pernah masuk ke berkas proyek atau tautan. Pendapat kedua, jika Anda memintanya, mengirim pertanyaan, jawaban, dan data proyek ke perusahaan pemilik model yang memberikannya.',
     ),
     (
       'Apakah OpenCADIrrigation gratis?',
-      'Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub. Asisten AI yang opsional memakai akun Anthropic atau OpenAI Anda sendiri, dan penyedia layanan menagih penggunaannya ke akun tersebut.',
+      'Ya. Gratis untuk penggunaan profesional, akademik dan pribadi, tanpa pendaftaran. Juga sumber terbuka dengan lisensi MIT, dan kode sumbernya dipublikasikan di GitHub. Asisten AI yang opsional memakai akun Anda sendiri di sebuah perusahaan AI (Anthropic, OpenAI, Google, xAI, Meta atau OpenRouter), yang menagih penggunaannya ke akun tersebut; sebagian model mereka dapat dipakai gratis dalam batas tertentu.',
     ),
     (
       'Untuk siapa aplikasi ini?',
@@ -156,11 +176,11 @@ const _id = SiteText(
     ),
     (
       'Apakah bisa dipakai secara offline?',
-      'Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 20 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.',
+      'Ya, setelah kunjungan pertama: aplikasi menyimpan salinan dirinya di peramban (sekitar 20 MB, sekali per versi), sehingga pembukaan berikutnya, baik aplikasi yang terpasang maupun situs ini, berjalan tanpa jaringan, di kantor maupun di lapangan. Peta dasar, elevasi dan iklim online, prakiraan cuaca, katalog yang dimuat dari URL, dan asisten AI tetap memerlukan koneksi; versi baru diunduh di latar belakang dan dipakai mulai pembukaan berikutnya.',
     ),
     (
       'Apakah proyek saya disimpan di cloud?',
-      'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana pun Anda mau; tautan berbagi membawa proyek di dalam alamat itu sendiri, sehingga tidak ada yang diunggah, dan OpenCADIrrigation tidak memiliki server yang dapat menyimpan salinannya. Fon untuk setiap aksara dan simbol berasal dari situs ini sendiri. Peramban memang menghubungi layanan lain: peta dasar, elevasi dan iklim online, pencarian alamat, katalog yang dimuat dari URL, dan, jika Anda memakainya, asisten AI (hanya penyedia yang Anda pilih, Anthropic atau OpenAI) menghubungi layanannya masing-masing saat Anda memakainya; dan situs serta aplikasi menghitung kunjungan dengan Google Analytics, yang memakai cookie (dapat dimatikan melalui Pengaturan cookie, di bagian bawah halaman). Kebijakan privasi mencantumkan setiap layanan dan apa yang diterimanya.',
+      'Tidak. Proyek disimpan di peramban Anda dan sebagai berkas .oci.json yang Anda simpan di mana pun Anda mau; tautan berbagi membawa proyek di dalam alamat itu sendiri, sehingga tidak ada yang diunggah, dan OpenCADIrrigation tidak memiliki server yang dapat menyimpan salinannya. Fon untuk setiap aksara dan simbol berasal dari situs ini sendiri. Peramban memang menghubungi layanan lain: peta dasar, elevasi dan iklim online, prakiraan cuaca, pencarian alamat, katalog yang dimuat dari URL, dan, jika Anda memakainya, asisten AI (hanya perusahaan yang Anda pilih: Anthropic, OpenAI, Google, xAI, Meta atau OpenRouter) menghubungi layanannya masing-masing saat Anda memakainya; dan situs serta aplikasi menghitung kunjungan dengan Google Analytics, yang memakai cookie (dapat dimatikan melalui Pengaturan cookie, di bagian bawah halaman). Kebijakan privasi mencantumkan setiap layanan dan apa yang diterimanya.',
     ),
     (
       'Bagaimana perhitungan hidrauliknya?',
@@ -219,9 +239,11 @@ const _legalId = LegalText(
     LegalSection('Layanan yang dihubungi peramban Anda saat Anda memakainya', [
       '- Peta dasar: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (dengan kunci Anda sendiri), atau alamat yang Anda tetapkan menerima alamat IP dan area peta di layar.',
       '- Elevasi dan iklim online: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData, dan NASA POWER menerima koordinat area, tanpa data proyek lainnya.',
+      '- Prakiraan cuaca (Desain → Agronomi → Prakiraan irigasi): MET Norway atau Open-Meteo, sesuai pilihan Anda, menerima koordinat lokasi yang dibulatkan hingga empat desimal, tanpa data proyek lainnya.',
       '- Pencarian alamat: Nominatim (OpenStreetMap) menerima alamat yang Anda ketik.',
       '- Katalog yang dimuat dari URL: server alamat tersebut.',
-      '- Asisten AI (opsional): Anthropic atau OpenAI, dengan kunci Anda sendiri. Tidak ada yang dikirim sebelum Anda menekan Kirim; setelah itu yang dikirim adalah pesan Anda, berkas yang Anda lampirkan, data proyek yang Anda centang, pesan-pesan sebelumnya, dan, selama asisten bekerja, hasil alat yang dipakainya, termasuk gambar dari gambar kerja. Perjanjian Anda dengan perusahaan tersebut mengatur apa yang dilakukannya dengan data itu, dan perusahaan itu menagih akun Anda.',
+      '- Asisten AI (opsional): perusahaan yang Anda pilih, dengan kunci Anda sendiri: Anthropic, OpenAI, Google, xAI, Meta, atau OpenRouter (yang meneruskan permintaan ke perusahaan yang menjalankan model pilihan Anda, dan diberi tahu bahwa permintaan berasal dari OpenCADIrrigation, tanpa keterangan apa pun tentang Anda). Tidak ada yang dikirim sebelum Anda menekan Kirim; setelah itu yang dikirim adalah pesan Anda, berkas yang Anda lampirkan, data proyek yang Anda centang, pesan-pesan sebelumnya, dan, selama asisten bekerja, hasil alat yang dipakainya, termasuk gambar dari gambar kerja. Pendapat kedua, jika Anda memintanya, mengirim pertanyaan, jawaban, dan data proyek ke perusahaan pemilik model yang memberikannya. Perjanjian Anda dengan setiap perusahaan mengatur apa yang dilakukannya dengan data itu, dan perusahaan itu menagih akun Anda; pada tingkat gratis (model Gemini Flash dari Google, model gratis OpenRouter), perusahaan dapat memakai apa yang Anda kirim untuk menyempurnakan produknya.',
+      '- Daftar model OpenRouter: diunduh dari OpenRouter saat Anda membuka Model lainnya… di pengaturan asisten, tanpa kunci Anda.',
       '- Dikte suara: pengenalan suara peramban mengirim suara ke pembuat peramban (Google di Chrome, Microsoft di Edge, Apple di Safari).',
       'Setiap layanan ini memiliki kebijakan privasinya sendiri dan dapat memproses data di luar negara Anda.',
     ]),
@@ -245,9 +267,9 @@ const _legalId = LegalText(
       'Perangkat lunak ini disediakan "apa adanya", tanpa jaminan apa pun, tersurat maupun tersirat, termasuk jaminan kelayakan untuk diperdagangkan, kesesuaian untuk tujuan tertentu, dan tidak adanya pelanggaran. Dalam keadaan apa pun, penulis atau pemegang hak cipta tidak bertanggung jawab atas klaim, kerugian, atau tanggung jawab lain yang timbul dari perangkat lunak atau penggunaannya (ketentuan lisensi MIT).',
     ]),
     LegalSection('Data dan layanan pihak lain', [
-      'Peta, citra, elevasi, iklim, pencarian alamat, dan katalog pabrikan berasal dari pihak ketiga, dengan ketentuan dan lisensinya sendiri (lihat Bantuan → Tentang di aplikasi). Data katalog diambil dari tabel yang diterbitkan dan mungkin sudah usang: pastikan model, kurva, dan harga dengan lembar data terbaru sebelum membeli.',
-      'Dalam pekerjaan profesional, gunakan setiap sumber sesuai ketentuannya: Bantuan → Ketentuan data di aplikasi menjelaskan apa yang diizinkan oleh penggunaan gratis masing-masing. Beberapa layanan gratis hanya untuk penggunaan nonkomersial (layanan gratis Open-Meteo dan peta dasar CARTO), sehingga aplikasi secara bawaan mengunduh iklim dari NASA POWER dan elevasi dari Terrain Tiles; server ubin OpenStreetMap Foundation melarang pemakaian berat dan pengunduhan area untuk penggunaan offline, sehingga peta yang disimpan untuk lapangan hanya memakai ubin yang sudah ditampilkan. Lembar gambar, PDF, dan laporan memuat kredit setiap sumber: pertahankan kredit itu saat Anda menyerahkan atau menerbitkan pekerjaan.',
-      'Asisten AI yang opsional berjalan dengan akun Anda sendiri di Anthropic atau OpenAI, berdasarkan ketentuan perusahaan tersebut, dan perusahaan itulah yang menagih penggunaannya. Model bisa salah: setujui perubahan yang diusulkannya dengan penuh pertimbangan dan periksa pekerjaannya.',
+      'Peta, citra, elevasi, iklim, prakiraan cuaca, pencarian alamat, dan katalog pabrikan berasal dari pihak ketiga, dengan ketentuan dan lisensinya sendiri (lihat Bantuan → Tentang di aplikasi). Data katalog diambil dari tabel yang diterbitkan dan mungkin sudah usang: pastikan model, kurva, dan harga dengan lembar data terbaru sebelum membeli.',
+      'Dalam pekerjaan profesional, gunakan setiap sumber sesuai ketentuannya: Bantuan → Ketentuan data di aplikasi menjelaskan apa yang diizinkan oleh penggunaan gratis masing-masing. Beberapa layanan gratis hanya untuk penggunaan nonkomersial (layanan gratis Open-Meteo dan peta dasar CARTO), sehingga aplikasi secara bawaan mengunduh iklim dari NASA POWER, prakiraan cuaca dari MET Norway, dan elevasi dari Terrain Tiles; server ubin OpenStreetMap Foundation melarang pemakaian berat dan pengunduhan area untuk penggunaan offline, sehingga peta yang disimpan untuk lapangan hanya memakai ubin yang sudah ditampilkan. Lembar gambar, PDF, dan laporan memuat kredit setiap sumber: pertahankan kredit itu saat Anda menyerahkan atau menerbitkan pekerjaan.',
+      'Asisten AI yang opsional berjalan dengan akun Anda sendiri di perusahaan AI yang Anda pilih (Anthropic, OpenAI, Google, xAI, Meta, atau OpenRouter), berdasarkan ketentuan perusahaan tersebut, dan perusahaan itulah yang menagih penggunaannya. Model bisa salah: setujui perubahan yang diusulkannya dengan penuh pertimbangan dan periksa pekerjaannya.',
     ]),
     LegalSection('Konten Anda', ['Proyek, gambar, citra, dan berkas Anda adalah milik Anda: Anda bertanggung jawab atasnya dan atas hak untuk menggunakan apa yang Anda impor.']),
     LegalSection('Kontak', ['Pertanyaan dan masalah: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Cara data Anda diperlakukan: lihat kebijakan privasi.']),

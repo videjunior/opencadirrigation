@@ -95,9 +95,11 @@
       <ul>
         <li>底图：OpenStreetMap、OpenTopoMap、CARTO、Esri、Google（使用您自己的密钥）或您设置的地址，会接收 IP 地址和屏幕上的地图范围。</li>
         <li>在线高程和气候：Terrain Tiles（AWS Open Data）、Open-Meteo、OpenTopoData 和 NASA POWER 接收区域的坐标，不接收项目的其他任何内容。</li>
+        <li>天气预报（设计 → 农艺 → 灌溉预报）：您所选的 MET Norway 或 Open-Meteo 接收四舍五入到小数点后四位的场地坐标，不接收项目的其他任何内容。</li>
         <li>地址搜索：Nominatim（OpenStreetMap）接收您输入的地址。</li>
         <li>通过 URL 加载的目录：该地址所在的服务器。</li>
-        <li>AI 助手（可选）：Anthropic 或 OpenAI，使用您自己的密钥。在您点击“发送”之前不会发送任何内容；点击后，发送的内容包括您的消息、您附加的文件、您勾选的项目数据、之前的消息，以及助手工作期间所用工具的结果（包括图纸图像）。您与该公司之间的协议约束其如何处理这些数据，费用由该公司向您的账户收取。</li>
+        <li>AI 助手（可选）：您所选的公司，使用您自己的密钥：Anthropic、OpenAI、Google、xAI、Meta 或 OpenRouter（OpenRouter 会把请求转给运行您所选模型的公司；它会得知请求来自 OpenCADIrrigation，但不会得知关于您的任何信息）。在您点击“发送”之前不会发送任何内容；点击后，发送的内容包括您的消息、您附加的文件、您勾选的项目数据、之前的消息，以及助手工作期间所用工具的结果（包括图纸图像）。第二意见（如果您请求的话）会把问题、回答和项目数据发送给给出意见的模型所属的公司。您与各公司之间的协议约束其如何处理这些数据，费用由该公司向您的账户收取；在免费层级下（Google 的 Gemini Flash 模型、OpenRouter 的免费模型），该公司可能会使用您发送的内容来改进其产品。</li>
+        <li>OpenRouter 的模型列表：在助手设置中打开“更多模型…”时从 OpenRouter 下载，不使用您的密钥。</li>
         <li>语音口述：浏览器的语音识别会把声音发送给浏览器厂商（Chrome 为 Google，Edge 为 Microsoft，Safari 为 Apple）。</li>
       </ul>
       <p>这些服务各有其隐私政策，并可能在您所在的国家或地区以外处理数据。</p>
@@ -121,6 +123,6 @@
     <p>本网站和应用通过 Google Analytics 统计访问量，该服务使用 Cookie。如果您拒绝，您在此浏览器中的访问将不再被统计。 <a href="https://opencadirrigation.com/zh/privacy/">隐私政策</a></p>
     <div class="actions"><button type="button" data-consent="denied">拒绝</button><button type="button" data-consent="granted">接受</button></div>
   </div>
-  <script src="/site.js?v=67c62d53" data-ga="G-3M0P4T8V2T" defer></script>
+  <script src="/site.js?v=06d2a5e3" data-ga="G-3M0P4T8V2T" defer></script>
 </body>
 </html>

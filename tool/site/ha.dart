@@ -6,7 +6,7 @@ const _ha = SiteText(
   keywords: 'ƙirar ban ruwa da AI, manhajar ƙirar ban ruwa mai AI, ƙirar ban ruwa ta atomatik, tsara masu fesa ruwa ta atomatik, mataimakin AI na ban ruwa, ƙirar ban ruwa, manhajar ƙirar ban ruwa, manhajar ban ruwa mai buɗaɗɗen tushe, manhajar ban ruwa, CAD ban ruwa, ban ruwa ta matsi, ban ruwa ta ɗigo, masu fesa ruwa, pivot na tsakiya, lissafin ruwa, girman bututu, daidaiton ban ruwa, DXF, DWG, ban ruwan lambu, ban ruwan gona',
   h1: 'Manhajar ƙirar ban ruwa kyauta mai buɗaɗɗen lambar tushe, tare da mataimakin AI',
   tagline: 'Bayyana gona, lambu ko filin wasa, sai ka bar mataimakin AI ya tsara masu fesa ruwa da ɗigo, ya shimfiɗa bututu kuma ya auna girman tsarin; ko kuma ka zana shi da kanka da kayan aikin atomatik. Tsarin ban ruwa ta ɗigo, ƙananan masu fesa ruwa, masu fesa ruwa da pivot na tsakiya, kai tsaye a mai binciken gizo, ba tare da girka komai ba, kuma ayyukanka suna zama a kwamfutarka.',
-  intro: 'OpenCADIrrigation yana haɗa zanen CAD, hanyar sadarwar ruwa, lissafi da mataimakin AI wuri ɗaya. Zana iyakar wurin, ko ka bar AI ta nemo shi a kan hoton tauraron ɗan adam; shimfiɗa layukan lateral, bawuloli da babban bututu da hannu, ta hanyar kayan aikin da ke samar da su da danna ɗaya, ko ka umarci AI ta yi maka; danna F5 ka samu girman bututu, matsi, daidaito, jadawalin aiki, jerin kayan aiki da rahotanni a shirye don bugawa. Mataimakin yana amfani da samfuran Claude (Anthropic) ko GPT (OpenAI) tare da maɓallin API na kanka, kai tsaye daga mai binciken gizo. Akwai shi a harsuna 20, yana bin harshen kwamfutarka.',
+  intro: 'OpenCADIrrigation yana haɗa zanen CAD, hanyar sadarwar ruwa, lissafi da mataimakin AI wuri ɗaya. Zana iyakar wurin, ko ka bar AI ta nemo shi a kan hoton tauraron ɗan adam; shimfiɗa layukan lateral, bawuloli da babban bututu da hannu, ta hanyar kayan aikin da ke samar da su da danna ɗaya, ko ka umarci AI ta yi maka; danna F5 ka samu girman bututu, matsi, daidaito, jadawalin aiki, jerin kayan aiki da rahotanni a shirye don bugawa. Mataimakin yana aiki da Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) ko, ta OpenRouter, ɗaruruwan sauran samfura, tare da maɓallin API na kanka, kai tsaye daga mai binciken gizo. Akwai shi a harsuna 20, yana bin harshen kwamfutarka.',
   openApp: 'Buɗe manhajar',
   tutorial: 'Koyarwa mai mu\'amala',
   seeExamples: 'Duba misalai da aka shirya',
@@ -27,7 +27,7 @@ const _ha = SiteText(
     ),
     (
       'Maɓallinka, ikonka',
-      'Samfuran Claude (Anthropic) ko GPT (OpenAI) a aji mafi girma, matsakaici ko mai sauri, tare da maɓallin API na kanka, ana kiransu kai tsaye daga mai binciken gizo ba tare da wata sabar a tsakani ba. Yanayin karatu kawai, na tsari da farko, na tambaya kafin kowane canji ko na atomatik, iyakar matakai da iyakar kashe kuɗi a kowace ɗawainiya, warware canje-canjen kowace amsa, kuma ba a aika komai kafin ka danna Aika.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) ko ɗaruruwan samfura ta OpenRouter, wasu daga cikinsu kyauta, tare da maɓallin API na kanka, ana kiransu kai tsaye daga mai binciken gizo ba tare da wata sabar a tsakani ba. Yanayin karatu kawai, na tsari da farko, na tambaya kafin kowane canji ko na atomatik, iyakar matakai da iyakar kashe kuɗi a kowace ɗawainiya, warware canje-canjen kowace amsa, ra\'ayi na biyu daga wani samfuri, kuma ba a aika komai kafin ka danna Aika.',
     ),
   ],
   aiCta: 'Buɗe mataimakin AI',
@@ -35,11 +35,11 @@ const _ha = SiteText(
   features: [
     (
       'Mataimakin AI',
-      'Na zaɓi ne: tambayi AI game da aikin, ko ka bar ta ta yi maka zane da ƙira. Tana tsara masu fesa ruwa da ɗigo, raba gonaki, shimfiɗa bututu, gudanar da auna girma da kayan aikin atomatik, yayin da take kallon hoton tauraron ɗan adam da yanayin ƙasa, ta amfani da samfuran Claude (Anthropic) ko GPT (OpenAI) da maɓallin API na kanka, kai tsaye daga mai binciken gizonka ba tare da wata sabar a tsakani ba. Ba a aika komai kafin ka danna Aika, kuma kowane canji yana jiran amincewarka (ko kuma ana aiwatar da shi ta atomatik, idan ka zaɓa) kuma ana iya warware shi.',
+      'Na zaɓi ne: tambayi AI game da aikin, ko ka bar ta ta yi maka zane da ƙira. Tana tsara masu fesa ruwa da ɗigo, raba gonaki, shimfiɗa bututu, gudanar da auna girma da kayan aikin atomatik, yayin da take kallon hoton tauraron ɗan adam da yanayin ƙasa, ta amfani da samfuran Anthropic, OpenAI, Google, xAI, Meta ko OpenRouter da maɓallin API na kanka, kai tsaye daga mai binciken gizonka ba tare da wata sabar a tsakani ba. Ba a aika komai kafin ka danna Aika, kuma kowane canji yana jiran amincewarka (ko kuma ana aiwatar da shi ta atomatik, idan ka zaɓa) kuma ana iya warware shi.',
     ),
     (
       'Ƙira da auna girma ta atomatik',
-      'Rukunin lateral da grid na masu fesa ruwa da danna ɗaya, tsara masu fesa ruwa da daidaitaccen ruwan sama (matched precipitation), raba yankuna bisa kwarara, shimfiɗa hanyoyin bututu da bawuloli, raba gona zuwa rukunai, daidaita pivot da gona da gano tsirrai a hotunan da aka ɗauka daga sama; ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, tare da daidaita kuɗin bututu da na makamashi.',
+      'Rukunin lateral da grid na masu fesa ruwa da danna ɗaya, tsara masu fesa ruwa da daidaitaccen ruwan sama (matched precipitation), raba yankuna bisa kwarara, shimfiɗa hanyoyin bututu da bawuloli, raba gona zuwa rukunai, daidaita pivot da gona, da gano tsirrai da layukan shuka (fuskantarwa, tazara da adadi) a hotunan da aka ɗauka daga sama; ana auna girman bututu da linear programming a cikin tagar matsin masu fitar da ruwa da ajin matsin bututu, tare da daidaita kuɗin bututu da na makamashi.',
     ),
     (
       'Cikakken zanen CAD',
@@ -58,6 +58,18 @@ const _ha = SiteText(
       'Layukan tsayi, wuraren tsayi, samfurin ƙasa ta triangulation tare da layukan karyewa (breaklines), tsayin ƙasa da ake saukewa daga intanet, gajimaren wurare na LAS, taswirorin gangara da bayanan tsayi a tsawon layi; yanayin wurin da ake saukewa ko ake shigarwa da hannu, amfanin gona na FAO-56 bisa matakin girma, nau\'o\'in ƙasa, ruwan sama mai amfani da wanke gishiri don buƙatun ruwa, da kuma kasafin ruwan lambu.',
     ),
     (
+      'Haɗarin yanayi da hasashen ban ruwa',
+      'Yana duba ƙirar a kan yanayin yau da kullum na wurin tun daga 1984: buƙatar ruwa ta shekara mai ƙarancin ruwan sama, sau nawa tsarin da aka ƙirƙira zai gaza, shekaru mafi muni da lokutan ɗaukewar ruwan sama. Kuma yana mayar da hasashen yanayi na wurin zuwa abin da za a yi ban ruwa a kwanaki masu zuwa: a yi ban ruwa ko a tsallake, zurfi, lokacin ban ruwa da kason daidaitawa % (water budget) na mai sarrafawa.',
+    ),
+    (
+      'Shirin ban ruwa da ake kunnawa a kan zane',
+      'Yana kunna shirin ban ruwa a kan zanen: yankunan da ke aiki, bututu bisa gudu da kwarara, famfuna da matakin tafki a kowane lokaci. Yana fitar da zagayen a matsayin GIF mai motsi da shirin a matsayin fayil na kalanda don waya.',
+    ),
+    (
+      'Katin makin ƙira',
+      'Yana ba aikin da aka ƙirƙira maki daga 0 zuwa 100 da daraja daga A zuwa E a rukunai bakwai (daidaito, ilimin ruwa, makamashi, ruwa da ƙasa, tattalin arziki, juriya da kammaluwa), tare da manufar kowace manuniya da inda ta fito, kuma yana faɗin abin da za a fara ingantawa.',
+    ),
+    (
       'Rahotanni, zane-zane da kayan aiki',
       'Yankuna, bututu, masu fitar da ruwa, daidaito (CU, DU, EU), shirin na\'urar sarrafawa da wayoyin bawuloli; jerin kayan aiki tare da haɗe-haɗe, da ƙiyasin farashi mai ladar aiki, haraji da lokacin dawo da jari; tarin takardun PDF masu cikakkun bayanan gini da jadawalai, a kowane ɗaya daga cikin harsuna 20, da kowane tebur a Excel, CSV da TXT.',
     ),
@@ -66,8 +78,12 @@ const _ha = SiteText(
       'Yana shigo da DXF, DWG, zane-zanen PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF da hotuna; yana fitar da DXF 2000 mai abubuwan CAD na asali (ko R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp da IFC.',
     ),
     (
+      'Buɗaɗɗen injin don rubutun shirye-shirye da wakilan AI',
+      'Injin lissafi Dart ne zalla mai layin umarni, kuma yana magana da Model Context Protocol (MCP): wasu manhajojin AI za su iya ƙirƙira, auna girma da duba ayyuka da shi a kwamfutarka, an taƙaita su cikin babban fayil (folder) da ka zaɓa.',
+    ),
+    (
       'Kundin masana\'antun',
-      'Kundin masana\'antun a JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) a shirye don amfani, da kuma fakitinka da ake lodawa daga fayil ko URL.',
+      'Kundin masana\'antun a JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) a shirye don amfani, da kuma fakitinka da ake lodawa daga fayil ko URL, da lanƙwasar famfo, mai fitar da ruwa da mai fesa ruwa da aka ɗauko daga hoton takardar bayanai.',
     ),
     (
       'Ba tare da intanet ba, da kuma a gona',
@@ -144,15 +160,19 @@ const _ha = SiteText(
     ),
     (
       'Waɗanne samfuran AI yake amfani da su?',
-      'Samfuran Claude na Anthropic (Claude Opus 5.5 a matsayin tsoho, Claude Fable 5.1, Claude Sonnet 5.5 da Claude Haiku 5.5) da samfuran GPT na OpenAI (GPT-6 Astra, GPT-6.1 Sol da GPT-6 Luna): samfuri na aji mafi girma, na matsakaici da na mai sauri daga kowane kamfani, kowanne da matakan zurfin tunani guda biyar. Kai ne kake zaɓar samfurin a saitunan mataimakin, sannan ka liƙa maɓallin API na kanka; panel ɗin yana nuna token da ƙiyasin kuɗin kowace amsa, kuma iyakar matakai da iyakar kashe kuɗi suna dakatar da ɗawainiyar da ta ja tsawo.',
+      'Samfuran kamfanoni shida, tare da maɓallin API na kanka: Claude na Anthropic (Claude Opus 5.5 a matsayin tsoho, Claude Fable 5.2, Claude Sonnet 5.5 da Claude Haiku 5.5), GPT na OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra da GPT-6 Luna), Gemini na Google (Gemini 4 Argon, Gemini 3.8 Flash da Gemini 3.5 Flash-Lite), Grok na xAI (Grok 4.7 da Grok 4.3), Muse na Meta (Muse Wonder, Muse Spark da Muse Ember) kuma, da maɓallin OpenRouter ɗaya, kowane ɗaya daga cikin ɗaruruwan samfuran da ke jerinsa. Kai ne kake zaɓar kamfanin da samfurin a saitunan mataimakin, sannan ka liƙa maɓallinka; panel ɗin yana nuna token da ƙiyasin kuɗin kowace amsa, iyakar matakai da iyakar kashe kuɗi suna dakatar da ɗawainiyar da ta ja tsawo, kuma wani samfuri zai iya ba da ra\'ayi na biyu a kan amsa.',
+    ),
+    (
+      'Shin zan iya amfani da mataimakin AI ba tare da biya ba?',
+      'Manhajar kyauta ce; mataimakin yana buƙatar maɓalli daga kamfanin AI, wanda ke caji abin da ka yi amfani da shi. Hanyoyi biyu ba sa kashe komai cikin iyakokinsu: ajin kyauta na samfuran Gemini Flash na Google (inda Google ke bayar da shi) da samfuran kyauta na OpenRouter. Kamfanonin ne ke saita waɗannan iyakoki, kuma a ajin kyauta suna iya amfani da abin da ka aika don inganta kayayyakinsu, don haka ka karanta sharuɗɗansu kafin ka aika aikin sirri.',
     ),
     (
       'Me mataimakin AI yake aikawa, kuma zuwa ina?',
-      'Babu abin da ake aikawa sai ka danna Aika. A lokacin ne saƙonka, fayilolin da ka haɗa da bayanan aikin da ka yi wa alama suke tafiya kai tsaye daga mai binciken gizonka zuwa API na mai ba da sabis ɗin da ka zaɓa, Anthropic ko OpenAI, ba tare da wata sabar ta OpenCADIrrigation a tsakani ba, tare da sakamakon kayan aikin da yake amfani da su yayin amsawa, har da hotunan zane. Mai ba da sabis ɗin yana karɓar kuɗin amfanin daga asusunka. Maɓallin yana zama a ƙwaƙwalwa ne kawai a tsawon zaman da kake ciki, sai dai idan ka zaɓi a tuna da shi a na\'urar, kuma ba ya taɓa shiga fayilolin aiki, hanyoyin haɗin rabawa ko fayilolin da aka fitar. Faɗar da baki, idan ka yi amfani da ita, mai binciken kansa ne ke gane maganar, kuma yana aika sautin ga kamfanin da ya ƙera mai binciken (Google a Chrome, Microsoft a Edge, Apple a Safari). Tattaunawar da aka ajiye tana zama a mai bincikenka kawai, ba ta taɓa shiga fayilolin aiki ko hanyoyin haɗin rabawa ba.',
+      'Babu abin da ake aikawa sai ka danna Aika. A lokacin ne saƙonka, fayilolin da ka haɗa da bayanan aikin da ka yi wa alama suke tafiya kai tsaye daga mai binciken gizonka zuwa API na kamfanin da ka zaɓa (Anthropic, OpenAI, Google, xAI, Meta ko OpenRouter, wanda ke miƙa buƙatar ga kamfanin da ke gudanar da samfurin), ba tare da wata sabar ta OpenCADIrrigation a tsakani ba, tare da sakamakon kayan aikin da yake amfani da su yayin amsawa, har da hotunan zane. Mai ba da sabis ɗin yana karɓar kuɗin amfanin daga asusunka. Maɓallin yana zama a ƙwaƙwalwa ne kawai a tsawon zaman da kake ciki, sai dai idan ka zaɓi a tuna da shi a na\'urar, kuma ba ya taɓa shiga fayilolin aiki, hanyoyin haɗin rabawa ko fayilolin da aka fitar. Faɗar da baki, idan ka yi amfani da ita, mai binciken kansa ne ke gane maganar, kuma yana aika sautin ga kamfanin da ya ƙera mai binciken (Google a Chrome, Microsoft a Edge, Apple a Safari). Tattaunawar da aka ajiye tana zama a mai bincikenka kawai, ba ta taɓa shiga fayilolin aiki ko hanyoyin haɗin rabawa ba. Ra\'ayi na biyu, idan ka nema, yana aika tambayar, amsar da bayanan aikin ga kamfanin samfurin da ke ba da shi.',
     ),
     (
       'Shin OpenCADIrrigation kyauta ne?',
-      'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba. Haka kuma lambar tushensa a buɗe take ƙarƙashin lasisin MIT, kuma an wallafa ta a GitHub. Mataimakin AI, wanda na zaɓi ne, yana amfani da asusunka na Anthropic ko OpenAI na kanka, kuma mai ba da sabis ɗin yana karɓar kuɗin amfaninsa daga wannan asusun.',
+      'Ee. Kyauta ne don aikin ƙwararru, ilimi da amfanin kai, ba tare da yin rajista ba. Haka kuma lambar tushensa a buɗe take ƙarƙashin lasisin MIT, kuma an wallafa ta a GitHub. Mataimakin AI, wanda na zaɓi ne, yana amfani da asusunka na kanka a wani kamfanin AI (Anthropic, OpenAI, Google, xAI, Meta ko OpenRouter), wanda ke karɓar kuɗin amfaninsa daga wannan asusun; ana iya amfani da wasu daga cikin samfuransu kyauta cikin iyakoki.',
     ),
     (
       'Wa aka yi shi dominsa?',
@@ -161,11 +181,11 @@ const _ha = SiteText(
     ('Shin sai na girka wani abu?', 'A\'a. Yana aiki a Chrome, Edge, Firefox da Safari, a kwamfuta, tablet da waya, kuma ana iya girka shi a matsayin manhaja (PWA) mai buɗewa a tagarta.'),
     (
       'Shin yana aiki ba tare da intanet ba?',
-      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 20, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
+      'Ee, bayan ziyarar farko: manhajar tana ajiye kwafinta a mai binciken gizo (kusan MB 20, sau ɗaya ga kowane siga), don haka buɗewa ta gaba, ta manhajar da aka girka ko ta shafin yanar gizo, tana aiki ba tare da intanet ba, a ofis ko a gona. Taswirorin bango, tsayin ƙasa da yanayi daga intanet, hasashen yanayi, kundin da ake lodawa daga URL da mataimakin AI har yanzu suna buƙatar haɗin intanet; ana sauke sabon siga a bayan fage kuma ana fara amfani da shi a buɗewa ta gaba.',
     ),
     (
       'Shin ana ajiye ayyukana a gajimare (cloud)?',
-      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a matsayin fayilolin .oci.json da kake ajiyewa duk inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a intanet, kuma OpenCADIrrigation ba shi da sabar da za ta iya riƙe kwafi. Haruffan kowane rubutu da alama suna fitowa daga wannan gidan yanar gizon kansa. Mai binciken gizo yana kaiwa ga wasu sabis: taswirorin bango, tsayin ƙasa da yanayi daga intanet, binciken adireshi, kundin da ake lodawa daga URL kuma, idan ka yi amfani da shi, mataimakin AI (mai ba da sabis ɗin da ka zaɓa kaɗai, Anthropic ko OpenAI) suna zuwa sabis ɗinsu idan ka yi amfani da su; kuma gidan yanar gizon da manhajar suna ƙidaya ziyara da Google Analytics, wanda ke amfani da cookies (kana iya kashe shi da Saitunan cookies, a ƙasan shafukan). Manufar sirri tana jera kowane sabis da abin da yake karɓa.',
+      'A\'a. Ana ajiye ayyuka a mai binciken gizonka da kuma a matsayin fayilolin .oci.json da kake ajiyewa duk inda kake so; hanyar haɗin rabawa tana ɗauke da aikin a cikin adireshin kansa, don haka ba a ɗora komai a intanet, kuma OpenCADIrrigation ba shi da sabar da za ta iya riƙe kwafi. Haruffan kowane rubutu da alama suna fitowa daga wannan gidan yanar gizon kansa. Mai binciken gizo yana kaiwa ga wasu sabis: taswirorin bango, tsayin ƙasa da yanayi daga intanet, hasashen yanayi, binciken adireshi, kundin da ake lodawa daga URL kuma, idan ka yi amfani da shi, mataimakin AI (kamfanin da ka zaɓa kaɗai: Anthropic, OpenAI, Google, xAI, Meta ko OpenRouter) suna zuwa sabis ɗinsu idan ka yi amfani da su; kuma gidan yanar gizon da manhajar suna ƙidaya ziyara da Google Analytics, wanda ke amfani da cookies (kana iya kashe shi da Saitunan cookies, a ƙasan shafukan). Manufar sirri tana jera kowane sabis da abin da yake karɓa.',
     ),
     (
       'Yaya ake lissafin ruwa?',
@@ -224,9 +244,11 @@ const _legalHa = LegalText(
     LegalSection('Sabis ɗin da mai binciken gizonka ke tuntuɓa idan ka yi amfani da su', [
       '- Taswirorin tushe: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (da maɓallinka) ko adireshin da ka saita suna karɓar adireshin IP da wurin taswirar da ke allo.',
       '- Tsayin ƙasa da yanayi daga intanet: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData da NASA POWER suna karɓar daidaitawar wurin, ba wani abu dabam na aikin ba.',
+      '- Hasashen yanayi (Ƙira → Ilimin noma → Hasashen ban ruwa): MET Norway ko Open-Meteo, duk wanda ka zaɓa, yana karɓar daidaitawar wurin da aka zagaye zuwa lambobi huɗu bayan ɗigon ƙima, ba wani abu dabam na aikin ba.',
       '- Binciken adireshi: Nominatim (OpenStreetMap) yana karɓar adireshin da ka rubuta.',
       '- Kasidun da ake lodawa daga URL: sabar wannan adireshin.',
-      '- Mataimakin AI (na zaɓi): Anthropic ko OpenAI, da maɓallinka. Ba a aika komai kafin ka danna Aika; sannan ana aika saƙonka, fayilolin da ka haɗa, bayanan aikin da ka yi wa alama, saƙonnin da suka gabata kuma, yayin da yake aiki, sakamakon kayan aikin da yake amfani da su, har da hotunan zane. Yarjejeniyarka da wannan kamfani ce ke tafiyar da abin da yake yi da su, kuma yana caji asusunka.',
+      '- Mataimakin AI (na zaɓi): kamfanin da ka zaɓa, da maɓallinka: Anthropic, OpenAI, Google, xAI, Meta ko OpenRouter (wanda ke miƙa buƙatar ga kamfanin da ke gudanar da samfurin da ka zaɓa, kuma ana sanar da shi cewa buƙatar ta fito ne daga OpenCADIrrigation, ba komai game da kai ba). Ba a aika komai kafin ka danna Aika; sannan ana aika saƙonka, fayilolin da ka haɗa, bayanan aikin da ka yi wa alama, saƙonnin da suka gabata kuma, yayin da yake aiki, sakamakon kayan aikin da yake amfani da su, har da hotunan zane. Ra\'ayi na biyu, idan ka nema, yana aika tambayar, amsar da bayanan aikin ga kamfanin samfurin da ke ba da shi. Yarjejeniyarka da kowane kamfani ce ke tafiyar da abin da yake yi da su, kuma yana caji asusunka; a ajin kyauta (samfuran Gemini Flash na Google, samfuran kyauta na OpenRouter) kamfanin zai iya amfani da abin da ka aika don inganta kayayyakinsa.',
+      '- Jerin samfuran OpenRouter: ana sauke shi daga OpenRouter idan ka buɗe Ƙarin samfura… a saitunan mataimakin, ba tare da maɓallinka ba.',
       '- Faɗar da baki: gane murya na mai binciken gizo yana aika sautin ga kamfanin da ya ƙera mai binciken (Google a Chrome, Microsoft a Edge, Apple a Safari).',
       'Kowane ɗayan waɗannan sabis yana da manufar sirrinsa kuma yana iya sarrafa bayanai a wajen ƙasarka.',
     ]),
@@ -250,9 +272,9 @@ const _legalHa = LegalText(
       'Ana bayar da manhajar “yadda take” (“as is”), ba tare da kowane irin garanti ba, a bayyane ko a fakaice, har da garantin dacewa da kasuwanci, dacewa da wata manufa ta musamman da rashin keta haƙƙin wani. Ko ta yaya, marubuta ko masu haƙƙin mallaka ba za su ɗauki alhakin kowace ƙara, lahani ko wani alhaki da ya taso daga manhajar ko amfani da ita ba (sharuɗɗan lasisin MIT).',
     ]),
     LegalSection('Bayanai da sabis na wasu', [
-      'Taswirori, hotuna, tsayin ƙasa, yanayi, binciken adireshi da kasidun masana\'antu suna fitowa daga wasu kamfanoni, ƙarƙashin sharuɗɗansu da lasisinsu (duba Taimako → Game da a manhajar). Ana ɗauko bayanan kasida daga teburan da aka wallafa kuma suna iya zama tsofaffi: tabbatar da samfura, lanƙwasoshi da farashi a takardun bayanai na yanzu kafin saye.',
-      'A aikin ƙwararru, yi amfani da kowane tushe cikin sharuɗɗansa: Taimako → Sharuɗɗan bayanai a manhajar yana faɗin abin da amfani kyauta na kowanne ya yarda. Wasu sabis na kyauta don amfani ba na kasuwanci ba ne kawai (sabis na kyauta na Open-Meteo da taswirorin tushe na CARTO), don haka manhajar tana sauke yanayi daga NASA POWER da tsayin ƙasa daga Terrain Tiles a matsayin tsoho; sabar tiles ta OpenStreetMap Foundation tana hana amfani mai yawa da sauke wurare don amfani ba tare da intanet ba, don haka taswirar da aka riƙe don gona tana amfani da tiles da aka riga aka nuna kawai. Takardu, PDF da rahoto suna ɗauke da yabon kowane tushe: riƙe shi idan ka miƙa ko ka wallafa aikin.',
-      'Mataimakin AI na zaɓi yana aiki a kan asusunka na Anthropic ko OpenAI, ƙarƙashin sharuɗɗan wannan kamfani, kuma wannan kamfani ne ke caji amfanin. Samfuri na iya yin kuskure: amince da canje-canjen da yake bayarwa da sani kuma ka duba aikinsa.',
+      'Taswirori, hotuna, tsayin ƙasa, yanayi, hasashen yanayi, binciken adireshi da kasidun masana\'antu suna fitowa daga wasu kamfanoni, ƙarƙashin sharuɗɗansu da lasisinsu (duba Taimako → Game da a manhajar). Ana ɗauko bayanan kasida daga teburan da aka wallafa kuma suna iya zama tsofaffi: tabbatar da samfura, lanƙwasoshi da farashi a takardun bayanai na yanzu kafin saye.',
+      'A aikin ƙwararru, yi amfani da kowane tushe cikin sharuɗɗansa: Taimako → Sharuɗɗan bayanai a manhajar yana faɗin abin da amfani kyauta na kowanne ya yarda. Wasu sabis na kyauta don amfani ba na kasuwanci ba ne kawai (sabis na kyauta na Open-Meteo da taswirorin tushe na CARTO), don haka manhajar tana sauke yanayi daga NASA POWER, hasashen yanayi daga MET Norway da tsayin ƙasa daga Terrain Tiles a matsayin tsoho; sabar tiles ta OpenStreetMap Foundation tana hana amfani mai yawa da sauke wurare don amfani ba tare da intanet ba, don haka taswirar da aka riƙe don gona tana amfani da tiles da aka riga aka nuna kawai. Takardu, PDF da rahoto suna ɗauke da yabon kowane tushe: riƙe shi idan ka miƙa ko ka wallafa aikin.',
+      'Mataimakin AI na zaɓi yana aiki a kan asusunka a kamfanin AI da ka zaɓa (Anthropic, OpenAI, Google, xAI, Meta ko OpenRouter), ƙarƙashin sharuɗɗan wannan kamfani, kuma wannan kamfani ne ke caji amfanin. Samfuri na iya yin kuskure: amince da canje-canjen da yake bayarwa da sani kuma ka duba aikinsa.',
     ]),
     LegalSection('Abubuwanka', ['Ayyukanka, zane-zane, hotuna da fayilolinka naka ne: kai ke da alhakinsu da kuma tabbatar da cewa kana da haƙƙin amfani da abin da kake shigowa da shi.']),
     LegalSection('Tuntuɓa', ['Tambayoyi da matsaloli: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Yadda ake sarrafa bayananka: manufar sirri.']),

@@ -6,7 +6,7 @@ const _fr = SiteText(
   keywords: 'conception d’irrigation par IA, logiciel de conception d’irrigation avec IA, conception automatique d’irrigation, implantation automatique des asperseurs, assistant IA pour l’irrigation, conception d’irrigation, logiciel de conception d’irrigation, logiciel d’irrigation open source, logiciel d’irrigation, CAO irrigation, irrigation sous pression, goutte-à-goutte, micro-aspersion, aspersion, pivot central, dimensionnement hydraulique, dimensionnement des conduites, uniformité d’arrosage, DXF, DWG, arrosage des jardins, irrigation agricole, logiciel d’irrigation gratuit',
   h1: 'Logiciel gratuit et open source de conception d’irrigation avec un assistant IA',
   tagline: 'Décrivez la parcelle, le jardin ou le terrain de sport et laissez l’assistant IA implanter les arroseurs et le goutte-à-goutte, tracer les conduites et dimensionner le réseau ; ou dessinez-le vous-même avec les outils automatiques. Goutte-à-goutte, micro-aspersion, aspersion et pivot central, directement dans le navigateur, sans rien installer, avec vos projets conservés sur votre ordinateur.',
-  intro: 'OpenCADIrrigation réunit le dessin CAO, le réseau hydraulique, le calcul et un assistant IA. Tracez la surface, ou laissez l’IA localiser le terrain sur l’image satellite ; posez les rampes, les vannes et la conduite principale à la main, avec les générateurs en un clic ou en le demandant à l’IA ; appuyez sur F5 et obtenez diamètres, pressions, uniformité, tours d’arrosage, nomenclature et rapports prêts à imprimer. L’assistant utilise les modèles Claude (Anthropic) ou GPT (OpenAI) avec votre propre clé API, directement depuis le navigateur. Disponible en 20 langues, selon la langue de votre ordinateur.',
+  intro: 'OpenCADIrrigation réunit le dessin CAO, le réseau hydraulique, le calcul et un assistant IA. Tracez la surface, ou laissez l’IA localiser le terrain sur l’image satellite ; posez les rampes, les vannes et la conduite principale à la main, avec les générateurs en un clic ou en le demandant à l’IA ; appuyez sur F5 et obtenez diamètres, pressions, uniformité, tours d’arrosage, nomenclature et rapports prêts à imprimer. L’assistant fonctionne avec Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) ou, via OpenRouter, des centaines d’autres modèles, avec votre propre clé API, directement depuis le navigateur. Disponible en 20 langues, selon la langue de votre ordinateur.',
   openApp: 'Ouvrir l’application',
   tutorial: 'Tutoriel interactif',
   seeExamples: 'Voir les exemples prêts',
@@ -27,7 +27,7 @@ const _fr = SiteText(
     ),
     (
       'Votre clé, vous gardez la main',
-      'Modèles Claude (Anthropic) ou GPT (OpenAI) de niveau haut de gamme, intermédiaire ou rapide, avec votre propre clé API, appelés directement depuis le navigateur, sans passer par aucun serveur. Quatre modes (Lecture seule, Planifier d’abord, Demander avant chaque modification, Appliquer les modifications automatiquement), une limite d’étapes et un plafond de dépenses par tâche, l’annulation de chaque réponse, et rien n’est envoyé avant que vous ne cliquiez sur Envoyer.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) ou des centaines de modèles via OpenRouter, dont certains gratuits, avec votre propre clé API, appelés directement depuis le navigateur, sans passer par aucun serveur. Quatre modes (Lecture seule, Planifier d’abord, Demander avant chaque modification, Appliquer les modifications automatiquement), une limite d’étapes et un plafond de dépenses par tâche, l’annulation de chaque réponse, le second avis d’un autre modèle, et rien n’est envoyé avant que vous ne cliquiez sur Envoyer.',
     ),
   ],
   aiCta: 'Ouvrir l’assistant IA',
@@ -35,11 +35,11 @@ const _fr = SiteText(
   features: [
     (
       'Assistant IA',
-      'En option : interrogez l’IA sur le projet, ou laissez-la dessiner et concevoir à votre place. Elle implante les arroseurs et le goutte-à-goutte, divise les parcelles, trace les conduites, lance le dimensionnement et les outils automatiques en regardant l’image satellite et le relief, avec les modèles Claude (Anthropic) ou GPT (OpenAI) et votre propre clé API, directement depuis votre navigateur, sans serveur intermédiaire. Rien n’est envoyé avant que vous ne cliquiez sur Envoyer, et chaque modification attend votre validation (ou s’applique automatiquement, si vous le choisissez) et peut être annulée.',
+      'En option : interrogez l’IA sur le projet, ou laissez-la dessiner et concevoir à votre place. Elle implante les arroseurs et le goutte-à-goutte, divise les parcelles, trace les conduites, lance le dimensionnement et les outils automatiques en regardant l’image satellite et le relief, avec les modèles d’Anthropic, d’OpenAI, de Google, de xAI, de Meta ou d’OpenRouter et votre propre clé API, directement depuis votre navigateur, sans serveur intermédiaire. Rien n’est envoyé avant que vous ne cliquiez sur Envoyer, et chaque modification attend votre validation (ou s’applique automatiquement, si vous le choisissez) et peut être annulée.',
     ),
     (
       'Conception et dimensionnement automatiques',
-      'Blocs de rampes et maillages d’asperseurs en un clic, implantation des arroseurs à précipitation équilibrée, répartition en zones selon le débit, tracé des conduites et des vannes, division des parcelles en blocs, ajustement des pivots à la parcelle et détection de la végétation sur les images aériennes ; conduites dimensionnées par programmation linéaire dans la plage de pression des distributeurs et selon la classe de pression des tubes, en arbitrant entre coût des conduites et énergie.',
+      'Blocs de rampes et maillages d’asperseurs en un clic, implantation des arroseurs à précipitation équilibrée, répartition en zones selon le débit, tracé des conduites et des vannes, division des parcelles en blocs, ajustement des pivots à la parcelle, et détection de la végétation et des rangs de culture (direction, espacement et nombre) sur les images aériennes ; conduites dimensionnées par programmation linéaire dans la plage de pression des distributeurs et selon la classe de pression des tubes, en arbitrant entre coût des conduites et énergie.',
     ),
     (
       'Dessin CAO complet',
@@ -58,6 +58,18 @@ const _fr = SiteText(
       'Courbes de niveau, points cotés, modèle numérique de terrain triangulé avec lignes de rupture, altitude en ligne, nuages de points LAS, cartes des pentes et profils en long ; climat du site téléchargé ou saisi, cultures FAO-56 par stade de croissance, sols, pluie efficace et lessivage pour les besoins en eau, ainsi que les budgets hydriques paysagers.',
     ),
     (
+      'Risque climatique et prévision d’irrigation',
+      'Confronte le projet au climat journalier du site depuis 1984 : le besoin en eau d’une année sèche, la fréquence à laquelle le système conçu serait insuffisant, les pires années et les périodes sèches. Et transforme les prévisions météo du site en ce qu’il faut irriguer dans les prochains jours : irriguer ou non, dose, durée d’arrosage et le pourcentage d’ajustement (water budget) pour le programmateur.',
+    ),
+    (
+      'Le programme animé sur le plan',
+      'Anime le programme d’irrigation sur le dessin : les zones qui fonctionnent, les conduites selon la vitesse et le débit, les pompes et le niveau du réservoir à chaque instant. Exporte le cycle en GIF animé et le programme en fichier calendrier pour le téléphone.',
+    ),
+    (
+      'Bulletin de qualité du projet',
+      'Note le projet conçu de 0 à 100 et de A à E dans sept catégories (uniformité, hydraulique, énergie, eau et sol, économie, robustesse et complétude), avec la cible de chaque indicateur et sa provenance, et indique ce qu’il faut améliorer d’abord.',
+    ),
+    (
       'Rapports, plans et matériel',
       'Zones, conduites, distributeurs, uniformité (CU, DU, EU), programme du programmateur et câblage des vannes ; nomenclature avec raccords et devis avec main-d’œuvre, taxes et délai de récupération ; jeux de planches PDF avec détails de construction et graphiques, dans n’importe laquelle des 20 langues, et tous les tableaux en Excel, CSV et TXT.',
     ),
@@ -66,8 +78,12 @@ const _fr = SiteText(
       'Importe DXF, DWG, plans PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF et images ; exporte DXF 2000 avec entités natives (ou R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp et IFC.',
     ),
     (
+      'Moteur ouvert pour les scripts et les agents IA',
+      'Le moteur de calcul est en Dart pur avec une ligne de commande, et il parle le Model Context Protocol (MCP) : d’autres applications d’IA peuvent créer, dimensionner et vérifier des projets avec lui sur votre propre ordinateur, cantonnées à un dossier que vous choisissez.',
+    ),
+    (
       'Catalogues de fabricants',
-      'Catalogues de fabricants en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prêts à l’emploi, ainsi que vos propres paquets chargés depuis un fichier ou une URL.',
+      'Catalogues de fabricants en JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) prêts à l’emploi, ainsi que vos propres paquets chargés depuis un fichier ou une URL, et les courbes de pompes, d’émetteurs et d’asperseurs numérisées à partir de l’image d’une fiche technique.',
     ),
     (
       'Hors ligne et sur le terrain',
@@ -148,15 +164,19 @@ const _fr = SiteText(
     ),
     (
       'Quels modèles d’IA utilise-t-il ?',
-      'Les modèles Claude d’Anthropic (Claude Opus 5.5 par défaut, Claude Fable 5.1, Claude Sonnet 5.5 et Claude Haiku 5.5) et les modèles GPT d’OpenAI (GPT-6 Astra, GPT-6.1 Sol et GPT-6 Luna) : un niveau haut de gamme, un intermédiaire et un rapide de chaque entreprise, chacun avec cinq profondeurs de réflexion. Vous choisissez le modèle dans les paramètres de l’assistant et collez votre propre clé API ; le panneau affiche les jetons et le coût estimé de chaque réponse, et une limite d’étapes et un plafond de dépenses arrêtent une tâche qui s’éternise.',
+      'Les modèles de six entreprises, avec votre propre clé API : Claude d’Anthropic (Claude Opus 5.5 par défaut, Claude Fable 5.2, Claude Sonnet 5.5 et Claude Haiku 5.5), GPT d’OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra et GPT-6 Luna), Gemini de Google (Gemini 4 Argon, Gemini 3.8 Flash et Gemini 3.5 Flash-Lite), Grok de xAI (Grok 4.7 et Grok 4.3), Muse de Meta (Muse Wonder, Muse Spark et Muse Ember) et, avec une seule clé OpenRouter, n’importe lequel des centaines de modèles de sa liste. Vous choisissez l’entreprise et le modèle dans les paramètres de l’assistant et collez votre clé ; le panneau affiche les jetons et le coût estimé de chaque réponse, une limite d’étapes et un plafond de dépenses arrêtent une tâche qui s’éternise, et un autre modèle peut donner un second avis sur une réponse.',
+    ),
+    (
+      'Puis-je utiliser l’assistant IA sans payer ?',
+      'Le programme est gratuit ; l’assistant a besoin d’une clé d’une entreprise d’IA, qui facture ce que vous utilisez. Deux possibilités ne coûtent rien dans leurs limites : le niveau gratuit des modèles Gemini Flash de Google (là où Google le propose) et les modèles gratuits d’OpenRouter. Ces limites sont fixées par les entreprises, et sur un niveau gratuit elles peuvent utiliser ce que vous envoyez pour améliorer leurs produits : lisez donc leurs conditions avant d’envoyer un projet confidentiel.',
     ),
     (
       'Qu’envoie l’assistant IA, et à qui ?',
-      'Rien tant que vous n’avez pas cliqué sur Envoyer. Votre message, les fichiers que vous joignez et les données du projet que vous cochez partent alors directement de votre navigateur vers l’API du fournisseur choisi, Anthropic ou OpenAI, sans passer par aucun serveur d’OpenCADIrrigation, avec les résultats des outils que l’assistant utilise pour répondre, images du dessin comprises. Le fournisseur facture l’utilisation sur votre compte. La clé reste en mémoire le temps de la session, sauf si vous choisissez de la mémoriser sur l’appareil, et n’entre jamais dans les fichiers de projet, les liens de partage ni les exports. La dictée vocale, si vous l’utilisez, passe par la reconnaissance vocale du navigateur lui-même, qui envoie le son à l’éditeur du navigateur (Google pour Chrome, Microsoft pour Edge, Apple pour Safari). Les conversations enregistrées restent dans votre navigateur, jamais dans les fichiers de projet ni dans les liens.',
+      'Rien tant que vous n’avez pas cliqué sur Envoyer. Votre message, les fichiers que vous joignez et les données du projet que vous cochez partent alors directement de votre navigateur vers l’API de l’entreprise choisie (Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter, qui transmet la requête à l’entreprise qui exécute le modèle), sans passer par aucun serveur d’OpenCADIrrigation, avec les résultats des outils que l’assistant utilise pour répondre, images du dessin comprises. Le fournisseur facture l’utilisation sur votre compte. La clé reste en mémoire le temps de la session, sauf si vous choisissez de la mémoriser sur l’appareil, et n’entre jamais dans les fichiers de projet, les liens de partage ni les exports. La dictée vocale, si vous l’utilisez, passe par la reconnaissance vocale du navigateur lui-même, qui envoie le son à l’éditeur du navigateur (Google pour Chrome, Microsoft pour Edge, Apple pour Safari). Les conversations enregistrées restent dans votre navigateur, jamais dans les fichiers de projet ni dans les liens. Un second avis, quand vous en demandez un, envoie la question, la réponse et les données du projet à l’entreprise du modèle qui le donne.',
     ),
     (
       'OpenCADIrrigation est-il gratuit ?',
-      'Oui. Il est gratuit pour un usage professionnel, universitaire et personnel, sans inscription. Il est aussi open source, sous licence MIT, et son code source est publié sur GitHub. L’assistant IA, facultatif, utilise votre propre compte Anthropic ou OpenAI, et le fournisseur en facture l’utilisation sur ce compte.',
+      'Oui. Il est gratuit pour un usage professionnel, universitaire et personnel, sans inscription. Il est aussi open source, sous licence MIT, et son code source est publié sur GitHub. L’assistant IA, facultatif, utilise votre propre compte auprès d’une entreprise d’IA (Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter), qui en facture l’utilisation sur ce compte ; certains de leurs modèles peuvent être utilisés gratuitement, dans certaines limites.',
     ),
     (
       'À qui s’adresse-t-il ?',
@@ -168,11 +188,11 @@ const _fr = SiteText(
     ),
     (
       'Fonctionne-t-il hors ligne ?',
-      'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 20 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
+      'Oui, après la première visite : l’application conserve une copie d’elle-même dans le navigateur (environ 20 Mo, une fois par version), si bien que le démarrage suivant, de l’application installée comme du site, se fait sans réseau, au bureau comme sur le terrain. Les fonds de carte, l’altitude et le climat en ligne, les prévisions météo, les catalogues chargés par URL et l’assistant IA nécessitent toujours une connexion ; une nouvelle version se télécharge en arrière-plan et est utilisée dès le démarrage suivant.',
     ),
     (
       'Mes projets sont-ils stockés dans le cloud ?',
-      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous conservez où vous voulez ; un lien de partage transporte le projet dans l’adresse elle-même, si bien que rien n’est téléversé, et OpenCADIrrigation n’a aucun serveur qui pourrait en garder une copie. Les polices de toutes les écritures et de tous les symboles viennent de ce site lui-même. Le navigateur contacte toutefois d’autres services : les fonds de carte, l’altitude et le climat en ligne, la recherche d’adresse, les catalogues chargés par URL et, si vous l’utilisez, l’assistant IA (uniquement le fournisseur que vous avez choisi, Anthropic ou OpenAI) s’adressent à leurs services quand vous les utilisez ; et le site et l’application comptent les visites avec Google Analytics, qui utilise des cookies (vous pouvez le désactiver avec Paramètres des cookies, en bas des pages). La politique de confidentialité liste chaque service et ce qu’il reçoit.',
+      'Non. Les projets sont enregistrés dans votre navigateur et dans des fichiers .oci.json que vous conservez où vous voulez ; un lien de partage transporte le projet dans l’adresse elle-même, si bien que rien n’est téléversé, et OpenCADIrrigation n’a aucun serveur qui pourrait en garder une copie. Les polices de toutes les écritures et de tous les symboles viennent de ce site lui-même. Le navigateur contacte toutefois d’autres services : les fonds de carte, l’altitude et le climat en ligne, les prévisions météo, la recherche d’adresse, les catalogues chargés par URL et, si vous l’utilisez, l’assistant IA (uniquement l’entreprise que vous avez choisie : Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter) s’adressent à leurs services quand vous les utilisez ; et le site et l’application comptent les visites avec Google Analytics, qui utilise des cookies (vous pouvez le désactiver avec Paramètres des cookies, en bas des pages). La politique de confidentialité liste chaque service et ce qu’il reçoit.',
     ),
     (
       'Comment l’hydraulique est-elle calculée ?',
@@ -231,9 +251,11 @@ const _legalFr = LegalText(
     LegalSection('Services que votre navigateur contacte quand vous les utilisez', [
       '- Fonds de carte : OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (avec votre propre clé) ou l’adresse que vous définissez reçoivent l’adresse IP et la zone de la carte affichée à l’écran.',
       '- Altitude et climat en ligne : Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData et NASA POWER reçoivent les coordonnées de la zone, rien d’autre du projet.',
+      '- Prévisions météo (Projet → Agronomie → Prévision d’irrigation) : MET Norway ou Open-Meteo, selon votre choix, reçoit les coordonnées du site arrondies à quatre décimales, rien d’autre du projet.',
       '- Recherche d’adresse : Nominatim (OpenStreetMap) reçoit l’adresse que vous tapez.',
       '- Catalogues chargés par URL : le serveur de cette adresse.',
-      '- Assistant IA (facultatif) : Anthropic ou OpenAI, avec votre propre clé. Rien n’est envoyé avant que vous n’appuyiez sur Envoyer ; partent alors votre message, les fichiers que vous joignez, les données du projet que vous cochez, les messages précédents et, pendant qu’il travaille, les résultats des outils qu’il utilise, images du dessin comprises. Votre accord avec cette entreprise régit ce qu’elle en fait, et elle facture votre compte.',
+      '- Assistant IA (facultatif) : l’entreprise que vous choisissez, avec votre propre clé : Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter (qui transmet la requête à l’entreprise qui exécute le modèle choisi et apprend seulement que la requête vient d’OpenCADIrrigation, rien sur vous). Rien n’est envoyé avant que vous n’appuyiez sur Envoyer ; partent alors votre message, les fichiers que vous joignez, les données du projet que vous cochez, les messages précédents et, pendant qu’il travaille, les résultats des outils qu’il utilise, images du dessin comprises. Un second avis, quand vous en demandez un, envoie la question, la réponse et les données du projet à l’entreprise du modèle qui le donne. Votre accord avec chaque entreprise régit ce qu’elle en fait, et elle facture votre compte ; sur un niveau gratuit (modèles Gemini Flash de Google, modèles gratuits d’OpenRouter), l’entreprise peut utiliser ce que vous envoyez pour améliorer ses produits.',
+      '- La liste des modèles d’OpenRouter : téléchargée depuis OpenRouter quand vous ouvrez Plus de modèles… dans les réglages de l’assistant, sans votre clé.',
       '- Dictée vocale : la reconnaissance vocale du navigateur envoie le son à l’éditeur du navigateur (Google dans Chrome, Microsoft dans Edge, Apple dans Safari).',
       'Chacun de ces services a sa propre politique de confidentialité et peut traiter des données hors de votre pays.',
     ]),
@@ -257,9 +279,9 @@ const _legalFr = LegalText(
       'Le logiciel est fourni « en l’état », sans garantie d’aucune sorte, expresse ou implicite, y compris les garanties de qualité marchande, d’adéquation à un usage particulier et d’absence de contrefaçon. En aucun cas les auteurs ou les titulaires des droits d’auteur ne pourront être tenus responsables de toute réclamation, de tout dommage ou de toute autre responsabilité découlant du logiciel ou de son utilisation (les termes de la licence MIT).',
     ]),
     LegalSection('Données et services de tiers', [
-      'Les cartes, l’imagerie, l’altitude, le climat, la recherche d’adresse et les catalogues de fabricants proviennent de tiers, selon leurs propres conditions et licences (voir Aide → À propos dans l’application). Les données des catalogues sont tirées de tableaux publiés et peuvent être périmées : confirmez les modèles, les courbes et les prix avec les fiches techniques en vigueur avant d’acheter.',
-      'Dans un travail professionnel, utilisez chaque source dans le respect de ses conditions : Aide → Conditions des données, dans l’application, indique ce que permet l’usage gratuit de chacune. Certains services gratuits sont réservés à un usage non commercial (les services gratuits d’Open-Meteo et les fonds de carte CARTO), c’est pourquoi l’application télécharge par défaut le climat depuis NASA POWER et l’altitude depuis Terrain Tiles ; le serveur de tuiles de l’OpenStreetMap Foundation interdit l’usage intensif et le téléchargement de zones pour un usage hors ligne, si bien que la carte conservée pour le terrain n’utilise que les tuiles déjà affichées. Les planches, les PDF et le rapport portent le crédit de chaque source : conservez-le lorsque vous livrez ou publiez le travail.',
-      'L’assistant IA facultatif fonctionne avec votre propre compte chez Anthropic ou OpenAI, selon les conditions de cette entreprise, qui en facture l’utilisation. Un modèle peut se tromper : validez en connaissance de cause les modifications qu’il propose et vérifiez son travail.',
+      'Les cartes, l’imagerie, l’altitude, le climat, les prévisions météo, la recherche d’adresse et les catalogues de fabricants proviennent de tiers, selon leurs propres conditions et licences (voir Aide → À propos dans l’application). Les données des catalogues sont tirées de tableaux publiés et peuvent être périmées : confirmez les modèles, les courbes et les prix avec les fiches techniques en vigueur avant d’acheter.',
+      'Dans un travail professionnel, utilisez chaque source dans le respect de ses conditions : Aide → Conditions des données, dans l’application, indique ce que permet l’usage gratuit de chacune. Certains services gratuits sont réservés à un usage non commercial (les services gratuits d’Open-Meteo et les fonds de carte CARTO), c’est pourquoi l’application télécharge par défaut le climat depuis NASA POWER, les prévisions météo depuis MET Norway et l’altitude depuis Terrain Tiles ; le serveur de tuiles de l’OpenStreetMap Foundation interdit l’usage intensif et le téléchargement de zones pour un usage hors ligne, si bien que la carte conservée pour le terrain n’utilise que les tuiles déjà affichées. Les planches, les PDF et le rapport portent le crédit de chaque source : conservez-le lorsque vous livrez ou publiez le travail.',
+      'L’assistant IA facultatif fonctionne avec votre propre compte auprès de l’entreprise d’IA que vous choisissez (Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter), selon les conditions de cette entreprise, qui en facture l’utilisation. Un modèle peut se tromper : validez en connaissance de cause les modifications qu’il propose et vérifiez son travail.',
     ]),
     LegalSection('Votre contenu', ['Vos projets, dessins, images et fichiers vous appartiennent : vous en êtes responsable, ainsi que du droit d’utiliser ce que vous importez.']),
     LegalSection('Contact', ['Questions et problèmes : [github.com/videjunior/opencadirrigation/issues]($contactUrl). La façon dont vos données sont traitées : la politique de confidentialité.']),

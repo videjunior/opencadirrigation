@@ -6,7 +6,7 @@ const _sw = SiteText(
   keywords: 'usanifu wa umwagiliaji kwa AI, usanifu wa umwagiliaji kwa akili bandia, programu ya usanifu wa umwagiliaji kwa AI, usanifu wa umwagiliaji kiotomatiki, mpangilio wa vinyunyizio kiotomatiki, msaidizi wa AI wa umwagiliaji, usanifu wa umwagiliaji, programu ya usanifu wa umwagiliaji, programu huria ya umwagiliaji, programu ya umwagiliaji, CAD umwagiliaji, umwagiliaji wa shinikizo, umwagiliaji wa matone, vinyunyizio, pivoti ya kati, ukokotoaji wa haidroliki, vipimo vya mabomba, usawa wa umwagiliaji, DXF, DWG, umwagiliaji wa bustani, umwagiliaji wa kilimo',
   h1: 'Programu ya bure na huria ya usanifu wa umwagiliaji yenye msaidizi wa AI',
   tagline: 'Eleza shamba, bustani au uwanja kisha umwachie msaidizi wa AI apange vinyunyizio na matone, atandaze mabomba na apime ukubwa wa mfumo; au uchore mwenyewe kwa zana za kiotomatiki. Kwa mifumo ya matone, vinyunyizio vidogo, vinyunyizio na pivoti ya kati, moja kwa moja kwenye kivinjari, bila kusakinisha chochote, na miradi yako ikibaki kwenye kompyuta yako.',
-  intro: 'OpenCADIrrigation huunganisha mchoro wa CAD, mtandao wa haidroliki, ukokotoaji na msaidizi wa AI mahali pamoja. Chora eneo, au iache AI itafute mahali pa mradi kwenye picha ya setilaiti; weka laterali, vali na bomba kuu kwa mkono, kwa zana za mbofyo mmoja au kwa kuiomba AI; bonyeza F5 na upate vipimo vya mabomba, shinikizo, usawa, zamu za uendeshaji, orodha ya vifaa na ripoti tayari kuchapishwa. Msaidizi hutumia modeli za Claude (Anthropic) au GPT (OpenAI) kwa ufunguo wako mwenyewe wa API, moja kwa moja kutoka kivinjari. Inapatikana kwa lugha 20, ikifuata lugha ya kompyuta yako.',
+  intro: 'OpenCADIrrigation huunganisha mchoro wa CAD, mtandao wa haidroliki, ukokotoaji na msaidizi wa AI mahali pamoja. Chora eneo, au iache AI itafute mahali pa mradi kwenye picha ya setilaiti; weka laterali, vali na bomba kuu kwa mkono, kwa zana za mbofyo mmoja au kwa kuiomba AI; bonyeza F5 na upate vipimo vya mabomba, shinikizo, usawa, zamu za uendeshaji, orodha ya vifaa na ripoti tayari kuchapishwa. Msaidizi hutumia Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) au, kupitia OpenRouter, mamia ya modeli nyingine, kwa ufunguo wako mwenyewe wa API, moja kwa moja kutoka kivinjari. Inapatikana kwa lugha 20, ikifuata lugha ya kompyuta yako.',
   openApp: 'Fungua programu',
   tutorial: 'Mafunzo shirikishi',
   seeExamples: 'Tazama mifano iliyo tayari',
@@ -27,7 +27,7 @@ const _sw = SiteText(
     ),
     (
       'Ufunguo wako, udhibiti wako',
-      'Modeli za Claude (Anthropic) au GPT (OpenAI) za daraja la juu, la kati na la haraka, kwa ufunguo wako mwenyewe wa API, na maombi hutumwa moja kwa moja kutoka kivinjari bila seva yoyote katikati. Hali za kusoma tu, mpango kwanza, kuuliza kabla ya kila badiliko au kutumia mabadiliko kiotomatiki; kikomo cha hatua na kikomo cha matumizi kwa kila kazi; kila jibu linaweza kutenduliwa, na hakuna kinachotumwa kabla hujabonyeza Tuma.',
+      'Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI), Muse (Meta) au mamia ya modeli kupitia OpenRouter, baadhi yake bure, kwa ufunguo wako mwenyewe wa API, na maombi hutumwa moja kwa moja kutoka kivinjari bila seva yoyote katikati. Hali za kusoma tu, mpango kwanza, kuuliza kabla ya kila badiliko au kutumia mabadiliko kiotomatiki; kikomo cha hatua na kikomo cha matumizi kwa kila kazi; kila jibu linaweza kutenduliwa, modeli nyingine inaweza kutoa maoni ya pili, na hakuna kinachotumwa kabla hujabonyeza Tuma.',
     ),
   ],
   aiCta: 'Fungua msaidizi wa AI',
@@ -35,11 +35,11 @@ const _sw = SiteText(
   features: [
     (
       'Msaidizi wa AI',
-      'Ni wa hiari: iulize AI kuhusu mradi, au iache ikuchoree na ikusanifie mradi. Hupanga vinyunyizio na matone, hugawa mashamba, hupanga njia za mabomba, huendesha upimaji wa ukubwa na zana za kiotomatiki, ikitazama picha ya setilaiti na ardhi, kwa modeli za Claude (Anthropic) au GPT (OpenAI) na ufunguo wako mwenyewe wa API, moja kwa moja kutoka kivinjari bila seva yoyote katikati. Hakuna kinachotumwa kabla hujabonyeza Tuma, na kila badiliko husubiri idhini yako (au hutumika kiotomatiki, ukichagua hivyo) na linaweza kutenduliwa.',
+      'Ni wa hiari: iulize AI kuhusu mradi, au iache ikuchoree na ikusanifie mradi. Hupanga vinyunyizio na matone, hugawa mashamba, hupanga njia za mabomba, huendesha upimaji wa ukubwa na zana za kiotomatiki, ikitazama picha ya setilaiti na ardhi, kwa modeli za Anthropic, OpenAI, Google, xAI, Meta au OpenRouter na ufunguo wako mwenyewe wa API, moja kwa moja kutoka kivinjari bila seva yoyote katikati. Hakuna kinachotumwa kabla hujabonyeza Tuma, na kila badiliko husubiri idhini yako (au hutumika kiotomatiki, ukichagua hivyo) na linaweza kutenduliwa.',
     ),
     (
       'Usanifu na upimaji wa ukubwa kiotomatiki',
-      'Makundi ya laterali na gridi za vinyunyizio kwa mbofyo mmoja, mpangilio wa vinyunyizio wenye mvua iliyolinganishwa, ugawaji wa kanda kulingana na mtiririko, upangaji wa njia za mabomba na vali, mgawanyo wa shamba katika vitalu, kulinganisha pivoti na shamba na utambuzi wa uoto kwenye picha za angani; mabomba hupimwa kwa linear programming ndani ya dirisha la shinikizo la vitoa-maji na daraja la shinikizo la mabomba, huku gharama ya mabomba ikisawazishwa na ya nishati.',
+      'Makundi ya laterali na gridi za vinyunyizio kwa mbofyo mmoja, mpangilio wa vinyunyizio wenye mvua iliyolinganishwa, ugawaji wa kanda kulingana na mtiririko, upangaji wa njia za mabomba na vali, mgawanyo wa shamba katika vitalu, kulinganisha pivoti na shamba, pamoja na uoto na mistari ya mazao (mwelekeo, nafasi na idadi) vinavyosomwa kutoka picha za angani; mabomba hupimwa kwa linear programming ndani ya dirisha la shinikizo la vitoa-maji na daraja la shinikizo la mabomba, huku gharama ya mabomba ikisawazishwa na ya nishati.',
     ),
     (
       'Mchoro kamili wa CAD',
@@ -58,6 +58,18 @@ const _sw = SiteText(
       'Mistari ya kontua, nukta za kimo, modeli ya ardhi kwa pembetatu yenye mistari ya mvunjiko, mwinuko unaopakuliwa kutoka intaneti, mawingu ya nukta ya LAS, ramani za mteremko na wasifu wa mwinuko; hali ya hewa ya eneo inayopakuliwa au kuingizwa kwa mkono, mazao ya FAO-56 kwa hatua za ukuaji, aina za udongo, mvua yenye manufaa na uoshaji wa chumvi kwa mahitaji ya maji, pamoja na bajeti za maji za mandhari.',
     ),
     (
+      'Hatari ya hali ya hewa na utabiri wa umwagiliaji',
+      'Hukagua usanifu dhidi ya hali ya hewa ya kila siku ya eneo tangu 1984: mahitaji ya maji ya mwaka mkavu, mara ngapi mfumo uliosanifiwa ungeshindwa kutosheleza mahitaji, miaka mibaya zaidi na vipindi vya ukavu. Pia hubadilisha utabiri wa hali ya hewa wa eneo kuwa kile cha kumwagilia katika siku zijazo: kumwagilia au kuruka, kina, muda wa kumwagilia na asilimia ya marekebisho (water budget) ya kidhibiti.',
+    ),
+    (
+      'Programu ikichezwa kwenye mchoro',
+      'Hucheza programu ya umwagiliaji juu ya mchoro: kanda zinazofanya kazi, mabomba kwa kasi na mtiririko, pampu na kiwango cha hifadhi kila wakati. Huhamisha mzunguko kama GIF ya uhuishaji na programu kama faili ya kalenda kwa simu.',
+    ),
+    (
+      'Kadi ya alama za usanifu',
+      'Hupa mradi uliosanifiwa alama kutoka 0 hadi 100 na daraja kutoka A hadi E katika kategoria saba (usawa, haidroli, nishati, maji na udongo, uchumi, uimara na ukamilifu), pamoja na lengo la kila kiashiria na chanzo chake, na husema cha kuboresha kwanza.',
+    ),
+    (
       'Ripoti, michoro na vifaa',
       'Kanda, mabomba, vitoa-maji, usawa (CU, DU, EU), programu ya kidhibiti na nyaya za vali; orodha ya vifaa pamoja na viungo, na nukuu ya bei yenye ujira, kodi na muda wa kurudisha mtaji; seti za karatasi za PDF zenye michoro ya kina ya ujenzi na chati, kwa lugha yoyote kati ya 20, na kila jedwali katika Excel, CSV na TXT.',
     ),
@@ -66,8 +78,12 @@ const _sw = SiteText(
       'Huingiza DXF, DWG, michoro ya PDF, KML/KMZ, shapefile, GeoJSON, GPX, LandXML, LAS, DGN, EPANET .inp, CSV/XYZ, GeoTIFF na picha; huhamisha DXF 2000 yenye vipengele asilia (au R12), DWG, PDF, PNG, SVG, KML/KMZ, GeoJSON, shapefile, GPX, LandXML, EPANET .inp na IFC.',
     ),
     (
+      'Injini huria kwa hati za programu (scripts) na mawakala wa AI',
+      'Injini ya hesabu imeandikwa kwa Dart pekee, ina mstari wa amri, na huzungumza Model Context Protocol (MCP): programu nyingine za AI zinaweza kuunda, kupima ukubwa na kukagua miradi kwa kuitumia kwenye kompyuta yako mwenyewe, zikiwa zimefungiwa ndani ya folda unayochagua.',
+    ),
+    (
       'Katalogi za watengenezaji',
-      'Katalogi za watengenezaji katika JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) tayari kutumika, pamoja na vifurushi vyako vinavyopakiwa kutoka faili au URL.',
+      'Katalogi za watengenezaji katika JSON (Netafim, Rivulis, Jain, Toro, Rain Bird, Nelson, Hunter, NaanDanJain, Senninger, Irritec, Bermad, Schneider, Amanco Wavin, Multilit) tayari kutumika, pamoja na vifurushi vyako vinavyopakiwa kutoka faili au URL, na mikunjo ya pampu, vitoa-maji na vinyunyizio inayodijitishwa kutoka picha ya karatasi ya data.',
     ),
     (
       'Nje ya mtandao na shambani',
@@ -156,15 +172,19 @@ const _sw = SiteText(
     ),
     (
       'Inatumia modeli zipi za AI?',
-      'Modeli za Claude kutoka Anthropic (Claude Opus 5.5 kwa chaguomsingi, Claude Fable 5.1, Claude Sonnet 5.5 na Claude Haiku 5.5) na modeli za GPT kutoka OpenAI (GPT-6 Astra, GPT-6.1 Sol na GPT-6 Luna): daraja la juu, la kati na la haraka kwa kila kampuni, kila modeli ikiwa na viwango vitano vya kina cha kufikiri. Unachagua modeli katika mipangilio ya msaidizi na kubandika ufunguo wako mwenyewe wa API; paneli ya msaidizi huonyesha tokeni na gharama inayokadiriwa ya kila jibu, na kikomo cha hatua pamoja na kikomo cha matumizi husimamisha kazi inayorefuka kupita kiasi.',
+      'Modeli za kampuni sita, kwa ufunguo wako mwenyewe wa API: Claude kutoka Anthropic (Claude Opus 5.5 kwa chaguomsingi, Claude Fable 5.2, Claude Sonnet 5.5 na Claude Haiku 5.5), GPT kutoka OpenAI (GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra na GPT-6 Luna), Gemini kutoka Google (Gemini 4 Argon, Gemini 3.8 Flash na Gemini 3.5 Flash-Lite), Grok kutoka xAI (Grok 4.7 na Grok 4.3), Muse kutoka Meta (Muse Wonder, Muse Spark na Muse Ember) na, kwa ufunguo mmoja wa OpenRouter, yoyote kati ya mamia ya modeli zilizo kwenye orodha yake. Unachagua kampuni na modeli katika mipangilio ya msaidizi na kubandika ufunguo wako; paneli ya msaidizi huonyesha tokeni na gharama inayokadiriwa ya kila jibu, kikomo cha hatua pamoja na kikomo cha matumizi husimamisha kazi inayorefuka kupita kiasi, na modeli nyingine inaweza kutoa maoni ya pili kuhusu jibu.',
+    ),
+    (
+      'Je, ninaweza kutumia msaidizi wa AI bila kulipa?',
+      'Programu ni bure; msaidizi anahitaji ufunguo kutoka kampuni ya AI, ambayo hutoza unachotumia. Njia mbili hazigharimu chochote ndani ya vikomo vyake: daraja la bure la modeli za Gemini Flash za Google (pale ambapo Google hulitoa) na modeli za bure za OpenRouter. Vikomo hivyo huwekwa na kampuni hizo, na katika daraja la bure zinaweza kutumia unachotuma kuboresha bidhaa zao, kwa hiyo soma masharti yao kabla ya kutuma mradi wa siri.',
     ),
     (
       'Msaidizi wa AI hutuma nini, na wapi?',
-      'Hakuna chochote hadi ubonyeze Tuma. Hapo ujumbe wako, faili unazoambatisha na data ya mradi unayoiwekea alama huenda moja kwa moja kutoka kivinjari chako hadi kwenye API ya mtoa huduma uliyemchagua, Anthropic au OpenAI, bila seva yoyote ya OpenCADIrrigation katikati, pamoja na matokeo ya zana anazotumia wakati wa kujibu, zikiwemo picha za mchoro. Mtoa huduma hutoza gharama za matumizi kwenye akaunti yako. Ufunguo hubaki kwenye kumbukumbu kwa muda wa kipindi tu, isipokuwa uchague kuukumbuka kwenye kifaa, na kamwe hauingii kwenye faili za mradi, viungo vya kushiriki au faili zinazohamishwa. Kuimla kwa sauti, ukikitumia, hufanywa na utambuzi wa sauti wa kivinjari chenyewe, ambao hutuma sauti kwa kampuni iliyotengeneza kivinjari (Google kwenye Chrome, Microsoft kwenye Edge, Apple kwenye Safari). Mazungumzo yaliyohifadhiwa hubaki kwenye kivinjari chako, kamwe hayaingii kwenye faili za mradi au viungo.',
+      'Hakuna chochote hadi ubonyeze Tuma. Hapo ujumbe wako, faili unazoambatisha na data ya mradi unayoiwekea alama huenda moja kwa moja kutoka kivinjari chako hadi kwenye API ya kampuni uliyoichagua (Anthropic, OpenAI, Google, xAI, Meta au OpenRouter, ambayo hupeleka ombi kwa kampuni inayoendesha modeli), bila seva yoyote ya OpenCADIrrigation katikati, pamoja na matokeo ya zana anazotumia wakati wa kujibu, zikiwemo picha za mchoro. Mtoa huduma hutoza gharama za matumizi kwenye akaunti yako. Ufunguo hubaki kwenye kumbukumbu kwa muda wa kipindi tu, isipokuwa uchague kuukumbuka kwenye kifaa, na kamwe hauingii kwenye faili za mradi, viungo vya kushiriki au faili zinazohamishwa. Kuimla kwa sauti, ukikitumia, hufanywa na utambuzi wa sauti wa kivinjari chenyewe, ambao hutuma sauti kwa kampuni iliyotengeneza kivinjari (Google kwenye Chrome, Microsoft kwenye Edge, Apple kwenye Safari). Mazungumzo yaliyohifadhiwa hubaki kwenye kivinjari chako, kamwe hayaingii kwenye faili za mradi au viungo. Maoni ya pili, unapoyaomba, hutuma swali, jibu na data ya mradi kwa kampuni ya modeli inayoyatoa.',
     ),
     (
       'Je, OpenCADIrrigation ni bure?',
-      'Ndiyo. Ni bure kwa kazi za kitaalamu, masomo na matumizi binafsi, bila kujisajili. Pia ni programu huria chini ya leseni ya MIT, na msimbo chanzo wake umechapishwa kwenye GitHub. Msaidizi wa AI, ambaye ni wa hiari, hutumia akaunti yako mwenyewe ya Anthropic au OpenAI, na mtoa huduma hutoza gharama za matumizi yake kwenye akaunti hiyo.',
+      'Ndiyo. Ni bure kwa kazi za kitaalamu, masomo na matumizi binafsi, bila kujisajili. Pia ni programu huria chini ya leseni ya MIT, na msimbo chanzo wake umechapishwa kwenye GitHub. Msaidizi wa AI, ambaye ni wa hiari, hutumia akaunti yako mwenyewe kwa kampuni ya AI (Anthropic, OpenAI, Google, xAI, Meta au OpenRouter), inayotoza gharama za matumizi yake kwenye akaunti hiyo; baadhi ya modeli zao zinaweza kutumika bila malipo ndani ya vikomo.',
     ),
     (
       'Ni kwa ajili ya nani?',
@@ -176,11 +196,11 @@ const _sw = SiteText(
     ),
     (
       'Je, inafanya kazi bila intaneti?',
-      'Ndiyo, baada ya kutembelea tovuti mara ya kwanza: programu huhifadhi nakala yake kwenye kivinjari (takriban MB 20, mara moja kwa kila toleo), hivyo wakati ujao programu iliyosakinishwa au tovuti hufunguka na kufanya kazi bila intaneti, ofisini au shambani. Ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, katalogi zinazopakiwa kutoka URL na msaidizi wa AI bado vinahitaji muunganisho wa intaneti; toleo jipya hupakuliwa chinichini na hutumika kuanzia mara inayofuata.',
+      'Ndiyo, baada ya kutembelea tovuti mara ya kwanza: programu huhifadhi nakala yake kwenye kivinjari (takriban MB 20, mara moja kwa kila toleo), hivyo wakati ujao programu iliyosakinishwa au tovuti hufunguka na kufanya kazi bila intaneti, ofisini au shambani. Ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, utabiri wa hali ya hewa, katalogi zinazopakiwa kutoka URL na msaidizi wa AI bado vinahitaji muunganisho wa intaneti; toleo jipya hupakuliwa chinichini na hutumika kuanzia mara inayofuata.',
     ),
     (
       'Je, miradi yangu huhifadhiwa kwenye wingu?',
-      'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na kama faili za .oci.json unazoziweka popote unapopenda; kiungo cha kushiriki hubeba mradi ndani ya anwani yenyewe, kwa hiyo hakuna kinachopakiwa mtandaoni, na OpenCADIrrigation haina seva ambayo ingeweza kuhifadhi nakala. Fonti za kila mfumo wa maandishi na za alama hutoka kwenye tovuti hii yenyewe. Kivinjari hufikia huduma nyingine: ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, utafutaji wa anwani, katalogi zinazopakiwa kutoka URL na, ukimtumia, msaidizi wa AI (mtoa huduma uliyemchagua tu, Anthropic au OpenAI) huenda kwenye huduma zao unapozitumia; na tovuti na programu huhesabu ziara kwa Google Analytics, inayotumia vidakuzi (unaweza kuizima kwa Mipangilio ya vidakuzi, chini ya kurasa). Sera ya faragha huorodhesha kila huduma na kile inachopokea.',
+      'Hapana. Miradi huhifadhiwa kwenye kivinjari chako na kama faili za .oci.json unazoziweka popote unapopenda; kiungo cha kushiriki hubeba mradi ndani ya anwani yenyewe, kwa hiyo hakuna kinachopakiwa mtandaoni, na OpenCADIrrigation haina seva ambayo ingeweza kuhifadhi nakala. Fonti za kila mfumo wa maandishi na za alama hutoka kwenye tovuti hii yenyewe. Kivinjari hufikia huduma nyingine: ramani za msingi, mwinuko na hali ya hewa kutoka mtandaoni, utabiri wa hali ya hewa, utafutaji wa anwani, katalogi zinazopakiwa kutoka URL na, ukimtumia, msaidizi wa AI (kampuni uliyoichagua tu: Anthropic, OpenAI, Google, xAI, Meta au OpenRouter) huenda kwenye huduma zao unapozitumia; na tovuti na programu huhesabu ziara kwa Google Analytics, inayotumia vidakuzi (unaweza kuizima kwa Mipangilio ya vidakuzi, chini ya kurasa). Sera ya faragha huorodhesha kila huduma na kile inachopokea.',
     ),
     (
       'Ukokotoaji wa haidroliki hufanywaje?',
@@ -239,9 +259,11 @@ const _legalSw = LegalText(
     LegalSection('Huduma ambazo kivinjari chako huwasiliana nazo unapozitumia', [
       '- Ramani za msingi: OpenStreetMap, OpenTopoMap, CARTO, Esri, Google (kwa ufunguo wako mwenyewe) au anwani unayoweka hupokea anwani ya IP na eneo la ramani lililo kwenye skrini.',
       '- Mwinuko na hali ya hewa mtandaoni: Terrain Tiles (AWS Open Data), Open-Meteo, OpenTopoData na NASA POWER hupokea kuratibu za eneo, si kingine chochote cha mradi.',
+      '- Utabiri wa hali ya hewa (Usanifu → Kilimo → Utabiri wa umwagiliaji): MET Norway au Open-Meteo, kulingana na unachochagua, hupokea kuratibu za eneo zilizokadiriwa hadi desimali nne, si kingine chochote cha mradi.',
       '- Utafutaji wa anwani: Nominatim (OpenStreetMap) hupokea anwani unayoandika.',
       '- Katalogi zinazopakiwa kutoka URL: seva ya anwani hiyo.',
-      '- Msaidizi wa AI (wa hiari): Anthropic au OpenAI, kwa ufunguo wako mwenyewe. Hakuna kinachotumwa kabla hujabonyeza Tuma; kisha hutumwa ujumbe wako, faili unazoambatisha, data ya mradi unayoiwekea alama, ujumbe wa awali na, wakati msaidizi anafanya kazi, matokeo ya zana anazotumia, zikiwemo picha za mchoro. Makubaliano yako na kampuni hiyo ndiyo huongoza kile inachofanya navyo, na kampuni hiyo hutoza matumizi kwenye akaunti yako.',
+      '- Msaidizi wa AI (wa hiari): kampuni unayoichagua, kwa ufunguo wako mwenyewe: Anthropic, OpenAI, Google, xAI, Meta au OpenRouter (ambayo hupeleka ombi kwa kampuni inayoendesha modeli uliyochagua, na huelezwa kwamba ombi linatoka OpenCADIrrigation, bila chochote kukuhusu wewe). Hakuna kinachotumwa kabla hujabonyeza Tuma; kisha hutumwa ujumbe wako, faili unazoambatisha, data ya mradi unayoiwekea alama, ujumbe wa awali na, wakati msaidizi anafanya kazi, matokeo ya zana anazotumia, zikiwemo picha za mchoro. Maoni ya pili, unapoyaomba, hutuma swali, jibu na data ya mradi kwa kampuni ya modeli inayoyatoa. Makubaliano yako na kila kampuni ndiyo huongoza kile inachofanya navyo, na kampuni hiyo hutoza matumizi kwenye akaunti yako; katika daraja la bure (modeli za Gemini Flash za Google, modeli za bure za OpenRouter) kampuni inaweza kutumia unachotuma kuboresha bidhaa zake.',
+      '- Orodha ya modeli za OpenRouter: hupakuliwa kutoka OpenRouter unapofungua Modeli zaidi… katika mipangilio ya msaidizi, bila ufunguo wako.',
       '- Imla kwa sauti: utambuzi wa sauti wa kivinjari hutuma sauti kwa kampuni iliyotengeneza kivinjari (Google kwenye Chrome, Microsoft kwenye Edge, Apple kwenye Safari).',
       'Kila moja ya huduma hizi ina sera yake ya faragha na inaweza kuchakata data nje ya nchi yako.',
     ]),
@@ -265,9 +287,9 @@ const _legalSw = LegalText(
       'Programu hutolewa “kama ilivyo”, bila dhamana ya aina yoyote, iwe ya wazi au ya kudokezwa, zikiwemo dhamana za kufaa kuuzwa, kufaa kwa madhumuni fulani na kutokiuka haki za wengine. Kwa hali yoyote waandishi au wenye hakimiliki hawatawajibika kwa dai lolote, uharibifu au dhima nyingine inayotokana na programu au matumizi yake (masharti ya leseni ya MIT).',
     ]),
     LegalSection('Data na huduma za wengine', [
-      'Ramani, picha za angani, mwinuko, hali ya hewa, utafutaji wa anwani na katalogi za watengenezaji hutoka kwa wahusika wengine, chini ya masharti na leseni zao wenyewe (tazama Msaada → Kuhusu katika programu). Data za katalogi huchukuliwa kutoka majedwali yaliyochapishwa na huenda zimepitwa na wakati: thibitisha mifano, mikunjo na bei kwenye karatasi za data za sasa kabla ya kununua.',
-      'Katika kazi ya kitaaluma, tumia kila chanzo ndani ya masharti yake: Msaada → Masharti ya data katika programu hueleza kile ambacho matumizi ya bure ya kila kimoja huruhusu. Baadhi ya huduma za bure ni kwa matumizi yasiyo ya kibiashara tu (huduma za bure za Open-Meteo na ramani za msingi za CARTO), kwa hiyo programu hupakua hali ya hewa kutoka NASA POWER na mwinuko kutoka Terrain Tiles kwa chaguomsingi; seva ya vigae ya OpenStreetMap Foundation inakataza matumizi makubwa na kupakua maeneo kwa matumizi bila mtandao, kwa hiyo ramani inayohifadhiwa kwa matumizi ya shambani hutumia tu vigae vilivyokwisha kuonyeshwa. Karatasi, PDF na ripoti hubeba utambuzi wa kila chanzo: ubakize unapowasilisha au kuchapisha kazi.',
-      'Msaidizi wa AI, ambaye ni wa hiari, hufanya kazi kwa akaunti yako mwenyewe ya Anthropic au OpenAI, chini ya masharti ya kampuni hiyo, na kampuni hiyo ndiyo hutoza matumizi. Modeli inaweza kukosea: idhinisha mabadiliko inayopendekeza kwa ufahamu na ukague kazi yake.',
+      'Ramani, picha za angani, mwinuko, hali ya hewa, utabiri wa hali ya hewa, utafutaji wa anwani na katalogi za watengenezaji hutoka kwa wahusika wengine, chini ya masharti na leseni zao wenyewe (tazama Msaada → Kuhusu katika programu). Data za katalogi huchukuliwa kutoka majedwali yaliyochapishwa na huenda zimepitwa na wakati: thibitisha mifano, mikunjo na bei kwenye karatasi za data za sasa kabla ya kununua.',
+      'Katika kazi ya kitaaluma, tumia kila chanzo ndani ya masharti yake: Msaada → Masharti ya data katika programu hueleza kile ambacho matumizi ya bure ya kila kimoja huruhusu. Baadhi ya huduma za bure ni kwa matumizi yasiyo ya kibiashara tu (huduma za bure za Open-Meteo na ramani za msingi za CARTO), kwa hiyo programu hupakua hali ya hewa kutoka NASA POWER, utabiri wa hali ya hewa kutoka MET Norway na mwinuko kutoka Terrain Tiles kwa chaguomsingi; seva ya vigae ya OpenStreetMap Foundation inakataza matumizi makubwa na kupakua maeneo kwa matumizi bila mtandao, kwa hiyo ramani inayohifadhiwa kwa matumizi ya shambani hutumia tu vigae vilivyokwisha kuonyeshwa. Karatasi, PDF na ripoti hubeba utambuzi wa kila chanzo: ubakize unapowasilisha au kuchapisha kazi.',
+      'Msaidizi wa AI, ambaye ni wa hiari, hufanya kazi kwa akaunti yako mwenyewe kwa kampuni ya AI unayoichagua (Anthropic, OpenAI, Google, xAI, Meta au OpenRouter), chini ya masharti ya kampuni hiyo, na kampuni hiyo ndiyo hutoza matumizi. Modeli inaweza kukosea: idhinisha mabadiliko inayopendekeza kwa ufahamu na ukague kazi yake.',
     ]),
     LegalSection('Maudhui yako', ['Miradi, michoro, picha na faili zako ni mali yako: unawajibika kwazo na kwa kuwa na haki ya kutumia unachoingiza.']),
     LegalSection('Mawasiliano', ['Maswali na matatizo: [github.com/videjunior/opencadirrigation/issues]($contactUrl). Jinsi data zako zinavyoshughulikiwa: sera ya faragha.']),
