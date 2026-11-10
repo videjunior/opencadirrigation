@@ -113,6 +113,14 @@ an MCP server; share links that open again.
   start, a first visit goes straight to the app, and a link pasted into the address bar of the open app (or sent to the
   installed app already open) opens in a tab of its own. The link leaves the address and the history at once.
 - A free model under the spending cap no longer divides the cap by a price of zero.
+- Operations of the AI assistant that failed on a wrong argument now refuse it and say what is accepted: an unknown
+  starter of a pump in `set_pump_house`, a row left out of the shares in `fertigation_by_stage`. The warnings of
+  fertigation by stage (water too saline, stage without an irrigation) say which stage they are about.
+- Continuous integration is green on Linux: the gallery examples are compared with their files by value (the cosine of
+  another machine differs in the last digit), the golden images accept the edge of a glyph a pixel away and refuse
+  anything else that changed, the double click is timed by a timer, and a test that fails shows on the page of the
+  run with what it said. Line coverage of `lib/app` back above its floor (89.1 %) with tests of 36 operations of the
+  assistant that none reached.
 
 ### Not done on purpose
 

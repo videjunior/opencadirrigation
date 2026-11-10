@@ -119,6 +119,14 @@ de uma imagem de catálogo; o motor como servidor MCP; links de compartilhamento
   primeira visita vai direto ao app, e um link colado na barra de endereço do app aberto (ou enviado ao app instalado já
   aberto) abre numa aba própria. O link sai do endereço e do histórico na hora.
 - Um modelo gratuito sob o teto de gasto não divide mais o teto por um preço zero.
+- Operações do assistente de IA que falhavam com um argumento errado agora o recusam e dizem o que é aceito: um tipo de
+  partida desconhecido de uma bomba em `set_pump_house`, uma linha faltando nas parcelas em `fertigation_by_stage`. Os
+  avisos da fertirrigação por estágio (água salina demais, estágio sem irrigação) dizem de qual estágio são.
+- A integração contínua fica verde no Linux: os exemplos da galeria são comparados com seus arquivos por valor (o
+  cosseno de outra máquina difere no último dígito), as imagens golden aceitam a borda de um glifo a um pixel de
+  distância e recusam qualquer outra mudança, o duplo clique é medido por um temporizador, e um teste que falha aparece
+  na página da execução com o que ele disse. A cobertura de linhas de `lib/app` volta a ficar acima do piso (89,1 %),
+  com testes de 36 operações do assistente que nenhum teste alcançava.
 
 ### Não feito de propósito
 
