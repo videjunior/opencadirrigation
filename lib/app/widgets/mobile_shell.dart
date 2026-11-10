@@ -62,6 +62,7 @@ import 'dialogs/document_package_dialog.dart'; // 1.6.0 PRD
 import 'dialogs/title_block_dialog.dart'; // 1.6.0 PRD
 import 'dialogs/water_balance_dialogs.dart';
 import 'dialogs/forecast_dialog.dart'; // 1.7.0 FCT
+import 'dialogs/climate_risk_dialog.dart'; // 1.7.0 CLR
 // 1.6.0 FMT
 import 'dialogs/data_cache_dialog.dart';
 import 'dialogs/stakeout_dialog.dart';
@@ -523,6 +524,7 @@ class _MobileShellState extends State<MobileShell> {
             row(t('clim.menu'), () => showSiteClimateDialog(context, c), icon: Icons.wb_sunny_outlined),
             // 1.6.0 AGR
             row(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('mobile_menu_water_balance')),
+            row(t('clr.menu'), () => showClimateRiskDialog(context, c), icon: Icons.thunderstorm_outlined, key: const Key('mobile_menu_climate_risk')), // 1.7.0 CLR
             row(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('mobile_menu_programme')),
             row(t('ply.menu'), () => showProgrammePlayer(context, c), icon: Icons.play_circle_outline, key: const Key('mobile_menu_programme_player')),
             row(t('fct.menu'), () => showIrrigationForecastDialog(context, c), icon: Icons.cloud_queue, key: const Key('mobile_menu_irrigation_forecast')), // 1.7.0 FCT

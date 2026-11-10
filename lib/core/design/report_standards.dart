@@ -92,6 +92,8 @@ const reportTableCriteria = <String, List<String>>{
   'water': ['cropWater', 'applicationRate'],
   'licensing': ['licensing'],
   'slopeClasses': ['slopeClasses'],
+  'climateRisk': ['cropWater'], // 1.7.0 CLR
+  'climateRiskYears': ['cropWater'],
 };
 
 /// The criteria of the table [key] with their standards (empty when it

@@ -219,6 +219,8 @@ class ReportsPanel extends StatelessWidget {
           ('programmeRuns', 2),
           ('fertigationStages', 2),
           ('fieldTests', 1),
+          ('climateRisk', 2), // 1.7.0 CLR
+          ('climateRiskYears', 2),
         ], emptyKey: 'msg.noAgronomy');
       default:
         return _stack(const [('cornerArm', 1), ('vri', 1), ('pivotElectrical', 1)], emptyKey: 'msg.noMachineExtras');

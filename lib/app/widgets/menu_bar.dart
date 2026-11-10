@@ -32,6 +32,7 @@ import 'dialogs/curve_digitiser_dialog.dart'; // 1.7.0 DGZ
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/water_balance_dialogs.dart';
 import 'dialogs/forecast_dialog.dart'; // 1.7.0 FCT
+import 'dialogs/climate_risk_dialog.dart'; // 1.7.0 CLR
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
@@ -559,6 +560,7 @@ class AppMenuBar extends StatelessWidget {
                       leadingIcon: const Icon(Icons.eco_outlined, size: 16),
                       menuChildren: [
                         item(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_water_balance')),
+                        item(t('clr.menu'), () => showClimateRiskDialog(context, c), icon: Icons.thunderstorm_outlined, key: const Key('menu_climate_risk')), // 1.7.0 CLR
                         item(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('menu_programme')),
                         item(t('ply.menu'), () => showProgrammePlayer(context, c), icon: Icons.play_circle_outline, key: const Key('menu_programme_player')),
                         item(t('fct.menu'), () => showIrrigationForecastDialog(context, c), icon: Icons.cloud_queue, key: const Key('menu_irrigation_forecast')), // 1.7.0 FCT

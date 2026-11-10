@@ -53,6 +53,7 @@ import 'op_parts/ply.dart';
 import 'op_parts/dgz.dart';
 import 'op_parts/fct.dart'; // 1.7.0 FCT
 import 'op_parts/row.dart'; // 1.7.0 ROW
+import 'op_parts/clr.dart'; // 1.7.0 CLR
 import 'view_snapshot.dart';
 import 'vision_marks.dart' show ChangeTracker;
 
@@ -133,6 +134,7 @@ class AgentToolbox {
     ...opsDgz(this),
     ...opsFct(this),
     ...opsRow(this),
+    ...opsClr(this),
   ];
 
   ContextSource source() => ContextSource(

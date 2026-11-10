@@ -277,3 +277,8 @@ export 'model/default_layers.dart';
 // 1.7.0 FCT: the irrigation forecast from the weather forecast of the site
 export 'design/irrigation_forecast.dart';
 export 'io/forecast_online.dart';
+
+// 1.7.0 CLR: the climate risk over the years
+export 'design/climate_risk.dart';
+export 'design/climate_risk_stats.dart';
+export 'model/climate_risk_summary.dart';

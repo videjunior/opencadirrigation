@@ -35,3 +35,10 @@ forecast) are data of their providers, kept under their CC BY 4.0 licences:
 - `forecast/open_meteo_forecast.json`: weather data by Open-Meteo.com (the
   Forecast API answer for the same point and day, unchanged but for the
   whitespace).
+
+`climate_risk/` holds two answers of the NASA POWER daily point API
+(power.larc.nasa.gov, recorded unchanged on 2026-11-10 at 22.90° S, 47.06° W):
+public data, free for any use. The data was obtained from the National
+Aeronautics and Space Administration (NASA) Langley Research Center's
+Prediction Of Worldwide Energy Resources (POWER) project funded through the
+NASA Earth Science Division.
