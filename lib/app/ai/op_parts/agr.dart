@@ -551,7 +551,8 @@ List<AgentTool> opsAgr(AgentToolbox b) {
         final share = i['share_pct'];
         if (share != null) {
           if (share is! List || share.length != 4) throw ToolInputError('"share_pct" needs 4 rows of 3 numbers.');
-          pl.sharePct = [for (var s = 0; s < 4; s++) engNumbers(share[s], 'share_pct[$s]', length: 3, min: 0, max: 100)!];
+          // a row left null is not a row of numbers (engNumbers answers null for it)
+          pl.sharePct = [for (var s = 0; s < 4; s++) engNumbers(share[s], 'share_pct[$s]', length: 3, min: 0, max: 100) ?? (throw ToolInputError('"share_pct" needs 4 rows of 3 numbers.'))];
         }
         if (a.flag('share_auto') ?? false) pl.sharePct = null;
         final prods = i['products'];
@@ -630,7 +631,8 @@ List<AgentTool> opsAgr(AgentToolbox b) {
                 ),
                 if (a.flag('save') ?? false) 'Plan kept for the area (the report shows it).',
               ].join('\n') +
-              engCodes(b, [for (final w in f.warnings) w.split(':').first]),
+              // each warning with its stage (the part after the colon is the stage, not an item)
+              engCodes(b, f.warnings, name: (stage) => stage),
         );
       },
     ),

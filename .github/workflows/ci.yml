@@ -143,7 +143,8 @@ jobs:
           pattern: lcov-*
           path: coverage
           merge-multiple: true
-      # floors about 2 points under the coverage of 2026-11-02 (lib 93.3 %, lib/core 96.1 %, lib/app 89.6 %)
+      # floors about 2 points under the coverage of 2026-11-02 (lib 93.3 %, lib/core 96.1 %, lib/app 89.6 %);
+      # on 2026-11-10: lib 92.5 %, lib/core 95.2 %, lib/app 89.1 %
       - name: Report and floors
         run: >-
           dart run tool/coverage.dart report coverage/lcov-*.info

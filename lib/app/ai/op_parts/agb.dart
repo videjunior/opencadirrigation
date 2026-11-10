@@ -339,7 +339,13 @@ List<AgentTool> opsAgb(AgentToolbox b) {
               final pa = ToolArgs(Map<String, dynamic>.from(e.value as Map));
               final f = s.pumps.putIfAbsent(pump.id, PumpFeeder.new);
               f.lengthM = pa.number('length_m', min: 1, max: 20000) ?? f.lengthM;
-              if (pa.has('starter')) f.starter = StarterKind.values.byName(pa.str('starter')!);
+              if (pa.has('starter')) {
+                // refused by name here: the schema does not look inside "pumps"
+                final name = pa.str('starter');
+                f.starter =
+                    StarterKind.values.where((k) => k.name == name).firstOrNull ??
+                    (throw ToolInputError('pumps["${e.key}"].starter "$name" is not one of ${StarterKind.values.map((k) => k.name).join(', ')}.'));
+              }
               f.motorKw = pa.number('motor_kw', min: 0, max: 2000) ?? f.motorKw;
               f.efficiency = pa.number('efficiency', min: 0, max: 1) ?? f.efficiency;
               f.powerFactor = pa.number('power_factor', min: 0, max: 1) ?? f.powerFactor;
