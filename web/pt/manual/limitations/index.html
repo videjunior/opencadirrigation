@@ -249,10 +249,11 @@ nem testadas; celulares e tablets usam o app web.</li>
 modelos gratuitos da OpenRouter têm os limites das suas empresas); no navegador uma chave da OpenAI
 recusada aparece como falha de rede, porque as respostas de erro da OpenAI não trazem cabeçalho
 CORS, e a página não consegue ler o identificador do pedido e os limites de uso da Meta nem as
-esperas da OpenRouter (o app de desktop consegue); um navegador que siga ao pé da letra as regras de
-CORS para o cabeçalho de autorização poderia recusar os pedidos à Meta, o que só foi conferido no
-Chrome; os modelos do Google, da xAI, da Meta e da OpenRouter não são resumidos quando uma conversa
-fica longa; as imagens não pedem aprovação, embora baixem tiles do mapa base; posições lidas de imagens
+esperas da OpenRouter (o app de desktop consegue); o acesso às seis APIs a partir de uma página foi
+conferido com uma chave inventada no Chrome 157, no Firefox 157 e no WebKit 27.2 (o motor do Safari)
+em 2026-11-10: a resposta a uma chave recusada é legível em todas, menos na OpenAI; os modelos do
+Google, da xAI, da Meta e da OpenRouter não são resumidos quando uma conversa fica longa; as imagens
+não pedem aprovação, embora baixem tiles do mapa base; posições lidas de imagens
 são aproximadas; as análises que ele roda (transientes, simulação de 24 horas e afins) rodam na
 thread da interface; as conversas não vão no arquivo do projeto nem nos links de compartilhamento,
 mas ficam neste navegador (as 24 salvas mais recentemente, com as imagens e os anexos

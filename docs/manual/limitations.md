@@ -103,10 +103,11 @@
   (Claude Fable 5.2 also 30-day data retention; the free tiers of Google and the free models of
   OpenRouter have their companies' limits); in the browser a rejected OpenAI key shows as a
   network failure, since OpenAI's error answers carry no CORS header, and the page cannot read Meta's
-  request id and rate limits nor OpenRouter's waits (the desktop app can); a browser that keeps the
-  letter of the CORS rules for the authorization header could refuse Meta's requests, which was
-  checked only in Chrome; the models of Google, xAI, Meta and OpenRouter are not summarised when a
-  conversation grows long; pictures do not ask for
+  request id and rate limits nor OpenRouter's waits (the desktop app can); reaching the six APIs from
+  a page was checked with a made-up key in Chrome 157, Firefox 157 and WebKit 27.2 (the engine of
+  Safari) on 2026-11-10: the answer to a rejected key is readable everywhere but at OpenAI; the
+  models of Google, xAI, Meta and OpenRouter are not summarised when a conversation grows long;
+  pictures do not ask for
   approval although they download base-map tiles; positions read off pictures are approximate; the
   analyses it runs (transients, 24-hour simulation and the like) run on the interface thread;
   conversations never go into the project file nor into share links, but they stay in this

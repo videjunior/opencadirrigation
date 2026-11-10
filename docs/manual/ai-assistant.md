@@ -59,7 +59,11 @@ Anthropic's side, priced at the model that answered.
 The four clients for Google, xAI, Meta and OpenRouter were written from each company's
 documentation of 2026-11-10 and are tested against scripted transcripts that copy the formats it
 documents; they have not been tried against the live services (no key was used in their
-development). The clients for Anthropic and OpenAI are tested the same way.
+development). The clients for Anthropic and OpenAI are tested the same way. What could be checked
+without a key was, on 2026-11-10: a page reaches the six APIs from Chrome, Firefox and WebKit (the
+engine of Safari), and xAI, whose service reads a request before it checks the key, took the
+requests of the assistant as they are sent (with the tools, a picture and a tool result with a
+picture) and refused only the made-up key.
 
 ## Choosing a company and a model
 

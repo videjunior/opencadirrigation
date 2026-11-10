@@ -62,7 +62,10 @@ Os quatro clientes do Google, da xAI, da Meta e da OpenRouter foram escritos a p
 documentação de cada empresa de 2026-11-10 e são testados contra transcrições roteirizadas que
 copiam os formatos que ela documenta; não foram experimentados contra os serviços reais (nenhuma
 chave foi usada no desenvolvimento deles). Os clientes da Anthropic e da OpenAI são testados da
-mesma forma.
+mesma forma. O que dava para conferir sem chave foi conferido em 2026-11-10: uma página alcança as
+seis APIs no Chrome, no Firefox e no WebKit (o motor do Safari), e a xAI, cujo serviço lê o pedido
+antes de conferir a chave, aceitou os pedidos do assistente como eles são enviados (com as
+ferramentas, uma imagem e um resultado de ferramenta com imagem) e recusou só a chave inventada.
 
 ## Escolher a empresa e o modelo
 
