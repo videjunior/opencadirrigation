@@ -22,6 +22,7 @@ import 'basemap.dart';
 import 'camera.dart';
 import 'compare_overlay.dart';
 import 'playback_overlay.dart';
+import 'crop_rows_overlay.dart'; // 1.7.0 ROW
 import 'scene_cache.dart';
 import 'snapping.dart';
 
@@ -522,6 +523,7 @@ class CadPainter extends CustomPainter {
     }
     // 1.6.0 CAD: the differences of a comparison with another copy
     paintComparison(canvas, cam, c);
+    paintCropRowPreview(canvas, cam, c);
     // the user's marks for the AI assistant over everything drawn (its
     // pictures show them alike), and the mark being placed
     _aiMarks(canvas);

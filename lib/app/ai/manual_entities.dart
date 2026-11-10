@@ -504,6 +504,12 @@ final Map<String, TypeDoc> entityDocs = {
       'mad': const FieldDoc('management allowed depletion, 0–1: the share of the available water used before irrigating', panel: 'props.mad'),
       'psp': const FieldDoc('plant spacing along the row; 0 = not set', unit: 'm', def: 0),
       'rsp': const FieldDoc('row spacing; 0 = not set', unit: 'm', def: 0),
+      // 1.7.0 ROW
+      'rdir': const FieldDoc(
+        'direction of the planting rows, degrees counter-clockwise from east, 0–180 (apply_crop_rows reads it from the aerial image); with rsp the default lateral direction and spacing of Field blocks, Tree rings and Block over the area; absent = not set (the longest edge)',
+        unit: '°',
+        defText: 'not set',
+      ),
       'wf': const FieldDoc('wetted fraction of the area, 0–1 (localized irrigation)', panel: 'props.wettedFraction', def: 1),
       'epp': const FieldDoc('emitters per plant for the EU of zones mostly inside the area; 0 = the project\'s emittersPerPlant', panel: 'props.emittersPerPlant', def: 0),
       'soil': FieldDoc('soil texture key; the panel then sets awc from it', values: [...soilTable.keys], panel: 'req.soil', def: ''),

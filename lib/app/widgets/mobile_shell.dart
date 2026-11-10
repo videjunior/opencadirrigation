@@ -40,6 +40,7 @@ import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
 import 'dialogs/life_scenarios_dialog.dart';
 import 'dialogs/vegetation_dialog.dart';
+import 'dialogs/crop_rows_dialog.dart'; // 1.7.0 ROW
 import 'dialogs/welcome_dialog.dart';
 import '../io/png_export.dart';
 import 'dialogs/basemap_dialogs.dart';
@@ -539,6 +540,7 @@ class _MobileShellState extends State<MobileShell> {
             row(t('rings.menu'), () => showTreeRingsDialog(context, c), icon: Icons.park_outlined, key: const Key('mobile_menu_tree_rings')),
             row(t('pfit.menu'), () => showPivotFitDialog(context, c), icon: Icons.track_changes, key: const Key('mobile_menu_pivot_fit')),
             row(t('veg.menu'), () => showVegetationDialog(context, c), icon: Icons.image_search, key: const Key('mobile_menu_vegetation')),
+            row(t('row.menu'), () => showCropRowsDialog(context, c), icon: Icons.view_week_outlined, key: const Key('mobile_menu_crop_rows')), // 1.7.0 ROW
             // 1.6.0 AGB: machines, electrics and water
             row(t('agb.ph.menu'), () => showPumpHouseDialog(context, c), icon: Icons.electrical_services_outlined, key: const Key('mobile_menu_agb_pump_house')),
             row(t('agb.solar.menu'), () => showSolarDesignDialog(context, c), icon: Icons.solar_power, key: const Key('mobile_menu_agb_solar')),

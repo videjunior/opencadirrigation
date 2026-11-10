@@ -27,6 +27,7 @@ part 'i18n_parts/scr.dart';
 part 'i18n_parts/ply.dart';
 part 'i18n_parts/dgz.dart';
 part 'i18n_parts/fct.dart';
+part 'i18n_parts/row.dart';
 
 /// Languages whose strings are compiled into the app (the `_table` below).
 const baseLanguages = ['pt', 'en', 'es'];
@@ -196,7 +197,7 @@ class I18n {
 }
 
 /// (pt, en, es): the base strings and the parts in lib/app/i18n_parts.
-const _table = <String, (String, String, String)>{..._base, ..._mot, ..._aut, ..._agr, ..._fmt, ..._mod, ..._ia, ..._cad, ..._ui, ..._sit, ..._eng, ..._prd, ..._edt, ..._agb, ..._prb, ..._aip, ..._aor, ..._scr, ..._ply, ..._dgz, ..._fct};
+const _table = <String, (String, String, String)>{..._base, ..._mot, ..._aut, ..._agr, ..._fmt, ..._mod, ..._ia, ..._cad, ..._ui, ..._sit, ..._eng, ..._prd, ..._edt, ..._agb, ..._prb, ..._aip, ..._aor, ..._scr, ..._ply, ..._dgz, ..._fct, ..._row};
 
 /// (pt, en, es)
 const _base = <String, (String, String, String)>{

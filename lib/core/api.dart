@@ -49,6 +49,7 @@ export 'design/calibration.dart';
 export 'design/climate.dart';
 export 'design/corner_arm.dart';
 export 'design/criticality.dart';
+export 'design/crop_rows.dart'; // 1.7.0 ROW
 export 'design/crops.dart';
 export 'design/densogram.dart';
 export 'design/design_check.dart';

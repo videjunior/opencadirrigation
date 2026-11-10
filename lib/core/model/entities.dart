@@ -502,6 +502,11 @@ sealed class Entity {
           climateKc: j['kcc'] as bool? ?? true,
           // 1.6.0 MOD
           holes: rings('holes'),
+          // 1.7.0 ROW
+          rowDirectionDeg: switch (j['rdir']) {
+            final num v when v.isFinite => (v.toDouble() % 180 + 180) % 180,
+            _ => null,
+          },
         );
       case EntityType.pivot:
         return PivotEntity(
@@ -2355,6 +2360,8 @@ class AreaEntity extends Entity with PolyEntity {
     this.climateKc = true,
     // 1.6.0 MOD
     List<List<Pt>>? holes,
+    // 1.7.0 ROW
+    this.rowDirectionDeg,
   }) : holes = holes ?? [];
   @override
   List<Pt> points;
@@ -2413,6 +2420,12 @@ class AreaEntity extends Entity with PolyEntity {
   double mad;
   double plantSpacingM;
   double rowSpacingM;
+
+  /// Direction of the planting rows, degrees counter-clockwise from the x
+  /// axis in [0, 180) (read from the aerial image, 1.7.0 ROW); null when not
+  /// set. With [rowSpacingM] the default of the laterals of Field blocks,
+  /// Tree rings and Block over the area.
+  double? rowDirectionDeg;
 
   /// Fraction of the area wetted (localized irrigation).
   double wettedFraction;
@@ -2506,6 +2519,7 @@ class AreaEntity extends Entity with PolyEntity {
     yieldPotentialPct: yieldPotentialPct,
     climateKc: climateKc,
     holes: [for (final h in holes) List.of(h)],
+    rowDirectionDeg: rowDirectionDeg,
   )..extra = extra;
   @override
   AreaEntity translated(Pt d) => clone()
@@ -2516,6 +2530,8 @@ class AreaEntity extends Entity with PolyEntity {
   AreaEntity transformed(Affine t) => clone()
     ..points = _map(points, t)
     ..holes = [for (final h in holes) _map(h, t)]
+    // 1.7.0 ROW: the rows turn (and mirror) with the area
+    ..rowDirectionDeg = rowDirectionDeg == null ? null : (radToDeg(t.transformAngle(degToRad(rowDirectionDeg!))) % 180 + 180) % 180
     ..extra = extra;
   @override
   Map<String, dynamic> toJson() => {
@@ -2549,6 +2565,7 @@ class AreaEntity extends Entity with PolyEntity {
     if (localizedKr > 0) 'kr': localizedKr,
     if (yieldPotentialPct != 100) 'yp': yieldPotentialPct,
     if (!climateKc) 'kcc': false,
+    if (rowDirectionDeg != null) 'rdir': rowDirectionDeg,
   };
 }
 

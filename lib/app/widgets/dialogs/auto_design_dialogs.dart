@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design/auto_layout.dart';
 import '../../../core/design/block_generator.dart';
+import '../../../core/design/crop_rows.dart' show storedPlantSpacing, storedRowDirection, storedRowSpacing; // 1.7.0 ROW
 import '../../../core/design/densogram.dart' show SprayProfile, sprayProfileKey;
 import '../../../core/design/field_subdivision.dart';
 import '../../../core/design/lateral_limit.dart'; // 1.6.0 AUT
@@ -1106,8 +1107,10 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
   final cat = c.project.catalog;
   final sel = _Picked(c);
   final field = sel.area;
-  var autoDirection = true;
-  var directionDeg = field == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(field)).angle));
+  // 1.7.0 ROW: the rows of the area read from the image, else its longest edge
+  final rowsDir = storedRowDirection(sel.areaEntity), rowsSp = storedRowSpacing(sel.areaEntity);
+  var autoDirection = rowsDir == null;
+  var directionDeg = rowsDir != null ? normalizeDeg(radToDeg(rowsDir.angle)) : (field == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(field)).angle)));
   var mode = SubdivisionMode.strips;
   var byFlow = false;
   var maxArea = 2e4;
@@ -1117,7 +1120,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
   var maxLateral = 0.0, road = 4.0, minWidth = 10.0;
   var centreFeed = false;
   var isTape = true;
-  var tapeLateral = 1.5, sprayLateral = 12.0;
+  var tapeLateral = rowsSp ?? 1.5, sprayLateral = rowsSp ?? 12.0;
   var tapeSpec = cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? '');
   var tapeInlet = cat.tape(tapeSpec)?.defaultInletHeadM ?? s.tapeInletHeadM;
   var outletSpec = s.outletSpecId;
@@ -1270,6 +1273,7 @@ Future<void> showFieldSubdivisionDialog(BuildContext context, ProjectController 
           _note(t('auto.fieldInfo', {'a': _hectares(u, polygonArea(field).abs())}), color: Cad.fg),
           // 1.6.0 AUT: the other closed shapes are holes in the blocks
           if (sel.others.isNotEmpty) _note(t('auto.exclusionsLeftOut', {'n': '${sel.others.length}'}), color: Cad.fg54),
+          if (rowsDir != null) _note(t('row.fromArea'), color: Cad.fg54),
           _switch(t('auto.longestEdge'), autoDirection, (v) => setState(() => autoDirection = v)),
           if (!autoDirection) NumField(label: t('auto.direction'), value: directionDeg, decimals: 1, onChanged: (v) => setState(() => directionDeg = normalizeDeg(v))),
           SegmentedButton<SubdivisionMode>(
@@ -1512,9 +1516,13 @@ Future<void> showTreeRingsDialog(BuildContext context, ProjectController c) {
     for (final e in sel.symbols)
       if (e.kind == SymbolKind.tree) e.position,
   ];
-  var autoDirection = area != null && trees.isEmpty;
-  var directionDeg = trees.isNotEmpty ? _rowDirectionDeg(trees) : (area == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(area)).angle)));
-  var plantSpacing = 6.0, rowSpacing = 7.0, rowOffset = 0.0, plantOffset = 0.0, ringRadius = 0.75;
+  // 1.7.0 ROW: the rows of the area read from the image
+  final rowsDir = trees.isEmpty ? storedRowDirection(sel.areaEntity) : null;
+  var autoDirection = area != null && trees.isEmpty && rowsDir == null;
+  var directionDeg = trees.isNotEmpty
+      ? _rowDirectionDeg(trees)
+      : (rowsDir != null ? normalizeDeg(radToDeg(rowsDir.angle)) : (area == null ? 0.0 : normalizeDeg(radToDeg(longestEdgeDirection(normalizePolygon(area)).angle))));
+  var plantSpacing = storedPlantSpacing(sel.areaEntity) ?? 6.0, rowSpacing = storedRowSpacing(sel.areaEntity) ?? 7.0, rowOffset = 0.0, plantOffset = 0.0, ringRadius = 0.75;
   var kind = RingKind.dripline;
   var drippers = 4;
   var tapeSpec = cat.tape(s.tapeSpecId) != null ? s.tapeSpecId : (cat.tapes.firstOrNull?.id ?? '');
