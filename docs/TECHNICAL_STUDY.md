@@ -2952,12 +2952,16 @@ program's own engine to check its work. It opens in a panel docked beside the dr
 wide; a bottom sheet over the drawing on phones), which stays open while the agent works, so the
 user watches the drawing change, types further instructions and stops it at any time; each project
 tab has its own conversation. It is serverless like the rest of the program: the browser (or the
-desktop app) calls the provider of the chosen model, Anthropic or OpenAI, directly with the user's
-own API key for that provider, and the provider bills the usage to the user's account; the panel
-shows an estimate of the tokens and the cost of every answer and of the conversation. The loop, the
+desktop app) calls the provider of the chosen model directly with the user's own API key for that
+provider, and the provider bills the usage to the user's account; the panel shows an estimate of the
+tokens and the cost of every answer and of the conversation. Six providers are offered: Anthropic
+(Claude), OpenAI (GPT), Google (Gemini), xAI (Grok), Meta (Muse) and OpenRouter, a marketplace whose
+one key reaches the models of the others and many more through its own servers. The loop, the
 tools, the permissions and the project data do not depend on the provider
-(`lib/core/ai/agent_loop.dart`, `project_context.dart`, the tools of `lib/app/ai/`); the two clients
-and their formats are sections 27.1 to 27.3.
+(`lib/core/ai/agent_loop.dart`, `project_context.dart`, the tools of `lib/app/ai/`); the six clients
+and their formats are sections 27.1 to 27.3. The clients of Google, xAI, Meta and OpenRouter were
+written from each company's documentation of 2026-11-10 and are tested against scripted transcripts
+that copy the formats it documents; none of them has been run with a real key.
 
 ### 27.1 Providers and models
 
@@ -2965,33 +2969,74 @@ and their formats are sections 27.1 to 27.3.
 provider, tier and list prices), tokens and their estimated cost (`AiUsage`), errors (`AiError`),
 cancellation (`AiCancel`), the parts of a message, and the HTTP exchange as an injected function
 (`AiTransport`: fetch with an abort controller in the browser, the body read as a stream, without
-cookies or referrer; `HttpClient` on the desktop; a scripted fake in the tests). Two clients
-implement `AiClient`: `AnthropicClient` (`claude_api.dart`, the Messages API) and `OpenAiClient`
-(`openai_api.dart`, the Responses API); the names of the first, Anthropic-only version (`ClaudeApi`,
+cookies or referrer; `HttpClient` on the desktop; a scripted fake in the tests). `AiProvider` names
+each provider with the only host its key is ever sent to, the page where keys are made, how its keys
+usually start (a hint, never enforced) and the page of its billing. Six clients implement
+`AiClient`: `AnthropicClient` (`claude_api.dart`, the Messages API), `OpenAiClient`
+(`openai_api.dart`, the Responses API), `XaiClient`, `MetaClient` and `OpenRouterClient`
+(`xai_api.dart`, `meta_api.dart`, `openrouter_api.dart`: the Responses APIs of xAI, Meta and
+OpenRouter, which have OpenAI's shape, so each is `OpenAiClient` with its hooks changed: the address,
+the headers, the body, the items replayed, the usage, the errors and the optional fields) and
+`GeminiClient` (`gemini_api.dart`, Google's Interactions API, written from the neutral format by
+`GeminiFormat`, section 27.3); the names of the first, Anthropic-only version (`ClaudeApi`,
 `ClaudeModel`…) remain as aliases.
 
 | Provider | Tier | Model (id) | US$ per million tokens, input / output | Notes |
 |---|---|---|---|---|
-| Anthropic | top | Claude Fable 5.1 (`claude-fable-5-1`) | 10 / 50 | thinking always on; needs 30-day data retention; long turns |
+| Anthropic | top | Claude Fable 5.2 (`claude-fable-5-2`) | 8 / 40 | thinking always on; needs 30-day data retention; long turns |
 | Anthropic | top | Claude Opus 5.5 (`claude-opus-5-5`) | 4 / 20 | the default |
 | Anthropic | intermediate | Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 2 / 10 | |
 | Anthropic | fast | Claude Haiku 5.5 (`claude-haiku-5-5`) | 0.1 / 0.5 | above 100 000 input tokens, 5 × |
 | OpenAI | top | GPT-6 Astra (`gpt-6-astra`) | 10 / 50 | long turns |
 | OpenAI | intermediate | GPT-6.1 Sol (`gpt-6.1-sol`) | 2 / 10 | |
+| OpenAI | fast | GPT-6.1 Terra (`gpt-6.1-terra`) | 1 / 5 | |
 | OpenAI | fast | GPT-6 Luna (`gpt-6-luna`) | 0.1 / 0.5 | |
 | OpenAI | intermediate | GPT-6 Sol (`gpt-6-sol`), GPT-5.6 Terra (`gpt-5.6-terra`) | 2 / 10; 2 / 12 | earlier releases |
+| Google | top | Gemini 4 Argon (`gemini-4-argon`) | 4 / 20 | half price until 2026-12-01; efforts low, medium, high; long turns |
+| Google | intermediate | Gemini 3.8 Flash (`gemini-3.8-flash`) | 1.5 / 7.5 | half price until 2027-01-01; free tier; efforts low, medium, high |
+| Google | fast | Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`) | 0.3 / 2.5 | free tier; efforts low, medium, high |
+| xAI | top | Grok 4.7 (`grok-4.7`) | 2 / 6 | from 200 000 prompt tokens, 2 ×; efforts low to xhigh; PDFs as text |
+| xAI | fast | Grok 4.3 (`grok-4.3`) | 1.25 / 2.5 | as Grok 4.7 |
+| Meta | top | Muse Wonder (`muse-wonder-1.0`) | 4 / 20 | long turns |
+| Meta | intermediate | Muse Spark 1.3 (`muse-spark-1.3`) | 1.25 / 4.25 | |
+| Meta | fast | Muse Ember (`muse-ember-1.0`) | 0.1 / 0.5 | above 200 000 input tokens, 3 × |
+| OpenRouter | top to fast | Claude Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5; GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra; Gemini 4 Argon, Gemini 3.8 Flash; Grok 4.7; Muse Spark 1.3 (`anthropic/claude-fable-5.2`…) | the makers' prices as OpenRouter lists them (Gemini 3.8 Flash 1.65 / 8.25) | the long-prompt rules of the makers; answers of at most 32 000 tokens (Fable 5.2, GPT-6 Astra) or 64 000 (Opus 5.5, Grok 4.7, Muse Spark 1.3) |
+| OpenRouter | intermediate, fast | Auto Router (`openrouter/auto`), Free Models Router (`openrouter/free`) | the price of the model each picks; free | routers |
 
 Cache reads and writes have their own list prices (writes at 1.25 times the input price, the rate of
-Anthropic's five-minute cache). OpenAI prompts above 272 000 input tokens cost twice the input and
-cache prices and 1.5 times the output price. Every model takes the five effort levels (low, medium by default, high,
-xhigh, max: Anthropic `output_config.effort`, OpenAI `reasoning.effort`). The models with long turns
-get longer timeouts (section 27.2). The cost of an answer is priced at the model that actually served
-it (a refusal fallback may be another model, Claude Opus 5 or Opus 4.8, priced though not offered),
-with Anthropic's compaction iterations added to the top-level counts. Switching to another company,
-or between OpenAI models, starts a new conversation (the earlier one is not sent); a Claude model
-can take over the conversation of another Claude model. Claude Fable 5.1 asked from an organisation
-without 30-day data retention is refused by the API; the error is recognised and the message
-suggests Claude Opus 5.5.
+Anthropic's five-minute cache; Google, xAI and Meta bill nothing for writing to their automatic
+caches, and their usage reports no cache writes). OpenAI prompts above 272 000 input tokens cost
+twice the input and cache prices and 1.5 times the output price; a rule of this kind (`longAbove`,
+`longInput`, `longOutput`) applies to the whole request once its input passes the threshold. An
+introductory price (`introUntil`, `introFactor`) multiplies every price until the day it names, and
+the meter prices a request at the prices of its day. The models of Anthropic, OpenAI and Meta take
+the five effort levels (low, medium by default, high, xhigh, max: Anthropic `output_config.effort`,
+the Responses APIs `reasoning.effort`); a model that takes fewer (`AiModel.efforts`) gets the nearest
+below (`effortFor`): Gemini's thinking levels stop at high, Grok's at xhigh. The models with long
+turns get longer timeouts (section 27.2). `vision`, `pdf`, `tools` and `priced` say whether a model
+reads pictures, reads an attached PDF whole (else the PDF goes as its text, extracted on the device),
+calls tools, and has known prices (a router has none). The cost of an answer is priced at the model
+that actually served it (a refusal fallback may be another model, Claude Opus 5 or Opus 4.8, priced
+though not offered; a router reports the model it chose), with Anthropic's compaction iterations
+added to the top-level counts; an answer of a model the table does not price costs what the
+provider says it charged (`AiUsage.charged`, OpenRouter's `usage.cost`). Switching to another
+company, or between two models of a company other than Anthropic, starts a new conversation (the
+earlier one is not sent); a Claude model can take over the conversation of another Claude model. A
+choice or a kept conversation of Claude Fable 5.1 goes on with Claude Fable 5.2, which replaced it.
+Claude Fable 5.2 asked from an organisation without 30-day data retention is refused by the API; the
+error is recognised and the message suggests Claude Opus 5.5.
+
+**Models from OpenRouter's list** (`openrouter_catalog.dart`). `GET https://openrouter.ai/api/v1/models`
+(public, no key, no header of the app) gives every model OpenRouter serves; a row becomes an `AiModel`
+of OpenRouter when its endpoints include the Responses API, it answers in text and it has a price
+(aliases left out): the prices per token as listed (per million in the app), the cache prices when
+listed (else the input price), the first price override that depends on the prompt's length alone
+(those by hour of the day ignored), the efforts it lists, the output limit of its top provider (32 000
+when none is given) capped at 128 000 tokens and half the context window, and whether it reads
+pictures and calls tools. Its tier is a band of the output price (top from US$ 15 per million tokens,
+intermediate from 4, fast below; routers intermediate), not a judgement of quality. The models the
+user adds are kept in the preferences and registered again at start (`AiModel.register`); the last
+copy of the list is kept on the device for offline use.
 
 ### 27.2 Requests and streams
 
@@ -3000,13 +3045,15 @@ headers carry the key (`x-api-key`), in the browser `anthropic-dangerous-direct-
 (without it the API sends no cross-origin headers and the browser blocks the answer), and
 `anthropic-beta` with the betas the request uses (`server-side-fallback-2026-07-01`,
 `task-budgets-2026-03-13`, `context-management-2025-06-27`, `compact-2026-01-12`). The body: the
-model, `max_tokens` 64 000, `stream: true`, the system prompt as one text block with a cache
+model, `max_tokens` (the model's output limit, 128 000 on the Claude 5.x models, lower under a spending
+cap), `stream: true`, the system prompt as one text block with a cache
 breakpoint, the tools in a fixed order, each with `eager_input_streaming: true` (inputs stream as
 they are generated, which is why the loop checks every input itself), the messages since the last
-compaction, `thinking: {type: "adaptive"}` (left out for Fable 5.1, which always thinks and takes no
-setting), `output_config` with the effort and, on Opus 5.5, Sonnet 5.5 and Haiku 5.5 when a spending
-cap is set, a task budget (`task_budget: {type: "tokens", total}`, the cap divided by the output
-price, at least 20 000 tokens) the model paces itself against, a top-level `cache_control` (automatic
+compaction, `thinking: {type: "adaptive"}` (left out for Fable 5.2, which always thinks and takes no
+setting), `output_config` with the effort and, when the caller gives one, a task budget
+(`task_budget: {type: "tokens", total}`, at least 20 000 tokens) the model paces itself against (the
+assistant gives none: a token countdown shown to the model made it stop early, so the app's own step
+limit and spending cap end a task), a top-level `cache_control` (automatic
 caching of the growing conversation), `fallbacks: "default"` on Fable, Opus and Sonnet (a request a
 safety classifier declines is answered by another model instead of failing), and the context
 management of section 27.5. The stream (server-sent events): `message_start` (model, usage),
@@ -3021,7 +3068,8 @@ kept) and the marker is dropped.
 body: the model, `instructions` (the system prompt), `input` (the conversation: the output items
 exactly as they came back, the function outputs, the user's messages), the function tools with
 `strict: false` (the schemas have optional fields, which strict mode does not allow; the loop checks
-the inputs itself), `reasoning: {effort}`, `max_output_tokens` 64 000, `stream: true`, `store: false`
+the inputs itself), `reasoning: {effort}`, `max_output_tokens` (the model's output limit, 128 000 on
+the GPT-6 models, lower under a spending cap), `stream: true`, `store: false`
 (nothing is kept on OpenAI's side for later requests) with `include: ["reasoning.encrypted_content"]`,
 so that the reasoning items come back encrypted and go back in the next request, and the context
 management of section 27.5. Pictures are `input_image` parts (data URLs, detail "auto") and PDFs
@@ -3033,23 +3081,89 @@ limit, or `content_filter`, a refusal); `response.failed` (policy codes such as 
 and `error`. The refusal parts of a message are a refusal too. Cached input tokens come from
 `input_tokens_details` (cached and cache-write tokens).
 
-**Errors and retries** (both clients): the error types are told apart (authentication, permission,
+**xAI** (`POST https://api.x.ai/v1/responses`, `XaiClient`). The Responses request of OpenAI with
+`store: false` and `include: ["reasoning.encrypted_content"]` (the encrypted reasoning goes back
+unchanged; asking for it also keeps xAI from storing the thinking trace for later requests), a
+`prompt_cache_key` derived from the system prompt and the first entry of the conversation (stable for
+a conversation, so its requests reach the server that cached its prefix; xAI's cache is automatic and
+writing to it is free), the sampling xAI's guide asks for (`temperature` 0.7, `top_p` 0.95) and
+function tools only; no `context_management` (xAI parses it but does not run it; `compact()` calls
+xAI's stateless `/v1/responses/compact` and is tested, not wired into the loop). The usage leaves the
+reasoning tokens out of `output_tokens` and they are added back (billed at the output price). Grok
+reads JPEG and PNG only, so a WebP or a GIF is converted at the same size (a picture with
+transparent pixels or a GIF to PNG, the rest to JPEG), the result kept so that the bytes stay the same
+from one request to the next; the app sends a PDF as its text, since an attached file turns on xAI's
+attachment search, a server-side tool billed per call. Errors come as `{"code": "…", "error": "…"}`;
+a key xAI does not know gets a 400, read as an authentication error.
+
+**Meta** (`POST https://api.meta.ai/v1/responses`, `MetaClient`). The Responses request with
+`store: false` and `include: ["reasoning.encrypted_content"]`, never `previous_response_id`; the output
+items go back as they came, but a reasoning item without its encrypted content, or with nothing
+after it, is left out of the request (the stored history keeps it), and assistant text before a call
+carries `phase: "commentary"`. A constant `prompt_cache_key` for the app; no `context_management`
+(the API has none) and no built-in tool. Pictures go in user messages and inside function outputs as
+`input_image` data URLs, PDFs as `input_file` data URLs. The errors follow Meta's statuses, types and
+codes (402 billing, 503 overloaded, 504 not retried, since the same request would time out again), and
+three are recovered: a request that does not fit the context window is sent again asking for the
+room left (at least 16 000 tokens), an output limit the API names is learnt for that model, and a
+reasoning item the API no longer accepts is dropped from the request.
+
+**OpenRouter** (`POST https://openrouter.ai/api/v1/responses`, `OpenRouterClient`). Stateless only
+(OpenRouter refuses `store: true` and `previous_response_id`): the Responses request with
+`store: false`, no `context_management` (not in its request schema), a top-level `cache_control`
+(`{type: ephemeral}`) that turns on the automatic cache breakpoint of the models that need one,
+Anthropic's above all (not sent to OpenAI's models, which cache by themselves), a `session_id`
+derived from the system prompt and the first message, which keeps the requests of a conversation on
+one provider so that its cache is found again, and two headers that name the app for OpenRouter's
+rankings (`HTTP-Referer: https://opencadirrigation.com`, `X-OpenRouter-Title: OpenCADIrrigation`),
+nothing about the user. Replayed assistant messages, reasoning items and calls carry the ids
+OpenRouter requires; the reasoning of every maker comes back as `reasoning` items (OpenAI's encrypted
+content, Anthropic's thinking text with its signature, Google's thought signatures) and goes back as it
+came. The pictures of tool results stay inside the function outputs for the `anthropic/` and `openai/`
+models and go in a user message right after the results for the others. A PDF goes to a model that
+reads files itself as it is, and otherwise through OpenRouter's free parser (`plugins: [{id:
+file-parser, pdf: {engine: cloudflare-ai}}]`). The usage carries the `cost` OpenRouter charged, and
+the answer names the model that answered. Errors are read from OpenRouter's canonical `error_type`
+beside the Responses `code`: 402 no credit (the in-flight spending budget, which holds the price of
+the largest answer a request allows, is waited for), 403 budgets, moderation and guardrails, 408,
+429 (the free models' daily limit waits until 00:00 UTC and is not retried), 502 and 503 no provider.
+
+**Google** (`POST https://generativelanguage.googleapis.com/v1beta/interactions`, `GeminiClient`). The
+Interactions API, which Google recommends for new projects, in its stateless mode: `store: false`, the
+whole conversation in `input` as a list of steps, the key in `x-goog-api-key` and `content-type` the
+only headers (what the CORS preflight allows), `system_instruction`, the function tools (their
+schemas converted to the subset of JSON Schema Gemini takes, the limits it does not take written into
+the descriptions), `generation_config` with the `thinking_level` of the effort and `max_output_tokens`,
+and `stream: true`. The stream: `interaction.created`, `interaction.status_update`, each step as
+`step.start` → `step.delta` (text, the JSON of a call's arguments, a thought signature) → `step.stop`,
+`interaction.completed` with the usage (input, cached, output, thought and tool-use tokens), and
+`error`. `thought` steps carry an encrypted signature that stateless mode must send back exactly as it
+came, in its place. Pictures go at the media resolution `ultra_high` (2240 tokens a picture), or `high`
+for a model that turns it down; a request is kept under 20 MB; a model with long turns waits at least
+15 minutes for the next event. A safety, recitation or other policy block ends the answer as a
+refusal with its category; quotas say whether to wait (with the wait Google gives in the body, since
+the page cannot read `retry-after`) or to set up billing.
+
+**Errors and retries** (every client): the error types are told apart (authentication, permission,
 billing — OpenAI's `insufficient_quota` —, not found or a model the account cannot use, invalid
 request, request too large — `context_length_exceeded` —, rate limit, overloaded, server, network,
-timeout, interrupted stream, data retention); overloads, rate limits, server and network errors are
-retried at most twice, after the `retry-after` (or `retry-after-ms`) the API asks for, up to 30 s, or
-an exponential backoff (2 s, 4 s for rate limits, 1.5 s for the network, doubling), never once part of
-the answer has arrived. A request times out with no status line after 90 s, or no data for 180 s
-(300 s and 600 s for the models with long turns, which may think for minutes). An optional field a
-model turns down (an invalid-request error that names `fallbacks`, `task_budget`, the context
-management or the clearing of tool results) is dropped and the same request sent again at once, and
-left out for that model for the rest of the session; a rejected combination of context edits drops
+timeout, interrupted stream, data retention, no credit, a spending limit, a refusal); overloads, rate
+limits, server and network errors are retried at most twice, after the `retry-after` (or
+`retry-after-ms`) the API asks for, up to 30 s, or an exponential backoff (2 s, 4 s for rate limits,
+1.5 s for the network, doubling), never once part of the answer has arrived. A request times out with
+no status line after 90 s, or no data for 180 s (300 s and 600 s for the models with long turns, which
+may think for minutes; the idle time doubles at the two highest efforts). An optional field a model
+turns down (an invalid-request error that names `fallbacks`, `task_budget`, the context management,
+the clearing of tool results, or a field of the newer clients such as `prompt_cache_key`,
+`cache_control`, `session_id` or the `ultra_high` resolution) is dropped and the same request sent
+again at once, and left out for that model for the rest of the session; a rejected combination of context edits drops
 the clearing first, then compaction. The key is removed from every error text, masked copies of it
 included.
 
 ### 27.3 One loop, two formats
 
-The loop never looks into the providers' formats. `llm_formats.dart` holds both in one place
+The loop never looks into the providers' formats. `llm_formats.dart` holds the two wire formats in one
+place
 (`AnthropicFormat`, `OpenAiFormat`): tool definitions, the user's message (text, pictures, PDFs),
 tool results (text and pictures, with an error flag, or, on OpenAI, whose function outputs have
 none, the prefix `Error: `), notes from the program, and the tool calls and text of an answer. The
@@ -3062,6 +3176,15 @@ what the user wrote meanwhile, then the note as a `developer` message. Each form
 own shapes back, and the tests check that every kind of entry reads back unchanged and that a whole
 exchange converted from one format to the other and back loses nothing (`ai_formats_test.dart`). A
 tool input whose JSON does not parse is kept raw and answered with an `INVALID_JSON` error result.
+
+The Responses format is the neutral one the four newer clients share. xAI, Meta and OpenRouter speak
+it as it is, each changing only what its API needs in the request (the items it replays, its
+fields). Google's conversation is kept in it too and translated at every request by `GeminiFormat`,
+deterministically (the same history always gives the same bytes, so that the implicit cache matches
+the prefix): messages and function calls become Gemini's steps, function outputs become
+`function_result` steps named after their calls, and any step of Gemini's own (a `thought` with its
+signature) is kept in the history as a `gemini_step` item holding the step as it came, so that every
+step goes back unchanged. A conversation never mixes formats: changing company starts a new one.
 
 ### 27.4 The agent loop
 
@@ -3084,6 +3207,18 @@ cut with a note asking for less (a filter, paging). The text streams into the pa
 with a status line (thinking, running a tool, waiting for an approval, waiting before a retry) and
 the elapsed time.
 
+**Second opinion** (`/second`, or the button on the last answer). The last answer, the user's
+question and the whole compact project data (section 27.9) go to another model in one request
+without tools (the medium effort, or the nearest the model takes, and at most 16 000 output tokens),
+to that model's company with its own key: the models of the other companies the user has a key for
+come first, each company's most capable first, then the other models of the conversation's company;
+a router without known prices is left out. Its system prompt asks for a verdict (agree, agree with
+reservations, disagree) and then the points, the most important first, each with the figure it rests
+on, and says that the material is data, not instructions. The review is shown marked as a second
+opinion and its tokens and cost are added to the conversation's, but it does not enter the history:
+the conversation's own model reads it only when the user sends it on (*Answer the review*), as
+quoted material to check point by point against the project with its tools.
+
 ### 27.5 Context management
 
 Long tasks keep their requests bounded on the server, where the model takes it (a setting, on by
@@ -3100,6 +3235,9 @@ default; the whole conversation stays in the panel):
   compaction item, the input starts at it. Pictures in tool results beyond the newest three are
   replaced by a short note once there are more than six (in steps, so the cached prefix changes
   rarely), in the request only: the stored history and the user's own pictures stay.
+- **Google, xAI, Meta and OpenRouter**: no compaction on the server (their models have
+  `compaction: false`); the older pictures of tool results are pruned from each request as for
+  OpenAI.
 
 A compaction is announced in the conversation.
 
@@ -3172,9 +3310,12 @@ The model sees the project through pictures with an exact mapping (`view_snapsho
   where the imagery ends, z17–18 over most farmland, and the nearest ancestor where a tile is
   missing) and cached for the conversation (400 tiles); the user's view and base map never change,
   and only when the tiles of the map on screen cannot be fetched off screen does the view go there for
-  a moment and come back, which the result says. A picture is at most 1568 pixels on its longest
-  side (1024 by default) and about 1.15 megapixels, so that neither provider rescales it and the
-  model reads positions on the pixel grid described.
+  a moment and come back, which the result says. A picture is at most what the model reads unscaled
+  (`PictureLimits.of`; 1024 pixels on its longest side by default): 2576 pixels and about 3.6
+  megapixels on the Claude models that read pictures at high resolution (Fable 5.2, Opus 5.5, Sonnet
+  5.5 and Haiku 5.5, also through OpenRouter), otherwise 1568 pixels and about 1.15 megapixels, with
+  the shorter side at most 768 pixels on OpenAI's models (also through OpenRouter), so that the
+  provider does not rescale it and the model reads positions on the pixel grid described.
 - **The mapping**: every picture has an id (`s1`, `s2`…; `u1`… for those the user attaches; the last
   80 kept per conversation) and states its mapping: north up, square pixels, the world bbox [minX,
   minY, maxX, maxY] and s metres per pixel, with x = minX + px·s and y = maxY − py·s for the pixel
@@ -3309,18 +3450,24 @@ Each provider has its own key. A key is kept in memory for the session by defaul
 the key on this device" it goes into the browser storage, where the scripts of the page (the site's
 visit statistics among them) could read it, which the panel says. It never enters a project file,
 the autosave, a share link or an export, it goes only to its own provider's API host
-(`api.anthropic.com` or `api.openai.com`), in its header, and it is removed from any error text.
+(`api.anthropic.com`, `api.openai.com`, `generativelanguage.googleapis.com`, `api.x.ai`, `api.meta.ai`
+or `openrouter.ai`), in its header, and it is removed from any error text, masked copies included.
 
 ### 27.12 Validation
 
 `ai_agent_test.dart` covers the Anthropic requests and stream (the request the API documents, Fable
-5.1's settings, task budgets and compaction where the model takes them, optional fields dropped, the
+5.2's settings, task budgets and compaction where the model takes them, optional fields dropped, the
 clearing of tool results) and the loop (its tools and history, invalid inputs, the modes and plan
 mode, confirmations, the step limit, the spending cap, steering, stopping, errors and retries, data
 retention, refusals, fallbacks and their prices, the key only in its header); `ai_openai_test.dart`
 the Responses API (the request, function outputs, pictures and PDFs, compaction, the pruning of
-pictures, errors, the model list); `ai_formats_test.dart` the two formats; `ai_context_test.dart` the
-project data. Widget tests cover the tools, the vision (the exact round trip of the mapping, the
+pictures, errors, the model list); `ai_gemini_test.dart`, `ai_xai_test.dart`, `ai_meta_test.dart` and
+`ai_openrouter_test.dart` the four newer clients against scripted transcripts that copy each
+company's documented formats (the request, tool turns replaying the reasoning byte for byte, pictures
+and PDFs, streams, usage and cost, stops and refusals, every documented error and retry);
+`ai_openrouter_catalog_test.dart` OpenRouter's list read into models; `ai_providers_test.dart` the
+hosts, key pages, prices and introductory prices of the companies; `ai_formats_test.dart` the two
+formats; `ai_context_test.dart` the project data. Widget tests cover the tools, the vision (the exact round trip of the mapping, the
 satellite picture leaving the user's view and map as they were, terrain pictures and profiles on
 known surfaces), the operations, the coverage map, the manual and the whole agent (a small project
 from the questions to the report, steering, rewind, the cap and Continue, quick commands, the docked
@@ -3336,10 +3483,13 @@ can be refused, undone or rewound; a position picked on a picture is as good as 
 picks (s metres). Pictures ask for no approval, though they download map tiles; long analyses the
 model asks for run on the interface thread; conversations are not saved with the project, by design
 (a shared file or link would carry the chat and its pictures), but they are kept in the browser's
-storage (IndexedDB) by project, the 12 most recent with their pictures and small attachments, until
-the setting that keeps them is turned off, which deletes them; the
-usage is billed by the provider to the account of the key; and the clients have been tested against
-scripted fakes of the two APIs, not against the live services.
+storage (IndexedDB) by project, the 24 most recently saved with their pictures and small
+attachments, until the setting that keeps them is turned off, which deletes them; the usage is billed
+by the provider to the account of the key; and the clients have been tested against scripted fakes
+of the six APIs, not against the live services: the four added in 1.7.0 were written from each
+company's documentation of 2026-11-10 and have never been run with a real key. In a browser, the
+page cannot read Meta's request id and rate-limit headers nor OpenRouter's waits, which the desktop
+app can.
 
 ---
 
@@ -3439,7 +3589,7 @@ project (after compression); BigTIFF files and rasters above 100 million pixels 
 surveys above 12 000 samples are thinned for the TIN; compressed LAS (LAZ), DGN V8, encrypted PDFs
 and the JPEG 2000 and JBIG2 images of PDFs are not read; OpenTopoData works only in the desktop
 build; the CAD exports are R2000 (DXF true colours, DWG colour indices) or R12; the AI
-assistant needs the network and has been tested against scripted fakes of the two model APIs only;
+assistant needs the network and has been tested against scripted fakes of the six model APIs only;
 and no native mobile build is produced (the web app works on phones).
 
 ---

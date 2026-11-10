@@ -3032,11 +3032,16 @@ encaixado ao lado do desenho (400 pixels de largura; uma folha inferior sobre o 
 celulares), que fica aberto enquanto o agente trabalha, de modo que o usuário vê o desenho mudar,
 digita novas instruções e o interrompe a qualquer momento; cada aba de projeto tem a sua conversa. Ele
 não tem servidor, como o resto do programa: o navegador (ou o aplicativo de desktop) chama o provedor
-do modelo escolhido, a Anthropic ou a OpenAI, diretamente com a chave de API do próprio usuário para
-esse provedor, e o provedor cobra o uso na conta do usuário; o painel mostra uma estimativa dos
-tokens e do custo de cada resposta e da conversa. O laço, as ferramentas, as permissões e os dados do
+do modelo escolhido diretamente com a chave de API do próprio usuário para esse provedor, e o
+provedor cobra o uso na conta do usuário; o painel mostra uma estimativa dos tokens e do custo de cada
+resposta e da conversa. Seis provedores são oferecidos: Anthropic (Claude), OpenAI (GPT), Google
+(Gemini), xAI (Grok), Meta (Muse) e OpenRouter, um mercado cuja chave única alcança os modelos dos
+outros e muitos mais pelos servidores dela. O laço, as ferramentas, as permissões e os dados do
 projeto não dependem do provedor (`lib/core/ai/agent_loop.dart`, `project_context.dart`, as
-ferramentas de `lib/app/ai/`); os dois clientes e os seus formatos são as seções 27.1 a 27.3.
+ferramentas de `lib/app/ai/`); os seis clientes e os seus formatos são as seções 27.1 a 27.3. Os
+clientes do Google, da xAI, da Meta e da OpenRouter foram escritos a partir da documentação de cada
+empresa de 2026-11-10 e são testados contra transcrições roteirizadas que copiam os formatos que ela
+documenta; nenhum deles rodou com uma chave de verdade.
 
 ### 27.1 Provedores e modelos
 
@@ -3044,34 +3049,75 @@ ferramentas de `lib/app/ai/`); os dois clientes e os seus formatos são as seç�
 com provedor, nível e preços de lista), os tokens e o seu custo estimado (`AiUsage`), os erros
 (`AiError`), o cancelamento (`AiCancel`), as partes de uma mensagem e a troca HTTP como uma função
 injetada (`AiTransport`: fetch com um abort controller no navegador, o corpo lido como fluxo, sem
-cookies nem referrer; `HttpClient` no desktop; um falso roteirizado nos testes). Dois clientes
-implementam `AiClient`: `AnthropicClient` (`claude_api.dart`, a API Messages) e `OpenAiClient`
-(`openai_api.dart`, a API Responses); os nomes da primeira versão, só da Anthropic (`ClaudeApi`,
-`ClaudeModel`…), continuam como apelidos.
+cookies nem referrer; `HttpClient` no desktop; um falso roteirizado nos testes). `AiProvider` nomeia
+cada provedor com o único host para onde a chave dele vai, a página onde se fazem chaves, como as
+chaves dele costumam começar (uma dica, nunca exigida) e a página de cobrança. Seis clientes
+implementam `AiClient`: `AnthropicClient` (`claude_api.dart`, a API Messages), `OpenAiClient`
+(`openai_api.dart`, a API Responses), `XaiClient`, `MetaClient` e `OpenRouterClient`
+(`xai_api.dart`, `meta_api.dart`, `openrouter_api.dart`: as Responses APIs da xAI, da Meta e da
+OpenRouter, que têm a forma da da OpenAI, então cada um é o `OpenAiClient` com os seus ganchos
+trocados: o endereço, os cabeçalhos, o corpo, os itens reenviados, o uso, os erros e os campos
+opcionais) e `GeminiClient` (`gemini_api.dart`, a Interactions API do Google, escrita a partir do
+formato neutro pelo `GeminiFormat`, seção 27.3); os nomes da primeira versão, só da Anthropic
+(`ClaudeApi`, `ClaudeModel`…), continuam como apelidos.
 
 | Provedor | Nível | Modelo (id) | US$ por milhão de tokens, entrada / saída | Observações |
 |---|---|---|---|---|
-| Anthropic | topo | Claude Fable 5.1 (`claude-fable-5-1`) | 10 / 50 | raciocínio sempre ligado; exige retenção de dados de 30 dias; vezes longas |
+| Anthropic | topo | Claude Fable 5.2 (`claude-fable-5-2`) | 8 / 40 | raciocínio sempre ligado; exige retenção de dados de 30 dias; vezes longas |
 | Anthropic | topo | Claude Opus 5.5 (`claude-opus-5-5`) | 4 / 20 | o padrão |
 | Anthropic | intermediário | Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 2 / 10 | |
 | Anthropic | rápido | Claude Haiku 5.5 (`claude-haiku-5-5`) | 0,1 / 0,5 | acima de 100 000 tokens de entrada, 5 × |
 | OpenAI | topo | GPT-6 Astra (`gpt-6-astra`) | 10 / 50 | vezes longas |
 | OpenAI | intermediário | GPT-6.1 Sol (`gpt-6.1-sol`) | 2 / 10 | |
+| OpenAI | rápido | GPT-6.1 Terra (`gpt-6.1-terra`) | 1 / 5 | |
 | OpenAI | rápido | GPT-6 Luna (`gpt-6-luna`) | 0,1 / 0,5 | |
 | OpenAI | intermediário | GPT-6 Sol (`gpt-6-sol`), GPT-5.6 Terra (`gpt-5.6-terra`) | 2 / 10; 2 / 12 | versões anteriores |
+| Google | topo | Gemini 4 Argon (`gemini-4-argon`) | 4 / 20 | metade do preço até 2026-12-01; esforços low, medium, high; vezes longas |
+| Google | intermediário | Gemini 3.8 Flash (`gemini-3.8-flash`) | 1,5 / 7,5 | metade do preço até 2027-01-01; nível gratuito; esforços low, medium, high |
+| Google | rápido | Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`) | 0,3 / 2,5 | nível gratuito; esforços low, medium, high |
+| xAI | topo | Grok 4.7 (`grok-4.7`) | 2 / 6 | a partir de 200 000 tokens de prompt, 2 ×; esforços de low a xhigh; PDFs como texto |
+| xAI | rápido | Grok 4.3 (`grok-4.3`) | 1,25 / 2,5 | como o Grok 4.7 |
+| Meta | topo | Muse Wonder (`muse-wonder-1.0`) | 4 / 20 | vezes longas |
+| Meta | intermediário | Muse Spark 1.3 (`muse-spark-1.3`) | 1,25 / 4,25 | |
+| Meta | rápido | Muse Ember (`muse-ember-1.0`) | 0,1 / 0,5 | acima de 200 000 tokens de entrada, 3 × |
+| OpenRouter | de topo a rápido | Claude Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5; GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra; Gemini 4 Argon, Gemini 3.8 Flash; Grok 4.7; Muse Spark 1.3 (`anthropic/claude-fable-5.2`…) | os preços das empresas como a OpenRouter os lista (Gemini 3.8 Flash 1,65 / 8,25) | as regras de prompt longo das empresas; respostas de no máximo 32 000 tokens (Fable 5.2, GPT-6 Astra) ou 64 000 (Opus 5.5, Grok 4.7, Muse Spark 1.3) |
+| OpenRouter | intermediário, rápido | Auto Router (`openrouter/auto`), Free Models Router (`openrouter/free`) | o preço do modelo que cada um escolhe; grátis | roteadores |
 
 Leituras e gravações de cache têm os seus próprios preços de lista (gravações a 1,25 vez o preço de
-entrada, a taxa do cache de cinco minutos da Anthropic). Na OpenAI, prompts acima de 272 000 tokens de
-entrada custam o dobro dos preços de entrada e de cache e 1,5 vez o preço de saída. Todo modelo aceita
-os cinco níveis de esforço (low, medium por padrão, high, xhigh, max: `output_config.effort` na
-Anthropic, `reasoning.effort` na OpenAI). Os modelos de vezes longas têm tempos de espera maiores
-(seção 27.2). O custo de uma resposta é calculado pelo preço do modelo que de fato a atendeu (um
-fallback de recusa pode ser outro modelo, o Claude Opus 5 ou o Opus 4.8, precificados embora não
-oferecidos), com as iterações de compactação da Anthropic somadas às contagens do nível superior.
-Trocar para outra empresa, ou entre modelos da OpenAI, começa uma conversa nova (a anterior não é
-enviada); um modelo Claude pode assumir a conversa de outro modelo Claude. O Claude Fable 5.1 pedido
-por uma organização sem retenção de dados de 30 dias é recusado pela API; o erro é reconhecido e a
-mensagem sugere o Claude Opus 5.5.
+entrada, a taxa do cache de cinco minutos da Anthropic; o Google, a xAI e a Meta não cobram a gravação
+nos seus caches automáticos, e o uso deles não informa gravações). Na OpenAI, prompts acima de 272 000
+tokens de entrada custam o dobro dos preços de entrada e de cache e 1,5 vez o preço de saída; uma
+regra desse tipo (`longAbove`, `longInput`, `longOutput`) vale para o pedido inteiro quando a entrada
+passa do limite. Um preço de lançamento (`introUntil`, `introFactor`) multiplica todos os preços até
+o dia que ele indica, e o medidor cobra um pedido pelos preços do seu dia. Os modelos da Anthropic,
+da OpenAI e da Meta aceitam os cinco níveis de esforço (low, medium por padrão, high, xhigh, max:
+`output_config.effort` na Anthropic, `reasoning.effort` nas Responses APIs); um modelo que aceita
+menos (`AiModel.efforts`) recebe o mais próximo abaixo (`effortFor`): os níveis de raciocínio do
+Gemini param em high, os do Grok em xhigh. Os modelos de vezes longas têm tempos de espera maiores
+(seção 27.2). `vision`, `pdf`, `tools` e `priced` dizem se um modelo lê imagens, lê um PDF anexado
+inteiro (senão o PDF vai como o seu texto, extraído no aparelho), usa ferramentas e tem preços
+conhecidos (um roteador não tem). O custo de uma resposta é calculado pelo preço do modelo que de fato
+a atendeu (um fallback de recusa pode ser outro modelo, o Claude Opus 5 ou o Opus 4.8, precificados
+embora não oferecidos; um roteador informa o modelo que escolheu), com as iterações de compactação da
+Anthropic somadas às contagens do nível superior; a resposta de um modelo que a tabela não precifica
+custa o que o provedor diz ter cobrado (`AiUsage.charged`, o `usage.cost` da OpenRouter). Trocar para
+outra empresa, ou entre dois modelos de uma empresa que não a Anthropic, começa uma conversa nova (a
+anterior não é enviada); um modelo Claude pode assumir a conversa de outro modelo Claude. Uma escolha
+ou uma conversa guardada do Claude Fable 5.1 continua com o Claude Fable 5.2, que o substituiu. O
+Claude Fable 5.2 pedido por uma organização sem retenção de dados de 30 dias é recusado pela API; o
+erro é reconhecido e a mensagem sugere o Claude Opus 5.5.
+
+**Modelos da lista da OpenRouter** (`openrouter_catalog.dart`). `GET https://openrouter.ai/api/v1/models`
+(pública, sem chave, sem cabeçalho do app) dá todo modelo que a OpenRouter serve; uma linha vira um
+`AiModel` da OpenRouter quando os endpoints dela incluem a Responses API, ele responde em texto e tem
+preço (apelidos ficam de fora): os preços por token como listados (por milhão no app), os preços de
+cache quando listados (senão o de entrada), a primeira faixa de preço que depende só do tamanho do
+prompt (as por hora do dia são ignoradas), os esforços que ela lista, o limite de saída do provedor
+principal (32 000 quando não há) limitado a 128 000 tokens e à metade da janela de contexto, e se ele
+lê imagens e usa ferramentas. O nível é uma faixa do preço de saída (topo a partir de US$ 15 por
+milhão de tokens, intermediário a partir de 4, rápido abaixo; roteadores intermediário), não um juízo
+de qualidade. Os modelos que o usuário acrescenta ficam nas preferências e são registrados de novo ao
+abrir (`AiModel.register`); a última cópia da lista fica no aparelho para uso sem rede.
 
 ### 27.2 Requisições e fluxos
 
@@ -3080,13 +3126,15 @@ cabeçalhos levam a chave (`x-api-key`), no navegador `anthropic-dangerous-direc
 (sem ele a API não envia cabeçalhos de outra origem e o navegador bloqueia a resposta) e
 `anthropic-beta` com os betas que a requisição usa (`server-side-fallback-2026-07-01`,
 `task-budgets-2026-03-13`, `context-management-2025-06-27`, `compact-2026-01-12`). O corpo: o modelo,
-`max_tokens` 64 000, `stream: true`, o prompt de sistema como um bloco de texto com um ponto de quebra
+`max_tokens` (o limite de saída do modelo, 128 000 nos modelos Claude 5.x, menor sob um teto de
+gasto), `stream: true`, o prompt de sistema como um bloco de texto com um ponto de quebra
 de cache, as ferramentas numa ordem fixa, cada uma com `eager_input_streaming: true` (as entradas
 chegam em fluxo à medida que são geradas, e é por isso que o laço confere ele mesmo cada entrada), as
-mensagens desde a última compactação, `thinking: {type: "adaptive"}` (fora no Fable 5.1, que sempre
-raciocina e não aceita esse ajuste), `output_config` com o esforço e, no Opus 5.5, no Sonnet 5.5 e no
-Haiku 5.5 quando há teto de gasto, um orçamento de tarefa (`task_budget: {type: "tokens", total}`, o
-teto dividido pelo preço de saída, no mínimo 20 000 tokens) pelo qual o modelo se orienta, um
+mensagens desde a última compactação, `thinking: {type: "adaptive"}` (fora no Fable 5.2, que sempre
+raciocina e não aceita esse ajuste), `output_config` com o esforço e, quando quem chama dá um, um
+orçamento de tarefa (`task_budget: {type: "tokens", total}`, no mínimo 20 000 tokens) pelo qual o
+modelo se orienta (o assistente não dá nenhum: uma contagem de tokens mostrada ao modelo o fazia parar
+cedo, então o limite de etapas e o teto de gasto do próprio app encerram uma tarefa), um
 `cache_control` no nível superior (cache automático da conversa que cresce), `fallbacks: "default"` no
 Fable, no Opus e no Sonnet (uma requisição que um classificador de segurança recusa é respondida por
 outro modelo em vez de falhar) e a gestão de contexto da seção 27.5. O fluxo (server-sent events):
@@ -3102,7 +3150,8 @@ blocos de raciocínio e de uso de ferramentas antes do último marcador de fallb
 corpo: o modelo, `instructions` (o prompt de sistema), `input` (a conversa: os itens de saída
 exatamente como voltaram, as saídas das funções, as mensagens do usuário), as ferramentas de função
 com `strict: false` (os esquemas têm campos opcionais, que o modo estrito não admite; o laço confere
-ele mesmo as entradas), `reasoning: {effort}`, `max_output_tokens` 64 000, `stream: true`,
+ele mesmo as entradas), `reasoning: {effort}`, `max_output_tokens` (o limite de saída do modelo,
+128 000 nos modelos GPT-6, menor sob um teto de gasto), `stream: true`,
 `store: false` (nada fica guardado do lado da OpenAI para requisições posteriores) com
 `include: ["reasoning.encrypted_content"]`, de modo que os itens de raciocínio voltam cifrados e são
 reenviados na requisição seguinte, e a gestão de contexto da seção 27.5. As imagens são partes
@@ -3115,24 +3164,96 @@ de política como `bio_policy`, `misalignment_policy_violation`, `invalid_prompt
 são uma recusa. Os tokens de entrada em cache vêm de `input_tokens_details` (tokens lidos do cache e
 gravados nele).
 
-**Erros e novas tentativas** (os dois clientes): os tipos de erro são distinguidos (autenticação,
+**xAI** (`POST https://api.x.ai/v1/responses`, `XaiClient`). A requisição Responses da OpenAI com
+`store: false` e `include: ["reasoning.encrypted_content"]` (o raciocínio cifrado volta sem mudança;
+pedi-lo também impede a xAI de guardar o rastro do raciocínio para requisições posteriores), um
+`prompt_cache_key` tirado do prompt de sistema e da primeira entrada da conversa (estável numa
+conversa, para que as requisições dela cheguem ao servidor que guardou o prefixo; o cache da xAI é
+automático e gravar nele é grátis), a amostragem que o guia da xAI pede (`temperature` 0,7, `top_p`
+0,95) e só ferramentas de função; nenhum `context_management` (a xAI o interpreta, mas não o executa;
+`compact()` chama o `/v1/responses/compact` sem estado da xAI e é testado, não ligado ao laço). O uso
+deixa os tokens de raciocínio fora de `output_tokens`, e eles são somados de volta (cobrados pelo
+preço de saída). O Grok lê só JPEG e PNG, então um WebP ou um GIF é convertido no mesmo tamanho (uma
+imagem com pixels transparentes ou um GIF para PNG, o resto para JPEG), com o resultado guardado para
+que os bytes fiquem iguais de uma requisição para a outra; o app envia um PDF ao Grok como o seu texto,
+porque um arquivo anexado liga a busca em anexos da xAI, uma ferramenta do servidor cobrada por
+chamada. Os erros vêm como `{"code": "…", "error": "…"}`; uma chave que a xAI não conhece recebe um
+400, lido como erro de autenticação.
+
+**Meta** (`POST https://api.meta.ai/v1/responses`, `MetaClient`). A requisição Responses com
+`store: false` e `include: ["reasoning.encrypted_content"]`, nunca `previous_response_id`; os itens de
+saída voltam como vieram, mas um item de raciocínio sem o conteúdo cifrado, ou sem nada depois dele,
+fica fora da requisição (o histórico guardado o mantém), e o texto do assistente antes de uma chamada
+leva `phase: "commentary"`. Um `prompt_cache_key` constante para o app; nenhum `context_management` (a
+API não tem) e nenhuma ferramenta embutida. As imagens vão nas mensagens do usuário e dentro das
+saídas de função como data URLs `input_image`, os PDFs como data URLs `input_file`. Os erros seguem os
+status, tipos e códigos da Meta (402 cobrança, 503 sobrecarga, 504 sem nova tentativa, porque a mesma
+requisição esgotaria o tempo de novo), e três são recuperados: uma requisição que não cabe na janela
+de contexto é enviada de novo pedindo o espaço que resta (no mínimo 16 000 tokens), um limite de
+saída que a API indica é aprendido para aquele modelo, e um item de raciocínio que a API não aceita
+mais sai da requisição.
+
+**OpenRouter** (`POST https://openrouter.ai/api/v1/responses`, `OpenRouterClient`). Só sem estado (a
+OpenRouter recusa `store: true` e `previous_response_id`): a requisição Responses com `store: false`,
+nenhum `context_management` (fora do esquema de requisição dela), um `cache_control` no nível superior
+(`{type: ephemeral}`) que liga o ponto de quebra automático do cache dos modelos que precisam de um, o
+da Anthropic sobretudo (não enviado aos modelos da OpenAI, que fazem cache sozinhos), um `session_id`
+tirado do prompt de sistema e da primeira mensagem, que mantém as requisições de uma conversa num
+mesmo provedor para que o cache dela seja reencontrado, e dois cabeçalhos que identificam o app para
+a classificação de aplicativos da OpenRouter (`HTTP-Referer: https://opencadirrigation.com`,
+`X-OpenRouter-Title: OpenCADIrrigation`), nada sobre o usuário. Mensagens do assistente, itens de
+raciocínio e chamadas reenviados levam os ids que a OpenRouter exige; o raciocínio de cada empresa
+volta como itens `reasoning` (o conteúdo cifrado da OpenAI, o texto de raciocínio da Anthropic com a
+assinatura, as assinaturas de pensamento do Google) e é reenviado como veio. As imagens dos resultados
+de ferramentas ficam dentro das saídas de função para os modelos `anthropic/` e `openai/` e vão numa
+mensagem do usuário logo depois dos resultados para os demais. Um PDF vai como está para um modelo que
+lê arquivos sozinho e, senão, pelo leitor gratuito da OpenRouter (`plugins: [{id: file-parser, pdf:
+{engine: cloudflare-ai}}]`). O uso traz o `cost` que a OpenRouter cobrou, e a resposta diz o modelo
+que respondeu. Os erros são lidos pelo `error_type` canônico da OpenRouter ao lado do `code` da
+Responses: 402 sem crédito (o orçamento de gasto em andamento, que reserva o preço da maior resposta
+que uma requisição permite, é esperado), 403 orçamentos, moderação e regras de proteção, 408, 429 (o
+limite diário dos modelos gratuitos espera até 00:00 UTC e não é tentado de novo), 502 e 503 sem
+provedor.
+
+**Google** (`POST https://generativelanguage.googleapis.com/v1beta/interactions`, `GeminiClient`). A
+Interactions API, que o Google recomenda para projetos novos, no modo sem estado: `store: false`, a
+conversa inteira em `input` como uma lista de passos, a chave em `x-goog-api-key` e `content-type` os
+únicos cabeçalhos (o que o preflight de CORS permite), `system_instruction`, as ferramentas de função
+(os esquemas convertidos para o subconjunto de JSON Schema que o Gemini aceita, com os limites que ele
+não aceita escritos nas descrições), `generation_config` com o `thinking_level` do esforço e o
+`max_output_tokens`, e `stream: true`. O fluxo: `interaction.created`, `interaction.status_update`,
+cada passo como `step.start` → `step.delta` (texto, o JSON dos argumentos de uma chamada, uma
+assinatura de pensamento) → `step.stop`, `interaction.completed` com o uso (tokens de entrada, em
+cache, de saída, de pensamento e de uso de ferramentas) e `error`. Os passos `thought` levam uma
+assinatura cifrada que o modo sem estado deve reenviar exatamente como veio, no seu lugar. As imagens
+vão na resolução de mídia `ultra_high` (2240 tokens por imagem), ou `high` para um modelo que a
+recuse; cada requisição fica abaixo de 20 MB; um modelo de vezes longas espera no mínimo 15 minutos
+pelo próximo evento. Um bloqueio de segurança, de recitação ou de outra política encerra a resposta
+como recusa com a categoria; as cotas dizem se é para esperar (com a espera que o Google informa no
+corpo, já que a página não consegue ler `retry-after`) ou para ativar a cobrança.
+
+**Erros e novas tentativas** (todos os clientes): os tipos de erro são distinguidos (autenticação,
 permissão, cobrança — o `insufficient_quota` da OpenAI —, não encontrado ou um modelo que a conta não
 pode usar, requisição inválida, requisição grande demais — `context_length_exceeded` —, limite de
-taxa, sobrecarga, servidor, rede, tempo esgotado, fluxo interrompido, retenção de dados);
+taxa, sobrecarga, servidor, rede, tempo esgotado, fluxo interrompido, retenção de dados, sem crédito,
+limite de gasto, recusa);
 sobrecargas, limites de taxa e erros de servidor e de rede são tentados de novo no máximo duas vezes,
 depois do `retry-after` (ou `retry-after-ms`) que a API pede, até 30 s, ou de uma espera exponencial
 (2 s, 4 s para limites de taxa, 1,5 s para a rede, dobrando), nunca depois que parte da resposta
 chegou. Uma requisição esgota o tempo sem linha de status em 90 s, ou sem dados por 180 s (300 s e
-600 s para os modelos de vezes longas, que podem raciocinar por minutos). Um campo opcional que um
-modelo recusa (um erro de requisição inválida que cita `fallbacks`, `task_budget`, a gestão de
-contexto ou a limpeza de resultados de ferramentas) é retirado e a mesma requisição é enviada de novo
+600 s para os modelos de vezes longas, que podem raciocinar por minutos; o tempo sem dados dobra nos
+dois esforços mais altos). Um campo opcional que um modelo recusa (um erro de requisição inválida que
+cita `fallbacks`, `task_budget`, a gestão de contexto, a limpeza de resultados de ferramentas ou um
+campo dos clientes mais novos, como `prompt_cache_key`, `cache_control`, `session_id` ou a resolução
+`ultra_high`) é retirado e a mesma requisição é enviada de novo
 na hora, e fica de fora para esse modelo pelo resto da sessão; uma combinação recusada de edições de
 contexto retira primeiro a limpeza, depois a compactação. A chave é removida de todo texto de erro,
 inclusive as suas cópias mascaradas.
 
 ### 27.3 Um laço, dois formatos
 
-O laço nunca olha dentro dos formatos dos provedores. `llm_formats.dart` reúne os dois num só lugar
+O laço nunca olha dentro dos formatos dos provedores. `llm_formats.dart` reúne os dois formatos de
+transmissão num só lugar
 (`AnthropicFormat`, `OpenAiFormat`): as definições de ferramentas, a mensagem do usuário (texto,
 imagens, PDFs), os resultados das ferramentas (texto e imagens, com um indicador de erro ou, na
 OpenAI, cujas saídas de função não têm um, o prefixo `Error: `), as notas do programa, e as chamadas
@@ -3147,6 +3268,16 @@ lê de volta as suas próprias formas, e os testes conferem que todo tipo de ent
 alteração e que uma troca inteira convertida de um formato para o outro e de volta não perde nada
 (`ai_formats_test.dart`). Uma entrada de ferramenta cujo JSON não é interpretável é guardada bruta e
 respondida com um resultado de erro `INVALID_JSON`.
+
+O formato Responses é o neutro que os quatro clientes mais novos compartilham. A xAI, a Meta e a
+OpenRouter o falam como ele é, cada uma mudando só o que a sua API pede na requisição (os itens que
+reenvia, os seus campos). A conversa do Google também fica guardada nele e é traduzida a cada
+requisição pelo `GeminiFormat`, de forma determinística (o mesmo histórico dá sempre os mesmos bytes,
+para que o cache implícito reconheça o prefixo): mensagens e chamadas de função viram passos do
+Gemini, as saídas de função viram passos `function_result` com o nome das suas chamadas, e todo passo
+próprio do Gemini (um `thought` com a sua assinatura) fica no histórico como um item `gemini_step` que
+guarda o passo como veio, para que todo passo volte sem mudança. Uma conversa nunca mistura formatos:
+trocar de empresa começa uma nova.
 
 ### 27.4 O laço de agente
 
@@ -3171,6 +3302,18 @@ cortados com uma nota pedindo menos (um filtro, paginação). O texto chega ao p
 medida que é gerado, com uma linha de estado (pensando, executando uma ferramenta, esperando uma
 aprovação, esperando antes de uma nova tentativa) e o tempo decorrido.
 
+**Segunda opinião** (`/second`, ou o botão na última resposta). A última resposta, a pergunta do
+usuário e todos os dados compactos do projeto (seção 27.9) vão para outro modelo num só pedido sem
+ferramentas (o esforço medium, ou o mais próximo que o modelo aceita, e no máximo 16 000 tokens de
+saída), para a empresa desse modelo, com a chave dela: primeiro os modelos das outras empresas de que
+o usuário tem chave, o mais capaz de cada empresa primeiro, depois os outros modelos da empresa da
+conversa; um roteador sem preços conhecidos fica de fora. O prompt de sistema dele pede um veredito
+(concorda, concorda com ressalvas, discorda) e depois os pontos, o mais importante primeiro, cada um
+com o número em que se apoia, e diz que o material é dado, não instrução. A revisão aparece marcada
+como segunda opinião e os seus tokens e custo somam-se aos da conversa, mas ela não entra no
+histórico: o modelo da própria conversa só a lê quando o usuário a envia (*Responder à revisão*), como
+material citado para conferir ponto por ponto no projeto com as suas ferramentas.
+
 ### 27.5 Gestão de contexto
 
 As tarefas longas mantêm as suas requisições limitadas no servidor, onde o modelo o aceita (um
@@ -3188,6 +3331,9 @@ ajuste, ligado por padrão; a conversa inteira continua no painel):
   três mais novas são trocadas por uma nota curta quando passam de seis (em degraus, para que o prefixo
   em cache mude raramente), só na requisição: o histórico guardado e as imagens do próprio usuário
   ficam.
+- **Google, xAI, Meta e OpenRouter**: nenhuma compactação no servidor (os modelos deles têm
+  `compaction: false`); as imagens mais antigas dos resultados de ferramentas saem de cada requisição
+  como na OpenAI.
 
 Uma compactação é anunciada na conversa.
 
@@ -3262,9 +3408,12 @@ O modelo vê o projeto por imagens com um mapeamento exato (`view_snapshot.dart`
   na maior parte das áreas agrícolas, e o ancestral mais próximo onde falta um bloco) e guardados em
   cache durante a conversa (400 blocos); a vista e o mapa de fundo do usuário nunca mudam, e só
   quando os blocos do mapa da tela não podem ser baixados fora dela a vista vai até lá por um momento
-  e volta, o que o resultado informa. Uma imagem tem no máximo 1568 pixels no lado maior (1024 por
-  padrão) e cerca de 1,15 megapixel, para que nenhum provedor a reescale e o modelo leia as posições
-  na grade de pixels descrita.
+  e volta, o que o resultado informa. Uma imagem tem no máximo o que o modelo lê sem reescalar
+  (`PictureLimits.of`; 1024 pixels no lado maior por padrão): 2576 pixels e cerca de 3,6 megapixels
+  nos modelos Claude que leem imagens em alta resolução (Fable 5.2, Opus 5.5, Sonnet 5.5 e Haiku 5.5,
+  também pela OpenRouter), senão 1568 pixels e cerca de 1,15 megapixel, com o lado menor de no máximo
+  768 pixels nos modelos da OpenAI (também pela OpenRouter), para que o provedor não a reescale e o
+  modelo leia as posições na grade de pixels descrita.
 - **O mapeamento**: toda imagem tem um id (`s1`, `s2`…; `u1`… para as que o usuário anexa; as 80 mais
   recentes guardadas por conversa) e informa o seu mapeamento: norte para cima, pixels quadrados, a
   caixa do mundo [minX, minY, maxX, maxY] e s metros por pixel, com x = minX + px·s e
@@ -3408,19 +3557,26 @@ Cada provedor tem a sua chave. Uma chave fica na memória durante a sessão, por
 chave neste dispositivo" ela vai para o armazenamento do navegador, onde os scripts da página (as
 estatísticas de visita do site entre eles) poderiam lê-la, o que o painel avisa. Ela nunca entra num
 arquivo de projeto, no autosave, num link de compartilhamento ou numa exportação, vai só para o
-endereço da API do seu provedor (`api.anthropic.com` ou `api.openai.com`), no seu cabeçalho, e é
-removida de qualquer texto de erro.
+endereço da API do seu provedor (`api.anthropic.com`, `api.openai.com`,
+`generativelanguage.googleapis.com`, `api.x.ai`, `api.meta.ai` ou `openrouter.ai`), no seu cabeçalho,
+e é removida de qualquer texto de erro, inclusive as suas cópias mascaradas.
 
 ### 27.12 Validação
 
 `ai_agent_test.dart` cobre as requisições e o fluxo da Anthropic (a requisição que a API documenta,
-os ajustes do Fable 5.1, orçamentos de tarefa e compactação onde o modelo os aceita, campos opcionais
+os ajustes do Fable 5.2, orçamentos de tarefa e compactação onde o modelo os aceita, campos opcionais
 retirados, a limpeza de resultados de ferramentas) e o laço (as suas ferramentas e o seu histórico,
 entradas inválidas, os modos e o modo de plano, confirmações, o limite de etapas, o teto de gasto, as
 mensagens escritas durante o trabalho, a parada, erros e novas tentativas, retenção de dados, recusas,
 fallbacks e os seus preços, a chave só no seu cabeçalho); `ai_openai_test.dart` a API Responses (a
 requisição, as saídas das funções, imagens e PDFs, a compactação, a retirada de imagens, os erros, a
-lista de modelos); `ai_formats_test.dart` os dois formatos; `ai_context_test.dart` os dados do projeto.
+lista de modelos); `ai_gemini_test.dart`, `ai_xai_test.dart`, `ai_meta_test.dart` e
+`ai_openrouter_test.dart` os quatro clientes mais novos contra transcrições roteirizadas que copiam os
+formatos documentados de cada empresa (a requisição, rodadas de ferramentas reenviando o raciocínio
+byte a byte, imagens e PDFs, fluxos, uso e custo, paradas e recusas, cada erro documentado e as novas
+tentativas); `ai_openrouter_catalog_test.dart` a lista da OpenRouter lida em modelos;
+`ai_providers_test.dart` os hosts, as páginas de chave, os preços e os preços de lançamento das
+empresas; `ai_formats_test.dart` os dois formatos; `ai_context_test.dart` os dados do projeto.
 Testes de widget cobrem as ferramentas, a visão (a ida e volta exata do mapeamento, a imagem de
 satélite que deixa a vista e o mapa do usuário como estavam, imagens e perfis do terreno sobre
 superfícies conhecidas), as operações, o mapa de cobertura, o manual e o agente inteiro (um projeto
@@ -3438,9 +3594,13 @@ desfeita ou voltada a um ponto de retorno; uma posição escolhida numa imagem v
 escolhe (s metros). As imagens não pedem aprovação, embora baixem blocos de mapa; análises longas que
 o modelo pede rodam na thread da interface; as conversas não são salvas com o projeto, por decisão de
 projeto (um arquivo ou link compartilhado levaria a conversa e as suas imagens), mas ficam guardadas
-no armazenamento do navegador (IndexedDB) por projeto, as 12 mais recentes com as imagens e os anexos
-pequenos, até que a opção que as guarda seja desligada, o que as apaga; o uso é cobrado pelo provedor na conta da chave; e os clientes foram testados contra
-falsos roteirizados das duas APIs, não contra os serviços reais.
+no armazenamento do navegador (IndexedDB) por projeto, as 24 salvas mais recentemente com as
+imagens e os anexos pequenos, até que a opção que as guarda seja desligada, o que as apaga; o uso é
+cobrado pelo provedor na conta da chave; e os clientes foram testados contra falsos roteirizados das
+seis APIs, não contra os serviços reais: os quatro acrescentados na 1.7.0 foram escritos a partir da
+documentação de cada empresa de 2026-11-10 e nunca rodaram com uma chave de verdade. No navegador, a
+página não consegue ler o identificador da requisição e os cabeçalhos de limite de uso da Meta nem as
+esperas da OpenRouter, o que o app de desktop consegue.
 
 ---
 
@@ -3545,7 +3705,7 @@ recusados; levantamentos acima de 12 000 amostras são reduzidos para o TIN; LAS
 V8, PDFs criptografados e as imagens JPEG 2000 e JBIG2 dos PDFs não são lidos; o OpenTopoData só
 funciona no aplicativo de desktop; as exportações CAD são R2000 (cores verdadeiras no DXF,
 índices de cor no DWG) ou R12; o assistente de IA precisa da rede e só foi testado contra falsos
-roteirizados das duas APIs de modelos; e nenhuma versão móvel nativa é produzida (o aplicativo web
+roteirizados das seis APIs de modelos; e nenhuma versão móvel nativa é produzida (o aplicativo web
 funciona em celulares).
 
 ---
