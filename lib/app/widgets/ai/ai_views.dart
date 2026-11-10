@@ -1750,7 +1750,8 @@ class _AiSettingsViewState extends State<AiSettingsView> {
       if (m.freeTier) t('ai.model.freeHint'),
       if (!m.tools) t('ai.model.noTools'),
       if (!m.vision) t('ai.model.noVision'),
-      if (m.longAbove > 0) t('ai.model.long', {'n': '${m.longAbove ~/ 1000}', 'a': '${m.longInput}'.replaceFirst('.0', ''), 'b': '${m.longOutput}'.replaceFirst('.0', '')}),
+      // (to the nearest thousand: a rule from 200 000 tokens is kept as 199 999, "above" which it applies)
+      if (m.longAbove > 0) t('ai.model.long', {'n': '${(m.longAbove / 1000).round()}', 'a': '${m.longInput}'.replaceFirst('.0', ''), 'b': '${m.longOutput}'.replaceFirst('.0', '')}),
       if (m.longTurns) t('ai.model.longTurns'),
       if (m.needsRetention) t('ai.model.retention'),
       if (m.earlier) t('ai.model.earlierHint'),
