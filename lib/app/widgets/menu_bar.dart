@@ -28,6 +28,7 @@ import 'dialogs/crop_plan_dialogs.dart';
 import 'dialogs/ai_assistant_dialog.dart';
 import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/deliverables_dialogs.dart'; // 1.6.0 PRB
+import 'dialogs/curve_digitiser_dialog.dart'; // 1.7.0 DGZ
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/water_balance_dialogs.dart';
 import 'dialogs/field_calculators.dart';
@@ -537,6 +538,7 @@ class AppMenuBar extends StatelessWidget {
                   menuChildren: [
                     item(t('design.params'), () => showDesignParamsDialog(context, c), icon: Icons.tune),
                     item(t('design.catalog'), () => showCatalogEditorDialog(context, c), icon: Icons.inventory_2_outlined, key: const Key('menu_catalog')),
+                    item(t('dgz.menu'), () => showCurveDigitiserDialog(context, c), icon: Icons.show_chart, key: const Key('menu_digitiser')), // 1.7.0 DGZ
                     item(t('design.management'), () => showManagementDialog(context, c), icon: Icons.schedule),
                     item(t('tar.menu'), () => showTariffDialog(context, c), icon: Icons.price_change_outlined, shortcut: 'TARIFF ⏎', key: const Key('menu_tariff')),
                     item(t('eg.menu'), () => showEnergyGroupingDialog(context, c), icon: Icons.bolt, shortcut: 'EGROUP ⏎', key: const Key('menu_energy_groups')),
