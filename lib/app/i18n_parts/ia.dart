@@ -130,7 +130,7 @@ const _ia = <String, (String, String, String)>{
     'One minimal request with what the assistant sends to this model: it shows whether the key, the account and the model accept it, what it cost and the limits of the account.',
     'Un pedido mínimo con lo que el asistente envía a este modelo: muestra si la clave, la cuenta y el modelo lo aceptan, cuánto costó y los límites de la cuenta.',
   ),
-  'ai.test.needKey': ('Salve uma chave da {p} para testar.', 'Save a {p} key to test it.', 'Guarde una clave de {p} para probarla.'),
+  'ai.test.needKey': ('Salve uma chave da {p} para testar.', 'Save your {p} key to test it.', 'Guarde una clave de {p} para probarla.'),
   'ai.test.ok': (
     'Conexão OK: {m} respondeu em {s} s, com {i} tokens de entrada e {o} de saída (≈ US\$ {c}).',
     'Connection OK: {m} answered in {s} s, with {i} input tokens and {o} output (≈ US\$ {c}).',

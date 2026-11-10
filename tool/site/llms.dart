@@ -14,7 +14,10 @@ List<(String, String)> _facts() => [
     'What',
     'Browser-based CAD for designing pressurised irrigation systems (drip, micro-sprinkler, sprinkler, valve-in-head, centre pivot, linear move and travelling gun) and surface irrigation, with a hydraulic engine, automatic layout and pipe sizing, transient analysis, bill of materials, quotes and reports, and an optional AI assistant (Claude, GPT, Gemini, Grok, Muse or any model of OpenRouter, with the user\'s own key) that draws and designs the project with the program\'s own tools',
   ),
-  ('Price', 'Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user\'s own account with Anthropic, OpenAI, Google, xAI, Meta or OpenRouter, which that company bills; Google\'s Gemini Flash models and some of OpenRouter\'s models can be used free of charge within limits'),
+  (
+    'Price',
+    'Free for professional, academic and personal use; no account or sign-up. The optional AI assistant runs on the user\'s own account with Anthropic, OpenAI, Google, xAI, Meta or OpenRouter, which that company bills; Google\'s Gemini Flash models and some of OpenRouter\'s models can be used free of charge within limits',
+  ),
   ('Licence', 'Open source under the MIT licence; source code (Dart and Flutter) at $appRepositoryUrl'),
   ('Runs in', 'Chrome, Edge, Firefox and Safari on desktop, tablet and phone; installable as a PWA; starts without a network after the first visit; light and dark themes; nothing to download'),
   (

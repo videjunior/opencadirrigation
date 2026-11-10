@@ -198,7 +198,31 @@ class I18n {
 }
 
 /// (pt, en, es): the base strings and the parts in lib/app/i18n_parts.
-const _table = <String, (String, String, String)>{..._base, ..._mot, ..._aut, ..._agr, ..._fmt, ..._mod, ..._ia, ..._cad, ..._ui, ..._sit, ..._eng, ..._prd, ..._edt, ..._agb, ..._prb, ..._aip, ..._aor, ..._scr, ..._ply, ..._dgz, ..._fct, ..._row, ..._clr};
+const _table = <String, (String, String, String)>{
+  ..._base,
+  ..._mot,
+  ..._aut,
+  ..._agr,
+  ..._fmt,
+  ..._mod,
+  ..._ia,
+  ..._cad,
+  ..._ui,
+  ..._sit,
+  ..._eng,
+  ..._prd,
+  ..._edt,
+  ..._agb,
+  ..._prb,
+  ..._aip,
+  ..._aor,
+  ..._scr,
+  ..._ply,
+  ..._dgz,
+  ..._fct,
+  ..._row,
+  ..._clr,
+};
 
 /// (pt, en, es)
 const _base = <String, (String, String, String)>{
@@ -6002,7 +6026,11 @@ const _base = <String, (String, String, String)>{
   'ai.call.failed': ('não deu certo', 'failed', 'falló'),
   'ai.copied': ('Resposta copiada.', 'Answer copied.', 'Respuesta copiada.'),
   'ai.toBottom': ('Ir para o fim da conversa', 'Go to the end of the conversation', 'Ir al final de la conversación'),
-  'ai.key.wrongCompany': ('Esta chave parece ser da {p}: cole-a no campo da {p}.', 'This looks like a {p} key: paste it in the {p} field.', 'Esta clave parece de {p}: péguela en el campo de {p}.'),
+  'ai.key.wrongCompany': (
+    'Esta chave parece ser da {p}: cole-a no campo da {p}.',
+    'This key looks like one from {p}: paste it in the {p} field.',
+    'Esta clave parece de {p}: péguela en el campo de {p}.',
+  ),
   'ai.key.modelSet': ('Modelo escolhido: {m} (troque em Modelo, acima).', 'Model set to {m} (change it under Model, above).', 'Modelo elegido: {m} (cámbielo en Modelo, arriba).'),
   'ai.key.show': ('Mostrar a chave', 'Show the key', 'Mostrar la clave'),
   'ai.key.hide': ('Ocultar a chave', 'Hide the key', 'Ocultar la clave'),
@@ -6247,7 +6275,7 @@ const _base = <String, (String, String, String)>{
   'ai.preview.system': ('Instruções ao modelo', 'Instructions to the model', 'Instrucciones al modelo'),
   'ai.preview.tools': ('Ferramentas que o modelo pode chamar', 'Tools the model can call', 'Herramientas que el modelo puede llamar'),
   'ai.key.title': ('Chave da API da {p}', '{p} API key', 'Clave de la API de {p}'),
-  'ai.key.get': ('Obter uma chave da {p}', 'Get a {p} key', 'Obtener una clave de {p}'),
+  'ai.key.get': ('Obter uma chave da {p}', 'Get a key from {p}', 'Obtener una clave de {p}'),
   'ai.key.saved': ('Chave salva: {k}', 'Key saved: {k}', 'Clave guardada: {k}'),
   'ai.key.forget': ('Esquecer a chave', 'Forget the key', 'Olvidar la clave'),
   'ai.key.field': ('Chave da API', 'API key', 'Clave de la API'),

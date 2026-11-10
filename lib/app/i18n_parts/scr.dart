@@ -100,9 +100,9 @@ const _scr = <String, (String, String, String)>{
     'Corregir automáticamente sube la clase de las tuberías por encima de su presión nominal.',
   ),
   'scr.h.window': (
-    'Projete de novo com os tubos liberados (Corrigir automaticamente) ou divida a zona no sentido do declive.',
-    'Design again with the pipes unlocked (Fix automatically), or split the zone across the slope.',
-    'Diseñe de nuevo con las tuberías liberadas (Corregir automáticamente) o divida la zona según la pendiente.',
+    'Projete de novo com os tubos liberados (Corrigir automaticamente) ou divida a zona em faixas de cota parecida (cortes ao longo das curvas de nível).',
+    'Design again with the pipes unlocked (Fix automatically), or split the zone into bands of similar elevation (cuts along the contour lines).',
+    'Diseñe de nuevo con las tuberías liberadas (Corregir automáticamente) o divida la zona en franjas de cota parecida (cortes a lo largo de las curvas de nivel).',
   ),
   'scr.h.valvePressure': (
     'Escolha uma bomba para o ponto de trabalho (Selecionar bomba) ou deixe o cálculo determinar a pressão da fonte.',

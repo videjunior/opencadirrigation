@@ -79,9 +79,9 @@ const _row = <String, (String, String, String)>{
   'row.msg.noField': ('O contorno não tem área.', 'The outline encloses no area.', 'El contorno no encierra área.'),
   'row.msg.noPixels': ('A imagem não tem dados dentro do contorno.', 'The image has no data inside the outline.', 'La imagen no tiene datos dentro del contorno.'),
   'row.msg.tooSmall': (
-    'O campo é pequeno demais para fileiras a partir de {s}: aumente o contorno ou diminua o espaçamento máximo.',
-    'The field is too small for rows from {s}: enlarge the outline or lower the widest spacing.',
-    'El campo es demasiado pequeño para hileras desde {s}: amplíe el contorno o reduzca el espaciamiento máximo.',
+    'O campo é pequeno demais para fileiras espaçadas de {s} ou mais: aumente o contorno ou diminua o espaçamento máximo.',
+    'The field is too small for rows spaced {s} or more: enlarge the outline or lower the widest spacing.',
+    'El campo es demasiado pequeño para hileras espaciadas {s} o más: amplíe el contorno o reduzca el espaciamiento máximo.',
   ),
   'row.msg.flat': ('A imagem não tem contraste dentro do campo.', 'The image shows no contrast inside the field.', 'La imagen no tiene contraste dentro del campo.'),
   'row.msg.noRows': (

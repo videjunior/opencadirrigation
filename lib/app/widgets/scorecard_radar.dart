@@ -14,9 +14,16 @@ import '../theme.dart';
 typedef RadarAxis = ({String label, double? score, double? compare});
 
 class ScorecardRadar extends StatelessWidget {
-  const ScorecardRadar({super.key, required this.axes, this.size = 260, this.semanticLabel = ''});
+  const ScorecardRadar({super.key, required this.axes, this.size = 260, this.width, this.semanticLabel = ''});
   final List<RadarAxis> axes;
+
+  /// The height, and the width when [width] is not given.
   final double size;
+
+  /// The width: wider than high leaves room for the labels at the sides, so
+  /// the polygon keeps its size (the polygon shrinks to what the labels
+  /// leave).
+  final double? width;
 
   /// What a screen reader says (the scores in words).
   final String semanticLabel;
@@ -24,8 +31,9 @@ class ScorecardRadar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     label: semanticLabel,
-    child: SizedBox.square(
-      dimension: size,
+    child: SizedBox(
+      width: width ?? size,
+      height: size,
       child: CustomPaint(painter: _RadarPainter(axes, Theme.of(context).textTheme.bodySmall ?? const TextStyle(fontSize: 11), MediaQuery.textScalerOf(context), Directionality.of(context))),
     ),
   );
@@ -42,9 +50,30 @@ class _RadarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final n = axes.length;
     if (n < 3) return;
-    // room for the labels around the polygon
     final c = size.center(Offset.zero);
-    final r = math.max(10.0, size.shortestSide / 2 - scaler.scale(30));
+    // the labels, laid out first: the polygon takes the room they leave (a
+    // label at a side is as wide as its text, and none may leave the widget)
+    double angle(int i) => -math.pi / 2 + 2 * math.pi * i / n;
+    TextAlign alignOf(int i) {
+      final cosA = math.cos(angle(i));
+      return cosA.abs() < 0.25 ? TextAlign.center : (cosA > 0 ? TextAlign.left : TextAlign.right);
+    }
+
+    final labels = [
+      for (var i = 0; i < n; i++)
+        _layout(
+          '${axes[i].label}\n${axes[i].score == null ? '–' : axes[i].score!.toStringAsFixed(0)}',
+          style.copyWith(fontSize: 10.5, color: axes[i].score == null ? Cad.fg38 : Cad.fg87, fontWeight: axes[i].score == null ? null : FontWeight.w600),
+          align: alignOf(i),
+          maxWidth: size.width / 3.2,
+        ),
+    ];
+    var r = math.max(10.0, size.height / 2 - scaler.scale(30));
+    for (var i = 0; i < n; i++) {
+      final cosA = math.cos(angle(i)).abs();
+      if (cosA >= 0.25) r = math.min(r, (size.width / 2 - labels[i].width - 2) / cosA - 6);
+    }
+    r = math.max(r, size.shortestSide / 5);
     Offset at(int i, double score) {
       final a = -math.pi / 2 + 2 * math.pi * i / n;
       return c + Offset(math.cos(a), math.sin(a)) * (r * score.clamp(0, 100) / 100);
@@ -121,22 +150,9 @@ class _RadarPainter extends CustomPainter {
     }
     // labels outside the 100 ring
     for (var i = 0; i < n; i++) {
-      final a = -math.pi / 2 + 2 * math.pi * i / n;
+      final a = angle(i);
       final q = c + Offset(math.cos(a), math.sin(a)) * (r + 6);
-      final s = axes[i].score;
-      final label = '${axes[i].label}\n${s == null ? '–' : s.toStringAsFixed(0)}';
-      final cosA = math.cos(a);
-      final align = cosA.abs() < 0.25 ? TextAlign.center : (cosA > 0 ? TextAlign.left : TextAlign.right);
-      _text(
-        canvas,
-        label,
-        q,
-        style.copyWith(fontSize: 10.5, color: s == null ? Cad.fg38 : Cad.fg87, fontWeight: s == null ? null : FontWeight.w600),
-        align: align,
-        below: math.sin(a) > 0.25,
-        above: math.sin(a) < -0.25,
-        maxWidth: size.width / 3.2,
-      );
+      _paintText(canvas, labels[i], q, align: alignOf(i), below: math.sin(a) > 0.25, above: math.sin(a) < -0.25, within: size.width);
     }
   }
 
@@ -154,23 +170,29 @@ class _RadarPainter extends CustomPainter {
     }
   }
 
-  void _text(Canvas canvas, String s, Offset at, TextStyle st, {TextAlign align = TextAlign.center, bool below = false, bool above = false, double maxWidth = 120}) {
-    final tp = TextPainter(
-      text: TextSpan(text: s, style: st),
-      textAlign: align,
-      textDirection: direction,
-      textScaler: scaler,
-      maxLines: 3,
-      ellipsis: '…',
-    )..layout(maxWidth: maxWidth);
+  TextPainter _layout(String s, TextStyle st, {TextAlign align = TextAlign.center, double maxWidth = 120}) => TextPainter(
+    text: TextSpan(text: s, style: st),
+    textAlign: align,
+    textDirection: direction,
+    textScaler: scaler,
+    maxLines: 3,
+    ellipsis: '…',
+  )..layout(maxWidth: maxWidth);
+
+  /// Paints [tp] at [at] ([align] says which side of it the point is on),
+  /// kept inside 0…[within] horizontally when given.
+  void _paintText(Canvas canvas, TextPainter tp, Offset at, {TextAlign align = TextAlign.center, bool below = false, bool above = false, double? within}) {
     var x = at.dx;
     if (align == TextAlign.center) x -= tp.width / 2;
     if (align == TextAlign.right) x -= tp.width;
+    if (within != null) x = x.clamp(0.0, math.max(0.0, within - tp.width));
     var y = at.dy - tp.height / 2;
     if (below) y = at.dy;
     if (above) y = at.dy - tp.height;
     tp.paint(canvas, Offset(x, y));
   }
+
+  void _text(Canvas canvas, String s, Offset at, TextStyle st, {TextAlign align = TextAlign.center}) => _paintText(canvas, _layout(s, st, align: align), at, align: align);
 
   @override
   bool shouldRepaint(covariant _RadarPainter old) => true;

@@ -433,7 +433,14 @@ class _ScorecardDialogState extends State<_ScorecardDialog> {
       LayoutBuilder(
         builder: (ctx, box) {
           final wide = box.maxWidth >= 600;
-          final radar = ScorecardRadar(key: const Key('scr_radar'), axes: axes, size: wide ? 300 : box.maxWidth.clamp(200.0, 320.0).toDouble(), semanticLabel: radarLabel);
+          // (wider than high: the labels at the sides have their room, in any language)
+          final radar = ScorecardRadar(
+            key: const Key('scr_radar'),
+            axes: axes,
+            size: wide ? 300 : box.maxWidth.clamp(200.0, 320.0).toDouble(),
+            width: wide ? 400 : box.maxWidth.clamp(200.0, 440.0).toDouble(),
+            semanticLabel: radarLabel,
+          );
           final list = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

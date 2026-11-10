@@ -25,7 +25,7 @@ const _fct = <String, (String, String, String)>{
   'fct.start.full': ('Cheio hoje (acabou de irrigar ou de chover bem)', 'Full today (just irrigated, or after a good rain)', 'Lleno hoy (recién regado o tras una buena lluvia)'),
   'fct.start.last': ('Última irrigação ou chuva há alguns dias', 'Last irrigation or rain some days ago', 'Último riego o lluvia hace unos días'),
   'fct.daysAgo': ('Há quantos dias (0 = hoje)', 'How many days ago (0 = today)', 'Hace cuántos días (0 = hoy)'),
-  'fct.depth': ('Lâmina que entrou no solo (0 = encheu)', 'Depth into the soil (0 = it filled it)', 'Lámina que entró en el suelo (0 = lo llenó)'),
+  'fct.depth': ('Lâmina que entrou no solo (0 = encheu)', 'Depth that entered the soil (0 = it filled the soil)', 'Lámina que entró en el suelo (0 = lo llenó)'),
   'fct.fetch': ('Buscar a previsão', 'Get the forecast', 'Obtener el pronóstico'),
   'fct.refresh': ('Buscar de novo', 'Fetch again', 'Buscar de nuevo'),
   'fct.refreshAfter': ('O serviço pede para não buscar de novo antes das {t}.', 'The service asks not to fetch again before {t}.', 'El servicio pide no buscar de nuevo antes de las {t}.'),
