@@ -248,3 +248,8 @@ export 'model/project_compare.dart';
 
 // 1.6.0 SIT+: the credits of the third-party data in a project
 export 'io/data_credits.dart';
+
+// 1.7.0 CLR: the climate risk over the years
+export 'design/climate_risk.dart';
+export 'design/climate_risk_stats.dart';
+export 'model/climate_risk_summary.dart';

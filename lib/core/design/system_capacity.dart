@@ -31,13 +31,16 @@ import 'valve_in_head.dart';
 
 /// Hours one system flow needs on the peak day.
 class FlowCapacity {
-  const FlowCapacity({required this.flowId, required this.name, required this.hours, this.areaId});
+  const FlowCapacity({required this.flowId, required this.name, required this.hours, this.areaId, this.areaIds = const {}});
   final String flowId;
   final String name;
   final double hours;
 
   /// The area that needs the most hours.
   final String? areaId;
+
+  /// 1.7.0 CLR: every area the flow waters (machines' areas included).
+  final Set<String> areaIds;
 }
 
 /// A machine against the peak requirement of its area.
@@ -146,7 +149,9 @@ SystemCapacity systemCapacity(Project p, {DesignResults? results}) {
   for (final (id, name, members) in groups) {
     var hours = 0.0;
     String? worst;
+    final watered = <String>{};
     void need(AreaEntity a) {
+      watered.add(a.id);
       final r = reqs[a.id];
       if (r == null || r.flow <= 0 || r.machineFlow > 0.5 * r.flow) return;
       if (r.hoursPerDay > hours) {
@@ -158,6 +163,7 @@ SystemCapacity systemCapacity(Project p, {DesignResults? results}) {
     for (final v in members) {
       final e = p.byId(v);
       if (e is PivotEntity) {
+        watered.addAll(areasOfMachine(p, e).map((a) => a.id));
         final h = machineHours[v];
         if (h != null && h > hours) {
           hours = h;
@@ -170,7 +176,7 @@ SystemCapacity systemCapacity(Project p, {DesignResults? results}) {
         areasOfZoneNominal(p, net, v).forEach(need);
       }
     }
-    if (hours > 0) out.add(FlowCapacity(flowId: id, name: name, hours: math.min(hours, 1e6), areaId: worst));
+    if (hours > 0) out.add(FlowCapacity(flowId: id, name: name, hours: math.min(hours, 1e6), areaId: worst, areaIds: watered));
   }
   return SystemCapacity(windowHours: window, flows: out, machines: machines);
 }

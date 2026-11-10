@@ -13,6 +13,7 @@ import '../model/project.dart';
 import 'agronomy.dart' show clockText;
 import 'area_water.dart';
 import 'catch_cans.dart';
+import 'climate_risk.dart' show climateRiskTables; // 1.7.0 CLR
 import 'fertigation_stages.dart';
 import 'irrigation_programme.dart';
 import 'report_tables.dart';
@@ -29,6 +30,7 @@ List<ReportTable> agronomyPlusTables(Project project, DesignResults? results, Re
   if (project.agronomy.programme.inReports) ...programmeTables(project, results, labels),
   ?fertigationTable(project, results, labels),
   ?fieldTestTable(project, results, labels),
+  ...climateRiskTables(project, labels), // 1.7.0 CLR
 ];
 
 String _name(Project p, String id) {

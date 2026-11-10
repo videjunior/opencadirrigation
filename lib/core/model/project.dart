@@ -12,6 +12,7 @@ import 'agb_settings.dart';
 import 'agronomy_plan.dart';
 import 'blocks.dart';
 import 'catalog.dart';
+import 'climate_risk_summary.dart'; // 1.7.0 CLR
 import 'currency.dart';
 import 'deliverables.dart'; // 1.6.0 PRB
 import 'entities.dart';
@@ -453,6 +454,7 @@ class Project {
     DeliverableSettings? deliverables,
     // 1.6.0 AGR
     AgronomyPlan? agronomy,
+    this.climateRisk, // 1.7.0 CLR
   }) : meta = meta ?? ProjectMeta(),
        agb = agb ?? AgbSettings(),
        deliverables = deliverables ?? DeliverableSettings(),
@@ -534,6 +536,9 @@ class Project {
   // 1.6.0 AGR: the user's crops, the programme settings, the water balance
   // and fertigation of the areas, the field evaluations
   AgronomyPlan agronomy;
+
+  /// 1.7.0 CLR: the climate risk over the years (Design → Agronomy), kept as a summary.
+  ClimateRiskSummary? climateRisk;
   int _nextId;
 
   static List<Layer> defaultLayers() => [for (final n in Layers.all) Layer(name: n, color: Layers.defaultColors[n] ?? 0xFFFFFFFF)];
@@ -792,6 +797,7 @@ class Project {
     if (!deliverables.isDefault) 'deliverables': deliverables.toJson(), // 1.6.0 PRB
     // 1.6.0 AGR
     if (!agronomy.isDefault) 'agronomy': agronomy.toJson(),
+    if (climateRisk != null) 'climateRisk': climateRisk!.toJson(), // 1.7.0 CLR
     'nextId': _nextId,
     if (currentLayer != Layers.drawing) 'currentLayer': currentLayer,
     if (unreadable.isNotEmpty) 'unreadable': {for (final e in unreadable.entries) e.key: List.of(e.value)},
@@ -933,6 +939,7 @@ class Project {
       agb: agb,
       deliverables: deliverables, // 1.6.0 PRB
       agronomy: agronomy,
+      climateRisk: ClimateRiskSummary.fromJson(object('climateRisk')), // 1.7.0 CLR
     )..currentLayer = j['currentLayer'] is String ? j['currentLayer'] as String : Layers.drawing;
     p.unreadable.addAll(aside);
     _companionKeys.forEach(j.containsKey);

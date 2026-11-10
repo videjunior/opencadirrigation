@@ -24,3 +24,10 @@ The other fixtures belong to this project (MIT):
   libraries (ezdxf, pyshp, Pillow, tifffile, openpyxl) and LibreDWG;
 - `shaping/`: written by `tool/fonts/make_shaping_fixtures.py` from the fonts
   of `assets/fonts` and the strings of `assets/i18n`.
+
+`climate_risk/` holds two answers of the NASA POWER daily point API
+(power.larc.nasa.gov, recorded unchanged on 2026-11-10 at 22.90° S, 47.06° W):
+public data, free for any use. The data was obtained from the National
+Aeronautics and Space Administration (NASA) Langley Research Center's
+Prediction Of Worldwide Energy Resources (POWER) project funded through the
+NASA Earth Science Division.

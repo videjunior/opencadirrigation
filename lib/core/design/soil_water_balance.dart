@@ -129,12 +129,23 @@ class BalanceInput {
     required this.settings,
     this.ky,
     this.cyclic = true,
+    this.maxGrossMmDay,
+    this.yearStart,
   });
 
   /// Daily weather: a typical year ([cyclic], the season may wrap around
   /// its end) or the days of a series.
   final List<BalanceWeather> weather;
   final bool cyclic;
+
+  /// 1.7.0 CLR: the gross depth the system can apply in a day (mm/day; an
+  /// irrigation every n days of the interval trigger may apply n days of
+  /// it); null: no limit.
+  final double? maxGrossMmDay;
+
+  /// 1.7.0 CLR: for crops in the field all year, the first day of the year
+  /// balanced (null: the calendar year of the weather).
+  final DateTime? yearStart;
   final KcCurve curve;
   final DateTime planting;
   final bool repeatsYearly;
@@ -295,7 +306,13 @@ BalanceResult soilWaterBalance(BalanceInput input) {
       warnings: const ['wb_no_weather'],
     );
   }
-  if (yearRound) {
+  if (yearRound && input.yearStart != null) {
+    final from = input.yearStart!, to = DateTime.utc(input.yearStart!.year + 1, input.yearStart!.month, input.yearStart!.day);
+    period = [
+      for (final w in input.weather)
+        if (!w.date.isBefore(from) && w.date.isBefore(to)) w,
+    ];
+  } else if (yearRound) {
     final y0 = input.weather.first.date.year;
     period = [
       for (final w in input.weather)
@@ -350,6 +367,8 @@ BalanceResult soilWaterBalance(BalanceInput input) {
     final eta = ks * etc;
     final rain = math.max(w.rainMm, 0.0);
     final pe = rain >= ineffectiveRainShareOfEto * eto ? rain : 0.0;
+    final month = w.date.month;
+    final factor = input.grossFactorByMonth != null && input.grossFactorByMonth![month - 1] > 0 ? input.grossFactorByMonth![month - 1] : 1 / eff;
     // irrigation
     var net = 0.0;
     if (kc > 0) {
@@ -365,6 +384,9 @@ BalanceResult soilWaterBalance(BalanceInput input) {
         case BalanceTrigger.rainfed:
           break;
       }
+      // 1.7.0 CLR: no more than the system can apply
+      final cap = input.maxGrossMmDay;
+      if (cap != null && net > 0) net = math.min(net, math.max(cap, 0.0) * (s.trigger == BalanceTrigger.interval ? math.max(1, s.intervalDays) : 1) / factor);
     }
     var next = dr - pe - net + eta;
     var dp = 0.0;
@@ -373,8 +395,6 @@ BalanceResult soilWaterBalance(BalanceInput input) {
       next = 0;
     }
     if (next > taw) next = taw;
-    final month = w.date.month;
-    final factor = input.grossFactorByMonth != null && input.grossFactorByMonth![month - 1] > 0 ? input.grossFactorByMonth![month - 1] : 1 / eff;
     final gross = net * factor;
     if (net > 0) events.add(BalanceEvent(date: w.date, depletionMm: dr - pe + eta, netMm: net, grossMm: gross));
     if (kc > 0 && ks < 1 - 1e-9) stress++;

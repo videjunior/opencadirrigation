@@ -29,6 +29,7 @@ import 'dialogs/auto_design_dialogs.dart';
 import 'dialogs/deliverables_dialogs.dart'; // 1.6.0 PRB
 import 'dialogs/densogram_dialog.dart';
 import 'dialogs/water_balance_dialogs.dart';
+import 'dialogs/climate_risk_dialog.dart'; // 1.7.0 CLR
 import 'dialogs/field_calculators.dart';
 import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
@@ -553,6 +554,7 @@ class AppMenuBar extends StatelessWidget {
                       leadingIcon: const Icon(Icons.eco_outlined, size: 16),
                       menuChildren: [
                         item(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('menu_water_balance')),
+                        item(t('clr.menu'), () => showClimateRiskDialog(context, c), icon: Icons.thunderstorm_outlined, key: const Key('menu_climate_risk')), // 1.7.0 CLR
                         item(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('menu_programme')),
                         item(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('menu_runoff')),
                         item(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('menu_fert_stages')),
