@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design/agronomy.dart';
 import '../../../core/design/block_generator.dart';
+import '../../../core/design/crop_rows.dart' show areaHolding, storedRowDirection, storedRowSpacing; // 1.7.0 ROW
 import '../../../core/design/lateral_limit.dart' show defaultLateralFlowVariationPct, longestRowLength, terrainSlopeAlong; // 1.6.0 AUT
 import '../../../core/design/management.dart';
 import '../../../core/design/proposal.dart';
@@ -1082,6 +1083,10 @@ Future<void> showBlockDialog(BuildContext context, ProjectController c, List<Pt>
       direction = radToDeg((b - a).angle);
     }
   }
+  // 1.7.0 ROW: inside an area whose rows were read from the image, along them
+  final rowsArea = areaHolding(c.project, polygon), rowsDir = storedRowDirection(rowsArea);
+  if (rowsDir != null) direction = radToDeg(rowsDir.angle);
+  lateralSpacing = storedRowSpacing(rowsArea) ?? lateralSpacing;
   final u = c.units;
   // 1.6.0 AUT: the computed maximum lateral length, on the slope of the terrain along the rows
   var flowVariation = defaultLateralFlowVariationPct;

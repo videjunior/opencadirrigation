@@ -34,6 +34,7 @@ import 'dialogs/network_ops_dialogs.dart';
 // 1.6.0 MOT: ageing and clogging
 import 'dialogs/life_scenarios_dialog.dart';
 import 'dialogs/vegetation_dialog.dart';
+import 'dialogs/crop_rows_dialog.dart'; // 1.7.0 ROW
 import 'dialogs/dialogs.dart';
 import 'dialogs/export_dialogs.dart';
 import 'dialogs/more_dialogs.dart';
@@ -605,6 +606,7 @@ class AppMenuBar extends StatelessWidget {
                         // 1.6.0 AGB
                         item(t('agb.mp.menu'), () => showMultiPivotDialog(context, c), icon: Icons.blur_circular, key: const Key('menu_agb_multi_pivot')),
                         item(t('veg.menu'), () => showVegetationDialog(context, c), icon: Icons.image_search, shortcut: 'VEG ⏎', key: const Key('menu_vegetation')),
+                        item(t('row.menu'), () => showCropRowsDialog(context, c), icon: Icons.view_week_outlined, key: const Key('menu_crop_rows')), // 1.7.0 ROW
                       ],
                       child: Text(t('auto.menu')),
                     ),

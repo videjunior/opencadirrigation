@@ -539,7 +539,9 @@ List<AgentTool> designTools(AgentToolbox b) {
           'area': str('Id or name of the closed area (area, closed polyline, circle).'),
           'lateral': str('"tape" for drip tape or dripline; "sprayline" for emitters on a lateral pipe.', ['tape', 'sprayline']),
           'lateral_spacing_m': num_('Distance between laterals (the row spacing), 0.2–100 m.'),
-          'direction_deg': num_('Lateral direction, degrees counter-clockwise from east; default along the longest edge. Ignored with a guide.'),
+          'direction_deg': num_(
+            'Lateral direction, degrees counter-clockwise from east; default the area\'s row direction (rdir, apply_crop_rows), else along the longest edge. Ignored with a guide.',
+          ),
           'guide': str('Id or name of a line, polyline, contour or spline whose shape the laterals follow.'),
           'tape': str('Tape id (tape laterals); default the tape last used, else the first enabled.'),
           'inlet_head_m': num_('Tape inlet pressure, 0.5–60 m; default the tape\'s nominal inlet pressure.'),
@@ -596,7 +598,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           };
           if (guide == null || guide.length < 2) throw ToolInputError('"${a.str('guide')}" is not a line, polyline, contour or spline.');
         }
-        final dir = a.has('direction_deg') ? Pt.polar(1, degToRad(a.number('direction_deg')!)) : longestEdgeDirection(normalizePolygon(poly));
+        final dir = a.has('direction_deg') ? Pt.polar(1, degToRad(a.number('direction_deg')!)) : storedRowDirection(b.find(a.str('area')!)) ?? longestEdgeDirection(normalizePolygon(poly));
         final opts = BlockOptions(
           polygon: poly,
           direction: dir,
@@ -650,7 +652,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           'max_block_area_m2': num_('Largest block, at least 100 m² (default 20000).'),
           'max_block_flow_m3h': num_('Limit the blocks by flow (m³/h) instead of area.'),
           'lateral': str('Default tape.', ['tape', 'sprayline']),
-          'lateral_spacing_m': num_('0.2–100 m; default 1.5 (tape) or 12 (spray).'),
+          'lateral_spacing_m': num_('0.2–100 m; default the area\'s row spacing (rsp), else 1.5 (tape) or 12 (spray).'),
           'tape': str('Tape id; default the last used, else the first enabled.'),
           'inlet_head_m': num_('Tape inlet pressure, 0.5–60 m; default the tape\'s nominal.'),
           'outlet': str('Emitter id of spray laterals; default the last used.'),
@@ -658,7 +660,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           'head_m': num_('Emitter pressure, 0.5–120 m; default the nozzle\'s nominal.'),
           'emitter_spacing_m': num_('Emitter spacing along spray laterals, 0.1–50 m; default the last used.'),
           'road_width_m': num_('0–50 m (default 4).'),
-          'direction_deg': num_('Lateral direction, degrees counter-clockwise from east; default along the longest edge.'),
+          'direction_deg': num_('Lateral direction, degrees counter-clockwise from east; default the area\'s row direction (rdir, apply_crop_rows), else along the longest edge.'),
           'max_lateral_length_m': num_('grid: longest lateral, 5–2000 m (the blocks are also cut along the rows); default none.'),
           'centre_feed': bool_('Submains across the middle of the blocks, laterals both ways (default false).'),
           'mainline': bool_('Route a mainline from the water supply to the valves, kept inside the field outline (default false).'),
@@ -681,7 +683,7 @@ List<AgentTool> designTools(AgentToolbox b) {
         final nz0 = isTape ? null : _nozzleOf(family!, a.str('nozzle'), fallback: a.has('outlet') ? null : s.nozzleId);
         final nozzle = nz0?.id ?? s.nozzleId;
         final headM = a.number('head_m', min: 0.5, max: 120) ?? nz0?.defaultHeadM ?? s.headM;
-        final sl = a.number('lateral_spacing_m', min: 0.2, max: 100) ?? (isTape ? 1.5 : 12);
+        final sl = a.number('lateral_spacing_m', min: 0.2, max: 100) ?? storedRowSpacing(b.find(a.str('area')!)) ?? (isTape ? 1.5 : 12);
         var q = 0.0, se = 0.0;
         if (isTape) {
           final tp = cat.tape(tapeSpec)!;
@@ -698,7 +700,7 @@ List<AgentTool> designTools(AgentToolbox b) {
           () => subdivideField(
             field,
             FieldSubdivisionOptions(
-              direction: a.has('direction_deg') ? Pt.polar(1, degToRad(a.number('direction_deg')!)) : longestEdgeDirection(normalizePolygon(field)),
+              direction: a.has('direction_deg') ? Pt.polar(1, degToRad(a.number('direction_deg')!)) : storedRowDirection(b.find(a.str('area')!)) ?? longestEdgeDirection(normalizePolygon(field)),
               mode: (a.str('mode') ?? 'strips') == 'grid' ? SubdivisionMode.grid : SubdivisionMode.strips,
               maxBlockArea: byFlow ? 0 : (a.number('max_block_area_m2', min: 100) ?? 2e4),
               maxBlockFlow: byFlow ? a.number('max_block_flow_m3h', min: 0.01)! * m3sPerM3h : 0,
@@ -765,12 +767,12 @@ List<AgentTool> designTools(AgentToolbox b) {
       inputSchema: obj(
         {
           'area': str('Id or name of the orchard area.'),
-          'plant_spacing_m': num_('Along the row, 0.3–50 m (default 6).'),
-          'row_spacing_m': num_('Between rows, 0.3–50 m (default 7).'),
+          'plant_spacing_m': num_('Along the row, 0.3–50 m (default the area\'s psp, else 6).'),
+          'row_spacing_m': num_('Between rows, 0.3–50 m (default the area\'s rsp, else 7).'),
           'ring_radius_m': num_('0.1–5 m (default 0.75).'),
           'kind': str('Default dripline.', ['dripline', 'drippers']),
           'drippers_per_tree': int_('drippers: 1–24 (default 4).'),
-          'direction_deg': num_('Row direction, degrees counter-clockwise from east; default along the longest edge.'),
+          'direction_deg': num_('Row direction, degrees counter-clockwise from east; default the area\'s row direction (rdir, apply_crop_rows), else along the longest edge.'),
           'use_tree_symbols': bool_('Ring the tree symbols inside the area instead of a grid.'),
           'tape': str('dripline: the dripline (tape id) of the rings; default the tape last used, else the first enabled.'),
           'outlet': str('drippers: dripper or bubbler id; default the first enabled one of the catalogue.'),
@@ -789,7 +791,8 @@ List<AgentTool> designTools(AgentToolbox b) {
               ]
             : <Pt>[];
         final cat = b.p.catalog, s = c.toolSettings;
-        final plant = a.number('plant_spacing_m', min: 0.3, max: 50) ?? 6, row = a.number('row_spacing_m', min: 0.3, max: 50) ?? 7;
+        final plant = a.number('plant_spacing_m', min: 0.3, max: 50) ?? storedPlantSpacing(b.find(a.str('area')!)) ?? 6,
+            row = a.number('row_spacing_m', min: 0.3, max: 50) ?? storedRowSpacing(b.find(a.str('area')!)) ?? 7;
         if (trees.isEmpty && polygonArea(area).abs() / (plant * row) > 20000) throw ToolInputError('More than 20000 trees: subdivide the field first.');
         final kind = (a.str('kind') ?? 'dripline') == 'drippers' ? RingKind.drippers : RingKind.dripline;
         final r = await _soon(
@@ -797,7 +800,7 @@ List<AgentTool> designTools(AgentToolbox b) {
             area: area,
             trees: trees.isEmpty ? null : trees,
             options: TreeRingOptions(
-              direction: a.has('direction_deg') ? Pt.polar(1, degToRad(a.number('direction_deg')!)) : longestEdgeDirection(normalizePolygon(area)),
+              direction: a.has('direction_deg') ? Pt.polar(1, degToRad(a.number('direction_deg')!)) : storedRowDirection(b.find(a.str('area')!)) ?? longestEdgeDirection(normalizePolygon(area)),
               plantSpacing: plant,
               rowSpacing: row,
               ringRadius: a.number('ring_radius_m', min: 0.1, max: 5) ?? 0.75,

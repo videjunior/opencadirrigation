@@ -323,9 +323,9 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
           'road_width_m': num_('0–50 m; default 4.'),
           'min_block_width_m': num_('2–500 m; default 10.'),
           'centre_feed': bool_('Submains across the middle, laterals both ways.'),
-          'direction_deg': num_('Row direction; default the longest edge.'),
+          'direction_deg': num_('Row direction; default the area\'s row direction (rdir, apply_crop_rows), else the longest edge.'),
           'lateral': str(null, ['tape', 'sprayline']),
-          'lateral_spacing_m': num_('0.1–100 m.'),
+          'lateral_spacing_m': num_('0.1–100 m; default the area\'s row spacing (rsp), else 1.5 / 12.'),
           'tape': str('Tape id.'),
           'inlet_head_m': num_('Tape inlet head, 0.5–60 m.'),
           'outlet': str('Emitter id (sprayline).'),
@@ -365,7 +365,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         }
         final valve = a.str('valve');
         if (valve != null && cat.valve(valve)?.kind != ValveKind.control) throw ToolInputError('"$valve" is not a control valve of the catalogue.');
-        final sl = a.number('lateral_spacing_m', min: 0.1, max: 100) ?? (isTape ? 1.5 : 12);
+        final sl = a.number('lateral_spacing_m', min: 0.1, max: 100) ?? storedRowSpacing(b.find(a.str('area')!)) ?? (isTape ? 1.5 : 12);
         double q = 0, se = 0;
         if (isTape) {
           final tp = cat.tape(tapeSpec)!;
@@ -380,7 +380,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
           () => subdivideField(
             field,
             FieldSubdivisionOptions(
-              direction: _dir(a) ?? longestEdgeDirection(normalizePolygon(field)),
+              direction: _dir(a) ?? storedRowDirection(b.find(a.str('area')!)) ?? longestEdgeDirection(normalizePolygon(field)),
               mode: (a.str('mode') ?? 'strips') == 'grid' ? SubdivisionMode.grid : SubdivisionMode.strips,
               maxBlockArea: byFlow ? 0 : (a.number('max_block_area_m2', min: 100, max: 1e7) ?? 2e4),
               maxBlockFlow: byFlow ? a.number('max_block_flow_m3h', min: 0.01, max: 1e5)! * m3sPerM3h : 0,
@@ -452,12 +452,12 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
       schema: obj({
         'area': str('Orchard area id.'),
         'trees': arr(str(), 'Tree symbol ids (surveyed trees).', 20000),
-        'plant_spacing_m': num_('0.3–50 m.'),
-        'row_spacing_m': num_('0.3–50 m.'),
+        'plant_spacing_m': num_('0.3–50 m; default the area\'s psp, else 6.'),
+        'row_spacing_m': num_('0.3–50 m; default the area\'s rsp, else 7.'),
         'row_offset_m': num_('Shift of the rows across, m.'),
         'plant_offset_m': num_('Shift of the trees along the rows, m.'),
         'ring_radius_m': num_('0.05–10 m.'),
-        'direction_deg': num_('Row direction.'),
+        'direction_deg': num_('Row direction; default the area\'s row direction (rdir), else the longest edge (or from the trees).'),
         'kind': str(null, ['dripline', 'drippers']),
         'tape': str('Dripline (tape) id.'),
         'inlet_head_m': num_('Dripline inlet head, 0.5–60 m.'),
@@ -482,7 +482,8 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         }
         if (area == null && trees.isEmpty) throw ToolInputError('Give "area" (a planting grid inside it) or "trees" (tree symbols).');
         final cat = b.p.catalog, s = c.toolSettings;
-        final plant = a.number('plant_spacing_m', min: 0.3, max: 50) ?? 6, row = a.number('row_spacing_m', min: 0.3, max: 50) ?? 7;
+        final plant = a.number('plant_spacing_m', min: 0.3, max: 50) ?? (a.has('area') ? storedPlantSpacing(b.find(a.str('area')!)) : null) ?? 6,
+            row = a.number('row_spacing_m', min: 0.3, max: 50) ?? (a.has('area') ? storedRowSpacing(b.find(a.str('area')!)) : null) ?? 7;
         if (trees.isEmpty && polygonArea(area!).abs() / (plant * row) > 20000) throw ToolInputError('More than 20000 trees: subdivide the field first.');
         final kind = (a.str('kind') ?? 'dripline') == 'drippers' ? RingKind.drippers : RingKind.dripline;
         final tapeSpec = a.str('tape') ?? (cat.tape(s.tapeSpecId)?.enabled ?? false ? s.tapeSpecId : (cat.tapes.where((x) => x.enabled).firstOrNull?.id ?? ''));
@@ -510,7 +511,7 @@ List<AgentTool> autoDesignOperations(AgentToolbox b) {
         if (a.has('lateral_pipe') && !cat.pipesFor(PipeUsage.lateral).any((x) => x.id == lateralPipe)) throw ToolInputError('"$lateralPipe" is not a lateral pipe of the catalogue.');
         final valve = a.str('valve');
         if (valve != null && cat.valve(valve)?.kind != ValveKind.control) throw ToolInputError('"$valve" is not a control valve of the catalogue.');
-        final dir = _dir(a) ?? (area != null && trees.isEmpty ? longestEdgeDirection(normalizePolygon(area)) : Pt.polar(1, 0));
+        final dir = _dir(a) ?? (area != null && trees.isEmpty ? storedRowDirection(b.find(a.str('area')!)) ?? longestEdgeDirection(normalizePolygon(area)) : Pt.polar(1, 0));
         final r = await engSoon(
           () => layoutTreeRings(
             area: area,
