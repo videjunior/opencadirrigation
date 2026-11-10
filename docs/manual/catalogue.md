@@ -51,6 +51,72 @@ coefficient of the data sheets (Δp = (Q/Kv)² bar) and `kcoef` the K of K·v²/
 to 25 is asked about (bar or metres of head). An item switched off or removed that the drawing still
 uses shows as itself, marked, in the Properties.
 
+## Digitise a curve from a picture
+
+**Design → Digitise a curve from a picture…** (right below *Component catalog…*; on a phone ☰ → Design) reads a curve
+off a picture of a chart (a catalogue page, a screenshot, a photo of a data sheet) and puts it into the project's
+catalogue. Nothing leaves the device. It reads three kinds of chart:
+
+- **Pump**: the head against the flow and, as further curves of the same picture, the efficiency, the NPSH required
+  and the shaft power, sharing the horizontal (flow) axis, each with its own vertical axis.
+- **Outlet or sprinkler**: the flow against the pressure (tick *Flow along the horizontal axis* when the chart is drawn
+  that way), fitted to q = k·Hˣ.
+- **Sprinkler radial profile**: the application rate against the distance from the head.
+
+**How to use it.**
+
+1. Open the picture (*Open picture…*), paste it (Ctrl+V of a screenshot) or drop the file on the window. PNG, JPEG and
+   WebP are read; a photo is turned upright by its EXIF tag, and a picture larger than 3200 pixels is reduced.
+2. **Horizontal axis**: click two ticks of the axis far apart and type their values; choose the unit and, for a
+   logarithmic scale, *Logarithmic*. **Vertical axis**: the same on the vertical axis of the curve. The tool moves on
+   by itself after the second click of each axis.
+3. **Points**: click along the curve. Drag a point to move it; select one and press Delete (or *Delete point*, or a
+   right-click) to remove it; *Undo* takes back the last change. The mouse wheel or a pinch zooms, dragging the
+   picture pans, and a button in the corner shows the whole picture again. A magnifier follows the mouse; on a touch
+   screen a long press shows it and the point goes where the finger lifts.
+4. Or **Automatic trace**: set the two limits along the horizontal axis (*From*, *To*) and the number of points, then
+   click on the curve. Its colour is followed to both sides and evenly spaced points are placed, which you then
+   correct. Raise the *Colour tolerance* for a faint or blurred line, lower it when the trace jumps to something else.
+5. Check the **Fit**: the fitted curve is drawn over the picture, and the table lists each point with its residual.
+6. Choose where it goes and press **Apply to the catalogue**: one undo step. *Export CSV* and *Copy points* give the
+   points in the units of the axes. The picture, the calibration and the points stay with the tab while the dialog is
+   closed (not in the project file).
+
+**Where it goes.**
+
+- **Pump**, new or updated: the head points replace the pump's curve (the engine fits them as it fits a data sheet:
+  the least-squares parabola when it stays within 3 % of the highest head, the head tolerance of ISO 9906 grade 1B,
+  else the monotone curve through the points), and their range of flows becomes the pump's minimum and maximum flow;
+  the efficiency points replace the efficiency curve (its best value becomes the single efficiency); the NPSH points
+  replace the NPSH curve. Without an efficiency curve, the shaft power gives the efficiency at each power point,
+  η = ρ·g·Q·H / P, with H read on the fitted head curve. A pump without a rated power takes the largest shaft power
+  read. A new pump needs at least three head points.
+- **Outlet**: a new outlet (one nozzle, the chart's pressures as its range and the middle one as its default), a
+  nozzle of an outlet of the catalogue, or the emitter of a drip tape. Only k and x change: the wetted radius and the
+  start of pressure compensation stay.
+- **Profile**: the measured profile of a nozzle (distance over the wetted radius read, rate over its largest value),
+  which the densogram uses with *Use the measured profile of the nozzles that have one*.
+
+**Method.** The two points of each axis give its values and its direction (the vertical value does not change along
+the horizontal axis, and the other way round): the general affine mapping u = a·x + b·y + c, v = d·x + e·y + f, with
+u and v the values, or their decimal logarithms on a logarithmic axis, so rotated and sheared scans read right. The
+calibration is refused, with the reason, when the two points of an axis are at the same place, its two values are
+equal, a logarithmic axis has a value at or below zero, or the two axes were clicked less than 10° apart. The
+automatic trace takes the colour clicked (the pixel nearby that differs most from the background) and keeps the
+pixels whose colour lies between the background and that colour (the blended edge of an anti-aliased line counts; a
+light grid line or a curve of another colour does not); it follows the curve one pixel at a time along the horizontal
+axis, taking the run of pixels nearest to where the last steps lead, bridges short gaps (a grid line drawn over the
+curve, a label) and stops at longer ones. The flow–pressure points are fitted to q = k·Hˣ by least squares in log–log
+space, the pump points as above. The assistant reads a chart from an attached picture with its own vision and does
+the same through `fit_curve_points`, `apply_curve_points` and `export_curve_points`.
+
+**Limits.** A photo taken at an angle (perspective) is not affine and reads only approximately: photograph the page
+square on, or use a scan. The trace assumes one value of the curve for each horizontal value, as catalogue curves are;
+a chart with several impeller diameters is read one diameter at a time. The power curve is taken as the shaft power
+(P2): from a chart of the motor's input power (P1) the efficiency is the overall one, so set the pump's motor
+efficiency to 100 % then. The rated frequency of the pump, the wetted radius of a nozzle and the costs are not read
+from the picture: set them in the catalogue.
+
 ## Prices and currency
 
 Every price of a project (catalogue, energy tariff, pivot machines) is in one currency, stored as an

@@ -194,6 +194,72 @@ flows, emitter pressures outside the nozzle range, pump speeds out of range.
   *Keep only the ticked ones* takes the project back and makes only those again, in one undo step.
 - After a design with errors the Messages tab opens by itself and shows how many problems there are.
 
+## Design scorecard
+
+**Design → Design scorecard…** (under *Design check…*; on a phone ☰ → Design) grades a designed project on one page.
+It reads only what the program already computes (the design results, the design check, the Messages list and the
+analyses) and turns it into a transparent index: an overall score from 0 to 100 with a grade from A to E, a score and
+a grade for each of seven categories, a radar of the categories, and every indicator with its value, its target, the
+standard or design parameter the target comes from, its score, its weight, the points it would add and its weakest
+item (a row of the table selects and frames it). Without a design, the dialog offers to design first.
+
+| Category | Indicators scored | Reported only |
+|---|---|---|
+| Uniformity | Emission uniformity EU of the drip and micro zones; overlap CU of the sprinkler zones; emitter flow variation q_var (each the flow-weighted mean of the zones) | |
+| Hydraulics | Pipe length within the velocity limit of its use (design parameters); pipe length within its pressure class at the water temperature; water the emitters deliver within their pressure window; zones and pivots given the pressure they need | |
+| Energy | Pump duties within the catalogue range; pumps within 70–120 % of their best-efficiency flow (pumps with an efficiency curve); share of the pump head the critical zone uses (the rest is burnt in the valves) | kWh per m³ pumped and per ha·mm |
+| Water and soil | Sprinkler rate within the soil intake (NRCS NEH 15-11); water infiltrated without runoff (sprinkler zones and machines over a soil); peak FAO-56 demand met in the irrigation window | |
+| Economy | Life-cycle cost against the cheapest saved alternative | Investment and equivalent annual cost per area; energy share of the life-cycle cost |
+| Robustness | Pipes within their class with the water hammer (Joukowsky check); pumps with their NPSH margin and suction lift; after the ageing test, the water within the pressure window and the EU of the design aged and clogged | |
+| Completeness | Errors of the check and of the design; items without warnings; mainline high points without an air valve (AWWA M51); bill of materials priced | |
+
+**How to use it.** **What to improve first** lists the indicators below 100, the most points first, each with how to
+improve it and an **Open** button to the tool that does it (design parameters, Fix automatically, pump selection, the
+densogram, the irrigation programme, system flows, life-cycle cost, air valves, the catalogue, the Messages tab). **Run
+the ageing test** analyses the design aged and clogged (the defaults of *The design over its life*: 15 years, the
+Hazen-Williams C falling 0.5 a year, 10 % of the emitter flow lost to clogging) and scores its robustness over its
+life. **Remember this score**, change the design and design again, then **Compare with** the remembered score (or with
+an alternative saved in Design → Design alternatives…) to see what the change did, category by category; the
+remembered score lives in memory, not in the file. The scorecard exports as CSV, XLSX or PDF (the PDF with the table
+and the radar); the same table is in File → Export report (`scorecard`) and the radar in the chart pages of the sheets
+and of the document packages. The assistant reads it with `design_scorecard`, which also says what changed since its
+previous call or against an alternative or the remembered score.
+
+**Method.** Each indicator is scored by a piecewise-linear function between stated anchors (value → score), held at
+the end scores beyond the first and the last anchor:
+
+- **EU**: 0 → 0, 70 → 60, 80 → 70, 90 → 80, 94 → 90, 100 → 100. The classes are those of ASABE EP405.1 as the
+  technical study (§9) gives them: above 94 % excellent, 90–94 % good, 80–90 % fair, below 80 % poor; the anchor at 70 %
+  (the limit of grade D) is the program's own step inside the poor class.
+- **Overlap CU**: 0 → 0, 75 → 60, 85 → 80, 100 → 100 (85 % satisfactory by Keller & Bliesner 1990 and ISO 15886-3; 75 %
+  is the limit below which the program's own design check warns, `area_uniformity_low`).
+- **q_var**: 0 → 100, 10 → 90, 20 → 70, 100 → 0. The classes are 10 % desirable and 20 % acceptable, as the technical
+  study (§9) states them; the scorecard prints Keller & Bliesner (1990) and that section beside them, but the study
+  gives no reference of its own for the two limits, so take them as the program's working bands.
+- A criterion that must hold everywhere scores the share that meets it (0 % → 0, 100 % → 100), weighted by pipe
+  length, by the water the emitters deliver, by flow (times the hours of the system flow for the pumps), by area or by
+  count.
+- A count that must be zero (errors, high points without an air valve) scores 100 at zero and 0 from one.
+
+The anchor scores follow the grade bands (A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, E below): the top class of a standard ends at
+the A limit, the next at B, and so on. A category is the weighted mean of its assessed indicators and the overall score
+the weighted mean of the assessed categories; every weight is 1. The points to gain of an indicator are (100 − score)
+× its share of the overall score, so raising it to 100 adds exactly them. An indicator without data (no zone of that
+kind, no soil on the areas, no prices, no saved alternative, a pump without an efficiency curve, the ageing test not
+run) is *not assessed* and left out of the averages, never guessed; indicators without any reference value (energy per
+m³ and per ha·mm, cost per area, the energy share of the life-cycle cost) are only reported.
+
+**Not scored, and why.** Pivot and linear-move uniformity (the pivot results keep no CU), the full transient analysis
+and the 24-hour simulation (their results are not kept with the design) and the densogram DU of the areas (too slow
+for a table rebuilt after every edit). Application efficiency is a typed input of the areas, not a design result.
+
+**Limits.** The scorecard is as good as the data: the soils, the prices, the efficiency curves of the pumps and the
+saved alternatives make more indicators assessed. Compliance shares are linear (90 % of the pipe length within the
+velocity limit scores 90), and a count is all or nothing, since the results do not keep the number of high points.
+Every warning of the Messages list weighs on completeness, design warnings included. Equal weights are a neutral
+choice, not a ranking of importance, and the ageing test uses its defaults, not the options typed in *The design over
+its life*. The score compares designs; it is not a certification.
+
 ## Analyses of the mainline and of the operation
 
 These run on the designed project (each says what is missing when there is no design or no water

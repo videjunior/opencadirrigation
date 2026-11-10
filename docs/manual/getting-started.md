@@ -70,4 +70,4 @@ drawing everywhere, with the names, crops and catalogue items in that language.
 | `?tutorial=N` | Opens the interactive tutorial at step N (1 to 90). |
 | `?lang=pt` (any code of [Languages and site](languages-and-site.md)) | Language for this visit (does not change the saved preference). |
 | `/pt/`, `/es/`, `/de/`, … | Entry page of each language under its code (all 20), with the same effect as `?lang` (the root page is the English one). |
-| `#p=…` | A project shared by link (File → Share by link…): it opens as a copy in a new tab. The part after `#` is never sent to any server. |
+| `#p=…` | A project shared by link (File → Share by link…): it opens as a copy in a new tab, on a first visit too (no landing page first) and when pasted into the address bar of the app already open. The part after `#` is never sent to any server, and the page takes it out of the address and of the history before the app and the visit statistics start. |

@@ -1695,6 +1695,63 @@ tree canopy (seen as canopy), the texture of crowns in soft, resampled imagery (
 canopy limit), green water, artificial turf and green roofs (seen as vegetation); and the outlines
 are only as good as the imagery (its date, resolution and fit to the drawing).
 
+### 20.1 Crop rows
+
+Module `crop_rows.dart` (Design → Automatic design → Crop rows from the image). Drip laterals in a row crop are laid
+along the planting rows already in the field; the tool reads their direction, their spacing, how many cross the field,
+how sure the reading is and, where the image shows them, the plant spacing along the rows and the canopy ground cover,
+from the satellite base map or a placed aerial photo rendered north up with square pixels over the outline. It is plain
+image processing on the device, linear in the pixels for every direction tried: no service, no trained model.
+
+1. **Signal.** The pixels inside the outline and outside its holes that carry data form the mask. The colour is
+   high-passed by subtracting its mean over a box of 1.25 × the widest spacing searched (only pixels of the field
+   count), which removes the shading and the patches of the field and keeps the stripes, divided by its RMS over the
+   same box (floored at a quarter of the field's) so that a dark orchard and a bright bare patch weigh alike, and
+   projected on its first principal component (Pearson 1901), the colour axis along which the image varies most once
+   the field-scale changes are gone: green against red soil in one field, dark canopy against a lighter cover crop in
+   another. Its sign makes the canopy positive (the projection correlates with the excess green of section 20, less half
+   the standardised brightness); values beyond four robust standard deviations (1.4826 × the median absolute deviation)
+   are clipped, so a road or a roof does not rule the result.
+2. **Direction, coarse.** The field is cut into square blocks of about 3.5 × the widest spacing; for every direction θ
+   (steps of at most 1°) the pixels of each block are binned by their distance across θ, a discrete Radon projection
+   (Radon 1917), and the share of the variance the bins explain, R²(θ) = between-bin over total sum of squares, is
+   averaged over the blocks. Straight stripes along θ make the bins differ; any other direction averages them out. The
+   spacings searched start at three pixels of the imagery, below which the period is the grain of the image itself.
+3. **Spacing, coarse.** The autocorrelation of the block profiles at that direction, averaged over the blocks; the first
+   peak that reaches half of the highest between the closest and the widest spacing (the first, not the highest: the
+   profile of narrow rows peaks at every multiple of the spacing). A peak whose half or third lag correlates at least
+   half as well is a multiple of rows closer than the range, and no rows are read.
+4. **Fine values.** R² of one profile across the whole field on a grid round the coarse direction, the step a quarter
+   of the angular width of the peak (spacing over the length of the rows): about 0.1° over a field a hundred spacings
+   long. The spacing is then searched within ±6 % on the power of the Hann-windowed discrete Fourier transform of the
+   whole-field profile, its peak refined by a parabola through the logarithm of the power (sub-bin interpolation; Quinn
+   1994 for the reasoning), and the phase of that harmonic places the rows. When the whole-field profile repeats far
+   less than the block profiles, the rows bend: the coarse values stand and the result says so. Which band of a
+   period is the crop is the greener and darker one, save when both are vegetation and the other is clearly the wider
+   (a closed canopy whose narrow alleys lie in its shade): then the wider.
+5. **Rows, plants and cover.** Lines at the spacing and phase found over the whole outline, clipped to it and to its
+   holes; a line counts as a row when at least max(1 m, half a spacing) of it lies in the field. The plant spacing is the
+   first peak, between max(4 pixels, 0.25 m) and 1.2 × the row spacing, of the autocorrelation of the signal sampled
+   along the centre of the rows and averaged over at most 150 rows (independent of the phase of each row); hedgerows have
+   none, and the plant spacing is then unknown. The ground cover is the share of the field above the Otsu (1979)
+   threshold of the signal smoothed over 3 × 3 pixels, given only when its histogram has two populations by the
+   bimodality coefficient BC = (skewness² + 1)/(excess kurtosis + 3) > 5/9 (SAS Institute 1990; Pfister, Schwarz,
+   Janczyk, Dale & Freeman 2013; 5/9 is the value of a uniform distribution): the canopy share of a vertical image, the
+   usual stand-in for the ground shaded at noon of FAO-56 (Allen et al. 1998).
+
+**Confidence** = angular prominence × periodicity: (1 − median R² over all directions ÷ the largest R²) times the
+autocorrelation of the profile at the spacing. No published benchmark of this measure exists: the limits of clear rows
+(0.35) and of an uncertain reading (0.15) were set on the synthetic fields of `crop_rows_test.dart` and on real imagery
+checked during development (almond orchards and coffee read with confidences of 0.67 to 0.96, vineyards and olive
+hedgerows at their spacings; a town, a pasture, a forest, a harvested pivot and a coarse overview gave confidence 0). A field larger than 2.5 million pixels at the pixel size
+needed is read on a window in its middle and its rows extended over the whole field.
+
+**Accuracy on synthetic fields**: nine fields from 0° to 178.9° and 2 to 10 m are read within ±1° and ±3 % (in fact
+within 0.1° and 0.2 %), the lines on the canopy bands within 0.08 of a spacing, the row count within one and the ground
+cover within 0.05, also with heavy noise, 30 % of the plants missing, an L-shaped outline with a hole and coordinates of
+millions of metres. It assumes rows straight over the area, evenly spaced, visible at about three pixels per spacing and
+an image of one date; shadows count as canopy.
+
 ---
 
 ## 21. Agronomy
@@ -1885,6 +1942,101 @@ run off: the longest run before runoff is R_t = 60·ASA/(PR − IR) minutes and 
 earlier than D_a/IR after the previous one started (D_a the depth per cycle), by the SWAT protocol
 (section 4.3), the intake rate IR and the allowable surface accumulation ASA coming from the soil and
 slope of section 21.4 (test "1.5 in/h sprays on a clay loam with 5 % slope applying 0.5 in").
+
+### 21.9 Climate risk over the years
+
+Modules `climate_risk.dart` and `climate_risk_stats.dart` (Design → Agronomy → Climate risk over the years). A system is
+sized for one figure, the ETo of the peak month of the normals or a typed peak ETo; the analysis runs the system as
+designed through every real year of a daily series of the site instead.
+
+- **Weather**: the NASA POWER daily point series (MERRA-2 meteorology and GEWEX SRB / CERES radiation, every parameter
+  from 1984, when its solar radiation starts) or the daily series kept with the site climate. The ETo of each day is
+  the FAO Penman-Monteith of section 21.2 (`dailyPenmanMonteith`), missing terms estimated as FAO-56 chapter 3 says.
+  A day without ETo takes the series' own mean ETo of its month and a day without rain counts as dry; a season or year
+  with more than a tenth of its days filled is left out.
+- **Balance**: every irrigated area with a water balance runs the daily soil water balance of FAO-56 chapter 8
+  (`soil_water_balance.dart`, the inputs of the daily water balance dialog) season by season, twice: without a limit,
+  which gives the irrigation requirement, and with the gross depth the designed system can apply a day, which gives what
+  it would have applied and the deficit days (crop days that end with the depletion above the RAW, or above the
+  regulated deficit of the stage); a season with none is reliable. The daily capacity is, under a machine, its depth
+  per revolution over the hours of a revolution times the programme's window, and elsewhere the application rate of the
+  emitters over the area times the share of the window of its system flow (shares in proportion to the hours each flow
+  needs on the design's peak day); an interval trigger of n days may apply n days of it.
+- **Peak period**: the largest mean over 7, 10, 15 or 30 consecutive days of ETc,loc less the rain the root zone kept
+  (effective rain less deep percolation), over the gross/net factor of the month; the peak-period ETo is the largest
+  mean ETo over as many days.
+- **Years**: seasonal crops from their planting day (a season may run into the next year); year-round crops and the
+  site's figures by irrigation year, from the first day of the month whose mean rain most exceeds its mean ETo, so that
+  the soil may start at field capacity and the dry season of either hemisphere falls inside one year.
+- **Probabilities**: empirical non-exceedance with Weibull plotting positions, F(x₍ᵢ₎) = i/(n + 1) for the i-th smallest
+  of n values (Weibull 1939; Chow, Maidment & Mays 1988, section 12.5; the positions of the dependable rain of section
+  21.2), the value of a probability interpolated linearly between ranks and clamped to the sample: no distribution is
+  fitted, nothing is extrapolated beyond the years observed.
+- **Trend**: Sen's slope, the median of the slopes of every pair of years (Sen 1968), and the Mann-Kendall test (Mann
+  1945; Kendall 1975) with S = Σ sign(xⱼ − xᵢ), the variance corrected for ties, Var(S) = [n(n−1)(2n+5) − Σ
+  t(t−1)(2t+5)]/18, and the continuity-corrected Z, two-sided at 5 % (|Z| > 1.96), as Helsel & Hirsch (2002, chapter 12)
+  describe it; the normal approximation needs about ten values, so shorter series give no test, and serial correlation
+  is not removed.
+- **Dry spell**: the ETCCDI index CDD, the most consecutive days with less than 1 mm of rain (Karl, Nicholls & Ghazi
+  1999; Zhang et al. 2011), a missing day ending the spell.
+
+Reanalysis data are means over cells of tens of kilometres and smooth the extremes a station on the site would show.
+The tests check the statistics, the peak means, the irrigation year and the capped balance by hand (5 mm/day of gross
+capacity against an ETc of 5 mm/day: 356 events, 1780 mm, 351 deficit days) and simulate a pivot of the gallery by hand;
+two real NASA POWER answers (one across a new year, one before 1984 with the sentinel −999 for the missing radiation)
+are parsed. Only a summary, a few numbers per site year and per area and season, is kept in the project.
+
+### 21.10 Irrigation forecast
+
+Modules `forecast_online.dart` and `irrigation_forecast.dart` (Design → Agronomy → Irrigation forecast). The daily
+water balance runs forward from today over the days of a weather forecast, for every irrigated area.
+
+- **Forecast**: MET Norway Locationforecast 2.0 (about nine and a half days, hourly for the first two to three days,
+  six-hourly after) or the Open-Meteo Forecast API (16 daily values with its own FAO-56 ETo, used as given). MET's hours
+  are taken to local solar days (UTC + longitude/15, since a time-zone database would be a dependency): the extreme
+  temperatures, the mean dew point, the mean wind at 10 m brought to 2 m (FAO-56 eq. 47) and the precipitation of each
+  1- or 6-hour period counted once. A later day must be covered for 18 hours; when the forecast covers less than 12
+  hours of today, tomorrow's ETo stands for today's.
+- **ETo**: FAO Penman-Monteith (FAO-56 eq. 6, section 21.2) on the daily values. MET Norway publishes no solar
+  radiation, so it comes from the temperature range, Rs = kRs·√(Tmax − Tmin)·Ra (FAO-56 eq. 50, kRs 0.16, limited to
+  the clear-sky radiation), the procedure FAO-56 gives for missing radiation. The daylight cloud cover through Kasten &
+  Czeplak (1980), Rs = Rso·(1 − 0.75·C^3.4), was tried and dropped: on the five whole days of the answer recorded for
+  the tests it gave an ETo 19 % above the one Open-Meteo published for the same place and days, eq. 50 −1 % (mean
+  absolute difference 0.3 mm/day). One site and five days is thin evidence, and eq. 50 misses cloudy days with a wide
+  range of temperature.
+- **Balance**: the crop as its requirement table and daily balance take it: the Kc curve on each date from the planting
+  date read for the hemisphere of the site, ETc,loc = Kr·Kc·ETo, TAW = AWC·Zr·Pw, RAW = p·TAW with p adjusted to the ETc
+  of the day (FAO-56 Table 22, note 2), Ks of eq. 84; rain below 0.2·ETo only wets the surface and rain above field
+  capacity percolates (eq. 88).
+- **When and how much**: an area is irrigated on the day its depletion would reach the smaller of the allowed depletion
+  of the stage and the net depth of one event of the design programme, so the programme's interval is kept while the
+  weather asks for the design depth; the irrigation refills the depletion (the refill share of the balance settings),
+  the gross depth is the net over the efficiency with the leaching requirement of the month, and the run time the gross
+  depth over the application rate of the area in the design results.
+- **Water budget**: 100 × (the water the crop uses in the forecast days − the rain the root zone keeps) ÷ (the days ×
+  the daily depth the design programme applies in its design month), held within 0 to 300 %, the seasonal adjustment a
+  controller takes; the starting deficit is left out (it is not the weather's share).
+
+The tests compare the daily values and the ETo of the recorded MET answer with an independent calculation (for
+2026-11-10: Tmax 26.3 °C, Tmin 14.9 °C, Tdew 13.68 °C, u₂ 2.64 m/s, ETo 4.928 mm) and check the plans by hand (a
+deficit carried until the fifth day, rain that skips an irrigation, both hemispheres in January). The answer is kept
+on the device and never fetched again before the service's `Expires` time (MET's terms), and kept at least three hours
+for MET Norway (half its six-hour update interval outside the Nordic area), one for Open-Meteo.
+
+### 21.11 The programme on the plan
+
+Modules `programme_playback.dart`, `programme_calendar.dart`, `ics.dart` and `gif_animation.dart` (Design → Agronomy →
+Play the programme on the plan). Every system flow runs every few days on staggered days, so the programme repeats
+after the least common multiple of the intervals (one day when every flow is daily; at most 28 days are played); the
+cycle is circular, a run past its last midnight carrying on at the start. A moment shows the steady solution of the
+group running then, held over its run; two overlapping groups have their flows added on shared pipes and the higher
+supply head shown, with a note. A reservoir behind a supply follows the continuity of its volume, dV/dt = Q_in − ΣQ_drawn,
+along the time line, its level read on the stage–volume curve of the reservoir study (inverted) and held between the
+lowest operating level (dry) and the full level (spilling); the tests check the volumes by hand (an inflow of 7.2 m³/h
+and a draw of 180 m³/h for 2 h on a basin of 1000 m² with vertical walls: 2500 → 2543.2 → 2197.6 → 2312.8 m³). The
+calendar follows RFC 5545: lines folded at 75 octets without splitting a character, escaped text, floating local times,
+a `DURATION`, an `RRULE` every cycle and stable `UID`s from an FNV-1a hash. The animated GIF has a palette of up to 256
+colours a frame (octree quantizer, no dithering) and loops.
 
 ---
 
@@ -2596,6 +2748,35 @@ structure is in the manual (docs/manual/file-formats.md) and in `catalogs/README
 catalogue in the project makes the file self-contained and readable; the library of user blocks
 travels in the project too, and the DXF and DWG exports write it as block definitions.
 
+### 24.13 Curves read off a picture
+
+Modules `curve_digitiser.dart`, `curve_trace.dart` and `curve_fits.dart` (Design → Digitise a curve from a picture).
+
+- **Calibration**: two clicked points per axis give its values and its direction (the vertical value does not change
+  along the horizontal axis and the other way round): six equations for the six coefficients of the general affine
+  mapping u = a·px + b·py + c, v = d·px + e·py + f, where u and v are the values of the axes or their decimal logarithms
+  on a logarithmic axis. Rotated and sheared scans read exactly; a perspective is not affine. The calibration is refused
+  when two points of an axis coincide, its two values are equal, a logarithmic value is at or below zero, or the axes
+  were clicked less than 10° apart (an error of the clicks is amplified by up to 1/sin 10° ≈ 5.8: a guard against an
+  ill-conditioned mapping, not an engineering threshold).
+- **Trace**: the colour clicked is the pixel nearby that differs most from the background; the pixels kept lie between
+  the background and that colour within a tolerance (60 RGB units by default, at most half the distance between curve
+  and background), so the blended edge of an anti-aliased line counts and a light grid or a curve of another colour
+  does not. The trace steps one pixel along the horizontal axis, takes the run of pixels nearest to where the last
+  steps lead, bridges gaps up to 12 pixels and stops at longer ones; it assumes one value of the curve for each
+  horizontal value. These are algorithm settings, documented in the code.
+- **Fits**: the head points go through `PumpCurve.fit` (section 12): the least-squares parabola when it stays within
+  3 % of the highest head (the head tolerance of acceptance grade 1B of ISO 9906) without a hump, else the monotone
+  piecewise cubic through the points (Fritsch & Carlson 1980); without an efficiency curve the shaft power gives
+  η = ρ·g·Q·H / P at each power point, H read on the fitted head curve (P taken as the shaft power, P2). The flow–pressure
+  points are fitted to q = k·Hˣ by least squares in log–log space (`EmitterCurve.fitTable`, section 8), and a radial
+  profile is normalised by the wetted radius read and the largest rate (the measured profile of the densogram, section
+  9.1).
+
+The tests recover exact values on straight, rotated (25°), sheared (axes 78° apart) and logarithmic charts, trace a
+synthetic 660 × 440 chart with a grid, a crossing curve and a legend within 0.15 m of head (one pixel is 1/7 m), and
+check the fits by hand (a shaft power of 8 353.28 W at 0.02 m³/s, 32 m and η 0.75; a 4 L/h orifice dripper at 10 m).
+
 ---
 
 ## 25. Performance and software architecture
@@ -2723,6 +2904,42 @@ design check).
   has fewer errors or, with as many, a lower annual cost (annualised investment + energy).
 - After a design with errors the Messages tab opens by itself and its label counts the problems.
 
+### 26.1 Design scorecard
+
+Module `scorecard.dart` (Design → Design scorecard). The scorecard turns what the results, the design check, the advice
+and the analyses already compute into one index, reproducible from the table it prints. Every indicator has a value, a
+target, the source of the target and a score from 0 to 100 given by a piecewise-linear function between stated anchors
+(value → score), held at the end scores beyond the first and the last:
+
+| Indicator | Anchors (value → score) | Where the target comes from |
+|---|---|---|
+| Emission uniformity EU (drip and micro zones) | 0 → 0, 70 → 60, 80 → 70, 90 → 80, 94 → 90, 100 → 100 | The ASAE classes of ASABE EP405.1 as section 9 states them (above 94 % excellent, 90–94 % good, 80–90 % fair, below 80 % poor; Keller & Karmeli 1974); the anchor at 70 % is the program's own step inside the poor class |
+| Overlap CU (sprinkler zones) | 0 → 0, 75 → 60, 85 → 80, 100 → 100 | 85 % satisfactory (Keller & Bliesner 1990; ISO 15886-3); 75 % is the limit of the program's own design check (`area_uniformity_low`) |
+| Flow variation q_var | 0 → 100, 10 → 90, 20 → 70, 100 → 0 | 10 % desirable and 20 % acceptable as section 9 states them; the scorecard prints Keller & Bliesner (1990) beside them, but section 9 gives no reference for these two limits, so they stand as the program's working bands |
+| A criterion that must hold everywhere | the share that meets it: 0 % → 0, 100 % → 100 | The velocity limit of each use (design parameters; ASAE S376.2), the pressure class at the water temperature (ISO 1452-2, ISO 4427-2, ABNT NBR 14312), the pressure window of the emitters (design parameters; ASABE EP405.1, UNE-EN 13742-1), the pressure each zone needs, the catalogue range of the pumps, 70–120 % of the best-efficiency flow (section 12), the soil intake (NRCS NEH 15-11), runoff (NRCS NEH 623 ch. 4), the peak FAO-56 demand in the window, the surge within the class (AWWA M23, M55), the NPSH margin and suction lift (ANSI/HI 9.6.1), the life-cycle cost against the cheapest alternative (NIST Handbook 135), the warnings of the check, a priced bill of materials |
+| A count that must be zero | 0 → 100, 1 or more → 0 | Errors of the check and of the design; high points of the mainline without an air valve (AWWA M51) |
+
+The anchor scores follow one convention, the grade bands A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, E below: the top class of a
+standard ends at the A limit, the next at B, and so on. A share is weighted by pipe length, by the water the emitters
+deliver, by flow (times the hours of the system flow for the pumps), by area or by count; the uniformity indicators are
+flow-weighted means of the zones. A category is the weighted mean of its assessed indicators and the overall score the
+weighted mean of the assessed categories, every weight 1 (the code takes others; the dialog does not edit them). The
+points an indicator would add at 100 are (100 − s)·(w / Σw of its category)·(W / ΣW of the assessed categories), and
+the list of improvements is sorted by them. An indicator that cannot be computed (no zone of its kind, no prices, an
+analysis not run, a pump without an efficiency curve) is not assessed and left out of every mean; one without any
+reference value (kWh per m³ and per ha·mm, cost and equivalent annual cost per area, energy share of the life-cycle
+cost) is reported only. The share of the pump head the critical zone uses (the surplus head at the supply over the pump
+boost) stands for the energy burnt in the valves, which the results define without splitting the critical path into
+lift, emitter pressure and losses. Pivot uniformity, the full transient analysis, the 24-hour simulation and the
+densogram DU are left out (their results are not kept with the design, or too slow for a table rebuilt after edits),
+and application efficiency is an input, not a result. The ageing test runs the analysis of the design over its life
+with its defaults (15 years, Hazen-Williams C −0.5 a year, roughness +0.01 mm a year, 10 % clogging, CV +0.05).
+
+The tests check every function at, between and beyond its anchors, the means and the points to gain (raising an
+indicator to 100 adds exactly its points), the orchard example (grade A, with EU, head use and energy recomputed by hand
+from its results) and a deliberately worse variant (zone pipes forced to the smallest size: lower overall and more than
+10 points lower in uniformity).
+
 ---
 
 ## 27. AI assistant
@@ -2735,12 +2952,16 @@ program's own engine to check its work. It opens in a panel docked beside the dr
 wide; a bottom sheet over the drawing on phones), which stays open while the agent works, so the
 user watches the drawing change, types further instructions and stops it at any time; each project
 tab has its own conversation. It is serverless like the rest of the program: the browser (or the
-desktop app) calls the provider of the chosen model, Anthropic or OpenAI, directly with the user's
-own API key for that provider, and the provider bills the usage to the user's account; the panel
-shows an estimate of the tokens and the cost of every answer and of the conversation. The loop, the
+desktop app) calls the provider of the chosen model directly with the user's own API key for that
+provider, and the provider bills the usage to the user's account; the panel shows an estimate of the
+tokens and the cost of every answer and of the conversation. Six providers are offered: Anthropic
+(Claude), OpenAI (GPT), Google (Gemini), xAI (Grok), Meta (Muse) and OpenRouter, a marketplace whose
+one key reaches the models of the others and many more through its own servers. The loop, the
 tools, the permissions and the project data do not depend on the provider
-(`lib/core/ai/agent_loop.dart`, `project_context.dart`, the tools of `lib/app/ai/`); the two clients
-and their formats are sections 27.1 to 27.3.
+(`lib/core/ai/agent_loop.dart`, `project_context.dart`, the tools of `lib/app/ai/`); the six clients
+and their formats are sections 27.1 to 27.3. The clients of Google, xAI, Meta and OpenRouter were
+written from each company's documentation of 2026-11-10 and are tested against scripted transcripts
+that copy the formats it documents; none of them has been run with a real key.
 
 ### 27.1 Providers and models
 
@@ -2748,33 +2969,74 @@ and their formats are sections 27.1 to 27.3.
 provider, tier and list prices), tokens and their estimated cost (`AiUsage`), errors (`AiError`),
 cancellation (`AiCancel`), the parts of a message, and the HTTP exchange as an injected function
 (`AiTransport`: fetch with an abort controller in the browser, the body read as a stream, without
-cookies or referrer; `HttpClient` on the desktop; a scripted fake in the tests). Two clients
-implement `AiClient`: `AnthropicClient` (`claude_api.dart`, the Messages API) and `OpenAiClient`
-(`openai_api.dart`, the Responses API); the names of the first, Anthropic-only version (`ClaudeApi`,
+cookies or referrer; `HttpClient` on the desktop; a scripted fake in the tests). `AiProvider` names
+each provider with the only host its key is ever sent to, the page where keys are made, how its keys
+usually start (a hint, never enforced) and the page of its billing. Six clients implement
+`AiClient`: `AnthropicClient` (`claude_api.dart`, the Messages API), `OpenAiClient`
+(`openai_api.dart`, the Responses API), `XaiClient`, `MetaClient` and `OpenRouterClient`
+(`xai_api.dart`, `meta_api.dart`, `openrouter_api.dart`: the Responses APIs of xAI, Meta and
+OpenRouter, which have OpenAI's shape, so each is `OpenAiClient` with its hooks changed: the address,
+the headers, the body, the items replayed, the usage, the errors and the optional fields) and
+`GeminiClient` (`gemini_api.dart`, Google's Interactions API, written from the neutral format by
+`GeminiFormat`, section 27.3); the names of the first, Anthropic-only version (`ClaudeApi`,
 `ClaudeModel`…) remain as aliases.
 
 | Provider | Tier | Model (id) | US$ per million tokens, input / output | Notes |
 |---|---|---|---|---|
-| Anthropic | top | Claude Fable 5.1 (`claude-fable-5-1`) | 10 / 50 | thinking always on; needs 30-day data retention; long turns |
+| Anthropic | top | Claude Fable 5.2 (`claude-fable-5-2`) | 8 / 40 | thinking always on; needs 30-day data retention; long turns |
 | Anthropic | top | Claude Opus 5.5 (`claude-opus-5-5`) | 4 / 20 | the default |
 | Anthropic | intermediate | Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 2 / 10 | |
 | Anthropic | fast | Claude Haiku 5.5 (`claude-haiku-5-5`) | 0.1 / 0.5 | above 100 000 input tokens, 5 × |
 | OpenAI | top | GPT-6 Astra (`gpt-6-astra`) | 10 / 50 | long turns |
 | OpenAI | intermediate | GPT-6.1 Sol (`gpt-6.1-sol`) | 2 / 10 | |
+| OpenAI | fast | GPT-6.1 Terra (`gpt-6.1-terra`) | 1 / 5 | |
 | OpenAI | fast | GPT-6 Luna (`gpt-6-luna`) | 0.1 / 0.5 | |
 | OpenAI | intermediate | GPT-6 Sol (`gpt-6-sol`), GPT-5.6 Terra (`gpt-5.6-terra`) | 2 / 10; 2 / 12 | earlier releases |
+| Google | top | Gemini 4 Argon (`gemini-4-argon`) | 4 / 20 | half price until 2026-12-01; efforts low, medium, high; long turns |
+| Google | intermediate | Gemini 3.8 Flash (`gemini-3.8-flash`) | 1.5 / 7.5 | half price until 2027-01-01; free tier; efforts low, medium, high |
+| Google | fast | Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`) | 0.3 / 2.5 | free tier; efforts low, medium, high |
+| xAI | top | Grok 4.7 (`grok-4.7`) | 2 / 6 | from 200 000 prompt tokens, 2 ×; efforts low to xhigh; PDFs as text |
+| xAI | fast | Grok 4.3 (`grok-4.3`) | 1.25 / 2.5 | as Grok 4.7 |
+| Meta | top | Muse Wonder (`muse-wonder-1.0`) | 4 / 20 | long turns |
+| Meta | intermediate | Muse Spark 1.3 (`muse-spark-1.3`) | 1.25 / 4.25 | |
+| Meta | fast | Muse Ember (`muse-ember-1.0`) | 0.1 / 0.5 | above 200 000 input tokens, 3 × |
+| OpenRouter | top to fast | Claude Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5; GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra; Gemini 4 Argon, Gemini 3.8 Flash; Grok 4.7; Muse Spark 1.3 (`anthropic/claude-fable-5.2`…) | the makers' prices as OpenRouter lists them (Gemini 3.8 Flash 1.65 / 8.25) | the long-prompt rules of the makers; answers of at most 32 000 tokens (Fable 5.2, GPT-6 Astra) or 64 000 (Opus 5.5, Grok 4.7, Muse Spark 1.3) |
+| OpenRouter | intermediate, fast | Auto Router (`openrouter/auto`), Free Models Router (`openrouter/free`) | the price of the model each picks; free | routers |
 
 Cache reads and writes have their own list prices (writes at 1.25 times the input price, the rate of
-Anthropic's five-minute cache). OpenAI prompts above 272 000 input tokens cost twice the input and
-cache prices and 1.5 times the output price. Every model takes the five effort levels (low, medium by default, high,
-xhigh, max: Anthropic `output_config.effort`, OpenAI `reasoning.effort`). The models with long turns
-get longer timeouts (section 27.2). The cost of an answer is priced at the model that actually served
-it (a refusal fallback may be another model, Claude Opus 5 or Opus 4.8, priced though not offered),
-with Anthropic's compaction iterations added to the top-level counts. Switching to another company,
-or between OpenAI models, starts a new conversation (the earlier one is not sent); a Claude model
-can take over the conversation of another Claude model. Claude Fable 5.1 asked from an organisation
-without 30-day data retention is refused by the API; the error is recognised and the message
-suggests Claude Opus 5.5.
+Anthropic's five-minute cache; Google, xAI and Meta bill nothing for writing to their automatic
+caches, and their usage reports no cache writes). OpenAI prompts above 272 000 input tokens cost
+twice the input and cache prices and 1.5 times the output price; a rule of this kind (`longAbove`,
+`longInput`, `longOutput`) applies to the whole request once its input passes the threshold. An
+introductory price (`introUntil`, `introFactor`) multiplies every price until the day it names, and
+the meter prices a request at the prices of its day. The models of Anthropic, OpenAI and Meta take
+the five effort levels (low, medium by default, high, xhigh, max: Anthropic `output_config.effort`,
+the Responses APIs `reasoning.effort`); a model that takes fewer (`AiModel.efforts`) gets the nearest
+below (`effortFor`): Gemini's thinking levels stop at high, Grok's at xhigh. The models with long
+turns get longer timeouts (section 27.2). `vision`, `pdf`, `tools` and `priced` say whether a model
+reads pictures, reads an attached PDF whole (else the PDF goes as its text, extracted on the device),
+calls tools, and has known prices (a router has none). The cost of an answer is priced at the model
+that actually served it (a refusal fallback may be another model, Claude Opus 5 or Opus 4.8, priced
+though not offered; a router reports the model it chose), with Anthropic's compaction iterations
+added to the top-level counts; an answer of a model the table does not price costs what the
+provider says it charged (`AiUsage.charged`, OpenRouter's `usage.cost`). Switching to another
+company, or between two models of a company other than Anthropic, starts a new conversation (the
+earlier one is not sent); a Claude model can take over the conversation of another Claude model. A
+choice or a kept conversation of Claude Fable 5.1 goes on with Claude Fable 5.2, which replaced it.
+Claude Fable 5.2 asked from an organisation without 30-day data retention is refused by the API; the
+error is recognised and the message suggests Claude Opus 5.5.
+
+**Models from OpenRouter's list** (`openrouter_catalog.dart`). `GET https://openrouter.ai/api/v1/models`
+(public, no key, no header of the app) gives every model OpenRouter serves; a row becomes an `AiModel`
+of OpenRouter when its endpoints include the Responses API, it answers in text and it has a price
+(aliases left out): the prices per token as listed (per million in the app), the cache prices when
+listed (else the input price), the first price override that depends on the prompt's length alone
+(those by hour of the day ignored), the efforts it lists, the output limit of its top provider (32 000
+when none is given) capped at 128 000 tokens and half the context window, and whether it reads
+pictures and calls tools. Its tier is a band of the output price (top from US$ 15 per million tokens,
+intermediate from 4, fast below; routers intermediate), not a judgement of quality. The models the
+user adds are kept in the preferences and registered again at start (`AiModel.register`); the last
+copy of the list is kept on the device for offline use.
 
 ### 27.2 Requests and streams
 
@@ -2783,13 +3045,15 @@ headers carry the key (`x-api-key`), in the browser `anthropic-dangerous-direct-
 (without it the API sends no cross-origin headers and the browser blocks the answer), and
 `anthropic-beta` with the betas the request uses (`server-side-fallback-2026-07-01`,
 `task-budgets-2026-03-13`, `context-management-2025-06-27`, `compact-2026-01-12`). The body: the
-model, `max_tokens` 64 000, `stream: true`, the system prompt as one text block with a cache
+model, `max_tokens` (the model's output limit, 128 000 on the Claude 5.x models, lower under a spending
+cap), `stream: true`, the system prompt as one text block with a cache
 breakpoint, the tools in a fixed order, each with `eager_input_streaming: true` (inputs stream as
 they are generated, which is why the loop checks every input itself), the messages since the last
-compaction, `thinking: {type: "adaptive"}` (left out for Fable 5.1, which always thinks and takes no
-setting), `output_config` with the effort and, on Opus 5.5, Sonnet 5.5 and Haiku 5.5 when a spending
-cap is set, a task budget (`task_budget: {type: "tokens", total}`, the cap divided by the output
-price, at least 20 000 tokens) the model paces itself against, a top-level `cache_control` (automatic
+compaction, `thinking: {type: "adaptive"}` (left out for Fable 5.2, which always thinks and takes no
+setting), `output_config` with the effort and, when the caller gives one, a task budget
+(`task_budget: {type: "tokens", total}`, at least 20 000 tokens) the model paces itself against (the
+assistant gives none: a token countdown shown to the model made it stop early, so the app's own step
+limit and spending cap end a task), a top-level `cache_control` (automatic
 caching of the growing conversation), `fallbacks: "default"` on Fable, Opus and Sonnet (a request a
 safety classifier declines is answered by another model instead of failing), and the context
 management of section 27.5. The stream (server-sent events): `message_start` (model, usage),
@@ -2804,7 +3068,8 @@ kept) and the marker is dropped.
 body: the model, `instructions` (the system prompt), `input` (the conversation: the output items
 exactly as they came back, the function outputs, the user's messages), the function tools with
 `strict: false` (the schemas have optional fields, which strict mode does not allow; the loop checks
-the inputs itself), `reasoning: {effort}`, `max_output_tokens` 64 000, `stream: true`, `store: false`
+the inputs itself), `reasoning: {effort}`, `max_output_tokens` (the model's output limit, 128 000 on
+the GPT-6 models, lower under a spending cap), `stream: true`, `store: false`
 (nothing is kept on OpenAI's side for later requests) with `include: ["reasoning.encrypted_content"]`,
 so that the reasoning items come back encrypted and go back in the next request, and the context
 management of section 27.5. Pictures are `input_image` parts (data URLs, detail "auto") and PDFs
@@ -2816,23 +3081,89 @@ limit, or `content_filter`, a refusal); `response.failed` (policy codes such as 
 and `error`. The refusal parts of a message are a refusal too. Cached input tokens come from
 `input_tokens_details` (cached and cache-write tokens).
 
-**Errors and retries** (both clients): the error types are told apart (authentication, permission,
+**xAI** (`POST https://api.x.ai/v1/responses`, `XaiClient`). The Responses request of OpenAI with
+`store: false` and `include: ["reasoning.encrypted_content"]` (the encrypted reasoning goes back
+unchanged; asking for it also keeps xAI from storing the thinking trace for later requests), a
+`prompt_cache_key` derived from the system prompt and the first entry of the conversation (stable for
+a conversation, so its requests reach the server that cached its prefix; xAI's cache is automatic and
+writing to it is free), the sampling xAI's guide asks for (`temperature` 0.7, `top_p` 0.95) and
+function tools only; no `context_management` (xAI parses it but does not run it; `compact()` calls
+xAI's stateless `/v1/responses/compact` and is tested, not wired into the loop). The usage leaves the
+reasoning tokens out of `output_tokens` and they are added back (billed at the output price). Grok
+reads JPEG and PNG only, so a WebP or a GIF is converted at the same size (a picture with
+transparent pixels or a GIF to PNG, the rest to JPEG), the result kept so that the bytes stay the same
+from one request to the next; the app sends a PDF as its text, since an attached file turns on xAI's
+attachment search, a server-side tool billed per call. Errors come as `{"code": "…", "error": "…"}`;
+a key xAI does not know gets a 400, read as an authentication error.
+
+**Meta** (`POST https://api.meta.ai/v1/responses`, `MetaClient`). The Responses request with
+`store: false` and `include: ["reasoning.encrypted_content"]`, never `previous_response_id`; the output
+items go back as they came, but a reasoning item without its encrypted content, or with nothing
+after it, is left out of the request (the stored history keeps it), and assistant text before a call
+carries `phase: "commentary"`. A constant `prompt_cache_key` for the app; no `context_management`
+(the API has none) and no built-in tool. Pictures go in user messages and inside function outputs as
+`input_image` data URLs, PDFs as `input_file` data URLs. The errors follow Meta's statuses, types and
+codes (402 billing, 503 overloaded, 504 not retried, since the same request would time out again), and
+three are recovered: a request that does not fit the context window is sent again asking for the
+room left (at least 16 000 tokens), an output limit the API names is learnt for that model, and a
+reasoning item the API no longer accepts is dropped from the request.
+
+**OpenRouter** (`POST https://openrouter.ai/api/v1/responses`, `OpenRouterClient`). Stateless only
+(OpenRouter refuses `store: true` and `previous_response_id`): the Responses request with
+`store: false`, no `context_management` (not in its request schema), a top-level `cache_control`
+(`{type: ephemeral}`) that turns on the automatic cache breakpoint of the models that need one,
+Anthropic's above all (not sent to OpenAI's models, which cache by themselves), a `session_id`
+derived from the system prompt and the first message, which keeps the requests of a conversation on
+one provider so that its cache is found again, and two headers that name the app for OpenRouter's
+rankings (`HTTP-Referer: https://opencadirrigation.com`, `X-OpenRouter-Title: OpenCADIrrigation`),
+nothing about the user. Replayed assistant messages, reasoning items and calls carry the ids
+OpenRouter requires; the reasoning of every maker comes back as `reasoning` items (OpenAI's encrypted
+content, Anthropic's thinking text with its signature, Google's thought signatures) and goes back as it
+came. The pictures of tool results stay inside the function outputs for the `anthropic/` and `openai/`
+models and go in a user message right after the results for the others. A PDF goes to a model that
+reads files itself as it is, and otherwise through OpenRouter's free parser (`plugins: [{id:
+file-parser, pdf: {engine: cloudflare-ai}}]`). The usage carries the `cost` OpenRouter charged, and
+the answer names the model that answered. Errors are read from OpenRouter's canonical `error_type`
+beside the Responses `code`: 402 no credit (the in-flight spending budget, which holds the price of
+the largest answer a request allows, is waited for), 403 budgets, moderation and guardrails, 408,
+429 (the free models' daily limit waits until 00:00 UTC and is not retried), 502 and 503 no provider.
+
+**Google** (`POST https://generativelanguage.googleapis.com/v1beta/interactions`, `GeminiClient`). The
+Interactions API, which Google recommends for new projects, in its stateless mode: `store: false`, the
+whole conversation in `input` as a list of steps, the key in `x-goog-api-key` and `content-type` the
+only headers (what the CORS preflight allows), `system_instruction`, the function tools (their
+schemas converted to the subset of JSON Schema Gemini takes, the limits it does not take written into
+the descriptions), `generation_config` with the `thinking_level` of the effort and `max_output_tokens`,
+and `stream: true`. The stream: `interaction.created`, `interaction.status_update`, each step as
+`step.start` → `step.delta` (text, the JSON of a call's arguments, a thought signature) → `step.stop`,
+`interaction.completed` with the usage (input, cached, output, thought and tool-use tokens), and
+`error`. `thought` steps carry an encrypted signature that stateless mode must send back exactly as it
+came, in its place. Pictures go at the media resolution `ultra_high` (2240 tokens a picture), or `high`
+for a model that turns it down; a request is kept under 20 MB; a model with long turns waits at least
+15 minutes for the next event. A safety, recitation or other policy block ends the answer as a
+refusal with its category; quotas say whether to wait (with the wait Google gives in the body, since
+the page cannot read `retry-after`) or to set up billing.
+
+**Errors and retries** (every client): the error types are told apart (authentication, permission,
 billing — OpenAI's `insufficient_quota` —, not found or a model the account cannot use, invalid
 request, request too large — `context_length_exceeded` —, rate limit, overloaded, server, network,
-timeout, interrupted stream, data retention); overloads, rate limits, server and network errors are
-retried at most twice, after the `retry-after` (or `retry-after-ms`) the API asks for, up to 30 s, or
-an exponential backoff (2 s, 4 s for rate limits, 1.5 s for the network, doubling), never once part of
-the answer has arrived. A request times out with no status line after 90 s, or no data for 180 s
-(300 s and 600 s for the models with long turns, which may think for minutes). An optional field a
-model turns down (an invalid-request error that names `fallbacks`, `task_budget`, the context
-management or the clearing of tool results) is dropped and the same request sent again at once, and
-left out for that model for the rest of the session; a rejected combination of context edits drops
+timeout, interrupted stream, data retention, no credit, a spending limit, a refusal); overloads, rate
+limits, server and network errors are retried at most twice, after the `retry-after` (or
+`retry-after-ms`) the API asks for, up to 30 s, or an exponential backoff (2 s, 4 s for rate limits,
+1.5 s for the network, doubling), never once part of the answer has arrived. A request times out with
+no status line after 90 s, or no data for 180 s (300 s and 600 s for the models with long turns, which
+may think for minutes; the idle time doubles at the two highest efforts). An optional field a model
+turns down (an invalid-request error that names `fallbacks`, `task_budget`, the context management,
+the clearing of tool results, or a field of the newer clients such as `prompt_cache_key`,
+`cache_control`, `session_id` or the `ultra_high` resolution) is dropped and the same request sent
+again at once, and left out for that model for the rest of the session; a rejected combination of context edits drops
 the clearing first, then compaction. The key is removed from every error text, masked copies of it
 included.
 
 ### 27.3 One loop, two formats
 
-The loop never looks into the providers' formats. `llm_formats.dart` holds both in one place
+The loop never looks into the providers' formats. `llm_formats.dart` holds the two wire formats in one
+place
 (`AnthropicFormat`, `OpenAiFormat`): tool definitions, the user's message (text, pictures, PDFs),
 tool results (text and pictures, with an error flag, or, on OpenAI, whose function outputs have
 none, the prefix `Error: `), notes from the program, and the tool calls and text of an answer. The
@@ -2845,6 +3176,15 @@ what the user wrote meanwhile, then the note as a `developer` message. Each form
 own shapes back, and the tests check that every kind of entry reads back unchanged and that a whole
 exchange converted from one format to the other and back loses nothing (`ai_formats_test.dart`). A
 tool input whose JSON does not parse is kept raw and answered with an `INVALID_JSON` error result.
+
+The Responses format is the neutral one the four newer clients share. xAI, Meta and OpenRouter speak
+it as it is, each changing only what its API needs in the request (the items it replays, its
+fields). Google's conversation is kept in it too and translated at every request by `GeminiFormat`,
+deterministically (the same history always gives the same bytes, so that the implicit cache matches
+the prefix): messages and function calls become Gemini's steps, function outputs become
+`function_result` steps named after their calls, and any step of Gemini's own (a `thought` with its
+signature) is kept in the history as a `gemini_step` item holding the step as it came, so that every
+step goes back unchanged. A conversation never mixes formats: changing company starts a new one.
 
 ### 27.4 The agent loop
 
@@ -2867,6 +3207,18 @@ cut with a note asking for less (a filter, paging). The text streams into the pa
 with a status line (thinking, running a tool, waiting for an approval, waiting before a retry) and
 the elapsed time.
 
+**Second opinion** (`/second`, or the button on the last answer). The last answer, the user's
+question and the whole compact project data (section 27.9) go to another model in one request
+without tools (the medium effort, or the nearest the model takes, and at most 16 000 output tokens),
+to that model's company with its own key: the models of the other companies the user has a key for
+come first, each company's most capable first, then the other models of the conversation's company;
+a router without known prices is left out. Its system prompt asks for a verdict (agree, agree with
+reservations, disagree) and then the points, the most important first, each with the figure it rests
+on, and says that the material is data, not instructions. The review is shown marked as a second
+opinion and its tokens and cost are added to the conversation's, but it does not enter the history:
+the conversation's own model reads it only when the user sends it on (*Answer the review*), as
+quoted material to check point by point against the project with its tools.
+
 ### 27.5 Context management
 
 Long tasks keep their requests bounded on the server, where the model takes it (a setting, on by
@@ -2883,6 +3235,9 @@ default; the whole conversation stays in the panel):
   compaction item, the input starts at it. Pictures in tool results beyond the newest three are
   replaced by a short note once there are more than six (in steps, so the cached prefix changes
   rarely), in the request only: the stored history and the user's own pictures stay.
+- **Google, xAI, Meta and OpenRouter**: no compaction on the server (their models have
+  `compaction: false`); the older pictures of tool results are pruned from each request as for
+  OpenAI.
 
 A compaction is announced in the conversation.
 
@@ -2955,9 +3310,12 @@ The model sees the project through pictures with an exact mapping (`view_snapsho
   where the imagery ends, z17–18 over most farmland, and the nearest ancestor where a tile is
   missing) and cached for the conversation (400 tiles); the user's view and base map never change,
   and only when the tiles of the map on screen cannot be fetched off screen does the view go there for
-  a moment and come back, which the result says. A picture is at most 1568 pixels on its longest
-  side (1024 by default) and about 1.15 megapixels, so that neither provider rescales it and the
-  model reads positions on the pixel grid described.
+  a moment and come back, which the result says. A picture is at most what the model reads unscaled
+  (`PictureLimits.of`; 1024 pixels on its longest side by default): 2576 pixels and about 3.6
+  megapixels on the Claude models that read pictures at high resolution (Fable 5.2, Opus 5.5, Sonnet
+  5.5 and Haiku 5.5, also through OpenRouter), otherwise 1568 pixels and about 1.15 megapixels, with
+  the shorter side at most 768 pixels on OpenAI's models (also through OpenRouter), so that the
+  provider does not rescale it and the model reads positions on the pixel grid described.
 - **The mapping**: every picture has an id (`s1`, `s2`…; `u1`… for those the user attaches; the last
   80 kept per conversation) and states its mapping: north up, square pixels, the world bbox [minX,
   minY, maxX, maxY] and s metres per pixel, with x = minX + px·s and y = maxY − py·s for the pixel
@@ -3092,18 +3450,24 @@ Each provider has its own key. A key is kept in memory for the session by defaul
 the key on this device" it goes into the browser storage, where the scripts of the page (the site's
 visit statistics among them) could read it, which the panel says. It never enters a project file,
 the autosave, a share link or an export, it goes only to its own provider's API host
-(`api.anthropic.com` or `api.openai.com`), in its header, and it is removed from any error text.
+(`api.anthropic.com`, `api.openai.com`, `generativelanguage.googleapis.com`, `api.x.ai`, `api.meta.ai`
+or `openrouter.ai`), in its header, and it is removed from any error text, masked copies included.
 
 ### 27.12 Validation
 
 `ai_agent_test.dart` covers the Anthropic requests and stream (the request the API documents, Fable
-5.1's settings, task budgets and compaction where the model takes them, optional fields dropped, the
+5.2's settings, task budgets and compaction where the model takes them, optional fields dropped, the
 clearing of tool results) and the loop (its tools and history, invalid inputs, the modes and plan
 mode, confirmations, the step limit, the spending cap, steering, stopping, errors and retries, data
 retention, refusals, fallbacks and their prices, the key only in its header); `ai_openai_test.dart`
 the Responses API (the request, function outputs, pictures and PDFs, compaction, the pruning of
-pictures, errors, the model list); `ai_formats_test.dart` the two formats; `ai_context_test.dart` the
-project data. Widget tests cover the tools, the vision (the exact round trip of the mapping, the
+pictures, errors, the model list); `ai_gemini_test.dart`, `ai_xai_test.dart`, `ai_meta_test.dart` and
+`ai_openrouter_test.dart` the four newer clients against scripted transcripts that copy each
+company's documented formats (the request, tool turns replaying the reasoning byte for byte, pictures
+and PDFs, streams, usage and cost, stops and refusals, every documented error and retry);
+`ai_openrouter_catalog_test.dart` OpenRouter's list read into models; `ai_providers_test.dart` the
+hosts, key pages, prices and introductory prices of the companies; `ai_formats_test.dart` the two
+formats; `ai_context_test.dart` the project data. Widget tests cover the tools, the vision (the exact round trip of the mapping, the
 satellite picture leaving the user's view and map as they were, terrain pictures and profiles on
 known surfaces), the operations, the coverage map, the manual and the whole agent (a small project
 from the questions to the report, steering, rewind, the cap and Continue, quick commands, the docked
@@ -3119,10 +3483,13 @@ can be refused, undone or rewound; a position picked on a picture is as good as 
 picks (s metres). Pictures ask for no approval, though they download map tiles; long analyses the
 model asks for run on the interface thread; conversations are not saved with the project, by design
 (a shared file or link would carry the chat and its pictures), but they are kept in the browser's
-storage (IndexedDB) by project, the 12 most recent with their pictures and small attachments, until
-the setting that keeps them is turned off, which deletes them; the
-usage is billed by the provider to the account of the key; and the clients have been tested against
-scripted fakes of the two APIs, not against the live services.
+storage (IndexedDB) by project, the 24 most recently saved with their pictures and small
+attachments, until the setting that keeps them is turned off, which deletes them; the usage is billed
+by the provider to the account of the key; and the clients have been tested against scripted fakes
+of the six APIs, not against the live services: the four added in 1.7.0 were written from each
+company's documentation of 2026-11-10 and have never been run with a real key. In a browser, the
+page cannot read Meta's request id and rate-limit headers nor OpenRouter's waits, which the desktop
+app can.
 
 ---
 
@@ -3222,7 +3589,7 @@ project (after compression); BigTIFF files and rasters above 100 million pixels 
 surveys above 12 000 samples are thinned for the TIN; compressed LAS (LAZ), DGN V8, encrypted PDFs
 and the JPEG 2000 and JBIG2 images of PDFs are not read; OpenTopoData works only in the desktop
 build; the CAD exports are R2000 (DXF true colours, DWG colour indices) or R12; the AI
-assistant needs the network and has been tested against scripted fakes of the two model APIs only;
+assistant needs the network and has been tested against scripted fakes of the six model APIs only;
 and no native mobile build is produced (the web app works on phones).
 
 ---
@@ -3323,6 +3690,10 @@ Layout, routing and wiring:
 - IFAB Law 1 (the pitch); World Athletics (the 400 m track); United States Golf Association green construction recommendations for the green and its collar.
 
 Image analysis:
+- Radon (1917). Über die Bestimmung von Funktionen durch ihre Integralwerte längs gewisser Mannigfaltigkeiten.
+- Pearson (1901). On lines and planes of closest fit to systems of points in space. Phil. Mag. 2.
+- Quinn (1994). Estimating frequency by interpolation using Fourier coefficients. IEEE Trans. Signal Process. 42(5).
+- Pfister, Schwarz, Janczyk, Dale & Freeman (2013). Good things peak in pairs: a note on the bimodality coefficient. Front. Psychol. 4; SAS Institute (1990) (the bimodality coefficient).
 - Woebbecke, Meyer, Von Bargen & Mortensen (1995). Color indices for weed identification under various soil, residue, and lighting conditions. Trans. ASAE 38(1).
 - Otsu (1979). A threshold selection method from gray-level histograms. IEEE Trans. SMC 9(1).
 - Meyer & Neto (2008). Verification of color vegetation indices for automated crop imaging applications. Comput. Electron. Agric. 63(2).
@@ -3331,6 +3702,12 @@ Image analysis:
 - Douglas & Peucker (1973). Algorithms for the reduction of the number of points required to represent a digitized line or its caricature. Cartographica 10(2).
 
 Agronomy:
+- Weibull (1939) (plotting positions); Chow, Maidment & Mays (1988). Applied Hydrology, section 12.5.
+- Sen (1968). J. Am. Stat. Assoc. 63: 1379 (the slope of a trend); Mann (1945); Kendall (1975); Helsel & Hirsch (2002). Statistical Methods in Water Resources, USGS TWRI 4-A3, chapter 12.
+- Karl, Nicholls & Ghazi (1999); Zhang et al. (2011) (the ETCCDI climate indices, CDD).
+- Kasten & Czeplak (1980) (solar radiation from cloud cover, tried for the irrigation forecast and not used).
+- MET Norway Locationforecast 2.0, terms of service and licence: https://api.met.no/doc/TermsOfService , https://api.met.no/doc/License
+- RFC 5545 (iCalendar).
 - Ayers & Westcot (1985). FAO Irrigation and Drainage Paper 29 Rev. 1; Maas & Hoffman (1977); Maas (1984).
 - Savva & Frenken (2002). FAO Irrigation Manual, Module 9.
 - Brouwer & Heibloem (1986). FAO Irrigation Water Management Training Manual No. 3.

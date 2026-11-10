@@ -2,7 +2,9 @@
 
 ```
 bin/oci.dart                command line: import, new, set, pack add, design, analyze, check, validate,
-                            export, bom and schema for .oci.json projects, one or many at a time
+                            export, bom and schema for .oci.json projects, one or many at a time, and
+                            mcp, the Model Context Protocol server (bin/src/oci_mcp_io.dart: its root
+                            folder, the isolate of each call, stdio)
 lib/
   core/                     pure Dart, no Flutter (runs in the worker, in the isolate, the tools and the CLI)
     api.dart                the whole engine in one import (docs/API.md)
@@ -94,6 +96,14 @@ lib/
       life_scenarios.dart, reservoir.dart, analysis_control.dart, lateral_limit.dart, region_trace.dart
                               ageing and clogging, reservoir study, progress and cancel of the analyses,
                               longest lateral, outlines traced on aerial imagery
+      crop_rows.dart          planting rows read from aerial imagery (direction, spacing, plants, cover)
+      climate_risk.dart, climate_risk_stats.dart, irrigation_forecast.dart
+                              the design against forty real years, the irrigation of the next days
+      programme_playback.dart, programme_calendar.dart
+                              the programme played on the plan, its calendar
+      scorecard.dart          the design scorecard
+      curve_digitiser.dart, curve_trace.dart, curve_fits.dart
+                              curves read off a picture of a chart into the catalogue
       design_check.dart       design check
       advisor.dart            problems explained, impossible settings, corrections that apply
       auto_fix.dart           corrections, fix automatically, optimisation
@@ -126,16 +136,25 @@ lib/
                               coordinate grid, slope and aspect sheets, sheet check, sRGB profile of PDF/A
       dem_online.dart, climate_online.dart, share_link.dart
                               online elevation and climate, projects in a link
-    ai/                     optional AI assistant, two companies behind one interface
+      forecast_online.dart, ics.dart, gif_animation.dart, scorecard_chart.dart
+                              weather forecast of the site, iCalendar and animated GIF writers, the
+                              scorecard radar on the sheets
+    ai/                     optional AI assistant, six companies behind one interface
       llm.dart                models with their tiers and list prices, tokens and cost, errors, the
                               client every company implements
       llm_formats.dart        conversion of messages, tools and results to each company's format
       claude_api.dart         Anthropic Messages API: streaming, adaptive thinking, effort, caching,
                               refusal fallback, task budgets, compaction, clearing of old tool results
       openai_api.dart         OpenAI Responses API: streaming, function tools, reasoning effort,
-                              store: false, compaction
+                              store: false, compaction; the base of the three clients below
+      xai_api.dart, meta_api.dart, openrouter_api.dart
+                              the Responses APIs of xAI, Meta and OpenRouter
+      gemini_api.dart         Google's Interactions API (Gemini)
+      openrouter_catalog.dart OpenRouter's list of models, the models the user adds
       agent_loop.dart         the agent loop: tools, approvals by mode, step limit, spending cap
       project_context.dart    the project data sent with a message
+    mcp/                    the Model Context Protocol server of the engine (docs/MCP.md): protocol,
+                            JSON Schema validator, the tools over the command line
     units.dart              units (metric/US), water viscosity, typed tables
     translate.dart          translation hook so reports and plots label their output without Flutter
     i18n/language_packs.dart registry of the language packs (strings, tutorial, catalogue names)
@@ -147,7 +166,7 @@ lib/
     keys/                   shortcut dispatcher and native listener
     widgets/                menus, palette, panels, reports, charts, dialogs, compact layout, and
                             ai/: the docked AI panel and its views (conversation, data sent, settings)
-    ai/                     the agent of a tab: 75 tools and 205 operations over the controller and
+    ai/                     the agent of a tab: 75 tools and 216 operations over the controller and
                             the engine (agent_tools*, agent_ops*, ops_*, op_parts/ by area), the
                             coverage map (ai_coverage.dart, coverage_parts/), the system prompt, the
                             manual and the playbooks,
@@ -219,6 +238,6 @@ web/                        pages, manifest, icons, robots, sitemap, compiled wo
 - **The AI uses the program, not a copy of it.** The assistant's tools are thin wrappers over the
   controller and the engine, every change goes through `mutate` (one undo group per answer), and
   a coverage map routes every user-reachable function to a tool, an operation, a command or a
-  setting. The two companies sit behind one interface (`llm.dart`), with the format conversion in
+  setting. The six companies sit behind one interface (`llm.dart`), with the format conversion in
   one place (`llm_formats.dart`) and one agent loop; the request code takes the HTTP exchange as a
   parameter, so the tests run it against scripted fakes.

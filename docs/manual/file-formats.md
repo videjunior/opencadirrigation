@@ -11,10 +11,11 @@ Readable JSON with these top-level keys:
 | `params` | All design parameters and the units |
 | `catalog` | The whole project catalogue (the file is self-contained) |
 | `layers` | Name, ARGB colour, visible, locked |
-| `entities` | One entry per entity, with `type`, `id`, `layer`, `name` and its own fields (points in metres; a pivot keeps its machine data under `mach`) |
+| `entities` | One entry per entity, with `type`, `id`, `layer`, `name` and its own fields (points in metres; a pivot keeps its machine data under `mach`; an irrigated area keeps the direction of its planting rows read by Crop rows from the image under `rdir`, in degrees counter-clockwise from east within [0, 180), beside its row and plant spacings `rsp` and `psp`, written only when set and turned and mirrored with the area) |
 | `systemFlows` | System flows: name, valves (and pivots and valve-in-head stations), start time, duration |
 | `proposal`, `scenarios`, `climate`, `labelRules`, `blocks`, `aiNotes` | Optional: quote settings, design alternatives, site climate (with the daily series of a station file or a download), conditional labels, user blocks, the AI assistant's notes about the project |
 | `agronomy`, `agb`, `deliverables`, `dimStyle`, `layerStates` | Optional, written only when they differ from a new project: the agronomy plan (user crops, programme, water balance, fertigation by stage, field tests), the settings of power, water and machines, those of the technical documents, the dimension style and the named layer states |
+| `climateRisk` | Optional: the summary of the last Climate risk over the years (the source of the series and its credit, the site, the first and last year, the day it was computed, the probability and the peak period chosen, a few figures per site year and per area and season, and the figures the design used), never the daily series; a damaged summary is dropped as it is read |
 | `unreadable` | Items this version could not read (damaged, or of a newer version), kept and written back so that a later version gets them |
 | `nextId`, `currentLayer` | Id counter and current layer |
 | `results` | Optional: results of the last calculation, to reopen with reports without recalculating |

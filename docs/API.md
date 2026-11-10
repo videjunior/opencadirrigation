@@ -8,8 +8,10 @@ and you can call it from your own scripts. This page is a tour of that library: 
 reading the results, the reports and exports, the hydraulic solver on its own and the newer modules (transients,
 extended period simulation, air valves, layout automation, valve-in-head stations, pumps on the mains frequency,
 vegetation detection, agronomy, mechanised machines, file formats, PDF plans, the native CAD drawing and the AI
-assistant's client) and the libraries 1.6.0 added (pump stations, reservoirs, the daily water balance, power and
-water, technical documents, editing and files).
+assistant's clients) and the libraries 1.6.0 added (pump stations, reservoirs, the daily water balance, power and
+water, technical documents, editing and files) and 1.7.0 added (the AI clients of four more companies, crop rows from
+imagery, the climate risk, the irrigation forecast, the programme played on the plan, the design scorecard, curves read
+off a picture and the MCP server).
 
 Every snippet below is run, exactly as shown, by `test/core/api_examples_test.dart`, which also fails when this page shows
 a line of code the tests do not run. Paths are relative to the repository root.
@@ -683,11 +685,15 @@ final r12 = ProjectExporter(project: project, results: results, labels: ReportLa
 `ai/llm.dart` holds what the assistant needs from any model provider: the models offered (`AiModel`, with their provider,
 tier and list prices), tokens and their estimated cost (`AiUsage`), errors (`AiError`), cancellation (`AiCancel`) and the
 HTTP exchange as a function (`AiTransport`: the app plugs in fetch in the browser and `HttpClient` on the desktop,
-`lib/app/ai/ai_transport_*.dart`). Two clients implement `AiClient`: `AnthropicClient` (`ai/claude_api.dart`, the
-Anthropic Messages API) and `OpenAiClient` (`ai/openai_api.dart`, the OpenAI Responses API); `ai/llm_formats.dart` holds
-both wire formats in one place. `apiKey` is the user's own key for that provider, which goes in its header to that
-provider's API (`api.anthropic.com` or `api.openai.com`) and nowhere else. `ai/agent_loop.dart` is the loop in which the
-model calls tools until it ends its turn, the same for both providers. A tool (`AgentTool`, or `FnTool` made of closures)
+`lib/app/ai/ai_transport_*.dart`). Six clients implement `AiClient`: `AnthropicClient` (`ai/claude_api.dart`, the
+Anthropic Messages API), `OpenAiClient` (`ai/openai_api.dart`, the OpenAI Responses API), `XaiClient`, `MetaClient` and
+`OpenRouterClient` (`ai/xai_api.dart`, `ai/meta_api.dart`, `ai/openrouter_api.dart`: the Responses APIs of xAI, Meta and
+OpenRouter, built on `OpenAiClient` through its hooks) and `GeminiClient` (`ai/gemini_api.dart`, Google's Interactions
+API, with its own translation `GeminiFormat`); `ai/llm_formats.dart` holds the Messages and Responses wire formats in one
+place, and `ai/openrouter_catalog.dart` reads OpenRouter's public list of models into `AiModel`s. `apiKey` is the user's
+own key for that provider, which goes in its header to that provider's API (`AiProvider.host`: `api.anthropic.com`,
+`api.openai.com`, `generativelanguage.googleapis.com`, `api.x.ai`, `api.meta.ai` or `openrouter.ai`) and nowhere else.
+`ai/agent_loop.dart` is the loop in which the model calls tools until it ends its turn, the same for every provider. A tool (`AgentTool`, or `FnTool` made of closures)
 has a name, a description, a JSON schema its input is checked against before it runs, and an effect (read, write, export
 or network) that the permission mode governs (`AgentPermission.readOnly`, `plan`, `ask` with the `approve` callback of
 `AgentEvents`, `auto`). `buildProjectContext` writes the compact project data the app attaches to a question, from the
@@ -747,12 +753,28 @@ package without Flutter are in [Using the engine](#1-using-the-engine).
 | Drawing edits | `model/edit_ops.dart`, `model/lengthen.dart`, `model/boundary.dart`, `model/dim_style.dart`, `model/layer_states.dart`, `model/project_compare.dart`, `io/typed_geo.dart` | `joinChains`, `explodeEntity`, `filletBetween`, `chamferVertex`, `stretchEntity`, `breakEntity`; `lengthenEntity`; `boundaryAround`; `DimStyle`; `LayerState`; `compareProjects`, `mergeReview`; `parseTypedGeoPoint` |
 | Model and catalogues | `model/area_holes.dart`, `model/project_merge.dart`, `model/paste.dart`, `model/pipe_standards.dart`, `model/regional.dart`, `model/schema.dart`, `model/read_report.dart`, `design/area_water.dart`, `design/model_checks.dart` | `AreaEntity.holes`, `subtractFromArea`, `subtractFromAreas`; `insertProject`; `pasteEntities`; `pipeStandards`, `standardPack`, `standardCatalogPacks`; `mainsHzForLocale`, `unitsForLocale`; `projectJsonSchema`; `ProjectReadReport`; `areaWaterBasis`; `modelChecks` |
 | Files | `io/drawing_import.dart`, `io/import_async.dart`, `io/work_slicer.dart`, `io/safe_archive.dart`, `io/tiff_raster.dart`, `io/cad_xdata.dart`, `io/codepages.dart`, `io/stakeout.dart`, `io/data_cache.dart`, `io/data_credits.dart`, `io/icc_srgb.dart`, `io/image_decode.dart`, `io/xml_text.dart`, `io/sheet_check.dart` | `importFileInto`, `importDrawingInto`; `readImportAsync`; `WorkSlicer`; `openZip`, `gunzipCapped`; `TiffFile`, `TiffRaster`, `TiffReducer`, `TiffGridSampler`; `hydraulicXdata`, `readHydraulicXdata`, `restoreHydraulic`; `decodeCodepage`, `loadCjkCodepages`; `stakeoutPoints`, `stakeoutCsv`; `DataCache` (over a `DataCacheStore`); `projectDataCredits`, `sheetCredits`; `srgbIccProfile`; `SheetReview` |
-| Climate risk over the years (1.7.0) | `design/climate_risk.dart`, `design/climate_risk_stats.dart`, `model/climate_risk_summary.dart` | `climateRiskAnalysis` over a `RiskSeries` (`RiskSeries.ofClimateSeries` from a NASA POWER download, `RiskSeries.ofDaily` from `SiteClimate.daily`), `areaDailyCapacity`, `climateRiskTables`; `quantileAt`, `exceedanceCurve`, `senMannKendall`; `Project.climateRisk` (`ClimateRiskSummary`); `BalanceInput.maxGrossMmDay` and `BalanceInput.yearStart` of the daily balance |
 | Also exported now | `design/region_trace.dart`, `ai/image_prep.dart` | `traceRegion`, `traceRegions` (outlines grown from a point on an aerial picture); `prepareModelImage` (pictures fitted to what the models take) |
 
 The projections beyond the transverse Mercator (Albers equal-area, Lambert conformal conic, polyconic) are in
 `io/datum.dart` with the rest of the coordinate systems (`parseCrs` reads them), and the datum of a project's
 georeference is `GeoReference.datum`, or the site's (`GeoReference.effectiveDatum`, `defaultProjectDatum`).
+
+### Added in 1.7.0
+
+The libraries 1.7.0 added to `lib/core/api.dart` (the blocks marked `// 1.7.0` in it, and the AI clients next to the
+earlier ones), by subject. The reports they add are tables like the others; the forecast is not project data, so its
+tables are built from a plan and not by `buildReportTables`.
+
+| Subject | Libraries | Entry points |
+|---|---|---|
+| AI clients of Google, xAI, Meta and OpenRouter | `ai/gemini_api.dart`, `ai/xai_api.dart`, `ai/meta_api.dart`, `ai/openrouter_api.dart`, `ai/openrouter_catalog.dart` | `GeminiClient` (with `GeminiFormat`), `XaiClient`, `MetaClient`, `OpenRouterClient`; `OpenRouterCatalog.parse` and `entryOf` (rows of `GET https://openrouter.ai/api/v1/models` as `OpenRouterEntry`, each with its `AiModel`); `AiModel.register`, `AiModel.offered` and `AiModel.find` for the models added; `AiUsage.charged` (what OpenRouter says it charged, used for a router's pick the table does not price) |
+| Crop rows from the image | `design/crop_rows.dart` | `detectCropRows` on a `CropRowRaster` (straight RGBA, north up, square pixels over a world rectangle) with `CropRowOptions` (closest and widest spacing, the other band) gives a `CropRowResult` (verdict, `directionDeg` counter-clockwise from the x axis in [0, 180), `spacingM`, `rows`, `confidence`, `plantSpacingM`, `groundCover`, `rowLines`, messages); `cropRowFrame` chooses the frame and pixel size to render; `cropRowLines` and `rowSegments` give the rows of a field; `applyCropRows` writes them into the project; `storedRowDirection`, `storedRowSpacing` and `storedPlantSpacing` read them back from an `AreaEntity` (`rowDirectionDeg`, `rowSpacingM`, `plantSpacingM`) |
+| Climate risk over the years | `design/climate_risk.dart`, `design/climate_risk_stats.dart`, `model/climate_risk_summary.dart` | `climateRiskAnalysis` over a `RiskSeries` (`RiskSeries.ofClimateSeries` from a NASA POWER download, `RiskSeries.ofDaily` from `SiteClimate.daily`), `areaDailyCapacity`, `climateRiskTables`; `quantileAt`, `exceedanceCurve`, `senMannKendall`; `Project.climateRisk` (`ClimateRiskSummary`); `BalanceInput.maxGrossMmDay` and `BalanceInput.yearStart` of the daily balance |
+| Irrigation forecast | `design/irrigation_forecast.dart`, `io/forecast_online.dart` | `fetchForecast` (a `ForecastSource`, an injected GET and a `ForecastKeeper` such as `DataCacheForecastKeeper` that keeps the answer while it is valid), `forecastParse`, `forecastDayEto`; `irrigationForecast` over a `ForecastSeries` with a `ForecastStart` gives a `ForecastPlan`; `forecastTables` |
+| Programme played on the plan, its calendar | `design/programme_playback.dart`, `design/programme_calendar.dart`, `io/ics.dart`, `io/gif_animation.dart` | `buildProgrammeTimeline` and `programmeTimeline` (`ProgrammeTimeline`: the runs of the cycle, what runs at an hour, the next start, the clock), `programmePeriodDays`, `ProgrammePlayback` and its `PlaybackFrame`s with the `FlowView` of each group, `reservoirTrace`, `playbackFrameTimes`; `programmeCalendar` and `programmeEvents`; `writeIcs`, `icsFold`, `icsText`, `icsUnfold`; `GifAnimation` |
+| Design scorecard | `design/scorecard.dart`, `io/scorecard_chart.dart` | `designScorecard` gives a `DesignScorecard` (categories, indicators with their `ScoreCurve`, value, target, sources and score, `gainOf`), `scoreGrade`, `scorecardTable`; `scorecardChart` (the radar as a `PlotChart` for the sheets and the document packages) |
+| Curves from a picture | `design/curve_digitiser.dart`, `design/curve_trace.dart`, `design/curve_fits.dart` | `AxisUnit`, `AxisCalibration` (two points per axis, linear or logarithmic) and `ChartMapping` (the affine mapping, its inverse and `CalibrationError`), `CurveKind`, `CurveRole`, `DigitiserSession`; `ChartRaster`, `traceCurve`, `sampleTrack`; `fitPumpChart`, `fitEmitterChart`, `fitProfileChart`, `cleanChartPoints`; `putPumpChart`, `putNewOutlet`, `putNozzleCurve`, `putTapeEmitter`, `putNozzleProfile` (`ChartApplyError`) |
+| MCP server | `mcp/mcp_server.dart`, `mcp/json_schema.dart`, `mcp/oci_mcp_tools.dart`, `model/default_layers.dart` | `McpServer` (the protocol without a transport), `schemaProblems` and `schemaErrors`, `OciMcpTools` over an `OciMcpHost`, `defaultLayerFor`; the command `dart run bin/oci.dart mcp --root <folder>` and its transport are in `bin/` ([docs/MCP.md](MCP.md)) |
 
 ## 6. Conventions
 

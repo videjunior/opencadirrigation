@@ -1728,6 +1728,68 @@ reamostradas (vista como gramado: mova o limite de copa), água verde, grama sin
 verdes (vistos como vegetação); e os contornos só são tão bons quanto as imagens (a sua data, a sua
 resolução e o seu ajuste ao desenho).
 
+### 20.1 Fileiras de plantio
+
+Módulo `crop_rows.dart` (Projeto → Projeto automático → Fileiras da imagem). As laterais de gotejamento de uma cultura
+em fileira seguem as fileiras de plantio que já existem no campo; a ferramenta lê a direção delas, o espaçamento,
+quantas cruzam o campo, quão segura é a leitura e, quando a imagem os mostra, o espaçamento entre plantas ao longo das
+fileiras e a cobertura do solo pela copa, no mapa base de satélite ou numa foto aérea colocada no desenho, renderizados
+com o norte para cima e pixels quadrados sobre o contorno. É processamento de imagem simples no aparelho, linear nos
+pixels para cada direção testada: sem serviço, sem modelo treinado.
+
+1. **Sinal.** Os pixels dentro do contorno e fora dos buracos que têm dados formam a máscara. A cor passa por um filtro
+   passa-alta (subtrai-se a média numa janela de 1,25 × o maior espaçamento buscado, contando só pixels do campo), que
+   tira o sombreamento e as manchas do campo e deixa as listras, é dividida pelo seu RMS na mesma janela (com piso em
+   um quarto do RMS do campo) para que um pomar escuro e uma mancha clara de solo pesem igual, e é projetada na sua
+   primeira componente principal (Pearson 1901), o eixo de cor em que a imagem mais varia depois de tiradas as mudanças
+   na escala do campo: verde contra solo vermelho num campo, copa escura contra uma cobertura mais clara em outro. O
+   sinal deixa a copa positiva (a projeção se correlaciona com o excesso de verde da seção 20, menos metade do brilho
+   padronizado); valores além de quatro desvios-padrão robustos (1,4826 × o desvio absoluto mediano) são cortados, para
+   que uma estrada ou um telhado não dominem o resultado.
+2. **Direção, grosseira.** O campo é cortado em blocos quadrados de cerca de 3,5 × o maior espaçamento; para cada
+   direção θ (passos de no máximo 1°) os pixels de cada bloco são agrupados pela distância medida transversalmente a θ,
+   uma projeção de Radon discreta (Radon 1917), e a parcela da variância que os grupos explicam, R²(θ) = soma de
+   quadrados entre grupos sobre a total, é a média dos blocos. Listras retas ao longo de θ fazem os grupos diferirem;
+   qualquer outra direção as dilui. Os espaçamentos buscados começam em três pixels da imagem, abaixo do que o período é
+   o próprio grão da imagem.
+3. **Espaçamento, grosseiro.** A autocorrelação dos perfis dos blocos nessa direção, média dos blocos; o primeiro pico
+   que chega à metade do maior entre o menor e o maior espaçamento (o primeiro, não o maior: o perfil de fileiras
+   estreitas tem picos em todo múltiplo do espaçamento). Um pico cuja metade ou terça parte do atraso se correlaciona ao
+   menos com metade da força é um múltiplo de fileiras mais próximas que a faixa, e nenhuma fileira é lida.
+4. **Valores finos.** O R² de um só perfil através do campo inteiro numa grade em torno da direção grosseira, com passo
+   de um quarto da largura angular do pico (espaçamento sobre o comprimento das fileiras): cerca de 0,1° num campo de
+   cem espaçamentos de comprimento. O espaçamento é então buscado dentro de ±6 % na potência da transformada discreta
+   de Fourier, com janela de Hann, do perfil do campo inteiro, com o pico refinado por uma parábola no logaritmo da
+   potência (interpolação abaixo de um intervalo; Quinn 1994 para o raciocínio), e a fase dessa harmônica posiciona as
+   fileiras. Quando o perfil do campo inteiro se repete bem menos que os perfis dos blocos, as fileiras curvam: valem os
+   valores grosseiros e o resultado avisa. Qual faixa de um período é a cultura: a mais verde e escura, a não ser
+   quando as duas são vegetação e a outra é claramente a mais larga (uma copa fechada com entrelinhas estreitas na
+   sombra dela): então a mais larga.
+5. **Fileiras, plantas e cobertura.** Linhas no espaçamento e na fase encontrados sobre o contorno inteiro, recortadas
+   por ele e pelos buracos; uma linha conta como fileira quando pelo menos max(1 m, meio espaçamento) dela fica no
+   campo. O espaçamento entre plantas é o primeiro pico, entre max(4 pixels, 0,25 m) e 1,2 × o espaçamento entre
+   fileiras, da autocorrelação do sinal amostrado ao longo do centro das fileiras e com média de no máximo 150 fileiras
+   (independente da fase de cada fileira); cercas vivas de plantas não têm esse pico, e o espaçamento entre plantas fica
+   então desconhecido. A cobertura do solo é a fração do campo acima do limiar de Otsu (1979) do sinal suavizado em 3 ×
+   3 pixels, dada só quando o histograma tem duas populações pelo coeficiente de bimodalidade BC = (assimetria² +
+   1)/(curtose em excesso + 3) > 5/9 (SAS Institute 1990; Pfister, Schwarz, Janczyk, Dale & Freeman 2013; 5/9 é o valor
+   de uma distribuição uniforme): a fração de copa numa imagem vertical, o substituto usual do solo sombreado ao
+   meio-dia da FAO-56 (Allen et al. 1998).
+
+**Confiança** = destaque angular × periodicidade: (1 − R² mediano de todas as direções ÷ o maior R²) vezes a
+autocorrelação do perfil no espaçamento. Não há referência publicada para essa medida: os limites de fileiras claras
+(0,35) e de leitura incerta (0,15) foram definidos nos campos sintéticos do `crop_rows_test.dart` e em imagens reais
+conferidas durante o desenvolvimento (pomares de amêndoa e cafezais lidos com confiança de 0,67 a 0,96, vinhedos e
+olivais em sebe nos seus espaçamentos; uma cidade, uma pastagem, uma floresta, um pivô colhido e uma vista grosseira
+deram confiança 0). Um campo com mais de 2,5 milhões de pixels no tamanho de pixel necessário é lido numa janela no meio
+dele e as fileiras são estendidas ao campo todo.
+
+**Exatidão em campos sintéticos**: nove campos de 0° a 178,9° e de 2 a 10 m são lidos dentro de ±1° e ±3 % (na prática
+dentro de 0,1° e 0,2 %), as linhas nas faixas de copa a menos de 0,08 de espaçamento, o número de fileiras com erro de
+no máximo uma e a cobertura do solo dentro de 0,05, também com ruído forte, 30 % das plantas faltando, um contorno em L
+com um buraco e coordenadas de milhões de metros. O método supõe fileiras retas na área, igualmente espaçadas, visíveis
+com uns três pixels por espaçamento e uma imagem de uma só data; sombras contam como copa.
+
 ---
 
 ## 21. Agronomia
@@ -1923,6 +1985,102 @@ ciclo seguinte começa no mínimo D_a/IR depois do início do anterior (D_a a l�
 protocolo SWAT (seção 4.3), a taxa de infiltração IR e o acúmulo superficial admissível ASA vindo do
 solo e da declividade da seção 21.4 (teste "1.5 in/h sprays on a clay loam with 5 % slope applying
 0.5 in").
+
+### 21.9 Risco climático ao longo dos anos
+
+Módulos `climate_risk.dart` e `climate_risk_stats.dart` (Projeto → Agronomia → Risco climático ao longo dos anos). Um
+sistema é dimensionado para um só valor, a ETo do mês de pico das normais ou uma ETo de pico digitada; a análise faz o
+sistema, tal como projetado, passar por cada ano real de uma série diária do local.
+
+- **Clima**: a série diária pontual da NASA POWER (meteorologia do MERRA-2 e radiação do GEWEX SRB / CERES, todos os
+  parâmetros a partir de 1984, quando começa a radiação solar dela) ou a série diária guardada com o clima do local. A
+  ETo de cada dia é a Penman-Monteith FAO da seção 21.2 (`dailyPenmanMonteith`), com os termos ausentes estimados como
+  manda o capítulo 3 da FAO-56. Um dia sem ETo recebe a ETo média do mês da própria série, e um dia sem chuva conta como
+  seco; uma safra ou ano com mais de um décimo dos dias preenchidos fica de fora.
+- **Balanço**: cada área irrigada com balanço hídrico roda o balanço hídrico diário do solo do capítulo 8 da FAO-56
+  (`soil_water_balance.dart`, as entradas do diálogo de balanço hídrico diário) safra a safra, duas vezes: sem limite, o
+  que dá a necessidade de irrigação, e com a lâmina bruta que o sistema projetado aplica por dia, o que dá o que ele
+  teria aplicado e os dias de déficit (dias de cultura que terminam com o esgotamento acima da RAW, ou acima do déficit
+  controlado do estágio); uma safra sem nenhum é confiável. A capacidade diária é, sob uma máquina, a lâmina por volta
+  sobre as horas de uma volta vezes a janela da programação e, nas demais áreas, a intensidade de aplicação dos
+  emissores sobre a área vezes a parcela da janela do turno dela (parcelas na proporção das horas que cada turno
+  precisa no dia de pico do projeto); um critério de intervalo de n dias pode aplicar n dias dela.
+- **Período de pico**: a maior média, em 7, 10, 15 ou 30 dias seguidos, da ETc,loc menos a chuva retida na zona das
+  raízes (chuva efetiva menos percolação profunda), sobre a relação bruta/líquida do mês; a ETo do período de pico é a
+  maior média da ETo em outros tantos dias.
+- **Anos**: culturas de ciclo a partir da data de plantio (uma safra pode entrar no ano seguinte); culturas o ano todo e
+  os valores do local por ano agrícola, a partir do primeiro dia do mês cuja chuva média mais supera a ETo média, para
+  que o solo possa começar na capacidade de campo e a estação seca de qualquer hemisfério caia dentro de um mesmo ano.
+- **Probabilidades**: não excedência empírica com posições de plotagem de Weibull, F(x₍ᵢ₎) = i/(n + 1) para o i-ésimo
+  menor de n valores (Weibull 1939; Chow, Maidment & Mays 1988, seção 12.5; as posições da chuva provável da seção 21.2),
+  o valor de uma probabilidade interpolado linearmente entre as posições e limitado à amostra: nenhuma distribuição é
+  ajustada, nada é extrapolado além dos anos observados.
+- **Tendência**: o declive de Sen, a mediana dos declives de todos os pares de anos (Sen 1968), e o teste de
+  Mann-Kendall (Mann 1945; Kendall 1975) com S = Σ sinal(xⱼ − xᵢ), a variância corrigida para empates, Var(S) =
+  [n(n−1)(2n+5) − Σ t(t−1)(2t+5)]/18, e o Z com correção de continuidade, bicaudal a 5 % (|Z| > 1,96), como Helsel &
+  Hirsch (2002, capítulo 12) o descrevem; a aproximação normal pede uns dez valores, então séries mais curtas não têm
+  teste, e a autocorrelação não é removida.
+- **Veranico**: o índice CDD do ETCCDI, o maior número de dias seguidos com menos de 1 mm de chuva (Karl, Nicholls &
+  Ghazi 1999; Zhang et al. 2011), um dia sem dados encerrando a sequência.
+
+Dados de reanálise são médias em células de dezenas de quilômetros e suavizam os extremos que uma estação no local
+mostraria. Os testes conferem à mão as estatísticas, as médias de pico, o ano agrícola e o balanço limitado (5 mm/dia de
+capacidade bruta contra uma ETc de 5 mm/dia: 356 eventos, 1780 mm, 351 dias de déficit) e simulam à mão um pivô da
+galeria; duas respostas reais da NASA POWER (uma que atravessa o ano novo, uma anterior a 1984 com o valor sentinela −999
+para a radiação ausente) são lidas. Só um resumo, alguns números por ano do local e por área e safra, fica no projeto.
+
+### 21.10 Previsão de irrigação
+
+Módulos `forecast_online.dart` e `irrigation_forecast.dart` (Projeto → Agronomia → Previsão de irrigação). O balanço
+hídrico diário avança a partir de hoje pelos dias de uma previsão do tempo, para cada área irrigada.
+
+- **Previsão**: o Locationforecast 2.0 do MET Norway (cerca de nove dias e meio, horário nos dois ou três primeiros dias,
+  de seis em seis horas depois) ou a Forecast API do Open-Meteo (16 valores diários com a própria ETo FAO-56, usada como
+  vem). As horas do MET viram dias solares locais (UTC + longitude/15, já que um banco de fusos horários seria uma
+  dependência): as temperaturas extremas, o ponto de orvalho médio, o vento médio a 10 m levado a 2 m (eq. 47 da FAO-56)
+  e a precipitação de cada período de 1 ou 6 horas contada uma vez. Um dia seguinte precisa de 18 horas cobertas; quando
+  a previsão cobre menos de 12 horas de hoje, a ETo de amanhã fica no lugar da de hoje.
+- **ETo**: Penman-Monteith FAO (eq. 6 da FAO-56, seção 21.2) sobre os valores diários. O MET Norway não publica radiação
+  solar, então ela vem da amplitude térmica, Rs = kRs·√(Tmax − Tmin)·Ra (eq. 50 da FAO-56, kRs 0,16, limitada à radiação
+  de céu claro), o procedimento que a FAO-56 dá para radiação ausente. A cobertura de nuvens diurna por Kasten & Czeplak
+  (1980), Rs = Rso·(1 − 0,75·C^3,4), foi testada e descartada: nos cinco dias inteiros da resposta gravada para os testes
+  ela deu uma ETo 19 % acima da que o Open-Meteo publicou para o mesmo lugar e dias, e a eq. 50 −1 % (diferença absoluta
+  média de 0,3 mm/dia). Um local e cinco dias são pouca evidência, e a eq. 50 erra em dias nublados de grande amplitude
+  térmica.
+- **Balanço**: a cultura como a tabela de necessidade e o balanço diário a tomam: a curva de Kc em cada data a partir da
+  data de plantio lida para o hemisfério do local, ETc,loc = Kr·Kc·ETo, TAW = AWC·Zr·Pw, RAW = p·TAW com p ajustado à
+  ETc do dia (Tabela 22 da FAO-56, nota 2), Ks da eq. 84; a chuva abaixo de 0,2·ETo só molha a superfície e a que passa
+  da capacidade de campo percola (eq. 88).
+- **Quando e quanto**: uma área é irrigada no dia em que o esgotamento chegaria ao menor entre o esgotamento permitido
+  do estágio e a lâmina líquida de um evento da programação do projeto, de modo que o intervalo da programação se
+  mantém enquanto o tempo pede a lâmina de projeto; a irrigação repõe o esgotamento (a fração de reposição das
+  configurações do balanço), a lâmina bruta é a líquida sobre a eficiência com a lixiviação do mês, e o tempo de
+  funcionamento é a lâmina bruta sobre a taxa de aplicação da área nos resultados do cálculo.
+- **Ajuste (water budget)**: 100 × (a água que a cultura usa nos dias da previsão − a chuva que a zona das raízes guarda)
+  ÷ (os dias × a lâmina diária que a programação do projeto aplica no mês de projeto), mantido entre 0 e 300 %, o ajuste
+  sazonal que um controlador recebe; o déficit inicial fica de fora (não é a parte do tempo).
+
+Os testes comparam os valores diários e a ETo da resposta gravada do MET com um cálculo independente (em 2026-11-10:
+Tmax 26,3 °C, Tmin 14,9 °C, Torvalho 13,68 °C, u₂ 2,64 m/s, ETo 4,928 mm) e conferem os planos à mão (um déficit
+acumulado até o quinto dia, uma chuva que dispensa uma irrigação, os dois hemisférios em janeiro). A resposta fica
+guardada no aparelho e nunca é buscada de novo antes da hora do `Expires` do serviço (os termos do MET), e fica guardada
+no mínimo três horas para o MET Norway (metade do intervalo de atualização de seis horas fora da região nórdica), uma
+para o Open-Meteo.
+
+### 21.11 O programa na planta
+
+Módulos `programme_playback.dart`, `programme_calendar.dart`, `ics.dart` e `gif_animation.dart` (Projeto → Agronomia →
+Reproduzir o programa na planta). Cada turno roda a cada tantos dias em dias escalonados, então o programa se repete
+depois do mínimo múltiplo comum dos intervalos (um dia quando todos os turnos são diários; no máximo 28 dias são
+reproduzidos); o ciclo é circular, e uma rega que passa da última meia-noite continua no início. Um momento mostra a
+solução em regime permanente do turno que roda nele, mantida durante a rega; dois turnos sobrepostos têm as vazões
+somadas nos tubos comuns e a maior carga na fonte, com aviso. Um reservatório atrás de uma fonte segue a continuidade do
+volume, dV/dt = Q_entrada − ΣQ_retirada, ao longo da linha do tempo, com o nível lido na curva cota–volume do estudo do
+reservatório (invertida) e mantido entre o nível mínimo de operação (seco) e o nível cheio (vertendo); os testes
+conferem os volumes à mão (uma entrada de 7,2 m³/h e uma retirada de 180 m³/h por 2 h numa bacia de 1000 m² de paredes
+verticais: 2500 → 2543,2 → 2197,6 → 2312,8 m³). O calendário segue a RFC 5545: linhas dobradas em 75 octetos sem partir
+um caractere, texto escapado, horas locais flutuantes, um `DURATION`, um `RRULE` a cada ciclo e `UID`s estáveis por um
+hash FNV-1a. O GIF animado tem paleta de até 256 cores por quadro (quantizador octree, sem pontilhado) e se repete.
 
 ---
 
@@ -2663,6 +2821,36 @@ está no manual (docs/manual/pt-BR/file-formats.md) e em `catalogs/README.md`. A
 arquivo autossuficiente e legível; a biblioteca de blocos de usuário também viaja no projeto, e as
 exportações DXF e DWG a gravam como definições de bloco.
 
+### 24.13 Curvas lidas de uma imagem
+
+Módulos `curve_digitiser.dart`, `curve_trace.dart` e `curve_fits.dart` (Projeto → Digitalizar curva de uma imagem).
+
+- **Calibração**: dois pontos clicados em cada eixo dão os valores e a direção dele (o valor vertical não muda ao longo
+  do eixo horizontal, e vice-versa): seis equações para os seis coeficientes do mapeamento afim geral u = a·px + b·py +
+  c, v = d·px + e·py + f, em que u e v são os valores dos eixos ou os logaritmos decimais deles num eixo logarítmico.
+  Imagens giradas e inclinadas são lidas exatamente; uma perspectiva não é afim. A calibração é recusada quando dois
+  pontos de um eixo coincidem, os dois valores dele são iguais, um valor logarítmico é nulo ou negativo, ou os eixos
+  foram clicados a menos de 10° um do outro (um erro dos cliques é amplificado em até 1/sen 10° ≈ 5,8: uma proteção
+  contra um mapeamento mal condicionado, não um limite de engenharia).
+- **Traçado**: a cor clicada é o pixel vizinho que mais difere do fundo; os pixels mantidos ficam entre o fundo e essa
+  cor dentro de uma tolerância (60 unidades RGB por padrão, no máximo metade da distância entre curva e fundo), então a
+  borda suavizada de uma linha conta e uma grade clara ou uma curva de outra cor não. O traçado avança um pixel ao longo
+  do eixo horizontal, fica com o trecho de pixels mais próximo de onde os últimos passos levam, atravessa falhas de até
+  12 pixels e para nas maiores; supõe um valor da curva para cada valor horizontal. São parâmetros do algoritmo,
+  documentados no código.
+- **Ajustes**: os pontos de altura passam pelo `PumpCurve.fit` (seção 12): a parábola de mínimos quadrados quando ela
+  fica a até 3 % da maior altura (a tolerância de altura do grau de aceitação 1B da ISO 9906) sem corcova, senão a
+  cúbica monótona por trechos pelos pontos (Fritsch & Carlson 1980); sem curva de rendimento, a potência no eixo dá
+  η = ρ·g·Q·H / P em cada ponto de potência, com H lido na curva de altura ajustada (P tomada como potência no eixo, P2).
+  Os pontos vazão × pressão são ajustados a q = k·Hˣ por mínimos quadrados em escala log–log (`EmitterCurve.fitTable`,
+  seção 8), e um perfil radial é normalizado pelo raio molhado lido e pela maior taxa (o perfil medido do densograma,
+  seção 9.1).
+
+Os testes recuperam valores exatos em gráficos retos, girados (25°), inclinados (eixos a 78°) e logarítmicos, traçam um
+gráfico sintético de 660 × 440 com grade, uma curva que cruza e uma legenda a menos de 0,15 m de altura (um pixel é
+1/7 m) e conferem os ajustes à mão (uma potência no eixo de 8 353,28 W a 0,02 m³/s, 32 m e η 0,75; um gotejador de
+orifício de 4 L/h a 10 m).
+
 ---
 
 ## 25. Desempenho e arquitetura de software
@@ -2794,6 +2982,43 @@ verificação do projeto).
   energia).
 - Depois de um cálculo com erros a aba Mensagens abre sozinha e o seu rótulo conta os problemas.
 
+### 26.1 Boletim de qualidade do projeto
+
+Módulo `scorecard.dart` (Projeto → Boletim de qualidade do projeto). O boletim transforma o que os resultados, a
+verificação do projeto, o assistente de projeto e as análises já calculam num só índice, reproduzível a partir da tabela
+que ele imprime. Cada indicador tem um valor, um alvo, a fonte do alvo e uma nota de 0 a 100 dada por uma função linear
+por trechos entre âncoras declaradas (valor → nota), mantida nas notas das pontas além da primeira e da última:
+
+| Indicador | Âncoras (valor → nota) | De onde vem o alvo |
+|---|---|---|
+| Uniformidade de emissão EU (zonas de gotejo e microaspersão) | 0 → 0, 70 → 60, 80 → 70, 90 → 80, 94 → 90, 100 → 100 | As classes da ASAE da ASABE EP405.1 como a seção 9 as apresenta (acima de 94 % excelente, 90–94 % boa, 80–90 % regular, abaixo de 80 % ruim; Keller & Karmeli 1974); a âncora em 70 % é um degrau do próprio programa dentro da classe ruim |
+| CU de sobreposição (zonas de aspersores) | 0 → 0, 75 → 60, 85 → 80, 100 → 100 | 85 % satisfatório (Keller & Bliesner 1990; ISO 15886-3); 75 % é o limite da verificação do próprio programa (`area_uniformity_low`) |
+| Variação de vazão q_var | 0 → 100, 10 → 90, 20 → 70, 100 → 0 | 10 % desejável e 20 % aceitável como a seção 9 os apresenta; o boletim imprime Keller & Bliesner (1990) ao lado deles, mas a seção 9 não dá referência para esses dois limites, então eles ficam como faixas de trabalho do programa |
+| Um critério que deve valer em toda parte | a parcela que o atende: 0 % → 0, 100 % → 100 | O limite de velocidade de cada uso (parâmetros de projeto; ASAE S376.2), a classe de pressão na temperatura da água (ISO 1452-2, ISO 4427-2, ABNT NBR 14312), a faixa de pressão dos emissores (parâmetros de projeto; ASABE EP405.1, UNE-EN 13742-1), a pressão de que cada zona precisa, a faixa de catálogo das bombas, 70–120 % da vazão de melhor rendimento (seção 12), a infiltração do solo (NRCS NEH 15-11), o escoamento (NRCS NEH 623 cap. 4), a demanda de pico da FAO-56 na janela, o golpe dentro da classe (AWWA M23, M55), a margem de NPSH e a altura de sucção (ANSI/HI 9.6.1), o custo do ciclo de vida contra a alternativa mais barata (NIST Handbook 135), os avisos da verificação, uma lista de materiais com preço |
+| Uma contagem que deve ser zero | 0 → 100, 1 ou mais → 0 | Erros da verificação e do cálculo; pontos altos da linha principal sem ventosa (AWWA M51) |
+
+As notas das âncoras seguem uma convenção, as faixas dos conceitos A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, E abaixo: a melhor
+classe de uma norma termina no limite de A, a seguinte no de B, e assim por diante. Uma parcela é ponderada pelo
+comprimento de tubo, pela água que os emissores entregam, pela vazão (vezes as horas do turno para as bombas), pela área
+ou pela contagem; os indicadores de uniformidade são médias das zonas ponderadas pela vazão. Uma categoria é a média
+ponderada dos seus indicadores avaliados e a nota geral a média ponderada das categorias avaliadas, todos com peso 1 (o
+código aceita outros; o diálogo não os edita). Os pontos que um indicador acrescentaria em 100 são (100 − n)·(p / Σp da
+categoria)·(P / ΣP das categorias avaliadas), e a lista de melhorias é ordenada por eles. Um indicador que não pode ser
+calculado (nenhuma zona daquele tipo, sem preços, uma análise não rodada, uma bomba sem curva de rendimento) fica não
+avaliado e fora de todas as médias; um sem nenhum valor de referência (kWh por m³ e por ha·mm, custo e custo anual
+equivalente por área, parcela da energia no custo do ciclo de vida) é só informado. A parcela da altura da bomba que a
+zona crítica usa (a sobra de carga na fonte sobre o acréscimo da bomba) representa a energia queimada nas válvulas, que
+os resultados definem sem dividir o caminho crítico em desnível, pressão dos emissores e perdas. A uniformidade dos
+pivôs, a análise transitória completa, a simulação de 24 horas e o DU do densograma ficam de fora (os resultados deles
+não ficam com o cálculo, ou são lentos demais para uma tabela refeita depois das edições), e a eficiência de aplicação é
+uma entrada, não um resultado. O teste de envelhecimento roda a análise do projeto ao longo da vida com os padrões dela
+(15 anos, C de Hazen-Williams −0,5 por ano, rugosidade +0,01 mm por ano, 10 % de entupimento, CV +0,05).
+
+Os testes conferem cada função nas âncoras, entre elas e além delas, as médias e os pontos a ganhar (levar um indicador
+a 100 acrescenta exatamente os seus pontos), o exemplo do pomar (conceito A, com EU, uso da altura e energia
+recalculados à mão a partir dos resultados) e uma variante pior de propósito (tubos das zonas no menor diâmetro: nota
+geral menor e mais de 10 pontos a menos na uniformidade).
+
 ---
 
 ## 27. Assistente de IA
@@ -2807,11 +3032,16 @@ encaixado ao lado do desenho (400 pixels de largura; uma folha inferior sobre o 
 celulares), que fica aberto enquanto o agente trabalha, de modo que o usuário vê o desenho mudar,
 digita novas instruções e o interrompe a qualquer momento; cada aba de projeto tem a sua conversa. Ele
 não tem servidor, como o resto do programa: o navegador (ou o aplicativo de desktop) chama o provedor
-do modelo escolhido, a Anthropic ou a OpenAI, diretamente com a chave de API do próprio usuário para
-esse provedor, e o provedor cobra o uso na conta do usuário; o painel mostra uma estimativa dos
-tokens e do custo de cada resposta e da conversa. O laço, as ferramentas, as permissões e os dados do
+do modelo escolhido diretamente com a chave de API do próprio usuário para esse provedor, e o
+provedor cobra o uso na conta do usuário; o painel mostra uma estimativa dos tokens e do custo de cada
+resposta e da conversa. Seis provedores são oferecidos: Anthropic (Claude), OpenAI (GPT), Google
+(Gemini), xAI (Grok), Meta (Muse) e OpenRouter, um mercado cuja chave única alcança os modelos dos
+outros e muitos mais pelos servidores dela. O laço, as ferramentas, as permissões e os dados do
 projeto não dependem do provedor (`lib/core/ai/agent_loop.dart`, `project_context.dart`, as
-ferramentas de `lib/app/ai/`); os dois clientes e os seus formatos são as seções 27.1 a 27.3.
+ferramentas de `lib/app/ai/`); os seis clientes e os seus formatos são as seções 27.1 a 27.3. Os
+clientes do Google, da xAI, da Meta e da OpenRouter foram escritos a partir da documentação de cada
+empresa de 2026-11-10 e são testados contra transcrições roteirizadas que copiam os formatos que ela
+documenta; nenhum deles rodou com uma chave de verdade.
 
 ### 27.1 Provedores e modelos
 
@@ -2819,34 +3049,75 @@ ferramentas de `lib/app/ai/`); os dois clientes e os seus formatos são as seç�
 com provedor, nível e preços de lista), os tokens e o seu custo estimado (`AiUsage`), os erros
 (`AiError`), o cancelamento (`AiCancel`), as partes de uma mensagem e a troca HTTP como uma função
 injetada (`AiTransport`: fetch com um abort controller no navegador, o corpo lido como fluxo, sem
-cookies nem referrer; `HttpClient` no desktop; um falso roteirizado nos testes). Dois clientes
-implementam `AiClient`: `AnthropicClient` (`claude_api.dart`, a API Messages) e `OpenAiClient`
-(`openai_api.dart`, a API Responses); os nomes da primeira versão, só da Anthropic (`ClaudeApi`,
-`ClaudeModel`…), continuam como apelidos.
+cookies nem referrer; `HttpClient` no desktop; um falso roteirizado nos testes). `AiProvider` nomeia
+cada provedor com o único host para onde a chave dele vai, a página onde se fazem chaves, como as
+chaves dele costumam começar (uma dica, nunca exigida) e a página de cobrança. Seis clientes
+implementam `AiClient`: `AnthropicClient` (`claude_api.dart`, a API Messages), `OpenAiClient`
+(`openai_api.dart`, a API Responses), `XaiClient`, `MetaClient` e `OpenRouterClient`
+(`xai_api.dart`, `meta_api.dart`, `openrouter_api.dart`: as Responses APIs da xAI, da Meta e da
+OpenRouter, que têm a forma da da OpenAI, então cada um é o `OpenAiClient` com os seus ganchos
+trocados: o endereço, os cabeçalhos, o corpo, os itens reenviados, o uso, os erros e os campos
+opcionais) e `GeminiClient` (`gemini_api.dart`, a Interactions API do Google, escrita a partir do
+formato neutro pelo `GeminiFormat`, seção 27.3); os nomes da primeira versão, só da Anthropic
+(`ClaudeApi`, `ClaudeModel`…), continuam como apelidos.
 
 | Provedor | Nível | Modelo (id) | US$ por milhão de tokens, entrada / saída | Observações |
 |---|---|---|---|---|
-| Anthropic | topo | Claude Fable 5.1 (`claude-fable-5-1`) | 10 / 50 | raciocínio sempre ligado; exige retenção de dados de 30 dias; vezes longas |
+| Anthropic | topo | Claude Fable 5.2 (`claude-fable-5-2`) | 8 / 40 | raciocínio sempre ligado; exige retenção de dados de 30 dias; vezes longas |
 | Anthropic | topo | Claude Opus 5.5 (`claude-opus-5-5`) | 4 / 20 | o padrão |
 | Anthropic | intermediário | Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 2 / 10 | |
 | Anthropic | rápido | Claude Haiku 5.5 (`claude-haiku-5-5`) | 0,1 / 0,5 | acima de 100 000 tokens de entrada, 5 × |
 | OpenAI | topo | GPT-6 Astra (`gpt-6-astra`) | 10 / 50 | vezes longas |
 | OpenAI | intermediário | GPT-6.1 Sol (`gpt-6.1-sol`) | 2 / 10 | |
+| OpenAI | rápido | GPT-6.1 Terra (`gpt-6.1-terra`) | 1 / 5 | |
 | OpenAI | rápido | GPT-6 Luna (`gpt-6-luna`) | 0,1 / 0,5 | |
 | OpenAI | intermediário | GPT-6 Sol (`gpt-6-sol`), GPT-5.6 Terra (`gpt-5.6-terra`) | 2 / 10; 2 / 12 | versões anteriores |
+| Google | topo | Gemini 4 Argon (`gemini-4-argon`) | 4 / 20 | metade do preço até 2026-12-01; esforços low, medium, high; vezes longas |
+| Google | intermediário | Gemini 3.8 Flash (`gemini-3.8-flash`) | 1,5 / 7,5 | metade do preço até 2027-01-01; nível gratuito; esforços low, medium, high |
+| Google | rápido | Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`) | 0,3 / 2,5 | nível gratuito; esforços low, medium, high |
+| xAI | topo | Grok 4.7 (`grok-4.7`) | 2 / 6 | a partir de 200 000 tokens de prompt, 2 ×; esforços de low a xhigh; PDFs como texto |
+| xAI | rápido | Grok 4.3 (`grok-4.3`) | 1,25 / 2,5 | como o Grok 4.7 |
+| Meta | topo | Muse Wonder (`muse-wonder-1.0`) | 4 / 20 | vezes longas |
+| Meta | intermediário | Muse Spark 1.3 (`muse-spark-1.3`) | 1,25 / 4,25 | |
+| Meta | rápido | Muse Ember (`muse-ember-1.0`) | 0,1 / 0,5 | acima de 200 000 tokens de entrada, 3 × |
+| OpenRouter | de topo a rápido | Claude Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5; GPT-6 Astra, GPT-6.1 Sol, GPT-6.1 Terra; Gemini 4 Argon, Gemini 3.8 Flash; Grok 4.7; Muse Spark 1.3 (`anthropic/claude-fable-5.2`…) | os preços das empresas como a OpenRouter os lista (Gemini 3.8 Flash 1,65 / 8,25) | as regras de prompt longo das empresas; respostas de no máximo 32 000 tokens (Fable 5.2, GPT-6 Astra) ou 64 000 (Opus 5.5, Grok 4.7, Muse Spark 1.3) |
+| OpenRouter | intermediário, rápido | Auto Router (`openrouter/auto`), Free Models Router (`openrouter/free`) | o preço do modelo que cada um escolhe; grátis | roteadores |
 
 Leituras e gravações de cache têm os seus próprios preços de lista (gravações a 1,25 vez o preço de
-entrada, a taxa do cache de cinco minutos da Anthropic). Na OpenAI, prompts acima de 272 000 tokens de
-entrada custam o dobro dos preços de entrada e de cache e 1,5 vez o preço de saída. Todo modelo aceita
-os cinco níveis de esforço (low, medium por padrão, high, xhigh, max: `output_config.effort` na
-Anthropic, `reasoning.effort` na OpenAI). Os modelos de vezes longas têm tempos de espera maiores
-(seção 27.2). O custo de uma resposta é calculado pelo preço do modelo que de fato a atendeu (um
-fallback de recusa pode ser outro modelo, o Claude Opus 5 ou o Opus 4.8, precificados embora não
-oferecidos), com as iterações de compactação da Anthropic somadas às contagens do nível superior.
-Trocar para outra empresa, ou entre modelos da OpenAI, começa uma conversa nova (a anterior não é
-enviada); um modelo Claude pode assumir a conversa de outro modelo Claude. O Claude Fable 5.1 pedido
-por uma organização sem retenção de dados de 30 dias é recusado pela API; o erro é reconhecido e a
-mensagem sugere o Claude Opus 5.5.
+entrada, a taxa do cache de cinco minutos da Anthropic; o Google, a xAI e a Meta não cobram a gravação
+nos seus caches automáticos, e o uso deles não informa gravações). Na OpenAI, prompts acima de 272 000
+tokens de entrada custam o dobro dos preços de entrada e de cache e 1,5 vez o preço de saída; uma
+regra desse tipo (`longAbove`, `longInput`, `longOutput`) vale para o pedido inteiro quando a entrada
+passa do limite. Um preço de lançamento (`introUntil`, `introFactor`) multiplica todos os preços até
+o dia que ele indica, e o medidor cobra um pedido pelos preços do seu dia. Os modelos da Anthropic,
+da OpenAI e da Meta aceitam os cinco níveis de esforço (low, medium por padrão, high, xhigh, max:
+`output_config.effort` na Anthropic, `reasoning.effort` nas Responses APIs); um modelo que aceita
+menos (`AiModel.efforts`) recebe o mais próximo abaixo (`effortFor`): os níveis de raciocínio do
+Gemini param em high, os do Grok em xhigh. Os modelos de vezes longas têm tempos de espera maiores
+(seção 27.2). `vision`, `pdf`, `tools` e `priced` dizem se um modelo lê imagens, lê um PDF anexado
+inteiro (senão o PDF vai como o seu texto, extraído no aparelho), usa ferramentas e tem preços
+conhecidos (um roteador não tem). O custo de uma resposta é calculado pelo preço do modelo que de fato
+a atendeu (um fallback de recusa pode ser outro modelo, o Claude Opus 5 ou o Opus 4.8, precificados
+embora não oferecidos; um roteador informa o modelo que escolheu), com as iterações de compactação da
+Anthropic somadas às contagens do nível superior; a resposta de um modelo que a tabela não precifica
+custa o que o provedor diz ter cobrado (`AiUsage.charged`, o `usage.cost` da OpenRouter). Trocar para
+outra empresa, ou entre dois modelos de uma empresa que não a Anthropic, começa uma conversa nova (a
+anterior não é enviada); um modelo Claude pode assumir a conversa de outro modelo Claude. Uma escolha
+ou uma conversa guardada do Claude Fable 5.1 continua com o Claude Fable 5.2, que o substituiu. O
+Claude Fable 5.2 pedido por uma organização sem retenção de dados de 30 dias é recusado pela API; o
+erro é reconhecido e a mensagem sugere o Claude Opus 5.5.
+
+**Modelos da lista da OpenRouter** (`openrouter_catalog.dart`). `GET https://openrouter.ai/api/v1/models`
+(pública, sem chave, sem cabeçalho do app) dá todo modelo que a OpenRouter serve; uma linha vira um
+`AiModel` da OpenRouter quando os endpoints dela incluem a Responses API, ele responde em texto e tem
+preço (apelidos ficam de fora): os preços por token como listados (por milhão no app), os preços de
+cache quando listados (senão o de entrada), a primeira faixa de preço que depende só do tamanho do
+prompt (as por hora do dia são ignoradas), os esforços que ela lista, o limite de saída do provedor
+principal (32 000 quando não há) limitado a 128 000 tokens e à metade da janela de contexto, e se ele
+lê imagens e usa ferramentas. O nível é uma faixa do preço de saída (topo a partir de US$ 15 por
+milhão de tokens, intermediário a partir de 4, rápido abaixo; roteadores intermediário), não um juízo
+de qualidade. Os modelos que o usuário acrescenta ficam nas preferências e são registrados de novo ao
+abrir (`AiModel.register`); a última cópia da lista fica no aparelho para uso sem rede.
 
 ### 27.2 Requisições e fluxos
 
@@ -2855,13 +3126,15 @@ cabeçalhos levam a chave (`x-api-key`), no navegador `anthropic-dangerous-direc
 (sem ele a API não envia cabeçalhos de outra origem e o navegador bloqueia a resposta) e
 `anthropic-beta` com os betas que a requisição usa (`server-side-fallback-2026-07-01`,
 `task-budgets-2026-03-13`, `context-management-2025-06-27`, `compact-2026-01-12`). O corpo: o modelo,
-`max_tokens` 64 000, `stream: true`, o prompt de sistema como um bloco de texto com um ponto de quebra
+`max_tokens` (o limite de saída do modelo, 128 000 nos modelos Claude 5.x, menor sob um teto de
+gasto), `stream: true`, o prompt de sistema como um bloco de texto com um ponto de quebra
 de cache, as ferramentas numa ordem fixa, cada uma com `eager_input_streaming: true` (as entradas
 chegam em fluxo à medida que são geradas, e é por isso que o laço confere ele mesmo cada entrada), as
-mensagens desde a última compactação, `thinking: {type: "adaptive"}` (fora no Fable 5.1, que sempre
-raciocina e não aceita esse ajuste), `output_config` com o esforço e, no Opus 5.5, no Sonnet 5.5 e no
-Haiku 5.5 quando há teto de gasto, um orçamento de tarefa (`task_budget: {type: "tokens", total}`, o
-teto dividido pelo preço de saída, no mínimo 20 000 tokens) pelo qual o modelo se orienta, um
+mensagens desde a última compactação, `thinking: {type: "adaptive"}` (fora no Fable 5.2, que sempre
+raciocina e não aceita esse ajuste), `output_config` com o esforço e, quando quem chama dá um, um
+orçamento de tarefa (`task_budget: {type: "tokens", total}`, no mínimo 20 000 tokens) pelo qual o
+modelo se orienta (o assistente não dá nenhum: uma contagem de tokens mostrada ao modelo o fazia parar
+cedo, então o limite de etapas e o teto de gasto do próprio app encerram uma tarefa), um
 `cache_control` no nível superior (cache automático da conversa que cresce), `fallbacks: "default"` no
 Fable, no Opus e no Sonnet (uma requisição que um classificador de segurança recusa é respondida por
 outro modelo em vez de falhar) e a gestão de contexto da seção 27.5. O fluxo (server-sent events):
@@ -2877,7 +3150,8 @@ blocos de raciocínio e de uso de ferramentas antes do último marcador de fallb
 corpo: o modelo, `instructions` (o prompt de sistema), `input` (a conversa: os itens de saída
 exatamente como voltaram, as saídas das funções, as mensagens do usuário), as ferramentas de função
 com `strict: false` (os esquemas têm campos opcionais, que o modo estrito não admite; o laço confere
-ele mesmo as entradas), `reasoning: {effort}`, `max_output_tokens` 64 000, `stream: true`,
+ele mesmo as entradas), `reasoning: {effort}`, `max_output_tokens` (o limite de saída do modelo,
+128 000 nos modelos GPT-6, menor sob um teto de gasto), `stream: true`,
 `store: false` (nada fica guardado do lado da OpenAI para requisições posteriores) com
 `include: ["reasoning.encrypted_content"]`, de modo que os itens de raciocínio voltam cifrados e são
 reenviados na requisição seguinte, e a gestão de contexto da seção 27.5. As imagens são partes
@@ -2890,24 +3164,96 @@ de política como `bio_policy`, `misalignment_policy_violation`, `invalid_prompt
 são uma recusa. Os tokens de entrada em cache vêm de `input_tokens_details` (tokens lidos do cache e
 gravados nele).
 
-**Erros e novas tentativas** (os dois clientes): os tipos de erro são distinguidos (autenticação,
+**xAI** (`POST https://api.x.ai/v1/responses`, `XaiClient`). A requisição Responses da OpenAI com
+`store: false` e `include: ["reasoning.encrypted_content"]` (o raciocínio cifrado volta sem mudança;
+pedi-lo também impede a xAI de guardar o rastro do raciocínio para requisições posteriores), um
+`prompt_cache_key` tirado do prompt de sistema e da primeira entrada da conversa (estável numa
+conversa, para que as requisições dela cheguem ao servidor que guardou o prefixo; o cache da xAI é
+automático e gravar nele é grátis), a amostragem que o guia da xAI pede (`temperature` 0,7, `top_p`
+0,95) e só ferramentas de função; nenhum `context_management` (a xAI o interpreta, mas não o executa;
+`compact()` chama o `/v1/responses/compact` sem estado da xAI e é testado, não ligado ao laço). O uso
+deixa os tokens de raciocínio fora de `output_tokens`, e eles são somados de volta (cobrados pelo
+preço de saída). O Grok lê só JPEG e PNG, então um WebP ou um GIF é convertido no mesmo tamanho (uma
+imagem com pixels transparentes ou um GIF para PNG, o resto para JPEG), com o resultado guardado para
+que os bytes fiquem iguais de uma requisição para a outra; o app envia um PDF ao Grok como o seu texto,
+porque um arquivo anexado liga a busca em anexos da xAI, uma ferramenta do servidor cobrada por
+chamada. Os erros vêm como `{"code": "…", "error": "…"}`; uma chave que a xAI não conhece recebe um
+400, lido como erro de autenticação.
+
+**Meta** (`POST https://api.meta.ai/v1/responses`, `MetaClient`). A requisição Responses com
+`store: false` e `include: ["reasoning.encrypted_content"]`, nunca `previous_response_id`; os itens de
+saída voltam como vieram, mas um item de raciocínio sem o conteúdo cifrado, ou sem nada depois dele,
+fica fora da requisição (o histórico guardado o mantém), e o texto do assistente antes de uma chamada
+leva `phase: "commentary"`. Um `prompt_cache_key` constante para o app; nenhum `context_management` (a
+API não tem) e nenhuma ferramenta embutida. As imagens vão nas mensagens do usuário e dentro das
+saídas de função como data URLs `input_image`, os PDFs como data URLs `input_file`. Os erros seguem os
+status, tipos e códigos da Meta (402 cobrança, 503 sobrecarga, 504 sem nova tentativa, porque a mesma
+requisição esgotaria o tempo de novo), e três são recuperados: uma requisição que não cabe na janela
+de contexto é enviada de novo pedindo o espaço que resta (no mínimo 16 000 tokens), um limite de
+saída que a API indica é aprendido para aquele modelo, e um item de raciocínio que a API não aceita
+mais sai da requisição.
+
+**OpenRouter** (`POST https://openrouter.ai/api/v1/responses`, `OpenRouterClient`). Só sem estado (a
+OpenRouter recusa `store: true` e `previous_response_id`): a requisição Responses com `store: false`,
+nenhum `context_management` (fora do esquema de requisição dela), um `cache_control` no nível superior
+(`{type: ephemeral}`) que liga o ponto de quebra automático do cache dos modelos que precisam de um, o
+da Anthropic sobretudo (não enviado aos modelos da OpenAI, que fazem cache sozinhos), um `session_id`
+tirado do prompt de sistema e da primeira mensagem, que mantém as requisições de uma conversa num
+mesmo provedor para que o cache dela seja reencontrado, e dois cabeçalhos que identificam o app para
+a classificação de aplicativos da OpenRouter (`HTTP-Referer: https://opencadirrigation.com`,
+`X-OpenRouter-Title: OpenCADIrrigation`), nada sobre o usuário. Mensagens do assistente, itens de
+raciocínio e chamadas reenviados levam os ids que a OpenRouter exige; o raciocínio de cada empresa
+volta como itens `reasoning` (o conteúdo cifrado da OpenAI, o texto de raciocínio da Anthropic com a
+assinatura, as assinaturas de pensamento do Google) e é reenviado como veio. As imagens dos resultados
+de ferramentas ficam dentro das saídas de função para os modelos `anthropic/` e `openai/` e vão numa
+mensagem do usuário logo depois dos resultados para os demais. Um PDF vai como está para um modelo que
+lê arquivos sozinho e, senão, pelo leitor gratuito da OpenRouter (`plugins: [{id: file-parser, pdf:
+{engine: cloudflare-ai}}]`). O uso traz o `cost` que a OpenRouter cobrou, e a resposta diz o modelo
+que respondeu. Os erros são lidos pelo `error_type` canônico da OpenRouter ao lado do `code` da
+Responses: 402 sem crédito (o orçamento de gasto em andamento, que reserva o preço da maior resposta
+que uma requisição permite, é esperado), 403 orçamentos, moderação e regras de proteção, 408, 429 (o
+limite diário dos modelos gratuitos espera até 00:00 UTC e não é tentado de novo), 502 e 503 sem
+provedor.
+
+**Google** (`POST https://generativelanguage.googleapis.com/v1beta/interactions`, `GeminiClient`). A
+Interactions API, que o Google recomenda para projetos novos, no modo sem estado: `store: false`, a
+conversa inteira em `input` como uma lista de passos, a chave em `x-goog-api-key` e `content-type` os
+únicos cabeçalhos (o que o preflight de CORS permite), `system_instruction`, as ferramentas de função
+(os esquemas convertidos para o subconjunto de JSON Schema que o Gemini aceita, com os limites que ele
+não aceita escritos nas descrições), `generation_config` com o `thinking_level` do esforço e o
+`max_output_tokens`, e `stream: true`. O fluxo: `interaction.created`, `interaction.status_update`,
+cada passo como `step.start` → `step.delta` (texto, o JSON dos argumentos de uma chamada, uma
+assinatura de pensamento) → `step.stop`, `interaction.completed` com o uso (tokens de entrada, em
+cache, de saída, de pensamento e de uso de ferramentas) e `error`. Os passos `thought` levam uma
+assinatura cifrada que o modo sem estado deve reenviar exatamente como veio, no seu lugar. As imagens
+vão na resolução de mídia `ultra_high` (2240 tokens por imagem), ou `high` para um modelo que a
+recuse; cada requisição fica abaixo de 20 MB; um modelo de vezes longas espera no mínimo 15 minutos
+pelo próximo evento. Um bloqueio de segurança, de recitação ou de outra política encerra a resposta
+como recusa com a categoria; as cotas dizem se é para esperar (com a espera que o Google informa no
+corpo, já que a página não consegue ler `retry-after`) ou para ativar a cobrança.
+
+**Erros e novas tentativas** (todos os clientes): os tipos de erro são distinguidos (autenticação,
 permissão, cobrança — o `insufficient_quota` da OpenAI —, não encontrado ou um modelo que a conta não
 pode usar, requisição inválida, requisição grande demais — `context_length_exceeded` —, limite de
-taxa, sobrecarga, servidor, rede, tempo esgotado, fluxo interrompido, retenção de dados);
+taxa, sobrecarga, servidor, rede, tempo esgotado, fluxo interrompido, retenção de dados, sem crédito,
+limite de gasto, recusa);
 sobrecargas, limites de taxa e erros de servidor e de rede são tentados de novo no máximo duas vezes,
 depois do `retry-after` (ou `retry-after-ms`) que a API pede, até 30 s, ou de uma espera exponencial
 (2 s, 4 s para limites de taxa, 1,5 s para a rede, dobrando), nunca depois que parte da resposta
 chegou. Uma requisição esgota o tempo sem linha de status em 90 s, ou sem dados por 180 s (300 s e
-600 s para os modelos de vezes longas, que podem raciocinar por minutos). Um campo opcional que um
-modelo recusa (um erro de requisição inválida que cita `fallbacks`, `task_budget`, a gestão de
-contexto ou a limpeza de resultados de ferramentas) é retirado e a mesma requisição é enviada de novo
+600 s para os modelos de vezes longas, que podem raciocinar por minutos; o tempo sem dados dobra nos
+dois esforços mais altos). Um campo opcional que um modelo recusa (um erro de requisição inválida que
+cita `fallbacks`, `task_budget`, a gestão de contexto, a limpeza de resultados de ferramentas ou um
+campo dos clientes mais novos, como `prompt_cache_key`, `cache_control`, `session_id` ou a resolução
+`ultra_high`) é retirado e a mesma requisição é enviada de novo
 na hora, e fica de fora para esse modelo pelo resto da sessão; uma combinação recusada de edições de
 contexto retira primeiro a limpeza, depois a compactação. A chave é removida de todo texto de erro,
 inclusive as suas cópias mascaradas.
 
 ### 27.3 Um laço, dois formatos
 
-O laço nunca olha dentro dos formatos dos provedores. `llm_formats.dart` reúne os dois num só lugar
+O laço nunca olha dentro dos formatos dos provedores. `llm_formats.dart` reúne os dois formatos de
+transmissão num só lugar
 (`AnthropicFormat`, `OpenAiFormat`): as definições de ferramentas, a mensagem do usuário (texto,
 imagens, PDFs), os resultados das ferramentas (texto e imagens, com um indicador de erro ou, na
 OpenAI, cujas saídas de função não têm um, o prefixo `Error: `), as notas do programa, e as chamadas
@@ -2922,6 +3268,16 @@ lê de volta as suas próprias formas, e os testes conferem que todo tipo de ent
 alteração e que uma troca inteira convertida de um formato para o outro e de volta não perde nada
 (`ai_formats_test.dart`). Uma entrada de ferramenta cujo JSON não é interpretável é guardada bruta e
 respondida com um resultado de erro `INVALID_JSON`.
+
+O formato Responses é o neutro que os quatro clientes mais novos compartilham. A xAI, a Meta e a
+OpenRouter o falam como ele é, cada uma mudando só o que a sua API pede na requisição (os itens que
+reenvia, os seus campos). A conversa do Google também fica guardada nele e é traduzida a cada
+requisição pelo `GeminiFormat`, de forma determinística (o mesmo histórico dá sempre os mesmos bytes,
+para que o cache implícito reconheça o prefixo): mensagens e chamadas de função viram passos do
+Gemini, as saídas de função viram passos `function_result` com o nome das suas chamadas, e todo passo
+próprio do Gemini (um `thought` com a sua assinatura) fica no histórico como um item `gemini_step` que
+guarda o passo como veio, para que todo passo volte sem mudança. Uma conversa nunca mistura formatos:
+trocar de empresa começa uma nova.
 
 ### 27.4 O laço de agente
 
@@ -2946,6 +3302,18 @@ cortados com uma nota pedindo menos (um filtro, paginação). O texto chega ao p
 medida que é gerado, com uma linha de estado (pensando, executando uma ferramenta, esperando uma
 aprovação, esperando antes de uma nova tentativa) e o tempo decorrido.
 
+**Segunda opinião** (`/second`, ou o botão na última resposta). A última resposta, a pergunta do
+usuário e todos os dados compactos do projeto (seção 27.9) vão para outro modelo num só pedido sem
+ferramentas (o esforço medium, ou o mais próximo que o modelo aceita, e no máximo 16 000 tokens de
+saída), para a empresa desse modelo, com a chave dela: primeiro os modelos das outras empresas de que
+o usuário tem chave, o mais capaz de cada empresa primeiro, depois os outros modelos da empresa da
+conversa; um roteador sem preços conhecidos fica de fora. O prompt de sistema dele pede um veredito
+(concorda, concorda com ressalvas, discorda) e depois os pontos, o mais importante primeiro, cada um
+com o número em que se apoia, e diz que o material é dado, não instrução. A revisão aparece marcada
+como segunda opinião e os seus tokens e custo somam-se aos da conversa, mas ela não entra no
+histórico: o modelo da própria conversa só a lê quando o usuário a envia (*Responder à revisão*), como
+material citado para conferir ponto por ponto no projeto com as suas ferramentas.
+
 ### 27.5 Gestão de contexto
 
 As tarefas longas mantêm as suas requisições limitadas no servidor, onde o modelo o aceita (um
@@ -2963,6 +3331,9 @@ ajuste, ligado por padrão; a conversa inteira continua no painel):
   três mais novas são trocadas por uma nota curta quando passam de seis (em degraus, para que o prefixo
   em cache mude raramente), só na requisição: o histórico guardado e as imagens do próprio usuário
   ficam.
+- **Google, xAI, Meta e OpenRouter**: nenhuma compactação no servidor (os modelos deles têm
+  `compaction: false`); as imagens mais antigas dos resultados de ferramentas saem de cada requisição
+  como na OpenAI.
 
 Uma compactação é anunciada na conversa.
 
@@ -3037,9 +3408,12 @@ O modelo vê o projeto por imagens com um mapeamento exato (`view_snapshot.dart`
   na maior parte das áreas agrícolas, e o ancestral mais próximo onde falta um bloco) e guardados em
   cache durante a conversa (400 blocos); a vista e o mapa de fundo do usuário nunca mudam, e só
   quando os blocos do mapa da tela não podem ser baixados fora dela a vista vai até lá por um momento
-  e volta, o que o resultado informa. Uma imagem tem no máximo 1568 pixels no lado maior (1024 por
-  padrão) e cerca de 1,15 megapixel, para que nenhum provedor a reescale e o modelo leia as posições
-  na grade de pixels descrita.
+  e volta, o que o resultado informa. Uma imagem tem no máximo o que o modelo lê sem reescalar
+  (`PictureLimits.of`; 1024 pixels no lado maior por padrão): 2576 pixels e cerca de 3,6 megapixels
+  nos modelos Claude que leem imagens em alta resolução (Fable 5.2, Opus 5.5, Sonnet 5.5 e Haiku 5.5,
+  também pela OpenRouter), senão 1568 pixels e cerca de 1,15 megapixel, com o lado menor de no máximo
+  768 pixels nos modelos da OpenAI (também pela OpenRouter), para que o provedor não a reescale e o
+  modelo leia as posições na grade de pixels descrita.
 - **O mapeamento**: toda imagem tem um id (`s1`, `s2`…; `u1`… para as que o usuário anexa; as 80 mais
   recentes guardadas por conversa) e informa o seu mapeamento: norte para cima, pixels quadrados, a
   caixa do mundo [minX, minY, maxX, maxY] e s metros por pixel, com x = minX + px·s e
@@ -3183,19 +3557,26 @@ Cada provedor tem a sua chave. Uma chave fica na memória durante a sessão, por
 chave neste dispositivo" ela vai para o armazenamento do navegador, onde os scripts da página (as
 estatísticas de visita do site entre eles) poderiam lê-la, o que o painel avisa. Ela nunca entra num
 arquivo de projeto, no autosave, num link de compartilhamento ou numa exportação, vai só para o
-endereço da API do seu provedor (`api.anthropic.com` ou `api.openai.com`), no seu cabeçalho, e é
-removida de qualquer texto de erro.
+endereço da API do seu provedor (`api.anthropic.com`, `api.openai.com`,
+`generativelanguage.googleapis.com`, `api.x.ai`, `api.meta.ai` ou `openrouter.ai`), no seu cabeçalho,
+e é removida de qualquer texto de erro, inclusive as suas cópias mascaradas.
 
 ### 27.12 Validação
 
 `ai_agent_test.dart` cobre as requisições e o fluxo da Anthropic (a requisição que a API documenta,
-os ajustes do Fable 5.1, orçamentos de tarefa e compactação onde o modelo os aceita, campos opcionais
+os ajustes do Fable 5.2, orçamentos de tarefa e compactação onde o modelo os aceita, campos opcionais
 retirados, a limpeza de resultados de ferramentas) e o laço (as suas ferramentas e o seu histórico,
 entradas inválidas, os modos e o modo de plano, confirmações, o limite de etapas, o teto de gasto, as
 mensagens escritas durante o trabalho, a parada, erros e novas tentativas, retenção de dados, recusas,
 fallbacks e os seus preços, a chave só no seu cabeçalho); `ai_openai_test.dart` a API Responses (a
 requisição, as saídas das funções, imagens e PDFs, a compactação, a retirada de imagens, os erros, a
-lista de modelos); `ai_formats_test.dart` os dois formatos; `ai_context_test.dart` os dados do projeto.
+lista de modelos); `ai_gemini_test.dart`, `ai_xai_test.dart`, `ai_meta_test.dart` e
+`ai_openrouter_test.dart` os quatro clientes mais novos contra transcrições roteirizadas que copiam os
+formatos documentados de cada empresa (a requisição, rodadas de ferramentas reenviando o raciocínio
+byte a byte, imagens e PDFs, fluxos, uso e custo, paradas e recusas, cada erro documentado e as novas
+tentativas); `ai_openrouter_catalog_test.dart` a lista da OpenRouter lida em modelos;
+`ai_providers_test.dart` os hosts, as páginas de chave, os preços e os preços de lançamento das
+empresas; `ai_formats_test.dart` os dois formatos; `ai_context_test.dart` os dados do projeto.
 Testes de widget cobrem as ferramentas, a visão (a ida e volta exata do mapeamento, a imagem de
 satélite que deixa a vista e o mapa do usuário como estavam, imagens e perfis do terreno sobre
 superfícies conhecidas), as operações, o mapa de cobertura, o manual e o agente inteiro (um projeto
@@ -3213,9 +3594,13 @@ desfeita ou voltada a um ponto de retorno; uma posição escolhida numa imagem v
 escolhe (s metros). As imagens não pedem aprovação, embora baixem blocos de mapa; análises longas que
 o modelo pede rodam na thread da interface; as conversas não são salvas com o projeto, por decisão de
 projeto (um arquivo ou link compartilhado levaria a conversa e as suas imagens), mas ficam guardadas
-no armazenamento do navegador (IndexedDB) por projeto, as 12 mais recentes com as imagens e os anexos
-pequenos, até que a opção que as guarda seja desligada, o que as apaga; o uso é cobrado pelo provedor na conta da chave; e os clientes foram testados contra
-falsos roteirizados das duas APIs, não contra os serviços reais.
+no armazenamento do navegador (IndexedDB) por projeto, as 24 salvas mais recentemente com as
+imagens e os anexos pequenos, até que a opção que as guarda seja desligada, o que as apaga; o uso é
+cobrado pelo provedor na conta da chave; e os clientes foram testados contra falsos roteirizados das
+seis APIs, não contra os serviços reais: os quatro acrescentados na 1.7.0 foram escritos a partir da
+documentação de cada empresa de 2026-11-10 e nunca rodaram com uma chave de verdade. No navegador, a
+página não consegue ler o identificador da requisição e os cabeçalhos de limite de uso da Meta nem as
+esperas da OpenRouter, o que o app de desktop consegue.
 
 ---
 
@@ -3320,7 +3705,7 @@ recusados; levantamentos acima de 12 000 amostras são reduzidos para o TIN; LAS
 V8, PDFs criptografados e as imagens JPEG 2000 e JBIG2 dos PDFs não são lidos; o OpenTopoData só
 funciona no aplicativo de desktop; as exportações CAD são R2000 (cores verdadeiras no DXF,
 índices de cor no DWG) ou R12; o assistente de IA precisa da rede e só foi testado contra falsos
-roteirizados das duas APIs de modelos; e nenhuma versão móvel nativa é produzida (o aplicativo web
+roteirizados das seis APIs de modelos; e nenhuma versão móvel nativa é produzida (o aplicativo web
 funciona em celulares).
 
 ---
@@ -3421,6 +3806,10 @@ Traçado, roteamento e fiação:
 - IFAB, Regra 1 (o campo de jogo); World Athletics (a pista de 400 m); recomendações de construção de greens da United States Golf Association para o green e o seu colar.
 
 Análise de imagens:
+- Radon (1917). Über die Bestimmung von Funktionen durch ihre Integralwerte längs gewisser Mannigfaltigkeiten.
+- Pearson (1901). On lines and planes of closest fit to systems of points in space. Phil. Mag. 2.
+- Quinn (1994). Estimating frequency by interpolation using Fourier coefficients. IEEE Trans. Signal Process. 42(5).
+- Pfister, Schwarz, Janczyk, Dale & Freeman (2013). Good things peak in pairs: a note on the bimodality coefficient. Front. Psychol. 4; SAS Institute (1990) (o coeficiente de bimodalidade).
 - Woebbecke, Meyer, Von Bargen & Mortensen (1995). Color indices for weed identification under various soil, residue, and lighting conditions. Trans. ASAE 38(1).
 - Otsu (1979). A threshold selection method from gray-level histograms. IEEE Trans. SMC 9(1).
 - Meyer & Neto (2008). Verification of color vegetation indices for automated crop imaging applications. Comput. Electron. Agric. 63(2).
@@ -3429,6 +3818,12 @@ Análise de imagens:
 - Douglas & Peucker (1973). Algorithms for the reduction of the number of points required to represent a digitized line or its caricature. Cartographica 10(2).
 
 Agronomia:
+- Weibull (1939) (posições de plotagem); Chow, Maidment & Mays (1988). Applied Hydrology, seção 12.5.
+- Sen (1968). J. Am. Stat. Assoc. 63: 1379 (o declive de uma tendência); Mann (1945); Kendall (1975); Helsel & Hirsch (2002). Statistical Methods in Water Resources, USGS TWRI 4-A3, capítulo 12.
+- Karl, Nicholls & Ghazi (1999); Zhang et al. (2011) (os índices climáticos do ETCCDI, CDD).
+- Kasten & Czeplak (1980) (radiação solar pela cobertura de nuvens, testada para a previsão de irrigação e não usada).
+- MET Norway Locationforecast 2.0, termos de serviço e licença: https://api.met.no/doc/TermsOfService , https://api.met.no/doc/License
+- RFC 5545 (iCalendar).
 - Ayers & Westcot (1985). FAO Irrigation and Drainage Paper 29 Rev. 1; Maas & Hoffman (1977); Maas (1984).
 - Savva & Frenken (2002). FAO Irrigation Manual, Module 9.
 - Brouwer & Heibloem (1986). FAO Irrigation Water Management Training Manual No. 3.

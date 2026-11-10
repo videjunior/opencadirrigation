@@ -14,8 +14,10 @@ por setor, comentários, revisões, alternativas, necessidade por cultura (com a
 licenciamento), pacote do pivô (carta de bocais e temporizador), braço, VRI e elétrica, aspersores
 com válvula, energia, água e máquinas ([Energia, água e máquinas](power-water-machines.md)) e uma
 aba *Manejo da irrigação* com o balanço hídrico diário, o escoamento potencial, a capacidade contra o
-pico, o programa por estação, a fertirrigação por estágio e as avaliações de campo
-([Agronomia e manejo da irrigação](agronomy.md)). A aba da linha principal também traz as estações de
+pico, o programa por estação, a fertirrigação por estágio, as avaliações de campo e as duas tabelas do risco climático
+ao longo dos anos ([Agronomia e manejo da irrigação](agronomy.md)). O boletim de qualidade do projeto também é uma
+tabela de relatório (`scorecard`, em toda exportação; [Cálculo e dimensionamento](calculation.md#boletim-de-qualidade-do-projeto)),
+e o radar dele vai nas páginas de gráficos das pranchas. A aba da linha principal também traz as estações de
 bombeamento (o ponto de cada bomba em cada turno) e a operação real dos setores; a aba de requisitos
 hídricos traz *Declividade por área irrigada*, e a de necessidade por cultura as *Fontes de dados e
 créditos*. Sob o seu título, cada tabela cita os critérios que mostra e as normas que eles seguem

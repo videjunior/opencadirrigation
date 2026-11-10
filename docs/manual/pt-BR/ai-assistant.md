@@ -3,32 +3,201 @@
 Projeto → Assistente de IA… (`IA`, `AI`, `ASK`), o botão dele na barra de status ou **Perguntar à
 IA** em qualquer cartão de mensagem abre um agente de IA que trabalha no projeto aberto num painel
 encaixado ao lado do desenho (uma folha inferior no celular), para você ver o desenho mudar enquanto
-ele trabalha. Ele usa um modelo da Anthropic (Claude, pela API Messages) ou da OpenAI (GPT, pela API
-Responses), com a sua própria chave de API dessa empresa: o navegador (ou o app de desktop) chama a
-API da empresa diretamente, sem servidor deste projeto no meio, e a empresa cobra o uso na sua
-conta. O painel mostra os tokens de cada resposta e da conversa, com uma estimativa em US$ pelos
-preços de tabela abaixo, que podem mudar.
+ele trabalha. Ele usa um modelo de uma de seis empresas, com a sua própria chave de API dessa
+empresa: Anthropic (Claude, pela API Messages), OpenAI (GPT, pela API Responses), Google (Gemini,
+pela Interactions API), xAI (Grok, pela Responses API dela), Meta (Muse, pela Meta Model API no
+formato Responses) ou OpenRouter (uma só chave para os modelos de muitas empresas, pela Responses
+API dela). O navegador (ou o app de desktop) chama a API da empresa diretamente, sem servidor deste
+projeto no meio, e a empresa cobra o uso na sua conta. O painel mostra os tokens de cada resposta e
+da conversa, com uma estimativa em US$ pelos preços de tabela abaixo, que podem mudar.
 
-| Empresa | Nível | Modelo | Id | US$ por milhão de tokens, entrada / saída |
-|---|---|---|---|---|
-| Anthropic | topo | Claude Fable 5.1 | `claude-fable-5-1` | 10 / 50 |
-| Anthropic | topo | Claude Opus 5.5 (o padrão) | `claude-opus-5-5` | 4 / 20 |
-| Anthropic | intermediário | Claude Sonnet 5.5 | `claude-sonnet-5-5` | 2 / 10 |
-| Anthropic | rápido | Claude Haiku 5.5 | `claude-haiku-5-5` | 0,10 / 0,50 (5 × acima de 100 000 tokens de entrada) |
-| OpenAI | topo | GPT-6 Astra | `gpt-6-astra` | 10 / 50 |
-| OpenAI | intermediário | GPT-6.1 Sol | `gpt-6.1-sol` | 2 / 10 |
-| OpenAI | intermediário, versões anteriores | GPT-6 Sol, GPT-5.6 Terra | `gpt-6-sol`, `gpt-5.6-terra` | 2 / 10, 2 / 12 |
-| OpenAI | rápido | GPT-6 Luna | `gpt-6-luna` | 0,10 / 0,50 |
+## Empresas e modelos
 
-Pedidos à OpenAI com mais de 272 000 tokens de entrada custam 2 × na entrada e 1,5 × na saída; as
-configurações também mostram os preços de cache de cada modelo. Todos os modelos aceitam cinco
-profundidades de raciocínio, de rápido a máximo (equilibrado por padrão). O Claude Fable 5.1 e o
-GPT-6 Astra podem pensar vários minutos num só passo, e o Claude Fable 5.1 só é oferecido a
-organizações com retenção de dados de 30 dias (senão o app explica e sugere o Claude Opus 5.5). No
-Claude Fable 5.1, no Opus 5.5 e no Sonnet 5.5 um pedido que um classificador de segurança recusa é
-respondido por outro modelo do lado da Anthropic, cobrado pelo modelo que respondeu. Trocar para um
-modelo da outra empresa, ou entre modelos da OpenAI, começa uma conversa nova; entre modelos Claude
-a conversa continua.
+Os modelos oferecidos, com os preços de tabela por milhão de tokens como cada empresa os publicava
+em 2026-11-10 (`lib/core/ai/llm.dart` guarda a tabela que o app usa):
+
+| Empresa | Nível | Modelo | Id | US$ por milhão de tokens, entrada / saída | Para saber |
+|---|---|---|---|---|---|
+| Anthropic | topo | Claude Fable 5.2 | `claude-fable-5-2` | 8 / 40 | exige retenção de dados de 30 dias; pode pensar minutos |
+| Anthropic | topo | Claude Opus 5.5 (o padrão) | `claude-opus-5-5` | 4 / 20 | |
+| Anthropic | intermediário | Claude Sonnet 5.5 | `claude-sonnet-5-5` | 2 / 10 | |
+| Anthropic | rápido | Claude Haiku 5.5 | `claude-haiku-5-5` | 0,10 / 0,50 | 5 × acima de 100 000 tokens de entrada |
+| OpenAI | topo | GPT-6 Astra | `gpt-6-astra` | 10 / 50 | pode pensar minutos |
+| OpenAI | intermediário | GPT-6.1 Sol | `gpt-6.1-sol` | 2 / 10 | |
+| OpenAI | rápido | GPT-6.1 Terra | `gpt-6.1-terra` | 1 / 5 | |
+| OpenAI | rápido | GPT-6 Luna | `gpt-6-luna` | 0,10 / 0,50 | |
+| OpenAI | intermediário, versões anteriores | GPT-6 Sol, GPT-5.6 Terra | `gpt-6-sol`, `gpt-5.6-terra` | 2 / 10, 2 / 12 | |
+| Google | topo | Gemini 4 Argon | `gemini-4-argon` | 4 / 20 | metade do preço até 1º de dezembro de 2026; pode pensar minutos |
+| Google | intermediário | Gemini 3.8 Flash | `gemini-3.8-flash` | 1,50 / 7,50 | metade do preço até 1º de janeiro de 2027; nível gratuito |
+| Google | rápido | Gemini 3.5 Flash-Lite | `gemini-3.5-flash-lite` | 0,30 / 2,50 | nível gratuito |
+| xAI | topo | Grok 4.7 | `grok-4.7` | 2 / 6 | 2 × a partir de 200 000 tokens de prompt |
+| xAI | rápido | Grok 4.3 | `grok-4.3` | 1,25 / 2,50 | 2 × a partir de 200 000 tokens de prompt |
+| Meta | topo | Muse Wonder | `muse-wonder-1.0` | 4 / 20 | pode pensar minutos |
+| Meta | intermediário | Muse Spark 1.3 | `muse-spark-1.3` | 1,25 / 4,25 | |
+| Meta | rápido | Muse Ember | `muse-ember-1.0` | 0,10 / 0,50 | 3 × acima de 200 000 tokens de entrada |
+| OpenRouter | | Claude Fable 5.2, Opus 5.5, Sonnet 5.5 e Haiku 5.5; GPT-6 Astra, GPT-6.1 Sol e GPT-6.1 Terra; Gemini 4 Argon e Gemini 3.8 Flash; Grok 4.7; Muse Spark 1.3 | `anthropic/claude-opus-5.5`, `openai/gpt-6.1-sol`… | os preços das empresas como a OpenRouter os lista (Gemini 3.8 Flash 1,65 / 8,25) | limite de resposta menor nos mais caros |
+| OpenRouter | | Auto Router, Free Models Router | `openrouter/auto`, `openrouter/free` | o preço do modelo que ele escolhe; grátis | roteadores |
+
+As regras de prompt longo valem para o pedido inteiro quando a entrada passa do limite: os modelos
+da OpenAI (também pela OpenRouter) acima de 272 000 tokens de entrada custam 2 × na entrada e no
+cache e 1,5 × na saída; o Claude Haiku 5.5 acima de 100 000 custa 5 × em tudo; o Grok a partir de
+200 000 tokens de prompt custa 2 × em tudo; o Muse Ember acima de 200 000 tokens de entrada
+(contando os em cache) custa 3 × em tudo. O Gemini 4 Argon e o Gemini 3.8 Flash (também pela
+OpenRouter) custam metade dos preços da tabela até o dia indicado, quando começa o preço cheio. As
+configurações também mostram os preços de cache de cada modelo, e o medidor cobra cada pedido pelos
+preços do seu dia.
+
+Todos os modelos da Anthropic, da OpenAI e da Meta aceitam as cinco profundidades de raciocínio, de
+*Rápido* a *Máximo* (*Equilibrado* por padrão); o Gemini aceita três (*Muito cuidadoso* e *Máximo*
+vão como *Cuidadoso*), o Grok quatro (*Máximo* vai como *Muito cuidadoso*), e um modelo acrescentado
+da lista da OpenRouter as que a lista indica para ele. O Claude Fable 5.2, o GPT-6 Astra, o Gemini 4
+Argon e o Muse Wonder podem pensar vários minutos num só passo, e têm tempos de espera maiores. O
+Claude Fable 5.2 substituiu o Claude Fable 5.1 (uma escolha ou uma conversa guardada do 5.1 continua
+com o 5.2) e só é oferecido a organizações com retenção de dados de 30 dias (senão o app explica e
+sugere o Claude Opus 5.5). No Claude Fable 5.2, no Opus 5.5 e no Sonnet 5.5 um pedido que um
+classificador de segurança recusa é respondido por outro modelo do lado da Anthropic, cobrado pelo
+modelo que respondeu.
+
+Os quatro clientes do Google, da xAI, da Meta e da OpenRouter foram escritos a partir da
+documentação de cada empresa de 2026-11-10 e são testados contra transcrições roteirizadas que
+copiam os formatos que ela documenta; não foram experimentados contra os serviços reais (nenhuma
+chave foi usada no desenvolvimento deles). Os clientes da Anthropic e da OpenAI são testados da
+mesma forma.
+
+## Escolher a empresa e o modelo
+
+As configurações do assistente mostram uma fileira com as seis empresas (um ícone de chave marca as
+que têm chave salva) e, depois, os modelos da escolhida, cada um com o nível, os preços e o que é
+preciso saber: um preço de lançamento e o dia em que acaba, um nível gratuito, uma regra de prompt
+longo, um modelo que não lê imagens ou não usa ferramentas, um roteador, o host para onde vão os
+dados. Uma chave basta: cada empresa tem a sua, digitada sob o seu botão, com um link para a página
+onde a empresa emite chaves, guardada para a sessão ou, com *Lembrar a chave neste dispositivo*, no
+navegador; uma segunda opinião pode usar a chave de outra empresa quando houver. O último modelo
+escolhido de cada empresa fica lembrado, então voltar a uma empresa traz o modelo dela de volta.
+
+Trocar para um modelo de outra empresa, ou entre dois modelos de uma empresa que não a Anthropic,
+começa uma conversa nova: a anterior não é enviada ao modelo novo (ela fica na lista de conversas do
+projeto) e o painel avisa. Entre os modelos Claude da Anthropic a conversa continua: o modelo novo a
+relê inteira, sem o cache e sem o raciocínio anterior do outro modelo, e o painel informa os tokens
+e o custo dessa releitura.
+
+Um modelo que não usa ferramentas (alguns da lista da OpenRouter) só conversa: nenhuma ferramenta
+vai nos pedidos dele, ele é avisado disso e responde com os dados do projeto anexados à mensagem,
+indicando os menus e os passos do que deve ser feito no programa; não lê mais nada do projeto nem o
+altera. Um modelo que não lê imagens não recebe nenhuma: as imagens que você anexa, as que as
+ferramentas desenham e a imagem do desenho depois de uma alteração ficam de fora, e tanto você
+quanto o modelo são avisados.
+
+## Mais modelos (OpenRouter)
+
+Com a OpenRouter escolhida, **Mais modelos…**, abaixo da lista de modelos, abre a lista completa da
+OpenRouter, baixada de `openrouter.ai` quando o diálogo abre (ela é pública e não precisa de chave; a
+última cópia baixada fica neste aparelho e aparece, com a data, quando não há conexão). Busque por
+nome ou empresa; filtre com *Só gratuitos*, *Lê imagens* e *Usa ferramentas* (ligado de início, já
+que o assistente trabalha por ferramentas); ordene *Por preço* ou *Por nome*. Cada linha mostra a
+empresa, o preço em US$ por milhão de tokens (entrada / saída), a janela de contexto e se o modelo lê
+imagens e usa ferramentas. Escolher uma linha acrescenta o modelo à sua lista, o escolhe na hora e o
+traz de volta quando o app abre de novo; *Tirar da sua lista* o remove. Só aparecem os modelos que a
+OpenRouter serve pela Responses API dela, com resposta em texto e com preço.
+
+- **Preços e nível**: os preços de tabela que a OpenRouter publica (os do cache quando listados,
+  senão o de entrada; o preço maior de prompts longos quando a lista o dá pelo tamanho do prompt;
+  faixas de preço por hora do dia são ignoradas). O nível mostrado para um modelo da lista é uma
+  faixa do preço de saída (topo a partir de US$ 15 por milhão de tokens, intermediário a partir de
+  US$ 4, rápido abaixo), não um juízo de qualidade.
+- **Roteadores**: o Auto Router escolhe um modelo a cada pedido e a OpenRouter cobra o preço desse
+  modelo; o medidor precifica a resposta como o modelo que respondeu quando ele está na tabela e,
+  senão, usa o valor que a OpenRouter diz ter cobrado. O Free Models Router escolhe entre modelos
+  gratuitos.
+- **Limite de resposta**: uma resposta pode ter os tokens de saída do provedor principal do modelo
+  (32 000 quando a lista não informa), no máximo 128 000 e metade da janela de contexto. Enquanto
+  um pedido roda, a OpenRouter reserva do saldo da conta o preço da maior resposta que ele permite, e
+  uma conta nova ou de saldo pequeno que não cobre essa reserva é recusada; por isso os modelos fixos
+  mais caros respondem no máximo 32 000 tokens (Claude Fable 5.2, GPT-6 Astra) ou 64 000 (Claude
+  Opus 5.5, Grok 4.7, Muse Spark 1.3), uma reserva de cerca de US$ 1,30 por pedido.
+- **Modelos gratuitos** têm limites definidos pela OpenRouter (em novembro de 2026: 20 pedidos por
+  minuto e 50 por dia, ou 1000 por dia depois de comprar 10 créditos; o dia recomeça às 00:00 UTC), e
+  alguns provedores por trás deles podem guardar o que recebem e treinar modelos com isso (veja
+  [Armazenamento, privacidade e rede](privacy-and-network.md)). Um modelo gratuito funciona sob o
+  teto de gasto como qualquer outro.
+
+## Segunda opinião
+
+**Segunda opinião** (o botão na última resposta) ou `/second` pede a outro modelo que confira essa
+resposta. O botão lista os modelos que podem dar uma: primeiro os das outras empresas de que você
+tem chave, o mais capaz de cada empresa primeiro, depois os outros modelos da empresa da própria
+conversa; `/second` usa o primeiro deles. Esse modelo recebe, num só pedido sem ferramentas, os
+dados do projeto (todo o texto compacto que o contexto do projeto dá), a sua pergunta e a resposta,
+e diz se concorda, o que procede, o que não procede e o que conferir, com os números em que se
+apoia. O pedido vai para a empresa desse modelo, com a chave dela. A revisão aparece na conversa
+marcada como segunda opinião e entra no custo; o modelo da própria conversa não a lê, a não ser que
+você clique em **Responder à revisão**, que a envia como material citado para o primeiro modelo
+conferir, ponto por ponto, no projeto, com as ferramentas dele.
+
+## Notas sobre cada empresa
+
+**Anthropic e OpenAI.** Como nas versões anteriores: os modelos Claude guardam em cache o prompt e
+as ferramentas, resumem as conversas longas do lado da Anthropic e, com *Ajustar o esforço a cada
+etapa*, baixam o esforço dos passos simples; o GPT vai com `store: false`, é resumido do lado da
+OpenAI a partir de 200 000 tokens de entrada e, no navegador, uma chave que a OpenAI recusa aparece
+como falha de rede (as respostas de erro da OpenAI não trazem cabeçalho CORS).
+
+**Google Gemini.** Crie uma chave no Google AI Studio (`aistudio.google.com/apikey`). Os pedidos vão
+para `generativelanguage.googleapis.com` pela Interactions API com `store: false` (o Google não guarda
+cópia para pedidos seguintes), a chave no cabeçalho `x-goog-api-key`, a conversa inteira em cada
+pedido e as assinaturas do raciocínio do modelo reenviadas sem mudança. Os esforços *Rápido*,
+*Equilibrado* e *Cuidadoso* vão como os níveis de raciocínio low, medium e high do Gemini. As imagens
+(as vistas do desenho e do mapa, as suas fotos) vão na maior resolução de mídia, `ultra_high` (2240
+tokens por imagem), ou `high` (1120) para um modelo que a recuse; PDFs vão inteiros (o Google aceita
+até 50 MB ou 1000 páginas cada); cada pedido fica abaixo de 20 MB. O Google guarda sozinho em cache
+as partes repetidas da conversa (a partir de 4096 tokens): um token lido desse cache custa 5 %
+(Gemini 4 Argon) ou 10 % (os modelos Flash) do preço de entrada, e gravar nele é grátis; os tokens de
+raciocínio são cobrados como saída. O Gemini 4 Argon responde aqui no máximo 65 536 tokens de saída.
+Um bloqueio de segurança, de recitação ou de outra política encerra a resposta como recusa, com o
+motivo; uma mensagem de cota diz se é para esperar (os limites por minuto do nível gratuito, com a
+espera que o Google informa) ou para ativar a cobrança (um modelo sem uso gratuito, ou um projeto sem
+faturamento). Os dois modelos Flash têm um nível gratuito com limites, no qual o Google pode usar o
+conteúdo para melhorar seus produtos; o Gemini 4 Argon não tem.
+
+**xAI (Grok).** Crie uma chave em `console.x.ai` (as chaves começam com `xai-`); créditos e limites
+de gasto ficam na página de cobrança do console. Os pedidos vão para `api.x.ai/v1/responses` com
+`store: false`, a conversa inteira a cada vez com o raciocínio criptografado reenviado sem mudança,
+uma chave de cache da conversa (para os pedidos dela chegarem ao servidor que a guardou) e a
+amostragem que o guia da xAI pede (temperatura 0,7, top-p 0,95). O Grok sempre raciocina; o esforço
+vai como o `reasoning.effort` da xAI. O cache é automático e gravar nele é grátis; os tokens de
+raciocínio são cobrados como saída; um pedido cujo prompt chega a 200 000 tokens paga o dobro dos
+preços em todos os tokens. O Grok lê só JPEG e PNG, então um WebP ou GIF anexado é convertido antes,
+no mesmo tamanho. Um PDF vai como o texto lido dele neste aparelho: anexado inteiro, ele ligaria a
+busca em anexos da xAI, que a xAI cobra por busca. As ferramentas do lado da xAI (busca na web,
+busca no X, execução de código) nunca são ligadas, e conversas longas não são resumidas do lado da
+xAI. Uma chave que a xAI não conhece, uma conta sem crédito e um limite de gasto são distinguidos.
+
+**Meta (Muse).** Crie uma chave em `dev.meta.ai/api-keys` (as chaves começam com `LLM_`) e cadastre
+uma forma de pagamento em Billing. A Meta não tem um limite rígido de gasto, só um alerta por
+e-mail, então o teto do próprio assistente é o limite. Os pedidos vão para `api.meta.ai/v1/responses`
+com `store: false`, a conversa inteira a cada vez com o raciocínio cifrado reenviado sem mudança; as
+imagens que as ferramentas desenham vão dentro dos resultados das ferramentas, as suas imagens e PDFs
+na sua mensagem (a Meta aceita no máximo 50 imagens por pedido e lê o texto das 100 primeiras páginas
+de um PDF). Os três modelos aceitam todos os esforços. A Meta guarda sozinha em cache os inícios de
+prompt repetidos; a entrada em cache custa bem menos (Muse Wonder US$ 0,20 em vez de 4 por milhão de
+tokens) e gravar no cache não é cobrado. Só os modelos *Standard* da Meta são oferecidos, com os
+quais a Meta não treina; os modelos *Contributor* com desconto, com os quais ela treina, não. No
+navegador a Meta não deixa a página ler o identificador do pedido nem os cabeçalhos de limite de uso,
+então o teste de conexão não mostra os limites ali (o app de desktop mostra).
+
+**OpenRouter.** Crie uma chave em `openrouter.ai/settings/keys` (as chaves começam com `sk-or-`) e
+compre créditos; a OpenRouter cobra dos seus créditos e repassa cada pedido à empresa que opera o
+modelo. Os pedidos vão para `openrouter.ai/api/v1/responses` com `store: false`, o raciocínio dos
+modelos Claude, GPT e Gemini mantido entre as chamadas de ferramentas, o cache de prompt do Claude
+ligado, um identificador de sessão tirado da conversa para que os pedidos dela fiquem num mesmo
+provedor e reencontrem o cache, e dois cabeçalhos que identificam o app para a OpenRouter
+(`HTTP-Referer: https://opencadirrigation.com`, `X-OpenRouter-Title: OpenCADIrrigation`), nada sobre
+você. As imagens dos resultados das ferramentas vão dentro dos resultados para os modelos Claude e
+GPT e logo depois deles, numa mensagem, para as outras empresas. Um PDF vai inteiro para um modelo
+que lê PDFs e pelo leitor de PDF gratuito da OpenRouter para um que não lê. Os erros da OpenRouter são
+lidos pelos códigos (sem crédito, orçamento da chave ou do workspace, moderação, uma regra de
+proteção, o limite diário dos modelos gratuitos), e as próprias palavras da OpenRouter vêm depois da
+explicação do app.
 
 ## Começar com a IA
 
@@ -48,14 +217,19 @@ encaixado faz o mesmo).
 
 O agente mantém uma lista de tarefas, faz perguntas em cartões com opções quando falta algo (a
 tarefa espera as respostas), apresenta o seu plano e trabalha pelas ferramentas do próprio programa:
-75 ferramentas enviadas em todo pedido, mais 205 operações que ele encontra e executa
+75 ferramentas enviadas em todo pedido, mais 216 operações que ele encontra e executa
 (`find_operations`, `run_operation`), qualquer comando dos menus (`run_command`, com os diálogos
 executados sem abrir) e cerca de 150 configurações (`get_setting`, `set_setting`), de modo que ele
 alcança também as funções da 1.6.0 (estações de bombeamento, reservatórios, os diálogos de
 agronomia, as análises de energia e água, os documentos técnicos e o carimbo, referências de bloco,
 estados de camadas, comparações, o assistente de pontos e os pontos para locação, ilhas das áreas,
-inserir projeto) e os comandos de edição (esticar, concordar, chanfrar, quebrar, unir, explodir,
-converter em área). Ele lê os mesmos números dos relatórios, altera o projeto pelas mesmas funções
+inserir projeto), as da 1.7.0 (as fileiras lidas da imagem com `detect_crop_rows` e
+`apply_crop_rows`, o risco climático com `climate_risk`, a previsão de irrigação com
+`irrigation_forecast`, o programa reproduzido na planta com `programme_picture`,
+`export_programme_animation` e `export_programme_calendar`, o boletim de qualidade com
+`design_scorecard`, a digitalização de curvas com `fit_curve_points`, `apply_curve_points` e
+`export_curve_points`) e os comandos de edição (esticar, concordar, chanfrar, quebrar, unir,
+explodir, converter em área). Ele lê os mesmos números dos relatórios, altera o projeto pelas mesmas funções
 dos menus e diálogos (desenho, rede, catálogo, turnos, o cálculo, as suas correções, os layouts
 automáticos, as análises, o orçamento, exportações), mantém as **notas de IA** do projeto
 (requisitos, as suas respostas e decisões, gravadas no arquivo do projeto e editáveis nas
@@ -67,8 +241,9 @@ próprio app e importa os desenhos e arquivos de GIS que você anexar. Ele tamb�
 anexada (PDF, imagem ou texto, até 20 MB) e põe os itens dela no catálogo, conferidos antes de
 entrar, e escreve o memorial descritivo do projeto, que pode ser copiado ou posto no desenho como
 texto. Um anexo longo não vai na mensagem: o modelo lê as partes de que precisa (`read_attachment`)
-ou pede ao modelo menor da mesma empresa (Claude Haiku 5.5 ou GPT-6 Luna) que leia até 200 páginas
-ou 20 000 linhas dele e responda à sua pergunta (`summarize_attachment`), cujos tokens contam no
+ou pede ao modelo mais barato da mesma empresa (Claude Haiku 5.5, GPT-6 Luna, Gemini 3.5
+Flash-Lite, Grok 4.3 ou Muse Ember; o Claude Haiku 5.5 pela OpenRouter) que leia até 200 páginas ou
+20 000 linhas dele e responda à sua pergunta (`summarize_attachment`), cujos tokens contam no
 medidor e no teto de gasto. [docs/AI_TOOLS.md](../../../docs/AI_TOOLS.md), gerado a partir do mapa
 de cobertura, lista o que ele alcança: toda função que um usuário alcança (ações de comando,
 ferramentas de desenho, aliases, itens de menu, diálogos e suas opções, campos dos painéis, barra de
@@ -103,12 +278,12 @@ da área ficam de fora). O modelo pode ampliar uma parte,
 rotular os itens, desenhar formas propostas com `preview_geometry` antes de criar qualquer coisa e ler
 o terreno com `terrain_picture` (sombreamento, cores por elevação, curvas de nível, declividade,
 exposição), `terrain_profile` e `terrain_info`. As imagens têm o tamanho que o modelo lê pixel a
-pixel: até 2000 pixels e cerca de 3,6 megapixels no Claude Opus 5.5, Sonnet 5.5 e Fable 5.1, senão
-1568 pixels e cerca de 1,15 megapixel, com o lado menor de no máximo 768 pixels nos modelos da
-OpenAI; imagens aéreas e de relevo vão em JPEG, o que mantém conversas longas dentro do tamanho de
-uma solicitação, e fotos anexadas são endireitadas e reduzidas a no máximo 2000 pixels de lado. No
-Claude Opus 5.5, Sonnet 5.5 e Fable 5.1 a linha de status mostra as notas curtas de progresso do
-modelo entre as etapas. O painel tem um botão que anexa uma imagem da sua vista; imagens e arquivos
+pixel: até 2576 pixels no lado maior e cerca de 3,6 megapixels no Claude Fable 5.2, Opus 5.5,
+Sonnet 5.5 e Haiku 5.5 (também pela OpenRouter), senão 1568 pixels e cerca de 1,15 megapixel, com o
+lado menor de no máximo 768 pixels nos modelos da OpenAI (também pela OpenRouter); imagens aéreas e
+de relevo vão em JPEG, o que mantém conversas longas dentro do tamanho de uma solicitação, e fotos
+anexadas são endireitadas e reduzidas a no máximo 2000 pixels de lado. No Claude Fable 5.2, Opus 5.5
+e Sonnet 5.5 a linha de status mostra as notas curtas de progresso do modelo entre as etapas. O painel tem um botão que anexa uma imagem da sua vista; imagens e arquivos
 também podem ser colados na caixa de mensagem (Ctrl+V) ou soltos sobre o painel. Uma configuração
 (ligada por padrão) envia, depois de cada rodada de alterações, uma imagem enquadrada no que mudou,
 com as alterações marcadas. Uma foto anexada que traz a posição do GPS (como os celulares gravam)
@@ -188,8 +363,10 @@ não usado, troca de modelo ou de esforço, pedido grande); `/cost` diz a fraç�
 Conversas longas são resumidas no servidor da empresa (na Anthropic a partir de 150 000 tokens de
 entrada, depois de limpar resultados antigos de ferramentas a partir de 80 000, guardando as notas,
 o plano e a lista de tarefas; na OpenAI a partir de 200 000, tirando do pedido as imagens mais
-antigas); uma configuração desliga isso. Comandos rápidos: `/new`, `/design`, `/check`, `/review`,
-`/report`, `/quote`, `/export`, `/plan`, `/clear` e `/cost`. `/review` roda em modo somente leitura
+antigas); uma configuração desliga isso. Os modelos do Google, da xAI, da Meta e da OpenRouter não
+são resumidos (as imagens mais antigas dos resultados de ferramentas também saem dos pedidos deles):
+comece uma conversa nova quando uma ficar longa. Comandos rápidos: `/new`, `/design`, `/check`,
+`/review`, `/second`, `/report`, `/quote`, `/export`, `/plan`, `/clear` e `/cost`. `/review` roda em modo somente leitura
 qualquer que seja o modo: o modelo olha as zonas, as mensagens marcadas nos itens e as pressões e
 velocidades sobre o desenho, lê as mensagens e as tabelas de relatório e responde com uma lista de
 verificação (OK, atenção ou problema, com os números e onde corrigir cada ponto), sem alterar nada.

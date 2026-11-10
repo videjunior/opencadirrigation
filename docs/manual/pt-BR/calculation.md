@@ -198,6 +198,75 @@ rotação da bomba fora da faixa.
   só as marcadas* volta o projeto ao que era e refaz só essas, num passo de desfazer.
 - Depois de um cálculo com erros a aba Mensagens abre sozinha e mostra quantos problemas há.
 
+## Boletim de qualidade do projeto
+
+**Projeto → Boletim de qualidade do projeto…** (abaixo de *Verificação do projeto*; no celular ☰ → Projeto) dá nota a
+um projeto calculado numa página. Ele lê só o que o programa já calcula (os resultados do cálculo, a verificação do
+projeto, a lista de Mensagens e as análises) e transforma isso num índice transparente: uma nota geral de 0 a 100 com
+um conceito de A a E, uma nota e um conceito para cada uma de sete categorias, um radar das categorias e cada
+indicador com o valor, o alvo, a norma ou o parâmetro de projeto de onde o alvo vem, a nota, o peso, os pontos que ele
+acrescentaria e o item mais fraco (uma linha da tabela o seleciona e enquadra). Sem cálculo, o diálogo oferece calcular
+antes.
+
+| Categoria | Indicadores com nota | Só informados |
+|---|---|---|
+| Uniformidade | Uniformidade de emissão EU das zonas de gotejo e microaspersão; CU da sobreposição das zonas de aspersores; variação de vazão dos emissores q_var (cada um a média ponderada pela vazão das zonas) | |
+| Hidráulica | Comprimento de tubo dentro do limite de velocidade do seu uso (parâmetros de projeto); comprimento de tubo dentro da classe de pressão na temperatura da água; água que os emissores entregam dentro da faixa de pressão; zonas e pivôs com a pressão de que precisam | |
+| Energia | Pontos de trabalho das bombas dentro da faixa do catálogo; bombas entre 70 e 120 % da vazão de melhor rendimento (bombas com curva de rendimento); parcela da altura da bomba que a zona crítica usa (o resto é queimado nas válvulas) | kWh por m³ bombeado e por ha·mm |
+| Água e solo | Intensidade de aspersão dentro da infiltração do solo (NRCS NEH 15-11); água infiltrada sem escoamento (zonas de aspersão e máquinas sobre um solo); demanda de pico da FAO-56 atendida na janela de irrigação | |
+| Economia | Custo do ciclo de vida contra a alternativa salva mais barata | Investimento e custo anual equivalente por área; parcela da energia no custo do ciclo de vida |
+| Robustez | Tubos dentro da classe com o golpe de aríete (verificação de Joukowsky); bombas com margem de NPSH e altura de sucção; depois do teste de envelhecimento, a água dentro da faixa de pressão e a EU do projeto envelhecido e entupido | |
+| Completude | Erros da verificação e do cálculo; itens sem avisos; pontos altos da linha principal sem ventosa (AWWA M51); lista de materiais com preço | |
+
+**Como usar.** **O que melhorar primeiro** lista os indicadores abaixo de 100, os de mais pontos primeiro, cada um com
+como melhorá-lo e um botão **Abrir** para a ferramenta que faz isso (parâmetros de projeto, Corrigir automaticamente,
+seleção de bomba, o densograma, o programa de rega, os turnos, o custo do ciclo de vida, as ventosas, o catálogo, a aba
+Mensagens). **Rodar o teste de envelhecimento** analisa o projeto envelhecido e entupido (os padrões de *O projeto ao
+longo da vida*: 15 anos, o C de Hazen-Williams caindo 0,5 por ano, 10 % da vazão dos emissores perdida no
+entupimento) e dá nota à robustez ao longo da vida. **Guardar esta nota**, mudar o projeto e calcular de novo, e então
+**Comparar com** a nota guardada (ou com uma alternativa salva em Projeto → Alternativas do projeto…) mostra o que a
+mudança fez, categoria por categoria; a nota guardada fica na memória, não no arquivo. O boletim exporta em CSV, XLSX
+ou PDF (o PDF com a tabela e o radar); a mesma tabela está em Arquivo → Exportar relatório (`scorecard`) e o radar nas
+páginas de gráficos das pranchas e dos pacotes de documentos. O assistente o lê com `design_scorecard`, que também diz
+o que mudou desde a chamada anterior ou em relação a uma alternativa ou à nota guardada.
+
+**Método.** Cada indicador recebe a nota de uma função linear por trechos entre âncoras declaradas (valor → nota),
+mantida nas notas das pontas além da primeira e da última âncora:
+
+- **EU**: 0 → 0, 70 → 60, 80 → 70, 90 → 80, 94 → 90, 100 → 100. As classes são as da ASABE EP405.1 como o estudo
+  técnico (§9) as apresenta: acima de 94 % excelente, 90–94 % boa, 80–90 % regular, abaixo de 80 % ruim; a âncora em
+  70 % (o limite do conceito D) é um degrau do próprio programa dentro da classe ruim.
+- **CU de sobreposição**: 0 → 0, 75 → 60, 85 → 80, 100 → 100 (85 % satisfatório por Keller & Bliesner 1990 e ISO
+  15886-3; 75 % é o limite abaixo do qual a verificação do próprio programa avisa, `area_uniformity_low`).
+- **q_var**: 0 → 100, 10 → 90, 20 → 70, 100 → 0. As classes são 10 % desejável e 20 % aceitável, como o estudo técnico
+  (§9) as apresenta; o boletim imprime Keller & Bliesner (1990) e essa seção ao lado delas, mas o estudo não dá
+  referência própria para os dois limites, então tome-os como faixas de trabalho do programa.
+- Um critério que deve valer em toda parte vale a parcela que o atende (0 % → 0, 100 % → 100), ponderada pelo
+  comprimento de tubo, pela água que os emissores entregam, pela vazão (vezes as horas do turno para as bombas), pela
+  área ou pela contagem.
+- Uma contagem que deve ser zero (erros, pontos altos sem ventosa) vale 100 em zero e 0 a partir de um.
+
+As notas das âncoras seguem as faixas dos conceitos (A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, E abaixo): a melhor classe de uma
+norma termina no limite de A, a seguinte no de B, e assim por diante. Uma categoria é a média ponderada dos seus
+indicadores avaliados e a nota geral a média ponderada das categorias avaliadas; todos os pesos são 1. Os pontos a
+ganhar de um indicador são (100 − nota) × a parcela dele na nota geral, então levá-lo a 100 acrescenta exatamente
+esses pontos. Um indicador sem dados (nenhuma zona daquele tipo, áreas sem solo, sem preços, sem alternativa salva,
+bomba sem curva de rendimento, teste de envelhecimento não rodado) fica *não avaliado* e fora das médias, nunca é
+estimado; indicadores sem nenhum valor de referência (energia por m³ e por ha·mm, custo por área, parcela da energia
+no custo do ciclo de vida) são só informados.
+
+**O que não entra na nota, e por quê.** A uniformidade dos pivôs e dos lineares (os resultados do pivô não guardam o
+CU), a análise transitória completa e a simulação de 24 horas (os resultados delas não ficam com o cálculo) e o DU do
+densograma das áreas (lento demais para uma tabela refeita a cada edição). A eficiência de aplicação é uma entrada
+digitada das áreas, não um resultado do cálculo.
+
+**Limites.** O boletim é tão bom quanto os dados: solos, preços, curvas de rendimento das bombas e alternativas salvas
+deixam mais indicadores avaliados. As parcelas de atendimento são lineares (90 % do comprimento de tubo dentro do limite
+de velocidade vale 90), e uma contagem é tudo ou nada, porque os resultados não guardam o número de pontos altos. Todo
+aviso da lista de Mensagens pesa na completude, também os avisos do cálculo. Pesos iguais são uma escolha neutra, não
+uma ordem de importância, e o teste de envelhecimento usa os seus padrões, não as opções digitadas em *O projeto ao
+longo da vida*. A nota compara projetos; não é uma certificação.
+
 ## Análises da linha principal e da operação
 
 Rodam sobre o projeto calculado (cada uma diz o que falta quando não há cálculo ou fonte de água);

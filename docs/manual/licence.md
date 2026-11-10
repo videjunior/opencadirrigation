@@ -21,18 +21,22 @@ Esri, Google Maps with your own key, or the XYZ or WMS server you configure), el
 Tiles on AWS Open Data: SRTM/NASA, GMTED, ETOPO1; Open-Meteo under CC BY 4.0 with the Copernicus DEM
 GLO-90; OpenTopoData: NASA SRTM, ASTER GDEM), climate (Open-Meteo historical weather API under CC BY
 4.0, ERA5 reanalysis of the Copernicus Climate Change Service, free for non-commercial use; NASA
-POWER, with the acknowledgement NASA asks for) and the AI assistant (the APIs of Anthropic and
-OpenAI, used with your own key and account under that company's terms, which bill the usage to
-that account; site searches by address use OpenStreetMap's Nominatim, © OpenStreetMap contributors
+POWER, with the acknowledgement NASA asks for, also for the climate risk over the years), the
+weather forecast (MET Norway Locationforecast under the Norwegian Licence for Open Government Data
+2.0 and CC BY 4.0, free for any use with the credit "MET Norway"; the Open-Meteo Forecast API under
+CC BY 4.0, free for non-commercial use) and the AI assistant (the APIs of Anthropic, OpenAI,
+Google, xAI, Meta and OpenRouter, used with your own key and account under that company's terms,
+which bill the usage to that account; OpenRouter's list of models, credited in the dialog that
+shows it; site searches by address use OpenStreetMap's Nominatim, © OpenStreetMap contributors
 under the ODbL, within its usage policy; the satellite pictures come from Esri World Imagery or,
 with your key, Google).
 
 **In professional work.** Help → Terms of the data lists the third-party data the project carries
-and, for every source of elevation, climate and address search, its credit, what its free use allows
+and, for every source of elevation, climate, weather forecast and address search, its credit, what its free use allows
 and a link to its terms (the base maps have theirs under View → Base map → Terms of the maps). The
 free Open-Meteo services are for non-commercial use, so the climate download starts on NASA POWER
-(free for any use) and the online elevation on Terrain Tiles; Open-Meteo stays available, marked as
-non-commercial. The sheets (PDF, PNG, SVG) print, one per line, the credit of the base map under the
+(free for any use), the weather forecast on MET Norway and the online elevation on Terrain Tiles;
+Open-Meteo stays available, marked as non-commercial. The sheets (PDF, PNG, SVG) print, one per line, the credit of the base map under the
 drawing, of the base map pictures kept for the field and of the online elevation they show, and the
 report has a **Data sources and credits** table (in the reports panel, the PDF, Excel and CSV): keep
 the credits when you deliver or publish the work. The map kept for the field (View → Base map →
