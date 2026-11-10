@@ -334,9 +334,9 @@ const _ui = <String, (String, String, String)>{
   ),
   'help.t.ai': ('Assistente de IA', 'AI assistant', 'Asistente de IA'),
   'help.b.ai': (
-    'O assistente de IA é opcional e trabalha no projeto aberto com as mesmas ferramentas dos menus. Abra-o em Projeto → Assistente de IA, cole a sua chave da Anthropic ou da OpenAI nas configurações e escolha o modo: somente leitura, planejar primeiro, perguntar antes de cada alteração ou aplicar sozinho. Cada pedido vai direto do navegador ao provedor, que cobra na sua conta, e nada é enviado antes de Enviar. Cada resposta se desfaz com um clique, /review revisa o projeto sem alterar nada, e Marcar ponto e Marcar linha mostram onde você quer algo.',
-    'The AI assistant is optional and works on the open project with the same tools as the menus. Open it with Design → AI assistant, paste your Anthropic or OpenAI key in its settings and choose the mode: read only, plan first, ask before each change or apply by itself. Every request goes straight from the browser to the provider, which bills your account, and nothing is sent before Send. Every answer is undone in one click, /review reviews the design without changing anything, and Mark a point and Mark a line show where you want something.',
-    'El asistente de IA es opcional y trabaja en el proyecto abierto con las mismas herramientas que los menús. Ábralo en Diseño → Asistente de IA, pegue su clave de Anthropic o de OpenAI en los ajustes y elija el modo: solo lectura, planificar primero, preguntar antes de cada cambio o aplicar solo. Cada petición va directamente del navegador al proveedor, que factura en su cuenta, y no se envía nada antes de Enviar. Cada respuesta se deshace con un clic, /review revisa el diseño sin cambiar nada, y Marcar punto y Marcar línea muestran dónde quiere algo.',
+    'O assistente de IA é opcional e trabalha no projeto aberto com as mesmas ferramentas dos menus. Abra-o em Projeto → Assistente de IA, escolha a empresa nas configurações (Anthropic, OpenAI, Google, xAI, Meta ou OpenRouter), cole a sua chave dela e escolha o modo: somente leitura, planejar primeiro, perguntar antes de cada alteração ou aplicar sozinho. Cada pedido vai direto do navegador ao provedor, que cobra na sua conta, e nada é enviado antes de Enviar. Cada resposta se desfaz com um clique, /review revisa o projeto sem alterar nada, /second pede a outro modelo uma segunda opinião sobre a última resposta, e Marcar ponto e Marcar linha mostram onde você quer algo.',
+    'The AI assistant is optional and works on the open project with the same tools as the menus. Open it with Design → AI assistant, choose the company in its settings (Anthropic, OpenAI, Google, xAI, Meta or OpenRouter), paste your key of it and choose the mode: read only, plan first, ask before each change or apply by itself. Every request goes straight from the browser to the provider, which bills your account, and nothing is sent before Send. Every answer is undone in one click, /review reviews the design without changing anything, /second asks another model for a second opinion on the last answer, and Mark a point and Mark a line show where you want something.',
+    'El asistente de IA es opcional y trabaja en el proyecto abierto con las mismas herramientas que los menús. Ábralo en Diseño → Asistente de IA, elija la empresa en los ajustes (Anthropic, OpenAI, Google, xAI, Meta u OpenRouter), pegue su clave de ella y elija el modo: solo lectura, planificar primero, preguntar antes de cada cambio o aplicar solo. Cada petición va directamente del navegador al proveedor, que factura en su cuenta, y no se envía nada antes de Enviar. Cada respuesta se deshace con un clic, /review revisa el diseño sin cambiar nada, /second pide a otro modelo una segunda opinión sobre la última respuesta, y Marcar punto y Marcar línea muestran dónde quiere algo.',
   ),
   'help.t.storage': ('Arquivos, cópias e privacidade', 'Files, copies and privacy', 'Archivos, copias y privacidad'),
   'help.b.storage': (
@@ -442,6 +442,57 @@ const _ui = <String, (String, String, String)>{
     'Cálculo: curvas de bomba pelos pontos, comprimento dos tubos ao longo do terreno, fita regulada, dispositivos sobre as válvulas e avisos novos de espaçamento e de uniformidade.',
     'Calculation: pump curves through their points, pipe lengths along the ground, regulated tape, devices on the valves and new spacing and uniformity warnings.',
     'Cálculo: curvas de bomba por sus puntos, longitud de las tuberías a lo largo del terreno, cinta regulada, dispositivos sobre las válvulas y avisos nuevos de espaciamiento y uniformidad.',
+  ),
+  // ---- the highlights of 1.7.0
+  'new.v170.models': (
+    'O assistente de IA agora trabalha com os modelos de seis empresas, com a sua própria chave: Claude (Anthropic, com o novo Claude Fable 5.2), GPT (OpenAI, com o GPT-6.1 Terra), Gemini (Google), Grok (xAI), Muse (Meta) ou centenas de modelos pela OpenRouter, alguns gratuitos. A empresa se escolhe nas configurações do assistente.',
+    'The AI assistant now works with the models of six companies, with your own key: Claude (Anthropic, with the new Claude Fable 5.2), GPT (OpenAI, with GPT-6.1 Terra), Gemini (Google), Grok (xAI), Muse (Meta) or hundreds of models through OpenRouter, some of them free. The company is chosen in the assistant\'s settings.',
+    'El asistente de IA ahora trabaja con los modelos de seis empresas, con su propia clave: Claude (Anthropic, con el nuevo Claude Fable 5.2), GPT (OpenAI, con GPT-6.1 Terra), Gemini (Google), Grok (xAI), Muse (Meta) o cientos de modelos a través de OpenRouter, algunos gratuitos. La empresa se elige en los ajustes del asistente.',
+  ),
+  'new.v170.second': (
+    'Segunda opinião: um botão na última resposta (ou /second) pede a outro modelo, de outra empresa quando você tem a chave dela, que confira a resposta com os dados do projeto; a revisão pode ser enviada de volta ao primeiro modelo.',
+    'Second opinion: a button on the last answer (or /second) has another model, of another company when you have its key, check the answer against the project data; the review can be sent back to the first model.',
+    'Segunda opinión: un botón en la última respuesta (o /second) pide a otro modelo, de otra empresa cuando tiene su clave, que compruebe la respuesta con los datos del proyecto; la revisión se puede enviar de vuelta al primer modelo.',
+  ),
+  'new.v170.rows': (
+    'Projeto → Projeto automático → Fileiras da imagem lê na imagem de satélite a direção, o espaçamento e o número de fileiras de um talhão; os blocos, os anéis de pomar e os blocos de laterais passam a segui-los.',
+    'Design → Automatic design → Crop rows from the image reads the direction, the spacing and the number of rows of a field from the satellite image; the field blocks, the orchard rings and the lateral blocks then follow them.',
+    'Diseño → Diseño automático → Hileras de la imagen lee en la imagen satelital la dirección, el espaciamiento y el número de hileras de una parcela; los bloques, los anillos de huerto y los bloques de laterales pasan a seguirlos.',
+  ),
+  'new.v170.risk': (
+    'Projeto → Agronomia → Risco climático ao longo dos anos confere o projeto com o clima diário do local desde 1984: a necessidade de água de um ano seco, com que frequência o sistema ficaria devendo, os piores anos e os veranicos.',
+    'Design → Agronomy → Climate risk over the years checks the design against the daily climate of the site since 1984: the water need of a dry year, how often the system would fall short, the worst years and the dry spells.',
+    'Diseño → Agronomía → Riesgo climático a lo largo de los años comprueba el diseño con el clima diario del lugar desde 1984: la necesidad de agua de un año seco, con qué frecuencia el sistema se quedaría corto, los peores años y los veranillos.',
+  ),
+  'new.v170.forecast': (
+    'Projeto → Agronomia → Previsão de irrigação transforma a previsão do tempo do local no que irrigar nos próximos dias: regar ou pular, lâmina, tempo de rega e o ajuste percentual (water budget) do controlador.',
+    'Design → Agronomy → Irrigation forecast turns the weather forecast of the site into what to irrigate in the coming days: irrigate or skip, depth, run time and the water budget % for the controller.',
+    'Diseño → Agronomía → Pronóstico de riego convierte el pronóstico del tiempo del lugar en lo que hay que regar en los próximos días: regar o saltar, lámina, tiempo de riego y el ajuste porcentual (water budget) del programador.',
+  ),
+  'new.v170.player': (
+    'Projeto → Agronomia → Reproduzir o programa na planta mostra o programa de rega acontecendo sobre o desenho — zonas, vazões, bombas e o nível do reservatório a cada momento — e o exporta como GIF animado e como calendário para o celular.',
+    'Design → Agronomy → Play the programme on the plan shows the irrigation programme running over the drawing — zones, flows, pumps and the reservoir level at every moment — and exports it as an animated GIF and as a calendar for the phone.',
+    'Diseño → Agronomía → Reproducir el programa en el plano muestra el programa de riego en marcha sobre el dibujo — zonas, caudales, bombas y el nivel del embalse en cada momento — y lo exporta como GIF animado y como calendario para el móvil.',
+  ),
+  'new.v170.scorecard': (
+    'Projeto → Boletim de qualidade do projeto dá ao projeto uma nota de 0 a 100 e um conceito de A a E em sete categorias, mostra o que melhorar primeiro e compara o antes e o depois.',
+    'Design → Design scorecard grades the design from 0 to 100 and from A to E in seven categories, shows what to improve first and compares before and after.',
+    'Diseño → Boletín de calidad del diseño califica el diseño de 0 a 100 y de la A a la E en siete categorías, muestra qué mejorar primero y compara el antes y el después.',
+  ),
+  'new.v170.digitiser': (
+    'Projeto → Digitalizar curva de uma imagem lê a curva de uma bomba, de um emissor ou o perfil de um aspersor numa figura de catálogo e a leva ao catálogo do projeto.',
+    'Design → Digitise a curve from a picture reads a pump curve, an emitter curve or a sprinkler profile from a catalogue chart into the project\'s catalogue.',
+    'Diseño → Digitalizar curva de una imagen lee la curva de una bomba, de un emisor o el perfil de un aspersor en una figura de catálogo y la lleva al catálogo del proyecto.',
+  ),
+  'new.v170.share': (
+    'Os links de compartilhamento (Arquivo → Compartilhar por link) voltam a abrir o projeto, também na primeira visita ao site.',
+    'Share links (File → Share by link) open the project again, on a first visit to the site too.',
+    'Los enlaces para compartir (Archivo → Compartir por enlace) vuelven a abrir el proyecto, también en la primera visita al sitio.',
+  ),
+  'new.v170.mcp': (
+    'Para quem programa: o motor de cálculo fala o Model Context Protocol pela linha de comando (docs/MCP.pt-BR.md), e outros aplicativos de IA podem projetar com ele.',
+    'For developers: the calculation engine speaks the Model Context Protocol from the command line (docs/MCP.md), so other AI applications can design with it.',
+    'Para quien programa: el motor de cálculo habla el Model Context Protocol desde la línea de comandos (docs/MCP.md), y otras aplicaciones de IA pueden diseñar con él.',
   ),
   // ---- the sheet preview of the export dialog
   'prev.title': ('Pré-visualização', 'Preview', 'Vista previa'),

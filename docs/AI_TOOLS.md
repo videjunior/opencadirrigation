@@ -19,15 +19,15 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | Command actions | 57 | 56 | 1 | 0 |
 | Drawing tools | 62 | 60 | 2 | 0 |
 | Command aliases | 402 | 389 | 13 | 0 |
-| Menu items (desktop and phone) | 369 | 354 | 15 | 0 |
-| Dialogs | 115 | 108 | 7 | 0 |
+| Menu items (desktop and phone) | 375 | 360 | 15 | 0 |
+| Dialogs | 123 | 116 | 7 | 0 |
 | Panel fields | 333 | 312 | 21 | 0 |
 | Status bar | 13 | 10 | 3 | 0 |
 | View options | 31 | 27 | 4 | 0 |
-| Dialog options | 798 | 792 | 6 | 0 |
-| **All** | **2180** | **2108** | **72** | **0** |
+| Dialog options | 847 | 837 | 10 | 0 |
+| **All** | **2243** | **2167** | **76** | **0** |
 
-75 tools, 205 operations, 152 settings.
+75 tools, 216 operations, 152 settings.
 
 ## Tools sent with every request
 
@@ -285,9 +285,9 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `preview_points_attachment` | engineering | read | The import wizard of File → Import for a points file the user attached (CSV, TXT, XYZ, PTS, PNEZD), without importing: its first lines split into columns, the choices the reader would make (separator, header, the role o… |
 | `import_points_attachment` | engineering | write | File → Import of a points file the user attached, with the choices of the import wizard: encoding, separator, decimal mark, header, lines to skip, the column of each role (name, x = easting, y = northing, z, lat, lon, d… |
 | `export_stakeout_points` | engineering | export | File → Export drawing → Stake-out points: the comma-separated list a total station or a GNSS RTK receiver loads directly, one line per point (number, northing, easting, elevation, description in pnezd order, or easting … |
-| `data_cache_info` | engineering | read | File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem) and of the climate series (climate): count, size, since when, where (the browser database or a folder), and whet… |
+| `data_cache_info` | engineering | read | File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem), of the climate series (climate) and of the weather forecasts (forecast): count, size, since when, where (the br… |
 | `set_data_cache` | engineering | write | Turns on or off the keeping of downloads (online elevations and climate series) on this device ("Keep what is downloaded" of File → Saved downloaded data). |
-| `clear_data_cache` | engineering | write | Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate) or all (default). |
+| `clear_data_cache` | engineering | write | Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate), of the weather forecasts (forecast) or all (default). |
 | `eto_from_station_normals` | engineering | varies | Design → Site climate → Station normals: the monthly grass reference evapotranspiration (ETo) by FAO-56 Penman-Monteith from the climatological normals of a weather station, month by month with the soil heat flux from t… |
 | `permit_table` | engineering | read | Reports → Technical documents → Water permit table: for every water supply (point of abstraction) the fields a water-use permit application asks for — its coordinates on SIRGAS 2000 (degrees, minutes and seconds, decima… |
 | `set_permit_info` | engineering | write | Reports → Technical documents → Water permit table, its fields: the permit data of one water supply (kind surface\|groundwater, water_body, basin, municipality, registry — the number in the register of water users, CNARH… |
@@ -298,6 +298,17 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `set_memorial_texts` | engineering | write | Reports → Technical documents → Memorial, its texts: objective (the objective and scope, printed before the generated objective) and notes (closing remarks). |
 | `set_om_settings` | engineering | write | Reports → Technical documents → Operation and maintenance plan, the figures the project does not hold: filter_delta_m (rise of the pressure loss of a filter over its clean loss that calls for cleaning, metres of water, … |
 | `set_budget_settings` | engineering | write | Reports → Technical documents → Budget by compositions, its rates: the parts of the BDI of the services in % (central_admin_pct, insurance_guarantee_pct, risk_pct, financial_pct, profit_pct; taxes pis_pct, cofins_pct, i… |
+| `design_scorecard` | engineering | read | Design → Design scorecard: the quality of the designed project in one transparent index, built only from what the design results, the design check, the Messages list and the analyses compute. |
+| `programme_picture` | engineering | read | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when every system flow runs daily, else the days until it repeats… |
+| `export_programme_animation` | engineering | export | Design → Agronomy → Play the programme on the plan → Animation (GIF) or Frame (PNG): writes the irrigation programme played on the plan as a file — gif: the whole cycle as an animated GIF (a frame every step of the cycl… |
+| `export_programme_calendar` | engineering | export | Design → Agronomy → Play the programme on the plan → Calendar (.ics): writes the irrigation programme as an iCalendar file (RFC 5545) for the grower's phone — one event per start of every group of zones (system flow, or… |
+| `fit_curve_points` | engineering | read | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures) or by following the curve's colour. |
+| `apply_curve_points` | engineering | write | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures) or by following the curve's colour. |
+| `export_curve_points` | engineering | export | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures) or by following the curve's colour. |
+| `irrigation_forecast` | engineering | varies | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
+| `detect_crop_rows` | engineering | read | Design → Automatic design → Crop rows from the image: reads on the aerial image of a field (orchard, coffee, vineyard, citrus, olive…) the direction of its planting rows, their spacing, how many rows cross it and how su… |
+| `apply_crop_rows` | engineering | write | Crop rows from the image, applied in one undo step: reads the rows as detect_crop_rows does (same inputs; the reading of the field the last detect_crop_rows made is reused when the inputs are the same) and writes them: … |
+| `climate_risk` | engineering | varies | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of the one design figure. |
 | `pump_house_electrics` | machines | read | Reads the electrical design of the pump house (Design → Pump house electrics) as the dialog shows it on the last design: for every electric pump the motor (kW, IE3 efficiency, power factor), rated and design current, th… |
 | `set_pump_house` | machines | write | Changes the pump house electrical settings (one undo step; the design results are discarded and the bill of materials then lists the feeders, starter panels and transformer). |
 | `solar_design` | machines | read | Reads the solar pumping of the design (Design → Solar pumping of the design): an off-grid PV pumping array sized for the month of largest need (IEC 62253), or a grid-tied array whose energy offsets the pumping under net… |
@@ -668,7 +679,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `file.saveCopy` Save as copy | `op:save_as_copy` | File → Save as copy: the open project becomes a copy of its own — a new uid, so its copy in this browser, its saved versions and its recent entry no longer mix… |
 | `cmp.menu` Compare with | `op:compare_project` | File → Compare with…: what changed between another copy of this project — a version kept in the browser ("version", from list_versions or the versions dialog),… |
 | `cmt.importMenu` Bring back the comments of a copy | `op:import_review_comments` | File → Bring back the comments of a copy: the review comments and revision clouds of a copy of this project sent for review and returned (a project file the us… |
-| `cache.menu` Saved downloaded data | `op:data_cache_info` | File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem) and of the climate series (climate): count, size, si… |
+| `cache.menu` Saved downloaded data | `op:data_cache_info` | File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem), of the climate series (climate) and of the weather … |
 | `edit.undo` Undo | `op:undo` | Edit → Undo (Ctrl+Z, U): takes back the last action, or "steps" actions, of the project (the user's or yours). |
 | `edit.redo` Redo | `op:redo` | Edit → Redo (Ctrl+Y, REDO): brings back the last undone action, or "steps" of them. |
 | `edit.selectAll` Select all | `command:ALL` | run_command "ALL" (command:ALL) |
@@ -826,6 +837,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `agb.furrow.menu` Furrows with gated pipe | `op:furrow_set` | Draws a furrow set fed from a head line (Mainline → Furrows with gated pipe): the furrows run from the line (its first point is the inlet on the mainline) to o… |
 | `design.params` Design parameters | `tool:set_parameters` | Changes design parameters in one undo step and returns each old → new value. |
 | `design.catalog` Component catalog | `tool:edit_catalog` | Adds, updates, enables, disables or removes catalogue items in one undo step, e.g. the models of a manufacturer data sheet the user attached. |
+| `dgz.menu` Digitise a curve from a picture | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
 | `design.management` System flows (management) | `tool:set_system_flows` | Sets the system flows (shifts): which zones, pivots and valve-in-head stations run together, from what hour and for how long. |
 | `tar.menu` Time-of-use tariff and flow schedule | `op:tariff_schedule` | Design → Tariff schedule: a time-of-use energy tariff (price bands of the day, demand charges, an irrigation discount in a window of the day such as the Brazil… |
 | `eg.menu` Group zones for energy | `op:energy_grouping_study` | Design → Energy grouping, with every option: system flows (groups of zones opened together) that need the least pumping energy — zones of similar required head… |
@@ -836,7 +848,10 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `agb.solar.menu` Solar pumping of the design | `op:set_solar_design` | Changes the solar pumping of the design (one undo step; the results are discarded, and after run_design the bill of materials lists the modules, structure and … |
 | `agb.water.menu` Water quality and filtration | `op:set_water_quality` | Changes the water analysis and the treatment (one undo step; the results are discarded, and after run_design the report and the bill of materials carry the fil… |
 | `swb.menu` Daily water balance | `op:water_balance` | Design → Agronomy → Daily water balance: the daily soil water balance of the root zone of ONE irrigated area over its season (FAO-56 chapter 8): Kc of its crop… |
+| `clr.menu` Climate risk over the years | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
 | `prog.menu` Irrigation programme | `op:irrigation_programme` | Design → Agronomy → Irrigation programme: the controller programme as a controller is set — the system flows on their days (shortest interval of their areas, l… |
+| `ply.menu` Play the programme on the plan | `op:programme_picture` | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when … |
+| `fct.menu` Irrigation forecast | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
 | `ro.menu` Runoff potential | `op:runoff_potential` | Design → Agronomy → Runoff potential: the runoff of the sprinkler irrigation against the soil. |
 | `fst.menu` Fertigation by stage | `op:fertigation_by_stage` | Design → Agronomy → Fertigation by stage: the doses of N, P₂O₅ and K₂O of the crop cycle of ONE area split over its four FAO-56 growth stages (by the crop's wa… |
 | `ft.menu` Uniformity in the field | `op:field_test_evaluation` | Uniformity in the field → the evaluation of a field test kept in the project: Christiansen CU, low-quarter DU and statistical uniformity of the readings (cans … |
@@ -855,7 +870,9 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `pfit.menu` Fit a pivot to the field | `tool:fit_pivot` | Places the largest centre pivot a field holds: a full circle or, with sector true, a part circle of at least 30°, built from standard span lengths, keeping cle… |
 | `agb.mp.menu` Several pivots in the property | `op:multi_pivot_layout` | Arranges several centre pivots of standard spans in a property outline (Design → Automatic → Several pivots): the arrangement that irrigates the most area (the… |
 | `veg.menu` Detect vegetation in the image | `op:detect_vegetation` | Design → Automatic design → Detect vegetation with every option of its dialog: finds the lawns, trees and shrubs on the aerial imagery of the view (or of a bbo… |
+| `row.menu` Crop rows from the image | `op:detect_crop_rows` | Design → Automatic design → Crop rows from the image: reads on the aerial image of a field (orchard, coffee, vineyard, citrus, olive…) the direction of its pla… |
 | `design.check` Design check | `op:design_check` | Design → Design check: runs the check of the drawing and the settings (unconnected items, missing catalogue references, zones without a valve, settings out of … |
+| `scr.menu` Design scorecard | `op:design_scorecard` | Design → Design scorecard: the quality of the designed project in one transparent index, built only from what the design results, the design check, the Message… |
 | `adv.fixAll` Fix automatically | `tool:auto_fix` | Runs "Fix automatically" (the Messages panel button): designs, applies the safe correction of every message and designs again, in rounds, until nothing more ca… |
 | `adv.optimize` Optimise design | `tool:optimize_design` | Looks for the design with the lowest annual cost (capital annuity plus energy) without more errors: switches to LP sizing that trades pipe cost against energy,… |
 | `ai.menu` AI assistant | n/a | it opens this assistant |
@@ -1207,6 +1224,13 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `catalog_packs_dialog.exportCatalogPack.description` | `op:export_catalog` | Design → Catalogue → Export: saves the project catalogue as a file — "json" (the whole catalogue, re-importable), "csv" (one group as a table), "xlsx" (every g… |
 | `catalog_packs_dialog.exportCatalogPack.name` | `op:export_catalog` | Design → Catalogue → Export: saves the project catalogue as a file — "json" (the whole catalogue, re-importable), "csv" (one group as a table), "xlsx" (every g… |
 | `catalog_packs_dialog.exportCatalogPack.source` | `op:export_catalog` | Design → Catalogue → Export: saves the project catalogue as a file — "json" (the whole catalogue, re-importable), "csv" (one group as a table), "xlsx" (every g… |
+| `climate_risk_dialog.climateRisk` | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
+| `climate_risk_dialog.climateRisk.peakDays` | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
+| `climate_risk_dialog.climateRisk.probability` | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
+| `climate_risk_dialog.climateRisk.run` | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
+| `climate_risk_dialog.climateRisk.source` | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
+| `climate_risk_dialog.climateRisk.tables` | `tool:get_report_table` | Reads one report table exactly as the reports panel shows it, in the project's display units; ⚠ marks the rows the program highlights (out of window, over the … |
+| `climate_risk_dialog.climateRisk.view` | `op:climate_risk` | Design → Agronomy → Climate risk over the years: how the system as designed would have done in each real year of a daily weather series of the site, instead of… |
 | `command_palette.commandPalette` | n/a | the user's search over the menus and commands; the assistant finds the functions with find_operations |
 | `crop_plan_dialogs.fertigationStages` | `op:fertigation_by_stage` | Design → Agronomy → Fertigation by stage: the doses of N, P₂O₅ and K₂O of the crop cycle of ONE area split over its four FAO-56 growth stages (by the crop's wa… |
 | `crop_plan_dialogs.fertigationStages.products` | `op:fertigation_by_stage` | Design → Agronomy → Fertigation by stage: the doses of N, P₂O₅ and K₂O of the crop cycle of ONE area split over its four FAO-56 growth stages (by the crop's wa… |
@@ -1221,9 +1245,32 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `crop_plan_dialogs.userCrops.assign` | `op:set_user_crop` | Design → Agronomy → User crops: adds or changes a crop the FAO-56 table does not have (passion fruit, papaya, açaí, cocoa, black pepper, eucalyptus…; PRD-15) w… |
 | `crop_plan_dialogs.userCrops.delete` | `op:delete_user_crop` | Design → Agronomy → User crops: deletes a user crop (one undo step). |
 | `crop_plan_dialogs.userCrops.list` | `op:list_user_crops` | Design → Agronomy → User crops: the crops of the project that the FAO-56 table does not have (PRD-15), with their key (user.<id>, the crop key "ck" of an area … |
-| `data_cache_dialog.dataCache` | `op:data_cache_info` | File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem) and of the climate series (climate): count, size, si… |
-| `data_cache_dialog.dataCache.clear` | `op:clear_data_cache` | Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate) or all (default). |
-| `data_cache_dialog.dataCache.clearAll` | `op:clear_data_cache` | Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate) or all (default). |
+| `crop_rows_dialog.cropRows` | `op:detect_crop_rows` | Design → Automatic design → Crop rows from the image: reads on the aerial image of a field (orchard, coffee, vineyard, citrus, olive…) the direction of its pla… |
+| `crop_rows_dialog.cropRows.apply` | `op:apply_crop_rows` | Crop rows from the image, applied in one undo step: reads the rows as detect_crop_rows does (same inputs; the reading of the field the last detect_crop_rows ma… |
+| `crop_rows_dialog.cropRows.otherBand` | `op:detect_crop_rows` | Design → Automatic design → Crop rows from the image: reads on the aerial image of a field (orchard, coffee, vineyard, citrus, olive…) the direction of its pla… |
+| `crop_rows_dialog.cropRows.source` | `op:detect_crop_rows` | Design → Automatic design → Crop rows from the image: reads on the aerial image of a field (orchard, coffee, vineyard, citrus, olive…) the direction of its pla… |
+| `crop_rows_dialog.cropRows.spacings` | `op:detect_crop_rows` | Design → Automatic design → Crop rows from the image: reads on the aerial image of a field (orchard, coffee, vineyard, citrus, olive…) the direction of its pla… |
+| `curve_digitiser_dialog.curveDigitiser` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.apply` | `op:apply_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.axisX` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.axisY` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.copy` | `op:export_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.csv` | `op:export_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.curve` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.fit` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.kind` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.log` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.magnifier` | n/a | the magnifier, zoom and pan of the picture help the user's hand; the assistant sees the picture itself |
+| `curve_digitiser_dialog.curveDigitiser.picture` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.points` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.swap` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.target` | `op:apply_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.trace` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `curve_digitiser_dialog.curveDigitiser.undo` | n/a | the undo of the clicks inside the dialog; the assistant gives its points at once, and Edit → Undo takes back its change |
+| `curve_digitiser_dialog.curveDigitiser.units` | `op:fit_curve_points` | Design → Digitise a curve from a picture: the dialog reads a catalogue chart by clicks (two points per axis, linear or logarithmic, rotated or sheared pictures… |
+| `data_cache_dialog.dataCache` | `op:data_cache_info` | File → Saved downloaded data: what this device keeps of the downloads of the online elevation models (dem), of the climate series (climate) and of the weather … |
+| `data_cache_dialog.dataCache.clear` | `op:clear_data_cache` | Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate), of the weather forecasts (forecast) or all (de… |
+| `data_cache_dialog.dataCache.clearAll` | `op:clear_data_cache` | Clears the downloads kept on this device: of the online elevation models (dem), of the climate series (climate), of the weather forecasts (forecast) or all (de… |
 | `data_cache_dialog.dataCache.use` | `op:set_data_cache` | Turns on or off the keeping of downloads (online elevations and climate series) on this device ("Keep what is downloaded" of File → Saved downloaded data). |
 | `data_terms_dialog.dataTerms` | `op:read_data_terms` | Reads the terms of the third-party data in professional work, as Help → Terms of the data shows them: the data of this project that came from other sources (on… |
 | `deliverables_dialogs.budget` | `op:document_text` | Reports → Technical documents: one of the documents built from the project without the AI, as Markdown — the water permit table (permit), the descriptive and c… |
@@ -1548,6 +1595,12 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `field_machine_dialogs.travellerLanes.lanes` | `op:traveller_lanes` | Lays travelling-gun (hose reel) lanes across a field (Mainline → Traveller lanes): parallel lanes in a direction, spaced by the NRCS NEH 623 wind table for the… |
 | `field_machine_dialogs.travellerLanes.results` | `op:field_machines` | Reads the traveller lanes and furrow sets of the drawing as the report shows them: per lane the reel, run, spacing, flow, speed, depth, travel and lane hours, … |
 | `field_map_dialog.fieldMap` | `op:keep_field_map` | Keeps the map of the area for the field, as View → Base map → Keep the map of the area for the field does: draws the base map under the drawing into one pictur… |
+| `forecast_dialog.irrigationForecast` | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
+| `forecast_dialog.irrigationForecast.export` | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
+| `forecast_dialog.irrigationForecast.fetch` | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
+| `forecast_dialog.irrigationForecast.source` | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
+| `forecast_dialog.irrigationForecast.start` | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
+| `forecast_dialog.irrigationForecast.table` | `op:irrigation_forecast` | Design → Agronomy → Irrigation forecast: how much to irrigate today and in the next days. |
 | `help_dialog.help` | `op:manual_topic` | The manual of the program as the user reads it (Help → Manual, F1; the "?" of the dialogs and panels): with no topic, its topics (id — title); with a topic, it… |
 | `import_progress_dialog.importProgress` | `tool:import_attachment` | Imports a file the user attached to the conversation into the project, as File → Import does: DXF, DWG, DGN, KML/KMZ, shapefile (.shp or a .zip), GeoJSON, GPX,… |
 | `life_scenarios_dialog.lifeScenarios` | `op:life_scenarios` | Mainline → The design over its life: the designed project analysed again with the pipes it was designed with, (1) as new, (2) aged — the Hazen-Williams C down … |
@@ -1783,10 +1836,30 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `points_import_dialog.pointsImport.separator` | `op:import_points_attachment` | File → Import of a points file the user attached, with the choices of the import wizard: encoding, separator, decimal mark, header, lines to skip, the column o… |
 | `points_import_dialog.pointsImport.skip` | `op:import_points_attachment` | File → Import of a points file the user attached, with the choices of the import wizard: encoding, separator, decimal mark, header, lines to skip, the column o… |
 | `points_import_dialog.pointsImport.swap` | `op:import_points_attachment` | File → Import of a points file the user attached, with the choices of the import wizard: encoding, separator, decimal mark, header, lines to skip, the column o… |
+| `programme_player_dialogs.programmeCalendar` | `op:export_programme_calendar` | Design → Agronomy → Play the programme on the plan → Calendar (.ics): writes the irrigation programme as an iCalendar file (RFC 5545) for the grower's phone — … |
+| `programme_player_dialogs.programmeCalendar.days` | `op:export_programme_calendar` | Design → Agronomy → Play the programme on the plan → Calendar (.ics): writes the irrigation programme as an iCalendar file (RFC 5545) for the grower's phone — … |
+| `programme_player_dialogs.programmeCalendar.month` | `op:export_programme_calendar` | Design → Agronomy → Play the programme on the plan → Calendar (.ics): writes the irrigation programme as an iCalendar file (RFC 5545) for the grower's phone — … |
+| `programme_player_dialogs.programmeGif` | `op:export_programme_animation` | Design → Agronomy → Play the programme on the plan → Animation (GIF) or Frame (PNG): writes the irrigation programme played on the plan as a file — gif: the wh… |
+| `programme_player_dialogs.programmeGif.baseMap` | `op:export_programme_animation` | Design → Agronomy → Play the programme on the plan → Animation (GIF) or Frame (PNG): writes the irrigation programme played on the plan as a file — gif: the wh… |
+| `programme_player_dialogs.programmeGif.frames` | `op:export_programme_animation` | Design → Agronomy → Play the programme on the plan → Animation (GIF) or Frame (PNG): writes the irrigation programme played on the plan as a file — gif: the wh… |
+| `programme_player_dialogs.programmeGif.size` | `op:export_programme_animation` | Design → Agronomy → Play the programme on the plan → Animation (GIF) or Frame (PNG): writes the irrigation programme played on the plan as a file — gif: the wh… |
+| `programme_player_dialogs.programmePlayer` | `op:programme_picture` | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when … |
+| `programme_player_dialogs.programmePlayer.next` | `op:programme_picture` | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when … |
+| `programme_player_dialogs.programmePlayer.play` | `op:programme_picture` | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when … |
+| `programme_player_dialogs.programmePlayer.png` | `op:export_programme_animation` | Design → Agronomy → Play the programme on the plan → Animation (GIF) or Frame (PNG): writes the irrigation programme played on the plan as a file — gif: the wh… |
+| `programme_player_dialogs.programmePlayer.seek` | `op:programme_picture` | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when … |
+| `programme_player_dialogs.programmePlayer.speed` | n/a | the pace of the animation on the user's screen; the assistant looks at any moment with programme_picture |
 | `pump_station_dialog.pumpStation` | `op:set_pump_station` | Pump item → Pump station…: makes a pump item stand for a pump station: its own pump (the lead, pump 1) and the pumps after it, joined in parallel (they share t… |
 | `pump_station_dialog.pumpStation.duty` | `op:pump_stations` | The pump stations of the project (pump items standing for several pumps, set_pump_station) with their pumps, and, after a design, the duty of every pump in eac… |
 | `reservoir_dialog.reservoir` | `op:set_reservoir` | Water supply → Reservoir…: makes a water supply take its water from a reservoir or dam drawn as a closed polyline or an area (the water line at the full level). |
 | `reservoir_dialog.reservoir.study` | `op:reservoir_study` | Water supply → Reservoir…: the stage–area–volume curve of the reservoir or dam of a water supply (set_reservoir) from the terrain model, its bottom, surface, v… |
+| `scorecard_dialog.scorecard` | `op:design_scorecard` | Design → Design scorecard: the quality of the designed project in one transparent index, built only from what the design results, the design check, the Message… |
+| `scorecard_dialog.scorecard.ageing` | `op:design_scorecard` | Design → Design scorecard: the quality of the designed project in one transparent index, built only from what the design results, the design check, the Message… |
+| `scorecard_dialog.scorecard.compare` | `op:design_scorecard` | Design → Design scorecard: the quality of the designed project in one transparent index, built only from what the design results, the design check, the Message… |
+| `scorecard_dialog.scorecard.export` | `tool:export_file` | Saves a file for the user (a download in the browser, a save on the desktop), named after the project: the drawing (dxf, dxfR12, dwg, pdf, svg, kml, kmz, geojs… |
+| `scorecard_dialog.scorecard.open` | n/a | the buttons open the tool each improvement names; the operation names the same operation to run |
+| `scorecard_dialog.scorecard.remember` | `op:design_scorecard` | Design → Design scorecard: the quality of the designed project in one transparent index, built only from what the design results, the design check, the Message… |
+| `scorecard_dialog.scorecard.table` | `tool:get_report_table` | Reads one report table exactly as the reports panel shows it, in the project's display units; ⚠ marks the rows the program highlights (out of window, over the … |
 | `selection_dialogs.quickSelect` | `tool:select_entities` | Selects items on the user's drawing, to point them out or to prepare the user's next action (the properties panel shows the selection; layout_sprinklers routes… |
 | `selection_dialogs.quickSelect.kind` | `tool:list_entities` | Lists items of the drawing, one line each: id \| type (translated kind) \| name \| layer \| main properties (catalogue ids, positions or first → last vertex, lengt… |
 | `selection_dialogs.quickSelect.layer` | `tool:list_entities` | Lists items of the drawing, one line each: id \| type (translated kind) \| name \| layer \| main properties (catalogue ids, positions or first → last vertex, lengt… |
@@ -1883,6 +1956,7 @@ Permissions: reads run freely; changes are undo steps and follow the user's mode
 | `water_balance_dialogs.irrigationProgramme.exportRuns` | `op:export_irrigation_programme` | Irrigation programme → Export CSV: saves the programme by controller station and month (zone, areas, flow, rate, interval, cycle and soak, run time per event o… |
 | `water_balance_dialogs.irrigationProgramme.exportStations` | `op:export_irrigation_programme` | Irrigation programme → Export CSV: saves the programme by controller station and month (zone, areas, flow, rate, interval, cycle and soak, run time per event o… |
 | `water_balance_dialogs.irrigationProgramme.inReports` | `op:irrigation_programme` | Design → Agronomy → Irrigation programme: the controller programme as a controller is set — the system flows on their days (shortest interval of their areas, l… |
+| `water_balance_dialogs.irrigationProgramme.play` | `op:programme_picture` | Design → Agronomy → Play the programme on the plan, as a picture: the plan at one moment of the irrigation programme (the cycle of the programme: one day when … |
 | `water_balance_dialogs.irrigationProgramme.seasonal` | `op:irrigation_programme` | Design → Agronomy → Irrigation programme: the controller programme as a controller is set — the system flows on their days (shortest interval of their areas, l… |
 | `water_balance_dialogs.irrigationProgramme.window` | `op:irrigation_programme` | Design → Agronomy → Irrigation programme: the controller programme as a controller is set — the system flows on their days (shortest interval of their areas, l… |
 | `water_balance_dialogs.runoffPotential` | `op:runoff_potential` | Design → Agronomy → Runoff potential: the runoff of the sprinkler irrigation against the soil. |

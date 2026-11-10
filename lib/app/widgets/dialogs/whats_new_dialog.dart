@@ -18,6 +18,7 @@ import 'terrain_dialogs.dart' show dialogWidth;
 /// The highlights of each version, newest first: `new.v<digits>.<id>` in
 /// the string table.
 const whatsNewNotes = <String, List<String>>{
+  '1.7.0': ['models', 'second', 'rows', 'risk', 'forecast', 'player', 'scorecard', 'digitiser', 'share', 'mcp'],
   '1.6.0': ['palette', 'help', 'interface', 'tutorial', 'sheets', 'numbers', 'touch', 'reports', 'editing', 'safety', 'engine'],
 };
 
