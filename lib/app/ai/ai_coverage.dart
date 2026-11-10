@@ -43,6 +43,7 @@ import 'coverage_parts/prd.dart';
 import 'coverage_parts/edt.dart';
 import 'coverage_parts/agb.dart';
 import 'coverage_parts/prb.dart';
+import 'coverage_parts/scr.dart'; // 1.7.0 SCR
 
 /// The functions the tools sent with every request already cover.
 const coreCoverage = <String, String>{
@@ -398,6 +399,7 @@ Map<String, String> _buildCoverage() {
     ...coverageEdt,
     ...coverageAgb,
     ...coveragePrb,
+    ...coverageScr, // 1.7.0 SCR
   };
   for (final e in commandAliases.entries) {
     final route = m[coverageKeyOf(e.value)];
