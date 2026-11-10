@@ -90,6 +90,51 @@ void main() {
     await expectLater(find.byType(MaterialApp), matchesGoldenFile('images/units_dialog_phone.png'));
   });
 
+  test('the comparator takes soft edges, refuses a change and says where it is', () async {
+    final dir = Directory.systemTemp.createTempSync('oci_golden');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    img.Image picture({int edge = 0, bool block = false}) {
+      final im = img.Image(width: 80, height: 50, numChannels: 4);
+      img.fill(im, color: img.ColorRgba8(255, 255, 255, 255));
+      img.fillRect(im, x1: 10, y1: 10, x2: 29, y2: 29, color: img.ColorRgba8(30, 60, 200, 255));
+      // the edge of the square, as another rasteriser would shade it
+      for (var i = 10; i <= 29; i++) {
+        im.setPixelRgba(i, 9, 255 - edge, 255 - edge, 255, 255);
+      }
+      if (block) img.fillRect(im, x1: 60, y1: 40, x2: 69, y2: 44, color: img.ColorRgba8(200, 30, 30, 255));
+      return im;
+    }
+
+    File('${dir.path}/golden.png').writeAsBytesSync(img.encodePng(picture()));
+    final comparator = TolerantGoldenComparator(Uri.file('${dir.path}/x_test.dart'), tolerance: 0.005);
+    final golden = Uri.parse('golden.png');
+    expect(await comparator.compare(img.encodePng(picture()), golden), isTrue);
+    // 20 edge pixels off by 20 levels: under the level, however many
+    expect(await comparator.compare(img.encodePng(picture(edge: 20)), golden), isTrue);
+    // 20 edge pixels off by 90 levels: 0.5 % of 4000 pixels, the most allowed
+    expect(await comparator.compare(img.encodePng(picture(edge: 90)), golden), isTrue);
+    // a block of 50 pixels in another colour is a change
+    Object? error;
+    try {
+      await comparator.compare(img.encodePng(picture(block: true)), golden);
+    } catch (e) {
+      error = e;
+    }
+    final text = '$error';
+    expect(text, contains('50 of 4000 pixels (1.25 %) have a channel off by more than 24 levels; 0.50 % are allowed. Largest difference: 225 levels.'));
+    expect(text, contains('3950 equal, 0 by 1–8, 0 by 9–24, 0 by 25–64, 0 by 65–128, 50 by more.'));
+    expect(text, contains('They are inside x 60–69, y 40–44 of 80 × 50.'));
+    expect(text, contains('(60, 40) #ffc81e1e for #ffffffff'));
+    final map = text.split('\n').where((l) => RegExp(r'^[.#1-9]+$').hasMatch(l)).toList();
+    expect(map, hasLength(25));
+    expect(map.every((l) => l.length == 40), isTrue);
+    expect(map[20].substring(28, 36), '..#####.');
+    expect(map[22].substring(28, 36), '..55555.');
+    expect(map.join().replaceAll('.', '').length, 15);
+    // another size has no pixels to compare
+    expect(GoldenDifference.of(img.encodePng(img.Image(width: 4, height: 4)), img.encodePng(picture()), levels: 24), isNull);
+  });
+
   test('the SVG of the plot', () {
     final svg = SvgWriter.write(buildPlotScene(smallProject().project, unitsPerMm: 0.2), title: 'golden');
     final file = File('test/goldens/images/plot.svg');
@@ -156,6 +201,9 @@ ProjectController denseProject() {
 /// A [LocalFileComparator] that takes an image whose pixels differ from the
 /// golden by little (another platform's anti-aliasing moves the colour of
 /// edge pixels by a few levels) or in at most [tolerance] of the pixels.
+/// When it refuses one, the message says how many pixels differ, by how
+/// much and where, so that a failure on another machine (CI is Linux) can be
+/// understood from the message alone.
 class TolerantGoldenComparator extends LocalFileComparator {
   TolerantGoldenComparator(super.testFile, {required this.tolerance});
 
@@ -169,25 +217,112 @@ class TolerantGoldenComparator extends LocalFileComparator {
   Future<bool> compare(Uint8List imageBytes, Uri golden) async {
     final goldenBytes = await getGoldenBytes(golden);
     final result = await GoldenFileComparator.compareLists(imageBytes, goldenBytes);
-    if (result.passed || _close(imageBytes, Uint8List.fromList(goldenBytes))) {
+    final diff = result.passed ? null : GoldenDifference.of(imageBytes, Uint8List.fromList(goldenBytes), levels: levels);
+    if (result.passed || (diff != null && diff.off <= tolerance * diff.pixels)) {
       result.dispose();
       return true;
     }
     final error = await generateFailureOutput(result, golden, basedir);
     result.dispose();
-    throw FlutterError(error);
+    throw FlutterError('$error\n${diff?.describe(tolerance) ?? 'The two images have different sizes, or one of them is not a PNG.'}');
   }
+}
 
-  bool _close(Uint8List a, Uint8List b) {
-    final x = img.decodePng(a), y = img.decodePng(b);
-    if (x == null || y == null || x.width != y.width || x.height != y.height) return false;
-    var off = 0;
-    for (var j = 0; j < x.height; j++) {
-      for (var i = 0; i < x.width; i++) {
+/// How an image differs from its golden: the pixels with a channel off by
+/// more than [levels], how far the channels go and where those pixels are.
+class GoldenDifference {
+  GoldenDifference._(this.width, this.height, this.levels, this.off, this.largest, this.byRange, this.box, this.cell, this.map, this.samples);
+
+  final int width, height, levels;
+
+  /// Pixels with a channel off by more than [levels].
+  final int off;
+
+  /// The largest difference of a channel (0–255).
+  final int largest;
+
+  /// Pixels by their largest channel difference: 0, 1–8, 9–24, 25–64,
+  /// 65–128 and above.
+  final List<int> byRange;
+
+  /// Left, top, right and bottom of the pixels counted in [off], or null.
+  final (int, int, int, int)? box;
+
+  /// Side, in pixels, of the squares of [map].
+  final int cell;
+
+  /// Share (0–1) of the pixels of each square that count in [off], by rows.
+  final List<List<double>> map;
+
+  /// The first pixels counted in [off]: x, y, the image's colour and the
+  /// golden's (0xAARRGGBB).
+  final List<(int, int, int, int)> samples;
+
+  int get pixels => width * height;
+
+  /// Null when the two are not PNG images of the same size.
+  static GoldenDifference? of(Uint8List image, Uint8List golden, {required int levels}) {
+    final x = img.decodePng(image), y = img.decodePng(golden);
+    if (x == null || y == null || x.width != y.width || x.height != y.height) return null;
+    final w = x.width, h = x.height;
+    final cell = math.max(1, math.max((w / 40).ceil(), (h / 25).ceil()));
+    final cols = (w / cell).ceil(), rows = (h / cell).ceil();
+    final counts = [for (var r = 0; r < rows; r++) List.filled(cols, 0)];
+    final byRange = List.filled(6, 0);
+    final samples = <(int, int, int, int)>[];
+    var off = 0, largest = 0;
+    (int, int, int, int)? box;
+    int argb(img.Pixel p) => (p.a.toInt() << 24) | (p.r.toInt() << 16) | (p.g.toInt() << 8) | p.b.toInt();
+    for (var j = 0; j < h; j++) {
+      for (var i = 0; i < w; i++) {
         final p = x.getPixel(i, j), q = y.getPixel(i, j);
-        if ((p.r - q.r).abs() > levels || (p.g - q.g).abs() > levels || (p.b - q.b).abs() > levels || (p.a - q.a).abs() > levels) off++;
+        final d = [(p.r - q.r).abs(), (p.g - q.g).abs(), (p.b - q.b).abs(), (p.a - q.a).abs()].reduce(math.max).toInt();
+        byRange[d == 0
+            ? 0
+            : d <= 8
+            ? 1
+            : d <= 24
+            ? 2
+            : d <= 64
+            ? 3
+            : d <= 128
+            ? 4
+            : 5]++;
+        if (d > largest) largest = d;
+        if (d <= levels) continue;
+        off++;
+        counts[j ~/ cell][i ~/ cell]++;
+        box = box == null ? (i, j, i, j) : (math.min(box.$1, i), math.min(box.$2, j), math.max(box.$3, i), math.max(box.$4, j));
+        if (samples.length < 6) samples.add((i, j, argb(p), argb(q)));
       }
     }
-    return off <= tolerance * x.width * x.height;
+    final map = [
+      for (var r = 0; r < rows; r++) [for (var c = 0; c < cols; c++) counts[r][c] / ((math.min(w, (c + 1) * cell) - c * cell) * (math.min(h, (r + 1) * cell) - r * cell))],
+    ];
+    return GoldenDifference._(w, h, levels, off, largest, byRange, box, cell, map, samples);
+  }
+
+  /// The difference in words and as a coarse map, for a failure message.
+  String describe(double tolerance) {
+    String pct(num v) => (100 * v).toStringAsFixed(2);
+    String hex(int c) => '#${c.toRadixString(16).padLeft(8, '0')}';
+    final b = box;
+    return [
+      '$off of $pixels pixels (${pct(off / pixels)} %) have a channel off by more than $levels levels; ${pct(tolerance)} % are allowed. Largest difference: $largest levels.',
+      'Pixels by largest channel difference: ${byRange[0]} equal, ${byRange[1]} by 1–8, ${byRange[2]} by 9–24, ${byRange[3]} by 25–64, ${byRange[4]} by 65–128, ${byRange[5]} by more.',
+      if (b != null) 'They are inside x ${b.$1}–${b.$3}, y ${b.$2}–${b.$4} of $width × $height.',
+      if (samples.isNotEmpty) 'First ones: ${[for (final s in samples) '(${s.$1}, ${s.$2}) ${hex(s.$3)} for ${hex(s.$4)}'].join('; ')}.',
+      if (b != null) 'Where (a character for $cell × $cell pixels: "." none, 1 to 9 the tenths of them that differ, "#" all):',
+      if (b != null)
+        for (final row in map)
+          [
+            for (final v in row)
+              v <= 0
+                  ? '.'
+                  : v >= 1
+                  ? '#'
+                  : '${math.max(1, (v * 10).floor())}',
+          ].join(),
+    ].join('\n');
   }
 }

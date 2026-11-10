@@ -32,6 +32,36 @@ void main() {
     return j;
   }
 
+  test('the comparison with the shipped files takes the last digits of a number, nothing else', () {
+    final a = {
+      'n': 'x',
+      'pts': [
+        [0.1 + 0.2, -0.49999999999999983],
+        [150, 0],
+      ],
+      'on': true,
+    };
+    Map<String, dynamic> copy(void Function(Map<String, dynamic> j) change) {
+      final j = jsonDecode(jsonEncode(a)) as Map<String, dynamic>;
+      change(j);
+      return j;
+    }
+
+    expect(jsonDifference(a, copy((_) {})), isNull);
+    expect(jsonDifference(a, copy((j) => ((j['pts'] as List)[0] as List)[0] = 0.3)), isNull);
+    expect(jsonDifference(a, copy((j) => ((j['pts'] as List)[0] as List)[1] = -0.4999999999999998)), isNull);
+    expect(jsonDifference(a, copy((j) => ((j['pts'] as List)[1] as List)[0] = 150.0)), isNull);
+    expect(jsonDifference(a, copy((j) => ((j['pts'] as List)[1] as List)[0] = 150.000001)), r'$.pts[1][0]: 150 is not 150.000001');
+    expect(jsonDifference(a, copy((j) => ((j['pts'] as List)[1] as List)[1] = 1e-7)), r'$.pts[1][1]: 0 is not 1e-7');
+    expect(jsonDifference(a, copy((j) => j['n'] = 'y')), r'$.n: "x" is not "y"');
+    expect(jsonDifference(a, copy((j) => j['on'] = 1)), r'$.on: true is not 1');
+    expect(jsonDifference(a, copy((j) => (j['pts'] as List).add([1, 1]))), r'$.pts: 2 items, not 3');
+    expect(jsonDifference(a, copy((j) => j.remove('on'))), r'$: the keys [on] are only on one side');
+    expect(jsonDifference(a, copy((j) => j['pts'] = 'none')), startsWith(r'$.pts: [[0.3'));
+    expect(jsonDifference(double.nan, double.nan), isNull);
+    expect(jsonDifference(1.0, double.nan), r'$: 1.0 is not NaN');
+  });
+
   for (final ex in exampleGallery) {
     group('example ${ex.id.name}', () {
       final p = buildExample(ex.id, t.call, lang: 'pt');
@@ -168,7 +198,10 @@ void main() {
           expect(f.existsSync(), isTrue, reason: 'run dart run tool/gen_examples.dart');
           final shipped = Project.fromJson(jsonDecode(f.readAsStringSync()) as Map<String, dynamic>);
           final built = buildExample(ex.id, I18n(lang).call, lang: lang);
-          expect(jsonEncode(normalised(shipped)), jsonEncode(normalised(built)), reason: '${f.path} is out of date: run dart run tool/gen_examples.dart');
+          // not text against text: the cosine and the sine of the machine
+          // that wrote the files and of this one may differ in the last
+          // digit (the circle of the pivot, the contours of the coffee hill)
+          expect(jsonDifference(normalised(shipped), normalised(built)), isNull, reason: '${f.path} is out of date: run dart run tool/gen_examples.dart');
         }
       }, skip: !Directory('examples').existsSync());
     });
@@ -181,4 +214,40 @@ void main() {
     expect(exampleIdFromName(null), isNull);
     expect(exampleGallery.map((e) => e.id).toSet().length, ExampleId.values.length);
   });
+}
+
+/// Where two JSON trees differ (the path and the two values of the first
+/// difference), or null when they are the same: the same keys, items,
+/// texts and booleans, and numbers equal within [tolerance], relative to
+/// the larger of the two and absolute under 1.
+String? jsonDifference(Object? a, Object? b, {String path = r'$', double tolerance = 1e-9}) {
+  if (a is num && b is num) {
+    if (a == b || (a.isNaN && b.isNaN)) return null;
+    final scale = [1.0, a.abs().toDouble(), b.abs().toDouble()].reduce((x, y) => x > y ? x : y);
+    return (a - b).abs() <= tolerance * scale ? null : '$path: $a is not $b';
+  }
+  if (a is Map && b is Map) {
+    final odd = {...a.keys.where((k) => !b.containsKey(k)), ...b.keys.where((k) => !a.containsKey(k))};
+    if (odd.isNotEmpty) return '$path: the keys ${odd.toList()} are only on one side';
+    for (final k in a.keys) {
+      final d = jsonDifference(a[k], b[k], path: '$path.$k', tolerance: tolerance);
+      if (d != null) return d;
+    }
+    return null;
+  }
+  if (a is List && b is List) {
+    if (a.length != b.length) return '$path: ${a.length} items, not ${b.length}';
+    for (var i = 0; i < a.length; i++) {
+      final d = jsonDifference(a[i], b[i], path: '$path[$i]', tolerance: tolerance);
+      if (d != null) return d;
+    }
+    return null;
+  }
+  if (a == b) return null;
+  String show(Object? v) {
+    final s = jsonEncode(v);
+    return s.length > 120 ? '${s.substring(0, 120)}…' : s;
+  }
+
+  return '$path: ${show(a)} is not ${show(b)}';
 }
