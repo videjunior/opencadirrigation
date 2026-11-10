@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI assistant — OpenCADIrrigation user guide</title>
-  <meta name="description" content="AI assistant: what the optional assistant does, what it sends and how it is controlled">
+  <meta name="description" content="AI assistant: what the optional assistant does with the models of six companies, what it sends and how it is controlled">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://opencadirrigation.com/manual/ai-assistant/">
   <link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/ai-assistant/">
@@ -25,7 +25,7 @@
       "@id": "https://opencadirrigation.com/manual/ai-assistant/#article",
       "url": "https://opencadirrigation.com/manual/ai-assistant/",
       "headline": "AI assistant",
-      "description": "AI assistant: what the optional assistant does, what it sends and how it is controlled",
+      "description": "AI assistant: what the optional assistant does with the models of six companies, what it sends and how it is controlled",
       "inLanguage": "en",
       "isPartOf": {
         "@type": "CreativeWork",
@@ -141,6 +141,11 @@
 <nav class="toc" aria-labelledby="oci-toc">
 <p class="label" id="oci-toc">On this page</p>
 <ol>
+<li><a href="#companies-and-models">Companies and models</a></li>
+<li><a href="#choosing-a-company-and-a-model">Choosing a company and a model</a></li>
+<li><a href="#more-models-openrouter">More models (OpenRouter)</a></li>
+<li><a href="#second-opinion">Second opinion</a></li>
+<li><a href="#notes-on-each-company">Notes on each company</a></li>
 <li><a href="#starting-with-the-ai">Starting with the AI</a></li>
 <li><a href="#how-it-works">How it works</a></li>
 <li><a href="#vision">Vision</a></li>
@@ -152,12 +157,17 @@
 </nav>
 <p>Design → AI assistant… (<code>AI</code>, <code>IA</code>, <code>ASK</code>), its button in the status bar, or <strong>Ask the AI</strong> on any
 message card opens an AI agent that works on the open project in a panel docked beside the drawing
-(a bottom sheet on phones), so you watch the drawing change while it works. It runs a model of
-Anthropic (Claude, through the Messages API) or of OpenAI (GPT, through the Responses API), with
-your own API key for that company: the browser (or the desktop app) calls the company's API
-directly, with no server of this project in between, and the company bills the usage to your
-account. The panel shows the tokens of every answer and of the conversation with an estimate in
-US$ at the list prices below, which may change.</p>
+(a bottom sheet on phones), so you watch the drawing change while it works. It runs a model of one
+of six companies, with your own API key for that company: Anthropic (Claude, through the Messages
+API), OpenAI (GPT, through the Responses API), Google (Gemini, through the Interactions API), xAI
+(Grok, through its Responses API), Meta (Muse, through the Meta Model API in its Responses format)
+or OpenRouter (one key for the models of many companies, through its Responses API). The browser
+(or the desktop app) calls the company's API directly, with no server of this project in between,
+and the company bills the usage to your account. The panel shows the tokens of every answer and of
+the conversation with an estimate in US$ at the list prices below, which may change.</p>
+<h2 id="companies-and-models">Companies and models</h2>
+<p>The models offered, with their list prices per million tokens as each company published them on
+2026-11-10 (<code>lib/core/ai/llm.dart</code> holds the table the app uses):</p>
 <div class="table"><table>
 <thead>
 <tr>
@@ -166,15 +176,17 @@ US$ at the list prices below, which may change.</p>
 <th>Model</th>
 <th>Id</th>
 <th>US$ per million tokens, input / output</th>
+<th>To know</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Anthropic</td>
 <td>top</td>
-<td>Claude Fable 5.1</td>
-<td><code>claude-fable-5-1</code></td>
-<td>10 / 50</td>
+<td>Claude Fable 5.2</td>
+<td><code>claude-fable-5-2</code></td>
+<td>8 / 40</td>
+<td>needs 30-day data retention; may think for minutes</td>
 </tr>
 <tr>
 <td>Anthropic</td>
@@ -182,6 +194,7 @@ US$ at the list prices below, which may change.</p>
 <td>Claude Opus 5.5 (the default)</td>
 <td><code>claude-opus-5-5</code></td>
 <td>4 / 20</td>
+<td></td>
 </tr>
 <tr>
 <td>Anthropic</td>
@@ -189,13 +202,15 @@ US$ at the list prices below, which may change.</p>
 <td>Claude Sonnet 5.5</td>
 <td><code>claude-sonnet-5-5</code></td>
 <td>2 / 10</td>
+<td></td>
 </tr>
 <tr>
 <td>Anthropic</td>
 <td>fast</td>
 <td>Claude Haiku 5.5</td>
 <td><code>claude-haiku-5-5</code></td>
-<td>0.10 / 0.50 (5 × above 100 000 input tokens)</td>
+<td>0.10 / 0.50</td>
+<td>5 × above 100 000 input tokens</td>
 </tr>
 <tr>
 <td>OpenAI</td>
@@ -203,6 +218,7 @@ US$ at the list prices below, which may change.</p>
 <td>GPT-6 Astra</td>
 <td><code>gpt-6-astra</code></td>
 <td>10 / 50</td>
+<td>may think for minutes</td>
 </tr>
 <tr>
 <td>OpenAI</td>
@@ -210,13 +226,15 @@ US$ at the list prices below, which may change.</p>
 <td>GPT-6.1 Sol</td>
 <td><code>gpt-6.1-sol</code></td>
 <td>2 / 10</td>
+<td></td>
 </tr>
 <tr>
 <td>OpenAI</td>
-<td>intermediate, earlier releases</td>
-<td>GPT-6 Sol, GPT-5.6 Terra</td>
-<td><code>gpt-6-sol</code>, <code>gpt-5.6-terra</code></td>
-<td>2 / 10, 2 / 12</td>
+<td>fast</td>
+<td>GPT-6.1 Terra</td>
+<td><code>gpt-6.1-terra</code></td>
+<td>1 / 5</td>
+<td></td>
 </tr>
 <tr>
 <td>OpenAI</td>
@@ -224,17 +242,237 @@ US$ at the list prices below, which may change.</p>
 <td>GPT-6 Luna</td>
 <td><code>gpt-6-luna</code></td>
 <td>0.10 / 0.50</td>
+<td></td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td>intermediate, earlier releases</td>
+<td>GPT-6 Sol, GPT-5.6 Terra</td>
+<td><code>gpt-6-sol</code>, <code>gpt-5.6-terra</code></td>
+<td>2 / 10, 2 / 12</td>
+<td></td>
+</tr>
+<tr>
+<td>Google</td>
+<td>top</td>
+<td>Gemini 4 Argon</td>
+<td><code>gemini-4-argon</code></td>
+<td>4 / 20</td>
+<td>half price until 1 December 2026; may think for minutes</td>
+</tr>
+<tr>
+<td>Google</td>
+<td>intermediate</td>
+<td>Gemini 3.8 Flash</td>
+<td><code>gemini-3.8-flash</code></td>
+<td>1.50 / 7.50</td>
+<td>half price until 1 January 2027; free tier</td>
+</tr>
+<tr>
+<td>Google</td>
+<td>fast</td>
+<td>Gemini 3.5 Flash-Lite</td>
+<td><code>gemini-3.5-flash-lite</code></td>
+<td>0.30 / 2.50</td>
+<td>free tier</td>
+</tr>
+<tr>
+<td>xAI</td>
+<td>top</td>
+<td>Grok 4.7</td>
+<td><code>grok-4.7</code></td>
+<td>2 / 6</td>
+<td>2 × from 200 000 prompt tokens</td>
+</tr>
+<tr>
+<td>xAI</td>
+<td>fast</td>
+<td>Grok 4.3</td>
+<td><code>grok-4.3</code></td>
+<td>1.25 / 2.50</td>
+<td>2 × from 200 000 prompt tokens</td>
+</tr>
+<tr>
+<td>Meta</td>
+<td>top</td>
+<td>Muse Wonder</td>
+<td><code>muse-wonder-1.0</code></td>
+<td>4 / 20</td>
+<td>may think for minutes</td>
+</tr>
+<tr>
+<td>Meta</td>
+<td>intermediate</td>
+<td>Muse Spark 1.3</td>
+<td><code>muse-spark-1.3</code></td>
+<td>1.25 / 4.25</td>
+<td></td>
+</tr>
+<tr>
+<td>Meta</td>
+<td>fast</td>
+<td>Muse Ember</td>
+<td><code>muse-ember-1.0</code></td>
+<td>0.10 / 0.50</td>
+<td>3 × above 200 000 input tokens</td>
+</tr>
+<tr>
+<td>OpenRouter</td>
+<td></td>
+<td>Claude Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5; GPT-6 Astra, GPT-6.1 Sol and GPT-6.1 Terra; Gemini 4 Argon and Gemini 3.8 Flash; Grok 4.7; Muse Spark 1.3</td>
+<td><code>anthropic/claude-opus-5.5</code>, <code>openai/gpt-6.1-sol</code>…</td>
+<td>the makers' prices as OpenRouter lists them (Gemini 3.8 Flash 1.65 / 8.25)</td>
+<td>a lower answer limit on the dearest ones</td>
+</tr>
+<tr>
+<td>OpenRouter</td>
+<td></td>
+<td>Auto Router, Free Models Router</td>
+<td><code>openrouter/auto</code>, <code>openrouter/free</code></td>
+<td>the price of the model it picks; free</td>
+<td>routers</td>
 </tr>
 </tbody>
 </table></div>
-<p>OpenAI prompts above 272 000 input tokens cost 2 × input and 1.5 × output; the settings also show
-the cache prices of each model. Every model takes five depths of reasoning, from quick to maximum
-(balanced by default). Claude Fable 5.1 and GPT-6 Astra may think for several minutes on one step,
-and Claude Fable 5.1 is offered only to organisations with 30-day data retention (otherwise the
-app says so and suggests Claude Opus 5.5). On Claude Fable 5.1, Opus 5.5 and Sonnet 5.5 a request a
-safety classifier declines is answered by another model on Anthropic's side, priced at the model
-that answered. Switching to the other company's model, or between OpenAI models, starts a new
-conversation; between Claude models the conversation goes on.</p>
+<p>The long-prompt rules apply to the whole request once its input passes the threshold: OpenAI's
+models (also through OpenRouter) above 272 000 input tokens cost 2 × input and cache and 1.5 ×
+output; Claude Haiku 5.5 above 100 000 costs 5 × everything; Grok from 200 000 prompt tokens costs
+2 × everything; Muse Ember above 200 000 input tokens (cached ones included) costs 3 × everything.
+Gemini 4 Argon and Gemini 3.8 Flash (also through OpenRouter) cost half the prices of the table
+until the day shown, when the full price starts. The settings show the cache prices of each model
+too, and the meter prices every request at the prices of its day.</p>
+<p>Every model of Anthropic, OpenAI and Meta takes the five depths of reasoning, from <em>Quick</em> to
+<em>Maximum</em> (<em>Balanced</em> by default); Gemini takes three (<em>Very thorough</em> and <em>Maximum</em> go as
+<em>Thorough</em>), Grok four (<em>Maximum</em> goes as <em>Very thorough</em>), and a model added from OpenRouter's list
+those the list names for it. Claude Fable 5.2, GPT-6 Astra, Gemini 4 Argon and Muse Wonder may think
+for several minutes on one step, and get longer timeouts. Claude Fable 5.2 replaced Claude Fable 5.1
+(a choice or a kept conversation of 5.1 goes on with 5.2) and is offered only to organisations with
+30-day data retention (otherwise the app says so and suggests Claude Opus 5.5). On Claude Fable 5.2,
+Opus 5.5 and Sonnet 5.5 a request a safety classifier declines is answered by another model on
+Anthropic's side, priced at the model that answered.</p>
+<p>The four clients for Google, xAI, Meta and OpenRouter were written from each company's
+documentation of 2026-11-10 and are tested against scripted transcripts that copy the formats it
+documents; they have not been tried against the live services (no key was used in their
+development). The clients for Anthropic and OpenAI are tested the same way.</p>
+<h2 id="choosing-a-company-and-a-model">Choosing a company and a model</h2>
+<p>The settings of the assistant show a row with the six companies (a key icon marks those with a
+saved key), then the models of the chosen one, each with its tier, its prices and what to know: an
+introductory price and the day it ends, a free tier, a long-prompt rule, a model that reads no
+pictures or calls no tools, a router, the host the data goes to. One key is enough: each company has
+its own, typed under its chip with a link to the page where the company issues keys, kept for the
+session or, with <em>Remember the key on this device</em>, in the browser; a second opinion can use the
+key of another company when there is one. The model last chosen of each company is remembered, so
+going back to a company brings its model back.</p>
+<p>Switching to a model of another company, or between two models of a company other than Anthropic,
+starts a new conversation: the earlier one is not sent to the new model (it stays in the list of the
+project's conversations) and the panel says so. Between Anthropic's Claude models the conversation
+goes on: the new model reads all of it again, without the cache and without the other model's
+earlier reasoning, and the panel gives the tokens and the cost of that reading.</p>
+<p>A model that calls no tools (some of OpenRouter's list) can only talk: no tool goes in its
+requests, it is told so, and it answers from the project data attached to the message, giving the
+menus and steps for what has to be done in the program; it reads nothing more of the project and
+changes nothing. A model that reads no pictures gets none: the pictures you attach, those the tools
+draw and the picture of the drawing after a change are left out, and both you and the model are
+told.</p>
+<h2 id="more-models-openrouter">More models (OpenRouter)</h2>
+<p>With OpenRouter chosen, <strong>More models…</strong> under the list of models opens OpenRouter's whole list,
+downloaded from <code>openrouter.ai</code> when the dialog opens (it is public and needs no key; the copy
+downloaded last is kept on this device and shown, with its date, when there is no connection). Search
+by name or maker; filter with <em>Free only</em>, <em>Reads pictures</em> and <em>Calls tools</em> (on at first, since the
+assistant works through tools); sort <em>By price</em> or <em>By name</em>. Each row shows the maker, the price in
+US$ per million tokens (input / output), the context window and whether the model reads pictures
+and calls tools. Choosing a row adds the model to your list, chooses it at once and brings it back
+when the app starts again; <em>Remove from your list</em> takes it out. Only the models OpenRouter serves
+through its Responses API, with a text answer and a price, are listed.</p>
+<ul>
+<li><strong>Prices and tier</strong>: the list prices OpenRouter publishes (cache prices when listed, otherwise the
+input price; the higher price of long prompts when the list gives one by prompt length; price
+windows by hour of the day are ignored). The tier shown for a model of the list is a band of its
+output price (top from US$ 15 per million tokens, intermediate from US$ 4, fast below), not a
+judgement of quality.</li>
+<li><strong>Routers</strong>: the Auto Router picks a model for each request and OpenRouter bills that model's
+price; the meter prices the answer as the model that answered when it is one of the table, and
+otherwise uses the figure OpenRouter says it charged. The Free Models Router picks among free
+models.</li>
+<li><strong>Answer limit</strong>: an answer may take the output tokens of the model's top provider (32 000 when
+the list gives none), at most 128 000 and half the context window. While a request runs,
+OpenRouter holds the price of the largest answer it allows against the account's balance, and a
+newer or small account whose balance does not cover that hold is refused; so the dearest fixed
+models answer at most 32 000 tokens (Claude Fable 5.2, GPT-6 Astra) or 64 000 (Claude Opus 5.5,
+Grok 4.7, Muse Spark 1.3), a hold of about US$ 1.30 a request.</li>
+<li><strong>Free models</strong> have limits set by OpenRouter (in November 2026: 20 requests a minute and 50 a day,
+or 1000 a day after buying 10 credits; the day resets at 00:00 UTC), and some providers behind
+them may keep what they receive and train on it (see <a href="https://opencadirrigation.com/manual/privacy-and-network/">Storage, privacy and network
+access</a>). A free model works under the spending cap like any other.</li>
+</ul>
+<h2 id="second-opinion">Second opinion</h2>
+<p><strong>Second opinion</strong> (the button on the last answer) or <code>/second</code> asks another model to check that
+answer. The button lists the models that can give one: those of the other companies you have a key
+for come first, each company's most capable first, then the other models of the conversation's own
+company; <code>/second</code> takes the first of them. That model receives, in one request without tools, the
+project data (the whole compact text the project context gives), your question and the answer, and
+says whether it agrees, what holds, what does not and what to check, with the figures it rests on.
+The request goes to that model's company with its own key. Its review is shown in the conversation
+marked as a second opinion and counted in the cost; the conversation's own model does not read it
+unless you press <strong>Answer the review</strong>, which sends it on as quoted material for the first model to
+check, point by point, against the project with its tools.</p>
+<h2 id="notes-on-each-company">Notes on each company</h2>
+<p><strong>Anthropic and OpenAI.</strong> As in earlier versions: the Claude models cache the prompt and the tools,
+summarise long conversations on Anthropic's side and, with <em>Adjust the effort to each stage</em>, lower
+the effort of plain steps; GPT goes with <code>store: false</code>, is summarised on OpenAI's side from 200 000
+input tokens, and in the browser a key OpenAI rejects shows as a network failure (OpenAI's error
+answers carry no CORS header).</p>
+<p><strong>Google Gemini.</strong> Create a key in Google AI Studio (<code>aistudio.google.com/apikey</code>). The requests go to
+<code>generativelanguage.googleapis.com</code> through the Interactions API with <code>store: false</code> (Google keeps no
+copy for later requests), the key in the <code>x-goog-api-key</code> header, the whole conversation in every
+request, and the model's reasoning signatures sent back unchanged. Efforts <em>Quick</em>, <em>Balanced</em> and
+<em>Thorough</em> go as Gemini's thinking levels low, medium and high. Pictures (the views of the drawing
+and of the map, your photos) go at the highest media resolution, <code>ultra_high</code> (2240 tokens a
+picture), or <code>high</code> (1120) for a model that turns it down; PDFs go whole (Google takes up to 50 MB
+or 1000 pages each); a request is kept under 20 MB. Google caches repeated parts of the conversation by itself
+(from 4096 tokens): a token read from that cache costs 5 % (Gemini 4 Argon) or 10 % (the Flash
+models) of the input price, and writing to it is free; thinking tokens are billed as output. Gemini
+4 Argon answers at most 65 536 output tokens here. A safety, recitation or other policy block ends
+the answer as a refusal with its reason; a quota message says whether to wait (the free tier's
+per-minute limits, with the wait Google gives) or to set up billing (a model with no free use, or a
+project without billing). The two Flash models have a free tier with limits, on which Google may use
+the content to improve its products; Gemini 4 Argon has none.</p>
+<p><strong>xAI (Grok).</strong> Create a key at <code>console.x.ai</code> (keys start with <code>xai-</code>); credits and spending limits
+are on the console's billing page. The requests go to <code>api.x.ai/v1/responses</code> with <code>store: false</code>,
+the whole conversation each time with the encrypted reasoning sent back unchanged, a cache key of
+the conversation (so its requests reach the server that cached it) and the sampling xAI's guide asks
+for (temperature 0.7, top-p 0.95). Grok always reasons; the effort goes as xAI's <code>reasoning.effort</code>.
+Caching is automatic and writing to it is free; reasoning tokens are billed as output; a request
+whose prompt reaches 200 000 tokens pays twice the prices for all its tokens. Grok reads JPEG and PNG
+only, so a WebP or GIF you attach is converted first, at the same size. A PDF goes as the text read
+from it on this device: attached whole, it would turn on xAI's attachment search, which xAI bills per
+search. xAI's own server-side tools (web search, X search, code execution) are never turned on, and
+long conversations are not summarised on xAI's side. A key xAI does not know, an account out of
+credit and a spending limit are told apart.</p>
+<p><strong>Meta (Muse).</strong> Create a key at <code>dev.meta.ai/api-keys</code> (keys start with <code>LLM_</code>) and add a payment
+method under Billing. Meta has no hard spending cap, only an e-mail alert, so the assistant's own
+cap is the limit. The requests go to <code>api.meta.ai/v1/responses</code> with <code>store: false</code>, the whole
+conversation each time with the encrypted reasoning sent back unchanged; the pictures the tools
+draw go inside the tool results, your pictures and PDFs in your message (Meta takes at most 50
+pictures a request, and reads the text of a PDF's first 100 pages). The three models take every
+effort. Meta caches
+repeated prompt beginnings by itself; cached input costs much less (Muse Wonder US$ 0.20 instead of
+4 per million tokens) and writing to the cache is not billed. Only Meta's <em>Standard</em> models are
+offered, on which Meta does not train; the discounted <em>Contributor</em> models, on which it trains, are
+not. In a browser Meta does not let the page read the request id or the rate-limit headers, so the
+connection test shows no limits there (the desktop app does).</p>
+<p><strong>OpenRouter.</strong> Create a key at <code>openrouter.ai/settings/keys</code> (keys start with <code>sk-or-</code>) and buy
+credits; OpenRouter bills its credits and passes each request on to the company that runs the model.
+The requests go to <code>openrouter.ai/api/v1/responses</code> with <code>store: false</code>, the reasoning of Claude, GPT
+and Gemini models carried through the tool calls, Claude's prompt cache turned on, a session id
+derived from the conversation so that its requests stay with one provider and find their cache
+again, and two headers that name the app to OpenRouter (<code>HTTP-Referer: https://opencadirrigation.com</code>,
+<code>X-OpenRouter-Title: OpenCADIrrigation</code>), nothing about you. Pictures of tool results go inside the
+results for Claude and GPT models and right after them, in a message, for the other makers. A PDF goes
+whole to a model that reads PDFs, and through OpenRouter's free PDF parser to one that does not.
+OpenRouter's errors are read by their codes (no credit, a budget of the key or the workspace,
+moderation, a guardrail, the free models' daily limit), and OpenRouter's own words follow the app's
+explanation.</p>
 <h2 id="starting-with-the-ai">Starting with the AI</h2>
 <p>The app opens on an empty project with a start screen that asks where
 the area to irrigate is and whether you want to design with the assistant (not when the address
@@ -250,13 +488,18 @@ button does the same).</p>
 <h2 id="how-it-works">How it works</h2>
 <p>The agent keeps a to-do list of the task, asks you questions as cards with options when something is
 missing (the task waits for the answers), presents its plan, and works through the program's own
-tools: 75 tools sent with every request, 205 more operations it finds and runs (<code>find_operations</code>,
+tools: 75 tools sent with every request, 216 more operations it finds and runs (<code>find_operations</code>,
 <code>run_operation</code>), any menu command (<code>run_command</code>, the dialogs run without opening) and about 150
 settings (<code>get_setting</code>, <code>set_setting</code>), so it reaches the functions of 1.6.0 too (pump stations,
 reservoirs, the agronomy dialogs, the power and water analyses, the technical documents and the
 title block, block references, layer states, comparisons, the points wizard and stake-out points,
-islands of areas, inserting a project) and the editing commands (stretch, fillet, chamfer, break,
-join, explode, convert to area). It reads the same numbers as the reports, changes the project
+islands of areas, inserting a project), those of 1.7.0 (the crop rows read from the image with
+<code>detect_crop_rows</code> and <code>apply_crop_rows</code>, the climate risk with <code>climate_risk</code>, the irrigation
+forecast with <code>irrigation_forecast</code>, the programme played on the plan with <code>programme_picture</code>,
+<code>export_programme_animation</code> and <code>export_programme_calendar</code>, the scorecard with
+<code>design_scorecard</code>, the curve digitiser with <code>fit_curve_points</code>, <code>apply_curve_points</code> and
+<code>export_curve_points</code>) and the editing commands (stretch, fillet, chamfer, break, join, explode,
+convert to area). It reads the same numbers as the reports, changes the project
 through the same functions as the menus and dialogs (drawing, network, catalogue, system flows, the
 design, its corrections, the automatic layouts, the analyses, the quote, exports), keeps the
 project's <strong>AI notes</strong> (requirements, your answers and decisions, saved in the project file and
@@ -267,9 +510,10 @@ and the base map, downloads the terrain and the climate through the app's own do
 the drawings and GIS files you attach. It can also read a data sheet you attach (PDF, image or text,
 up to 20 MB) and add its items to the catalogue, checked before they go in, and write the project's
 technical report, which can be copied or put on the drawing as text. A long attachment is not put in
-the message: the model reads the parts it needs (<code>read_attachment</code>) or has the smaller model of the
-same company (Claude Haiku 5.5 or GPT-6 Luna) read up to 200 pages or 20 000 lines of it and answer
-its question (<code>summarize_attachment</code>), whose tokens count in the meter and the spending cap.
+the message: the model reads the parts it needs (<code>read_attachment</code>) or has the cheapest model of the
+same company (Claude Haiku 5.5, GPT-6 Luna, Gemini 3.5 Flash-Lite, Grok 4.3 or Muse Ember; Claude
+Haiku 5.5 through OpenRouter) read up to 200 pages or 20 000 lines of it and answer its question
+(<code>summarize_attachment</code>), whose tokens count in the meter and the spending cap.
 <a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/AI_TOOLS.md">docs/AI_TOOLS.md</a>, generated from the coverage map, lists what it reaches:
 every function a user can reach (command actions, drawing tools, aliases, menu items, dialogs and
 their options, panel fields, status bar, view options) is covered or marked as having no meaning for
@@ -299,11 +543,12 @@ picked by eye, and <code>trace_fields</code> outlines every field of an area at 
 regions cut by the edge of the area left out). The model can zoom into a part, label the items, draw proposed shapes with
 <code>preview_geometry</code> before creating anything, and read the ground with <code>terrain_picture</code> (hillshade,
 colours by elevation, contours, slope, aspect), <code>terrain_profile</code> and <code>terrain_info</code>. Pictures are as
-large as the model reads them pixel for pixel: up to 2000 pixels and about 3.6 megapixels on Claude
-Opus 5.5, Sonnet 5.5 and Fable 5.1, otherwise 1568 pixels and about 1.15 megapixels, with the shorter
-side at most 768 pixels on OpenAI's models; aerial and relief pictures go as JPEG, which keeps long
+large as the model reads them pixel for pixel: up to 2576 pixels on the long side and about 3.6
+megapixels on Claude Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5 (also through OpenRouter),
+otherwise 1568 pixels and about 1.15 megapixels, with the shorter side at most 768 pixels on OpenAI's
+models (also through OpenRouter); aerial and relief pictures go as JPEG, which keeps long
 conversations within the request size, and attached photos are turned upright and scaled to at most
-2000 pixels a side. On Claude Opus 5.5, Sonnet 5.5 and Fable 5.1 the status line shows the model's
+2000 pixels a side. On Claude Fable 5.2, Opus 5.5 and Sonnet 5.5 the status line shows the model's
 short progress notes between steps. The panel has a button that attaches a picture of your view;
 pictures and files can also be pasted into the message box (Ctrl+V) or dropped on the panel. A
 setting (on by default) sends, after each round of changes, a picture framed on what changed, with
@@ -371,8 +616,10 @@ the effort and what made a step dearer (the cache not used, a change of model or
 request); <code>/cost</code> says the share read from the cache. Long conversations are summarised on the
 company's server (Anthropic from 150 000 input tokens, after clearing old tool results from 80 000
 while keeping the notes, the plan and the to-do list; OpenAI from 200 000, with older pictures
-dropped from the request); a setting turns this off. Quick commands: <code>/new</code>, <code>/design</code>, <code>/check</code>,
-<code>/review</code>, <code>/report</code>, <code>/quote</code>, <code>/export</code>, <code>/plan</code>, <code>/clear</code> and <code>/cost</code>. <code>/review</code> runs read-only
+dropped from the request); a setting turns this off. The models of Google, xAI, Meta and OpenRouter
+are not summarised (older pictures of tool results are still dropped from their requests): start a
+new conversation when one grows long. Quick commands: <code>/new</code>, <code>/design</code>, <code>/check</code>, <code>/review</code>,
+<code>/second</code>, <code>/report</code>, <code>/quote</code>, <code>/export</code>, <code>/plan</code>, <code>/clear</code> and <code>/cost</code>. <code>/review</code> runs read-only
 whatever the mode: the model looks at the zones, the messages marked at their items and the
 pressures and velocities over the drawing, reads the messages and the report tables, and answers
 with a checklist (OK, attention or problem, with the figures and where to fix each point), changing

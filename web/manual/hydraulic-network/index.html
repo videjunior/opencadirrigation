@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hydraulic network — OpenCADIrrigation user guide</title>
-  <meta name="description" content="Hydraulic network: hydraulic items, connection rules, generators, automatic design">
+  <meta name="description" content="Hydraulic network: hydraulic items, connection rules, generators, automatic design, crop rows from the image">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://opencadirrigation.com/manual/hydraulic-network/">
   <link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/hydraulic-network/">
@@ -25,7 +25,7 @@
       "@id": "https://opencadirrigation.com/manual/hydraulic-network/#article",
       "url": "https://opencadirrigation.com/manual/hydraulic-network/",
       "headline": "Hydraulic network",
-      "description": "Hydraulic network: hydraulic items, connection rules, generators, automatic design",
+      "description": "Hydraulic network: hydraulic items, connection rules, generators, automatic design, crop rows from the image",
       "inLanguage": "en",
       "isPartOf": {
         "@type": "CreativeWork",
@@ -361,6 +361,11 @@ pipes stay inside the outline of the lot.</p>
 <td>The arrangement of centre pivots of standard spans that irrigates the most of the selected outline, within the flow allowed, with the common mainline (<a href="https://opencadirrigation.com/manual/power-water-machines/#several-pivots-in-the-property">Power, water and machines</a>).</td>
 </tr>
 <tr>
+<td>Crop rows from the image</td>
+<td></td>
+<td>The direction, spacing and number of the planting rows of an orchard, coffee, vineyard, citrus or olive field read on the satellite image or a placed aerial photo, with the plant spacing and the canopy ground cover where the image shows them; they become the defaults of Subdivide a field into blocks, Orchard drip rings and Lateral block over the area (<a href="#crop-rows-from-the-image">below</a>).</td>
+</tr>
+<tr>
 <td>Detect vegetation in the image</td>
 <td><code>VEG</code></td>
 <td>Lawns, trees and shrubs found by image processing on this device (no service) in the base map on screen or a selected aerial photo, created as irrigated areas (with presets per class) and exclusions. Check that the imagery's terms of use allow tracing it.</td>
@@ -372,6 +377,53 @@ pipes stay inside the outline of the lot.</p>
 </tr>
 </tbody>
 </table></div>
+<h3 id="crop-rows-from-the-image">Crop rows from the image</h3>
+<p>Drip laterals in an orchard, a coffee field, a vineyard or a citrus or olive grove follow the planting rows already
+in the field. <strong>Design → Automatic design → Crop rows from the image…</strong> (on a phone, ☰ → Design, the same label)
+reads those rows on the aerial image instead of measuring them by hand. Select the irrigated area of the planted
+field (or a closed outline; with a single area in the project nothing needs to be selected) and open the tool. The
+satellite image needs a georeferenced project (File → Georeference); a placed aerial photo over the field can be
+chosen instead under <em>Image</em>. The tool downloads the imagery of the field and reads it on this device, with no AI key
+and no other service:</p>
+<ul>
+<li><strong>Row direction</strong>, in degrees counter-clockwise from east, 0 to 180 (the same <em>Row direction (°)</em> as Subdivide a
+field into blocks and Orchard drip rings);</li>
+<li><strong>Row spacing</strong>, <strong>Rows across the field</strong> and the <strong>Confidence</strong> (clear rows from 35 %, uncertain from 15 %, no rows
+below);</li>
+<li>the <strong>Plant spacing in the row</strong> (when separate crowns show) and the <strong>Canopy ground cover</strong> (when canopy and ground
+show apart), else &quot;not visible in the image&quot;.</li>
+</ul>
+<p>The picture shows the field (cyan) and the rows found (amber), with a detail of its middle at actual pixels, and the
+rows are drawn over the drawing while the dialog is open; <strong>Stop</strong> ends a long reading. If the lines fell on the
+alleys rather than on the plants (a closed canopy with shaded alleys, a cover crop as green as the crop), turn on
+<strong>Rows on the other band</strong>, which moves them half a spacing. <em>Closest spacing</em> and <em>Widest spacing</em> bound the search
+(1.5 to 12 m by default); the closest also sets the pixel size asked of the imagery. <strong>Apply</strong> writes, in one undo step,
+the row direction (the area's <code>rdir</code>) and spacing, and the plant spacing, on the area, which Subdivide a field into
+blocks, Orchard drip rings and Lateral block (and the assistant's layouts) then start from over that area; the
+area's ground cover (used by the Kr of localised irrigation); and, if ticked, the rows as guide lines on the
+<code>CROP_ROWS</code> layer. The assistant does the same with <code>detect_crop_rows</code> (a reading that changes nothing) and
+<code>apply_crop_rows</code>.</p>
+<p><strong>Method.</strong> The colour of the field is high-passed (the mean over a box 1.25 × the widest spacing is subtracted, so
+shading and patches go and the stripes stay), divided by its local RMS so that dark and bright parts weigh alike, and
+projected on its first principal component, signed so that the greener and darker band is positive. For every
+direction (steps of at most 1°) the pixels of square blocks of the field are binned by their distance across that
+direction (a discrete Radon projection), and the share of the variance the bins explain (R²) is averaged over the
+blocks: rows give a sharp maximum at their direction. The spacing is the first peak of the autocorrelation of the
+block profiles; the direction is then refined on the whole field (to about 0.1° over a field a hundred spacings long)
+and the spacing on the Fourier power of the whole-field profile (within ±6 %, by a parabola through the logarithm of
+the power), whose phase places the rows. Confidence = angular prominence (1 − median R² ÷ largest R²) × periodicity
+(the autocorrelation at the spacing). The plant spacing is the first peak of the autocorrelation along the centre of
+the rows; the ground cover is the share of the field above the Otsu threshold of the smoothed signal, given only when
+its histogram has two populations (bimodality coefficient above 5/9). The method and its references are in the
+<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/TECHNICAL_STUDY.md#201-crop-rows">technical study</a>.</p>
+<p><strong>Limits.</strong> The rows must be straight over the area (rows that bend along the contours give an average direction and a
+note: draw smaller areas), evenly spaced and visible, about three pixels of the imagery per spacing at least: Esri
+imagery is about 0.3–0.6 m a pixel over most farmland, so rows closer than about 1–2 m are not seen, and the tool
+says so. Which band is the crop is decided by colour (the greener and darker band, or the wider one when both are
+green and the other is clearly wider): check the detail and use <em>Rows on the other band</em> when needed. Shadows count
+as canopy in the ground cover. A field larger than the pixel budget (2.5 million pixels) is read on a window in its
+middle and the rows are extended over the whole field. The imagery may be years old: check that it shows the planting
+of today, and that its terms of use allow deriving data from it.</p>
       </article>
       <nav class="pager" aria-label="Previous and next chapter">
         <a rel="prev" href="https://opencadirrigation.com/manual/drawing/"><span>Previous</span>Drawing and editing</a>

@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Desenvolvimento — guia do usuário do OpenCADIrrigation</title>
-  <meta name="description" content="Desenvolvimento e testes: comandos, como estender, o que cada teste garante">
+  <meta name="description" content="Desenvolvimento e testes: comandos, o servidor MCP, como estender, o que cada teste garante">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://opencadirrigation.com/pt/manual/development/">
   <link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/development/">
@@ -25,7 +25,7 @@
       "@id": "https://opencadirrigation.com/pt/manual/development/#article",
       "url": "https://opencadirrigation.com/pt/manual/development/",
       "headline": "Desenvolvimento",
-      "description": "Desenvolvimento e testes: comandos, como estender, o que cada teste garante",
+      "description": "Desenvolvimento e testes: comandos, o servidor MCP, como estender, o que cada teste garante",
       "inLanguage": "pt-BR",
       "isPartOf": {
         "@type": "CreativeWork",
@@ -152,7 +152,7 @@ bundle do worker, a saída do formatador e o build do CanvasKit dependem dela. S
 cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # desenvolvimento no navegador
-flutter test                       # cerca de 3.000 testes: motor, modelo, formatos, interface
+flutter test                       # mais de 3.000 testes: motor, modelo, formatos, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompila web/design_worker.js após mudar lib/core (o app cai
                                    # para a thread da interface quando o arquivo não existe)
@@ -164,6 +164,7 @@ flutter build web --release        # build simples (sem commit/data, CanvasKit d
                                    # rede: o sw.js dele remove a si mesmo; build/web, web/CNAME guarda o domínio)
 dart run bin/oci.dart --help       # linha de comando: import, new, set, pack add, design, analyze, check, validate,
                                    # export, bom e schema de projetos .oci.json (docs/API.pt-BR.md)
+dart run bin/oci.dart mcp --root &lt;pasta&gt;    # o motor como servidor do Model Context Protocol por stdio (docs/MCP.pt-BR.md)
 dart tool/engine_package.dart build/engine   # o motor como pacote sem Flutter (só precisa do SDK do Dart)
 dart run tool/gen_version.dart     # regenera lib/app/version.dart após mudar `version:` no pubspec.yaml
 dart run tool/gen_site.dart        # páginas do site (index em inglês, /pt/, /es/, /de/, … sitemap, 404, robots, llms.txt)
@@ -193,7 +194,11 @@ termina com código 1 quando há um erro, <code>validate</code> diz o que a leit
 <code>export</code> grava qualquer formato de desenho, <code>bom</code> mostra a lista de materiais e <code>schema</code> o JSON Schema
 do arquivo de projeto, em qualquer um dos 20 idiomas (<code>--lang</code>); <code>import</code>, <code>new</code>, <code>set</code> e <code>pack add</code>
 fazem e alteram projetos, e os comandos que leem projetos aceitam vários arquivos ou pastas de uma
-vez, com <code>--out-dir</code> (<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/API.pt-BR.md#1-usando-o-motor">docs/API.pt-BR.md</a>).</p>
+vez, com <code>--out-dir</code> (<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/API.pt-BR.md#1-usando-o-motor">docs/API.pt-BR.md</a>). <code>mcp --root &lt;pasta&gt;</code>
+oferece as mesmas funções a qualquer aplicativo de IA que fale o Model Context Protocol: 21 ferramentas por stdio, todo
+arquivo restrito à pasta indicada, <code>--read-only</code> para um servidor que só consulta, nada na internet; como configurar
+um cliente, cada ferramenta com exemplo, as regras de segurança e os limites estão em
+<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/MCP.pt-BR.md">docs/MCP.pt-BR.md</a>.</p>
 <p>As saídas commitadas da maioria dos geradores têm testes de guarda (as páginas do site, o modelo do
 service worker, os exemplos, os catálogos, a versão e a tabela de ferramentas da IA): quando uma
 diverge da fonte, o teste correspondente falha com a instrução de qual comando rodar. Recompile o
@@ -226,7 +231,7 @@ paletas quando nenhuma servir; <code>test/widget_theme_test.dart</code> confere 
 texto claras (4,5:1 sobre cada superfície clara).</li>
 </ul>
 <h2 id="testes">Testes</h2>
-<p><code>flutter test</code> roda cerca de 3.000 testes em alguns minutos (o número cresce a cada versão). O que
+<p><code>flutter test</code> roda mais de 3.000 testes em alguns minutos (o número cresce a cada versão). O que
 cada grupo garante:</p>
 <div class="table"><table>
 <thead>
@@ -362,7 +367,7 @@ cada grupo garante:</p>
 </tr>
 <tr>
 <td><code>core/ai_agent_test.dart</code>, <code>core/ai_openai_test.dart</code>, <code>core/ai_formats_test.dart</code>, <code>core/ai_context_test.dart</code></td>
-<td>Os pedidos seguem cada API: Anthropic (endpoint, cabeçalhos, streaming, raciocínio adaptativo, sempre ligado no Fable 5.1, esforço, cache, fallback de recusa, orçamento da tarefa, compactação, limpeza de resultados antigos de ferramentas; sem o cabeçalho de navegador no desktop) e OpenAI (API Responses, chave bearer, instruções, ferramentas de função, esforço de raciocínio, sem armazenamento, compactação, imagens mais antigas retiradas); rodadas de ferramentas, entradas inválidas como resultados de erro, os quatro modos e a aprovação do plano, exportações confirmadas, o limite de etapas e o teto de gasto, mensagens escritas enquanto ele trabalha, Parar, novas tentativas e erros que nunca mostram uma chave, a recusa do Fable 5.1 por retenção de dados, recusas e fallbacks cobrados pelo modelo que respondeu, preços de tabela com as regras de pedidos longos; os dois formatos se convertem um no outro sem perda; o contexto do projeto é determinístico, limitado e nunca contém uma chave</td>
+<td>Os pedidos seguem cada API: Anthropic (endpoint, cabeçalhos, streaming, raciocínio adaptativo, sempre ligado no Fable 5.2, esforço, cache, fallback de recusa, orçamento da tarefa, compactação, limpeza de resultados antigos de ferramentas; sem o cabeçalho de navegador no desktop) e OpenAI (API Responses, chave bearer, instruções, ferramentas de função, esforço de raciocínio, sem armazenamento, compactação, imagens mais antigas retiradas); rodadas de ferramentas, entradas inválidas como resultados de erro, os quatro modos e a aprovação do plano, exportações confirmadas, o limite de etapas e o teto de gasto, mensagens escritas enquanto ele trabalha, Parar, novas tentativas e erros que nunca mostram uma chave, a recusa do Fable 5.2 por retenção de dados (uma escolha do Fable 5.1 continua com o 5.2), recusas e fallbacks cobrados pelo modelo que respondeu, preços de tabela com as regras de pedidos longos; os dois formatos se convertem um no outro sem perda; o contexto do projeto é determinístico, limitado e nunca contém uma chave</td>
 </tr>
 <tr>
 <td><code>widget_ai_agent_test.dart</code>, <code>widget_ai_assistant_test.dart</code>, <code>widget_ai_tools_test.dart</code>, <code>widget_ai_vision_test.dart</code></td>
@@ -370,7 +375,7 @@ cada grupo garante:</p>
 </tr>
 <tr>
 <td><code>widget_ai_coverage_test.dart</code>, <code>widget_ai_manual_test.dart</code>, <code>widget_ai_ops_cad_test.dart</code>, <code>widget_ai_ops_eng_test.dart</code></td>
-<td>Toda ação, ferramenta, alias, item de menu e diálogo tem rota para a IA e toda rota existe, e <code>docs/AI_TOOLS.md</code> é a tabela do mapa; cada tópico do manual é lido num projeto vazio e num calculado, cada chave de item, parâmetro de projeto e código de mensagem tem a sua explicação, e o exemplo resolvido é refeito; as operações do lado do desenho e da engenharia (edição, anotação, blocos, vista e histórico, arquivos, terreno e local, importações; calculadoras, análises da rede, catálogo e pacotes, exportações, projeto automático), cada uma com as suas aprovações e passos de desfazer. Imitações programadas das duas APIs (<code>test/support/fake_claude.dart</code>, <code>test/support/fake_openai.dart</code>) fazem o papel das empresas: nenhum teste acessa a rede</td>
+<td>Toda ação, ferramenta, alias, item de menu e diálogo tem rota para a IA e toda rota existe, e <code>docs/AI_TOOLS.md</code> é a tabela do mapa; cada tópico do manual é lido num projeto vazio e num calculado, cada chave de item, parâmetro de projeto e código de mensagem tem a sua explicação, e o exemplo resolvido é refeito; as operações do lado do desenho e da engenharia (edição, anotação, blocos, vista e histórico, arquivos, terreno e local, importações; calculadoras, análises da rede, catálogo e pacotes, exportações, projeto automático), cada uma com as suas aprovações e passos de desfazer. Imitações programadas das APIs (<code>test/support/fake_claude.dart</code>, <code>test/support/fake_openai.dart</code> e as que ficam nos testes dos quatro clientes mais novos) fazem o papel das empresas: nenhum teste acessa a rede</td>
 </tr>
 <tr>
 <td><code>densogram_test.dart</code>, <code>electrical_test.dart</code>, <code>electrical_io_test.dart</code>, <code>management_test.dart</code> (em <code>core/</code>)</td>
@@ -489,8 +494,44 @@ cada grupo garante:</p>
 <td>Um detector de autointerseção e um deslocamento só, o comprimento máximo da lateral, a revisão item a item do Corrigir e do Otimizar, o contorno pela imagem contra blocos sintéticos; os custos por passo, Aplicar o resto da tarefa, o esforço por etapa, as conversas de um projeto; a aba sem nome, a paleta de comandos, o manual e os seus capítulos, as Novidades, o relato de problema</td>
 </tr>
 <tr>
-<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code></td>
-<td>As páginas do guia do usuário (âncoras, links, texto, metadados, sitemap), as fontes servidas pelo site, os scripts do service worker e do bootstrap no Node, abrir arquivos com o app instalado, os créditos dos dados de terceiros, o mapa guardado para o campo, os arquivos da revisão de traduções, os links e títulos da documentação</td>
+<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>share_inbox_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code></td>
+<td>As páginas do guia do usuário (âncoras, links, texto, metadados, sitemap), as fontes servidas pelo site, os scripts do service worker e do bootstrap e os links de compartilhamento do <code>site.js</code> no Node, abrir arquivos e links de compartilhamento com o app instalado e no app aberto, os créditos dos dados de terceiros, o mapa guardado para o campo, os arquivos da revisão de traduções, os links e títulos da documentação</td>
+</tr>
+<tr>
+<td><code>core/ai_gemini_test.dart</code>, <code>core/ai_xai_test.dart</code>, <code>core/ai_meta_test.dart</code>, <code>core/ai_openrouter_test.dart</code>, <code>core/ai_openrouter_catalog_test.dart</code>, <code>core/ai_providers_test.dart</code></td>
+<td>Os quatro clientes mais novos contra transcrições roteirizadas que copiam os formatos documentados de cada empresa: o pedido (endpoint, só os cabeçalhos devidos, <code>store: false</code>, esforço, chaves de cache), rodadas de ferramentas reenviando o raciocínio byte a byte, imagens e PDFs, fluxos, uso e custo (tokens em cache, preços de prompt longo e de lançamento), paradas e recusas, cada erro documentado e as novas tentativas; a lista de modelos da OpenRouter lida em modelos (preços, níveis, roteadores, gratuitos, ferramentas, imagens) e a lista do usuário guardada; cada empresa com o seu host, as páginas de chave e os modelos rápido e de topo</td>
+</tr>
+<tr>
+<td><code>widget_ai_model_catalog_test.dart</code>, <code>widget_ai_more_models_test.dart</code>, <code>widget_ai_second_opinion_test.dart</code></td>
+<td>O navegador de modelos da OpenRouter (busca, filtros, ordem, cópia sem rede, layout de celular), um modelo acrescentado e encontrado de novo ao abrir, um modelo sem ferramentas que só conversa, um modelo sem imagens que não recebe nenhuma, um modelo gratuito sob o teto de gasto, as palavras das empresas nos erros; a segunda opinião (quem a dá, um pedido sem ferramentas, fora da conversa até ser enviada)</td>
+</tr>
+<tr>
+<td><code>core/crop_rows_test.dart</code>, <code>widget_crop_rows_test.dart</code></td>
+<td>Campos sintéticos (de 0° a 178,9°, 2–10 m) lidos dentro de 1° e 3 %, fileiras na copa, ruído, plantas faltando, buracos, coordenadas de milhões, espaçamento entre plantas e cobertura do solo, nenhuma fileira onde não há, o enquadramento e o orçamento de pixels, aplicar e a direção das fileiras no arquivo; o diálogo com blocos de imagem falsos, as mensagens, o layout de celular e as duas operações do assistente</td>
+</tr>
+<tr>
+<td><code>core/climate_risk_test.dart</code>, <code>widget_climate_risk_test.dart</code></td>
+<td>Posições e quantis de Weibull, declive de Sen e Mann-Kendall à mão, médias de pico, veranicos, o ano agrícola nos dois hemisférios, duas respostas gravadas da NASA POWER, dias sem dados, o balanço limitado à mão, um pivô inteiro da galeria simulado à mão, o resumo no arquivo e as duas tabelas de relatório; o diálogo no celular, deitado, da direita para a esquerda e com texto grande, o download espaçado e depois a série guardada, e a operação</td>
+</tr>
+<tr>
+<td><code>core/forecast_online_test.dart</code>, <code>core/irrigation_forecast_test.dart</code>, <code>fct_http_test.dart</code>, <code>widget_fct_forecast_test.dart</code></td>
+<td>O pedido (quatro casas decimais), a resposta gravada do MET Norway lida em dias solares e ETo contra um cálculo independente, o Open-Meteo, a janela de reaproveitamento e a regra da validade, falhas; o plano à mão (déficit acumulado, chuva que dispensa, estados de partida, os dois hemisférios, lâminas fixas), as tabelas em unidades métricas e americanas; o GET do desktop; o diálogo, as exportações e a operação</td>
+</tr>
+<tr>
+<td><code>core/programme_playback_test.dart</code>, <code>core/ics_test.dart</code>, <code>core/gif_animation_test.dart</code>, <code>widget_programme_player_test.dart</code></td>
+<td>O período do programa, a linha do tempo e as sobreposições, o estado de um momento contra os resultados, o nível do reservatório contra volumes calculados à mão; dobra e escape do iCalendar e os calendários de exemplos calculados; quadros do GIF decodificados de volta; o reprodutor (reproduzir, pausar, buscar, próximo início, um cálculo novo, outra aba), as exportações e as três operações</td>
+</tr>
+<tr>
+<td><code>core/scorecard_test.dart</code>, <code>widget_scorecard_test.dart</code></td>
+<td>Cada função de nota nas âncoras, entre elas e além delas, conceitos, médias e pontos a ganhar, o exemplo do pomar com números recalculados à mão, uma variante pior com nota menor, o teste de envelhecimento, alternativas, a tabela de relatório e o radar; o diálogo, a comparação, layouts de celular e a operação</td>
+</tr>
+<tr>
+<td><code>core/curve_digitiser_test.dart</code>, <code>core/curve_trace_test.dart</code>, <code>core/curve_fits_test.dart</code>, <code>widget_curve_digitiser_test.dart</code></td>
+<td>O mapeamento afim em gráficos retos, girados, inclinados e logarítmicos, cada erro de calibração, as unidades; o traçado pela cor em gráficos sintéticos com grade, cruzamentos e suavização; os ajustes de bomba, emissor e perfil à mão; o diálogo de uma imagem solta até o catálogo, o desfazer, o layout de celular e as três operações</td>
+</tr>
+<tr>
+<td><code>core/mcp_protocol_test.dart</code>, <code>core/mcp_session_test.dart</code>, <code>core/mcp_paths_test.dart</code>, <code>core/mcp_process_test.dart</code></td>
+<td>O servidor MCP: validação de esquema, os dois tipos de revisão do protocolo, erros JSON-RPC, cancelamento que mata o isolate, o tempo máximo, progresso, recursos e prompts; uma sessão inteira sobre um exemplo com cada resultado conferido contra o seu esquema de saída, um projeto do zero, o modo só leitura, a pasta raiz (travessia, links, caminhos absolutos); o processo real por stdio; o <code>docs/MCP.md</code> e a tradução descrevem cada ferramenta</td>
 </tr>
 </tbody>
 </table></div>
@@ -506,7 +547,9 @@ Firefox sobre esse build. O Dependabot propõe atualizações dos pacotes e das 
 <li><strong>Teste de fumaça de ponta a ponta</strong> (<code>tool/e2e/smoke.mjs</code>, <code>playwright-core</code> fixado): num build de
 produção (<code>sh tool/build_web.sh</code>), o app abre um exemplo e o calcula no Web Worker, mostra a versão
 do build, instala o seu service worker e abre de novo sem rede, envia uma mensagem do assistente de
-IA com a chave do usuário a uma imitação da API (nada sai da máquina), percebe um worker de cálculo
+IA com a chave do usuário a uma imitação da API (nada sai da máquina), abre links de
+compartilhamento numa primeira visita e numa visita de volta, colados no app aberto e sem rede com o
+seu service worker, percebe um worker de cálculo
 de outro build e carrega o deste, e não mostra nenhum erro de página. <code>--browser chromium,webkit,firefox</code> usa o Chrome instalado e os builds de WebKit e Firefox que a versão fixada
 determina; uma verificação que um navegador não consegue rodar é informada como pulada, nunca como
 aprovada.</li>

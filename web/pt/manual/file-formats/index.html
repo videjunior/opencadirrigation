@@ -178,7 +178,7 @@
 </tr>
 <tr>
 <td><code>entities</code></td>
-<td>Uma entrada por entidade, com <code>type</code>, <code>id</code>, <code>layer</code>, <code>name</code> e os campos próprios (pontos em metros; um pivô guarda os dados da máquina em <code>mach</code>)</td>
+<td>Uma entrada por entidade, com <code>type</code>, <code>id</code>, <code>layer</code>, <code>name</code> e os campos próprios (pontos em metros; um pivô guarda os dados da máquina em <code>mach</code>; uma área irrigada guarda a direção das fileiras de plantio lida por Fileiras da imagem em <code>rdir</code>, em graus no sentido anti-horário a partir do leste dentro de [0, 180), ao lado dos espaçamentos entre fileiras e entre plantas <code>rsp</code> e <code>psp</code>, gravada só quando definida e girada e espelhada com a área)</td>
 </tr>
 <tr>
 <td><code>systemFlows</code></td>
@@ -191,6 +191,10 @@
 <tr>
 <td><code>agronomy</code>, <code>agb</code>, <code>deliverables</code>, <code>dimStyle</code>, <code>layerStates</code></td>
 <td>Opcionais, gravados só quando diferem de um projeto novo: o plano agronômico (culturas do usuário, programa, balanço hídrico, fertirrigação por estágio, avaliações de campo), as configurações de energia, água e máquinas, as dos documentos técnicos, o estilo de cota e os estados de camadas com nome</td>
+</tr>
+<tr>
+<td><code>climateRisk</code></td>
+<td>Opcional: o resumo do último Risco climático ao longo dos anos (a fonte da série e o crédito dela, o local, o primeiro e o último ano, o dia em que foi calculado, a probabilidade e o período de pico escolhidos, alguns números por ano do local e por área e safra, e os valores que o projeto usou), nunca a série diária; um resumo danificado é descartado na leitura</td>
 </tr>
 <tr>
 <td><code>unreadable</code></td>

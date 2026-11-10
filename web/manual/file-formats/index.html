@@ -178,7 +178,7 @@
 </tr>
 <tr>
 <td><code>entities</code></td>
-<td>One entry per entity, with <code>type</code>, <code>id</code>, <code>layer</code>, <code>name</code> and its own fields (points in metres; a pivot keeps its machine data under <code>mach</code>)</td>
+<td>One entry per entity, with <code>type</code>, <code>id</code>, <code>layer</code>, <code>name</code> and its own fields (points in metres; a pivot keeps its machine data under <code>mach</code>; an irrigated area keeps the direction of its planting rows read by Crop rows from the image under <code>rdir</code>, in degrees counter-clockwise from east within [0, 180), beside its row and plant spacings <code>rsp</code> and <code>psp</code>, written only when set and turned and mirrored with the area)</td>
 </tr>
 <tr>
 <td><code>systemFlows</code></td>
@@ -191,6 +191,10 @@
 <tr>
 <td><code>agronomy</code>, <code>agb</code>, <code>deliverables</code>, <code>dimStyle</code>, <code>layerStates</code></td>
 <td>Optional, written only when they differ from a new project: the agronomy plan (user crops, programme, water balance, fertigation by stage, field tests), the settings of power, water and machines, those of the technical documents, the dimension style and the named layer states</td>
+</tr>
+<tr>
+<td><code>climateRisk</code></td>
+<td>Optional: the summary of the last Climate risk over the years (the source of the series and its credit, the site, the first and last year, the day it was computed, the probability and the peak period chosen, a few figures per site year and per area and season, and the figures the design used), never the daily series; a damaged summary is dropped as it is read</td>
 </tr>
 <tr>
 <td><code>unreadable</code></td>

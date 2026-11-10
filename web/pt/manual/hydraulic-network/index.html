@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rede hidráulica — guia do usuário do OpenCADIrrigation</title>
-  <meta name="description" content="Rede hidráulica: itens hidráulicos, regras de conexão, geradores, projeto automático">
+  <meta name="description" content="Rede hidráulica: itens hidráulicos, regras de conexão, geradores, projeto automático, fileiras da imagem">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://opencadirrigation.com/pt/manual/hydraulic-network/">
   <link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/hydraulic-network/">
@@ -25,7 +25,7 @@
       "@id": "https://opencadirrigation.com/pt/manual/hydraulic-network/#article",
       "url": "https://opencadirrigation.com/pt/manual/hydraulic-network/",
       "headline": "Rede hidráulica",
-      "description": "Rede hidráulica: itens hidráulicos, regras de conexão, geradores, projeto automático",
+      "description": "Rede hidráulica: itens hidráulicos, regras de conexão, geradores, projeto automático, fileiras da imagem",
       "inLanguage": "pt-BR",
       "isPartOf": {
         "@type": "CreativeWork",
@@ -362,6 +362,11 @@ uso de água diferente (hidrozonas), e os tubos ficam dentro do contorno do lote
 <td>O arranjo de pivôs centrais de vãos padronizados que irriga a maior parte do contorno selecionado, dentro da vazão permitida, com a linha principal comum (<a href="https://opencadirrigation.com/pt/manual/power-water-machines/#vários-pivôs-na-propriedade">Energia, água e máquinas</a>).</td>
 </tr>
 <tr>
+<td>Fileiras da imagem</td>
+<td></td>
+<td>A direção, o espaçamento e o número das fileiras de plantio de um pomar, cafezal, vinhedo, citros ou olival lidos na imagem de satélite ou numa foto aérea colocada no desenho, com o espaçamento entre plantas e a cobertura do solo pela copa quando a imagem os mostra; viram o padrão de Dividir talhão em blocos, Anéis de gotejamento em pomar e Bloco de laterais sobre a área (<a href="#fileiras-da-imagem">abaixo</a>).</td>
+</tr>
+<tr>
 <td>Detectar vegetação na imagem</td>
 <td><code>VEG</code></td>
 <td>Gramados, árvores e arbustos encontrados por processamento de imagem neste aparelho (sem serviço externo) no mapa base da tela ou numa foto aérea selecionada, criados como áreas irrigadas (com predefinições por classe) e exclusões. Confira se os termos de uso das imagens permitem traçar sobre elas.</td>
@@ -373,6 +378,53 @@ uso de água diferente (hidrozonas), e os tubos ficam dentro do contorno do lote
 </tr>
 </tbody>
 </table></div>
+<h3 id="fileiras-da-imagem">Fileiras da imagem</h3>
+<p>As laterais de gotejamento num pomar, num cafezal, num vinhedo, em citros ou num olival seguem as fileiras de plantio
+que já existem no campo. <strong>Projeto → Projeto automático → Fileiras da imagem…</strong> (no celular, ☰ → Projeto, com o mesmo
+nome) lê essas fileiras na imagem aérea em vez de medi-las à mão. Selecione a área irrigada do campo plantado (ou um
+contorno fechado; com uma só área no projeto não é preciso selecionar) e abra a ferramenta. A imagem de satélite
+precisa de um projeto georreferenciado (Arquivo → Georreferência); uma foto aérea colocada sobre o campo pode ser
+escolhida em <em>Imagem</em>. A ferramenta baixa a imagem do campo e a lê neste aparelho, sem chave de IA e sem outro
+serviço:</p>
+<ul>
+<li><strong>Direção das fileiras</strong>, em graus no sentido anti-horário a partir do leste, de 0 a 180 (a mesma <em>Direção das
+fileiras (°)</em> de Dividir talhão em blocos e Anéis de gotejamento em pomar);</li>
+<li><strong>Espaçamento entre fileiras</strong>, <strong>Fileiras no campo</strong> e a <strong>Confiança</strong> (fileiras claras a partir de 35 %, incerta a
+partir de 15 %, nenhuma fileira abaixo);</li>
+<li>o <strong>Espaçamento entre plantas</strong> (quando aparecem copas separadas) e a <strong>Cobertura do solo pela copa</strong> (quando a copa
+se distingue do solo); senão, &quot;não visível na imagem&quot;.</li>
+</ul>
+<p>A imagem mostra o campo (ciano) e as fileiras encontradas (âmbar), com um detalhe do meio do campo em tamanho real, e
+as fileiras aparecem sobre o desenho enquanto o diálogo está aberto; <strong>Parar</strong> encerra uma leitura longa. Se as linhas
+caíram nas entrelinhas e não nas plantas (copa fechada com entrelinhas na sombra, cobertura verde tão verde quanto a
+cultura), ligue <strong>Fileiras na outra faixa</strong>, que as move meio espaçamento. <em>Espaçamento mínimo</em> e <em>Espaçamento máximo</em>
+limitam a busca (1,5 a 12 m por padrão); o mínimo também define o tamanho de pixel pedido à imagem. <strong>Aplicar</strong> grava,
+num só passo de desfazer, a direção das fileiras (o <code>rdir</code> da área) e o espaçamento, e o espaçamento entre plantas, na
+área, de onde Dividir talhão em blocos, Anéis de gotejamento em pomar e Bloco de laterais (e os layouts do assistente)
+partem sobre essa área; a cobertura do solo da área (usada no Kr da irrigação localizada); e, se marcado, as fileiras
+como linhas-guia na camada <code>CROP_ROWS</code>. O assistente faz o mesmo com <code>detect_crop_rows</code> (uma leitura que não muda nada)
+e <code>apply_crop_rows</code>.</p>
+<p><strong>Método.</strong> A cor do campo passa por um filtro passa-alta (subtrai-se a média numa janela de 1,25 × o maior
+espaçamento: somem o sombreamento e as manchas, ficam as listras), é dividida pelo seu RMS local para que partes
+escuras e claras pesem igual e é projetada na sua primeira componente principal, com o sinal que deixa positiva a faixa
+mais verde e mais escura. Para cada direção (passos de no máximo 1°) os pixels de blocos quadrados do campo são
+agrupados pela distância medida transversalmente a essa direção (uma projeção de Radon discreta), e a parcela da
+variância que os grupos explicam (R²) é a média dos blocos: as fileiras dão um máximo agudo na sua direção. O
+espaçamento é o primeiro pico da autocorrelação dos perfis dos blocos; a direção é então refinada no campo inteiro
+(até cerca de 0,1° num campo de cem espaçamentos de comprimento) e o espaçamento na potência de Fourier do perfil do
+campo inteiro (dentro de ±6 %, por uma parábola no logaritmo da potência), cuja fase posiciona as fileiras. Confiança =
+destaque angular (1 − R² mediano ÷ maior R²) × periodicidade (a autocorrelação no espaçamento). O espaçamento entre
+plantas é o primeiro pico da autocorrelação ao longo do centro das fileiras; a cobertura do solo é a fração do campo
+acima do limiar de Otsu do sinal suavizado, dada só quando o histograma tem duas populações (coeficiente de
+bimodalidade acima de 5/9). O método e as referências estão no <a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/PESQUISA.pt-BR.md#201-fileiras-de-plantio">estudo técnico</a>.</p>
+<p><strong>Limites.</strong> As fileiras precisam ser retas na área (fileiras em nível que curvam dão uma direção média e um aviso:
+desenhe áreas menores), igualmente espaçadas e visíveis, com pelo menos uns três pixels da imagem por espaçamento: a
+imagem Esri tem cerca de 0,3–0,6 m por pixel na maior parte das lavouras, então fileiras a menos de cerca de 1–2 m não
+aparecem, e a ferramenta avisa. Qual faixa é a cultura é decidido pela cor (a mais verde e escura, ou a mais larga
+quando as duas são verdes e a outra é claramente mais larga): confira o detalhe e use <em>Fileiras na outra faixa</em> quando
+preciso. Sombras contam como copa na cobertura do solo. Um campo maior que o orçamento de pixels (2,5 milhões de
+pixels) é lido numa janela no meio dele e as fileiras são estendidas ao campo todo. A imagem pode ter anos: confira que
+ela mostra o plantio de hoje e que os termos de uso dela permitem tirar dados dela.</p>
       </article>
       <nav class="pager" aria-label="Capítulo anterior e próximo">
         <a rel="prev" href="https://opencadirrigation.com/pt/manual/drawing/"><span>Anterior</span>Desenho e edição</a>

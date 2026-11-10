@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Agronomia e manejo da irrigação — guia do usuário do OpenCADIrrigation</title>
-  <meta name="description" content="Agronomia e manejo da irrigação: balanço hídrico diário, programa de rega, escoamento, fertirrigação por estágio, uniformidade no campo, culturas do usuário">
+  <meta name="description" content="Agronomia e manejo da irrigação: balanço hídrico diário, programa de rega e o seu reprodutor, previsão de irrigação, risco climático ao longo dos anos…">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://opencadirrigation.com/pt/manual/agronomy/">
   <link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/agronomy/">
@@ -25,7 +25,7 @@
       "@id": "https://opencadirrigation.com/pt/manual/agronomy/#article",
       "url": "https://opencadirrigation.com/pt/manual/agronomy/",
       "headline": "Agronomia e manejo da irrigação",
-      "description": "Agronomia e manejo da irrigação: balanço hídrico diário, programa de rega, escoamento, fertirrigação por estágio, uniformidade no campo, culturas do usuário",
+      "description": "Agronomia e manejo da irrigação: balanço hídrico diário, programa de rega e o seu reprodutor, previsão de irrigação, risco climático ao longo dos anos…",
       "inLanguage": "pt-BR",
       "isPartOf": {
         "@type": "CreativeWork",
@@ -143,6 +143,9 @@
 <ol>
 <li><a href="#balanço-hídrico-diário-do-solo">Balanço hídrico diário do solo</a></li>
 <li><a href="#programa-de-rega">Programa de rega</a></li>
+<li><a href="#reproduzir-o-programa-de-rega-na-planta">Reproduzir o programa de rega na planta</a></li>
+<li><a href="#previsão-de-irrigação">Previsão de irrigação</a></li>
+<li><a href="#risco-climático-ao-longo-dos-anos">Risco climático ao longo dos anos</a></li>
 <li><a href="#escoamento-potencial">Escoamento potencial</a></li>
 <li><a href="#fertirrigação-por-estágio">Fertirrigação por estágio</a></li>
 <li><a href="#uniformidade-no-campo">Uniformidade no campo</a></li>
@@ -154,13 +157,16 @@
 </nav>
 <p>Projeto → Agronomia reúne o trabalho agronômico de um projeto além da necessidade mensal de
 <a href="https://opencadirrigation.com/pt/manual/calculation/#agronomia-máquinas-mecanizadas-e-calculadoras-de-campo">Cálculo e dimensionamento</a>: o balanço hídrico
-diário do solo, o programa de rega do controlador, o escoamento potencial da aspersão, a fertirrigação por estágio da
+diário do solo, o programa de rega do controlador e o programa reproduzido na planta, a previsão de irrigação dos
+próximos dias, o risco climático ao longo dos anos, o escoamento potencial da aspersão, a fertirrigação por estágio da
 cultura, a uniformidade no campo e as culturas que a tabela da FAO-56 não tem. Os diálogos leem o que o projeto já
 traz: o clima do local (Projeto → Clima do local…), a cultura, o solo, o método de irrigação e a cobertura do solo de
 cada área irrigada, os turnos e, quando importa, os resultados do cálculo. <strong>Salvar</strong>, em cada um deles, guarda as
 configurações no projeto num passo de desfazer que mantém os resultados do cálculo; o arquivo do projeto as grava em
 <code>agronomy</code> só quando diferem das de um projeto novo. As tabelas ficam na aba <strong>Agronomia</strong> no fim do painel de
-relatórios e em toda exportação de relatório (PDF, Excel, CSV, TXT).</p>
+relatórios e em toda exportação de relatório (PDF, Excel, CSV, TXT). A previsão de irrigação e o reprodutor nunca
+alteram o projeto; o risco climático guarda nele o seu resumo. No celular, todos os itens ficam em ☰ → Projeto, com o
+mesmo nome.</p>
 <p>Todas as tabelas do app aplicam a mesma regra à irrigação localizada: ETc,loc = Kr·Kc·ETo sobre a área inteira, com o
 Kr pela cobertura do solo da área (ou digitado) e a fração molhada só na água facilmente disponível. O Kc médio e o
 Kc final seguem a umidade mínima e o vento do clima do local (equações 62 e 65 da FAO-56), e o Kc inicial o intervalo
@@ -190,6 +196,143 @@ sazonal</strong> dá a cada mês a fração do tempo de rega do mês de projeto,
 é o programa por estação do controlador e por mês e os eventos do dia, ambos exportados em CSV, e a janela usada no
 dia mais cheio contra as horas de pico; <em>Pôr o programa por estação e os eventos nos relatórios</em> os acrescenta aos
 relatórios.</p>
+<h2 id="reproduzir-o-programa-de-rega-na-planta">Reproduzir o programa de rega na planta</h2>
+<p><em>Reproduzir o programa na planta…</em> (ou <strong>Reproduzir</strong> no diálogo do Programa de rega) mostra o programa funcionando
+no desenho. Ele precisa de um projeto calculado (F5) e de um programa com regas; senão, uma mensagem diz o que falta.
+Um painel na parte de baixo tem <em>Voltar ao início do ciclo</em>, reproduzir e pausar, <em>Ir ao próximo início de turno</em>, a
+velocidade (de 0,25 a 24 horas do programa por segundo), o relógio e o que está rodando, um controle deslizante sobre
+o ciclo com as regas em blocos e as exportações. O desenho continua utilizável por baixo (mover, zoom, atalhos); o
+painel sai da frente, e pausa, enquanto um diálogo está aberto ou outra aba é mostrada, e acompanha um cálculo novo no
+mesmo momento.</p>
+<p>A cada momento o desenho mostra as áreas dos turnos em operação destacadas, o alcance dos aspersores e os emissores
+molhados, os tubos que levam água com a cor da velocidade (azul devagar, verde na metade da velocidade admitida,
+laranja nela, vermelho a uma vez e meia ela) e mais grossos com mais vazão, as bombas ligadas (anel verde com raios
+girando) ou desligadas (anel cinza com duas barras) e um painel com o relógio, os turnos em operação, a vazão total, a
+pressão na saída das bombas ligadas (ou na fonte quando nenhuma bomba roda), as bombas ligadas e o nível de cada
+reservatório. Entre as regas o sistema fica em repouso, com o desenho escurecido.</p>
+<ul>
+<li><strong>Quadro (PNG)</strong>: o momento mostrado, com 1600 pixels no lado maior e uma faixa em cima com o relógio e os números.</li>
+<li><strong>Animação (GIF)…</strong>: o ciclo inteiro, com 480 pixels no lado maior por padrão (de 320 a 800), um quadro a cada meia
+hora de um ciclo de um dia (48 quadros) ou a cada duas horas de um ciclo maior, mais um em cada rega curta demais
+para um passo; com o mapa de fundo quando escolhido (os mosaicos dele são baixados como os das imagens do
+assistente, do mapa da tela); progresso e Cancelar. A paleta tem até 256 cores por quadro (quantizador octree, sem
+pontilhado) e a animação se repete sem fim.</li>
+<li><strong>Calendário (.ics)…</strong>: o programa para a agenda do celular do produtor (RFC 5545): um evento por início de cada
+turno (ou de cada ciclo do ciclo e pausa), na hora local onde quer que o celular esteja (hora &quot;flutuante&quot;), com a
+duração da rega, repetindo a cada ciclo do programa a partir de hoje pelos dias escolhidos (30 por padrão), com as
+zonas e o tempo de rega na descrição; os tempos são os do mês de projeto de cada área, ou de um mês escolhido.</li>
+</ul>
+<p><strong>Método.</strong> O ciclo é o período do próprio programa: cada turno roda a cada tantos dias, em dias escalonados, então o
+programa se repete depois do mínimo múltiplo comum dos intervalos, um dia quando todos rodam diariamente (no máximo 28
+dias são mostrados; um período maior é cortado, e o painel avisa). O ciclo é circular: uma rega que passa da
+meia-noite do último dia continua no início. O estado de um momento é o resultado do cálculo para o turno que roda nele
+(vazões, velocidades, pressões e bombas da solução em regime permanente daquele turno), mantido durante toda a rega.
+Dois turnos sobrepostos no tempo (um programa que não cabe na janela) têm as vazões somadas nos tubos comuns e a maior
+pressão na fonte, com aviso: o cálculo não os resolveu juntos. Um reservatório atrás de uma fonte segue a continuidade
+do volume, dV/dt = entrada − saída, com a vazão que cada turno em operação tira e a curva cota–volume do estudo do
+reservatório, a partir do nível definido para o início do dia; ele para no nível mínimo de operação (a captação seca) e
+no nível cheio (verte), e o painel avisa.</p>
+<p><strong>Limites.</strong> O reprodutor mostra o regime permanente de cada turno, não o enchimento dos tubos nem os golpes nas trocas
+de válvula (veja os transientes). O calendário não aplica o ajuste sazonal mês a mês: exporte de novo para outro mês.
+As exportações são desenhadas na prancheta escura, enquadradas nos turnos, qualquer que seja o tema do app. O
+assistente vê qualquer momento do programa com <code>programme_picture</code> e exporta a animação e o calendário com
+<code>export_programme_animation</code> e <code>export_programme_calendar</code>.</p>
+<h2 id="previsão-de-irrigação">Previsão de irrigação</h2>
+<p><em>Previsão de irrigação…</em> mantém o projeto útil depois da entrega do desenho: usa a previsão do tempo do local e diz,
+para cada área irrigada e cada um dos próximos dias, se é para irrigar, a lâmina líquida e bruta, o tempo de
+funcionamento com a taxa de aplicação do projeto e o <strong>ajuste (water budget)</strong>, em %, para digitar no controlador. Ela
+precisa de um projeto georreferenciado com áreas irrigadas (cultura, solo e método, como para a tabela de
+necessidade); calcule o projeto (F5) antes, para as taxas de aplicação reais, senão usa-se a vazão nominal dos
+emissores e o diálogo avisa. O projeto nunca é alterado.</p>
+<ol>
+<li>Escolha a fonte: <em>MET Norway</em> (o padrão; dados abertos livres para qualquer uso, também o profissional, com o
+crédito) ou <em>Open-Meteo</em> (a API gratuita dele é só para uso não comercial, e o diálogo avisa).</li>
+<li>Diga como está o solo: <em>Cheio hoje</em> (acabou de irrigar ou de chover bem: o padrão) ou <em>Última irrigação ou chuva
+há alguns dias</em>, com há quantos dias e, se souber, a lâmina que entrou no solo.</li>
+<li>Clique em <strong>Buscar a previsão</strong>. Nada é buscado antes disso. A resposta fica guardada neste aparelho enquanto o
+serviço diz que vale (no mínimo três horas para o MET Norway, uma para o Open-Meteo), e <strong>Buscar de novo</strong> espera
+até o serviço permitir outro pedido (o MET Norway pede para não repetir um pedido antes da hora de validade dele).</li>
+<li>Leia a tabela: os dias nas colunas, a ETo e a chuva de cada dia no topo, depois cada área com o tempo programado por
+evento, o ajuste destes dias e, para cada dia, o tempo em minutos ou &quot;não irrigar&quot;. A tabela dia a dia dá o
+estágio, o Kc, a ETc, a chuva efetiva, o esgotamento, as lâminas líquida e bruta e a fração de um evento
+programado. As duas tabelas exportam em CSV, XLSX ou PDF; a fonte, o crédito dela e a hora da busca aparecem com
+elas.</li>
+</ol>
+<p>O assistente responde &quot;quanto devo irrigar hoje?&quot; com o mesmo plano (operação <code>irrigation_forecast</code>).</p>
+<p><strong>Método.</strong> O MET Norway dá valores horários nos dois ou três primeiros dias e de seis em seis horas depois (cerca de
+nove dias e meio ao todo); eles viram dias solares locais (UTC + longitude/15): as temperaturas extremas, o ponto de
+orvalho médio, o vento médio a 10 m levado a 2 m (eq. 47 da FAO-56) e a chuva de cada período contada uma vez. A ETo é
+a Penman-Monteith da FAO-56 desses valores diários, com a radiação solar tirada da amplitude térmica (eq. 50 da
+FAO-56, kRs 0,16), o procedimento da FAO-56 para radiação ausente, já que o MET Norway não publica radiação. O
+Open-Meteo dá 16 dias de valores diários com a própria ETo FAO-56, usada como vem. A cultura é a da tabela de
+necessidade e do balanço hídrico diário da área (a curva de Kc em cada data a partir da data de plantio lida para o
+hemisfério do local, ETc,loc = Kr·Kc·ETo, TAW = AWC·Zr·Pw, RAW = p·TAW com p ajustado à ETc do dia, Ks quando o
+esgotamento passa da RAW, eq. 84 da FAO-56); a chuva abaixo de 0,2·ETo só molha a superfície e a que passa da
+capacidade de campo percola. Uma área é irrigada no dia em que o esgotamento chega à lâmina líquida de um evento da
+programação do projeto, ou ao esgotamento permitido do estágio se for menor; a irrigação repõe o esgotamento (a fração
+de reposição do balanço dela), a lâmina bruta é a líquida sobre a eficiência (com a lixiviação do mês) e o tempo é a
+lâmina bruta sobre a taxa de aplicação. O ajuste é a água que a cultura usa nos dias da previsão menos a chuva que a
+zona das raízes guarda, sobre o que a programação do projeto aplica em tantos dias do mês de projeto (de 0 a 300 %).</p>
+<p><strong>Hipóteses e limites.</strong> Previsão é incerta, e mais depois dos três primeiros dias: confira antes de irrigar e busque
+de novo no dia seguinte. O solo é tomado como você disse (sem chuva desde a última irrigação; os dias entre elas usam a
+ETo do mês do clima do local, ou a do primeiro dia da previsão quando o projeto não tem clima), e nenhuma chuva cai
+depois do último dia da previsão. Quando restam poucas horas de hoje na previsão, a ETo de hoje é a de amanhã (o dia
+fica marcado). Áreas com lâmina diária fixa não mudam com o tempo. Os dias são dias solares locais, que podem diferir
+uma ou duas horas do relógio do local. A radiação tirada da amplitude térmica erra em dias nublados de grande
+amplitude.</p>
+<h2 id="risco-climático-ao-longo-dos-anos">Risco climático ao longo dos anos</h2>
+<p><em>Risco climático ao longo dos anos…</em> (abaixo de <em>Balanço hídrico diário…</em>) mostra como o sistema, tal como projetado,
+teria se saído em cada um dos últimos trinta a quarenta anos reais, ao lado do único valor para o qual foi
+dimensionado (a ETo do mês de pico das normais, ou uma ETo de pico digitada). Ele precisa de um projeto
+georreferenciado e de áreas irrigadas com cultura, solo e balanço hídrico ligado; não é preciso calcular o projeto
+(F5), mas com o cálculo a capacidade usa as vazões dos emissores do projeto em vez das nominais.</p>
+<ol>
+<li>Escolha a série diária: <em>NASA POWER</em>, a série diária pontual do local de 1984 até o último ano completo
+(temperatura, umidade, vento a 2 m, radiação solar, chuva), baixada só quando você clica em <strong>Analisar</strong> (cerca de
+2 MB em 9 partes, com barra de progresso e Cancelar) e guardada neste aparelho (Arquivo → Dados baixados
+guardados), de modo que a próxima análise a lê na hora, também sem rede; ou a <em>Série do clima do local</em>, a série
+diária guardada em Projeto → Clima do local (um arquivo de estação ou um download anterior), sem nada baixado. O
+crédito da série (o agradecimento que a NASA pede, para a NASA POWER) aparece com os resultados e fica com o resumo.</li>
+<li>Escolha a <strong>Probabilidade de não excedência</strong> dos valores de projeto (50, 80, 90 ou 95 %; 80 % não é excedido em
+quatro anos de cada cinco) e o <strong>Período de pico</strong> (7, 10, 15 ou 30 dias; 30 compara com as normais mensais, 7 a 15
+com o armazenamento do solo).</li>
+<li>Clique em <strong>Analisar</strong>. O resumo fica no projeto num passo de desfazer (a série, não) e aparece na aba <em>Manejo da
+irrigação</em> dos relatórios e em todas as exportações (as tabelas <em>Risco climático: distribuição dos anos</em> e <em>Risco climático: ano a
+ano</em>); refaça a análise depois de mudar o projeto, porque o resumo guardado não acompanha as mudanças.</li>
+</ol>
+<p>Para o projeto e para cada área (<strong>Mostrar</strong>): P50, P80, P90, P95 e máximo da necessidade bruta anual de irrigação,
+da demanda bruta do período de pico e da ETo do período de pico, ao lado do valor que o projeto usa e da capacidade do
+sistema, com os anos em que o valor do projeto foi excedido; a confiabilidade (as safras em que o sistema projetado
+manteve o solo acima do esgotamento permitido todos os dias, e os dias por ano em que não manteve); os piores anos, os
+maiores veranicos, o volume bombeado por ano; a tendência do período (declive de Sen com o teste de Mann-Kendall a
+5 %); um gráfico ano a ano (os anos com dias de déficit destacados) e a curva de excedência. O assistente roda a mesma
+análise com <code>climate_risk</code>.</p>
+<p><strong>Método.</strong> A ETo de cada dia é a Penman-Monteith FAO (eq. 6 da FAO-56), com umidade, radiação ou vento ausentes
+estimados como manda o capítulo 3 dela. Cada área roda o balanço hídrico diário do solo de <em>Balanço hídrico diário…</em>
+(a cultura, a curva de Kc, a data de plantio, a profundidade das raízes, o p, o solo, o Kr e a fração molhada, a
+eficiência e a lixiviação, e o critério salvo para ela; um balanço de sequeiro é avaliado irrigando no esgotamento
+permitido), safra a safra e duas vezes: sem limite, o que dá a necessidade, e limitado à lâmina bruta que o sistema
+aplica por dia, o que dá o que ele teria aplicado e os dias de déficit (dias de cultura que terminam com o esgotamento
+acima do permitido: a RAW, ou o déficit controlado do estágio). A capacidade sob um pivô central ou linear é a lâmina
+por volta sobre as horas de uma volta vezes a janela da programação; nas demais áreas é a intensidade de aplicação dos
+emissores sobre a área vezes as horas que o turno dela pode funcionar, com a janela dividida entre os turnos na
+proporção das horas que cada um precisa no dia de pico do projeto; uma irrigação a cada n dias pode aplicar n dias de
+capacidade. A demanda do período de pico é a maior média, nos dias escolhidos, da ETc,loc menos a chuva retida na zona
+das raízes, sobre a relação bruta/líquida do mês. Culturas de ciclo contam a partir da data de plantio (uma safra pode
+entrar no ano seguinte, &quot;2019/20&quot;); culturas o ano todo, e os valores do próprio local, por ano agrícola, a partir do
+primeiro dia do mês cuja chuva média mais supera a ETo média. As probabilidades são empíricas (posições de plotagem de
+Weibull i/(n+1), interpoladas entre as posições, dentro dos anos observados: nenhuma distribuição ajustada, nada
+extrapolado); a tendência é o declive de Sen e o teste de Mann-Kendall com a variância corrigida para empates, a
+partir de 10 anos, sem remover a autocorrelação; um veranico é o maior número de dias seguidos com menos de 1 mm de
+chuva (o índice CDD do ETCCDI). Um dia sem dados recebe a ETo média do mês da própria série e chuva zero, e uma safra
+ou ano com mais de 10 % dos dias faltando fica de fora.</p>
+<p><strong>Limites.</strong> Dados de reanálise (NASA POWER: MERRA-2 em células de cerca de 50 km) suavizam os extremos locais: uma
+estação no local pode mostrar picos de ETo maiores e veranicos mais longos. Os valores são uma referência, não uma
+garantia. Só o primeiro ciclo de cultivo de uma área é avaliado; a percolação do arroz inundado não é somada;
+escoamento superficial e ascensão capilar são tomados como zero, como no balanço diário. A capacidade é um limite
+diário dividido na proporção das horas de pico do projeto, não uma programação do controlador setor a setor; com
+reposições parciais o solo guarda espaço para a chuva, então o volume bombeado pode ficar abaixo da necessidade com
+reposição total mesmo sem dias de déficit.</p>
 <h2 id="escoamento-potencial">Escoamento potencial</h2>
 <p><em>Escoamento potencial…</em> compara a aplicação dos aspersores com o solo:</p>
 <ul>

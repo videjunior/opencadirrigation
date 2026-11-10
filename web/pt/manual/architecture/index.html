@@ -139,7 +139,9 @@
       <article>
 <h1 id="arquitetura-do-código">Arquitetura do código</h1>
 <pre><code>bin/oci.dart                linha de comando: import, new, set, pack add, design, analyze, check, validate,
-                            export, bom e schema de projetos .oci.json, um ou vários de uma vez
+                            export, bom e schema de projetos .oci.json, um ou vários de uma vez, e
+                            mcp, o servidor do Model Context Protocol (bin/src/oci_mcp_io.dart: a pasta
+                            raiz, o isolate de cada chamada, stdio)
 lib/
   core/                     Dart puro, sem Flutter (roda no worker, no isolate, nas ferramentas e na CLI)
     api.dart                o motor inteiro numa importação (docs/API.pt-BR.md)
@@ -239,6 +241,15 @@ lib/
                               envelhecimento e entupimento, estudo do reservatório, progresso e
                               cancelamento das análises, comprimento máximo da lateral, contornos
                               traçados em imagem aérea
+      crop_rows.dart          fileiras de plantio lidas na imagem aérea (direção, espaçamento, plantas,
+                              cobertura)
+      climate_risk.dart, climate_risk_stats.dart, irrigation_forecast.dart
+                              o projeto contra quarenta anos reais, a irrigação dos próximos dias
+      programme_playback.dart, programme_calendar.dart
+                              o programa reproduzido na planta, o seu calendário
+      scorecard.dart          o boletim de qualidade do projeto
+      curve_digitiser.dart, curve_trace.dart, curve_fits.dart
+                              curvas lidas na imagem de um gráfico para o catálogo
       design_check.dart       verificação de projeto
       advisor.dart            problemas explicados, configurações impossíveis, correções aplicáveis
       auto_fix.dart           correções, corrigir automaticamente, otimização
@@ -274,7 +285,10 @@ lib/
                               da folha, perfil sRGB do PDF/A
       dem_online.dart, climate_online.dart, share_link.dart
                               elevação e clima online, projetos num link
-    ai/                     assistente de IA opcional, duas empresas atrás de uma só interface
+      forecast_online.dart, ics.dart, gif_animation.dart, scorecard_chart.dart
+                              previsão do tempo do local, escritores de iCalendar e de GIF animado, o
+                              radar do boletim nas pranchas
+    ai/                     assistente de IA opcional, seis empresas atrás de uma só interface
       llm.dart                modelos com seus níveis e preços de tabela, tokens e custo, erros, o
                               cliente que cada empresa implementa
       llm_formats.dart        conversão de mensagens, ferramentas e resultados para o formato de cada empresa
@@ -282,10 +296,16 @@ lib/
                               cache, fallback de recusa, orçamento da tarefa, compactação, limpeza de
                               resultados antigos de ferramentas
       openai_api.dart         API Responses da OpenAI: streaming, ferramentas de função, esforço de
-                              raciocínio, store: false, compactação
+                              raciocínio, store: false, compactação; a base dos três clientes abaixo
+      xai_api.dart, meta_api.dart, openrouter_api.dart
+                              as Responses APIs da xAI, da Meta e da OpenRouter
+      gemini_api.dart         a Interactions API do Google (Gemini)
+      openrouter_catalog.dart a lista de modelos da OpenRouter, os modelos que o usuário acrescenta
       agent_loop.dart         o laço do agente: ferramentas, aprovações por modo, limite de etapas,
                               teto de gasto
       project_context.dart    os dados do projeto enviados com uma mensagem
+    mcp/                    o servidor do Model Context Protocol do motor (docs/MCP.pt-BR.md):
+                            protocolo, validador de JSON Schema, as ferramentas sobre a linha de comando
     units.dart              unidades (métrico/US), viscosidade da água, tabelas digitadas
     translate.dart          gancho de tradução para relatórios e plotagens rotularem a saída sem Flutter
     i18n/language_packs.dart registro dos pacotes de idioma (textos, tutorial, nomes do catálogo)
@@ -298,7 +318,7 @@ lib/
     widgets/                menus, paleta, painéis, relatórios, gráficos, diálogos, layout compacto, e
                             ai/: o painel encaixado da IA e as suas vistas (conversa, dados enviados,
                             configurações)
-    ai/                     o agente de uma aba: 75 ferramentas e 205 operações sobre o controller e o
+    ai/                     o agente de uma aba: 75 ferramentas e 216 operações sobre o controller e o
                             motor (agent_tools*, agent_ops*, ops_*, op_parts/ por área), o mapa de
                             cobertura (ai_coverage.dart, coverage_parts/), o prompt de sistema, o
                             manual e os procedimentos,
@@ -370,7 +390,7 @@ que de outro modo apareceria crua na tela.</li>
 <li><strong>A IA usa o programa, não uma cópia dele.</strong> As ferramentas do assistente são invólucros finos
 sobre o controller e o motor, toda alteração passa por <code>mutate</code> (um grupo de desfazer por
 resposta), e um mapa de cobertura leva cada função que o usuário alcança a uma ferramenta, uma
-operação, um comando ou uma configuração. As duas empresas ficam atrás de uma só interface
+operação, um comando ou uma configuração. As seis empresas ficam atrás de uma só interface
 (<code>llm.dart</code>), com a conversão de formatos num só lugar (<code>llm_formats.dart</code>) e um só laço do
 agente; o código das requisições recebe a troca HTTP como parâmetro, então os testes o executam
 contra imitações programadas.</li>

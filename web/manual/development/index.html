@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Development — OpenCADIrrigation user guide</title>
-  <meta name="description" content="Development and tests: commands, how to extend, what every test guarantees">
+  <meta name="description" content="Development and tests: commands, the MCP server, how to extend, what every test guarantees">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://opencadirrigation.com/manual/development/">
   <link rel="alternate" hreflang="en" href="https://opencadirrigation.com/manual/development/">
@@ -25,7 +25,7 @@
       "@id": "https://opencadirrigation.com/manual/development/#article",
       "url": "https://opencadirrigation.com/manual/development/",
       "headline": "Development",
-      "description": "Development and tests: commands, how to extend, what every test guarantees",
+      "description": "Development and tests: commands, the MCP server, how to extend, what every test guarantees",
       "inLanguage": "en",
       "isPartOf": {
         "@type": "CreativeWork",
@@ -152,7 +152,7 @@ the worker bundle, the formatter output and the CanvasKit build depend on it. No
 cd opencadirrigation
 flutter pub get
 flutter run -d chrome              # development in the browser
-flutter test                       # about 3,000 tests: engine, model, formats, interface
+flutter test                       # more than 3,000 tests: engine, model, formats, interface
 flutter analyze                    # lints
 tool/build_worker.sh               # recompiles web/design_worker.js after changing lib/core (the app falls
                                    # back to the interface thread when the file is missing)
@@ -164,6 +164,7 @@ flutter build web --release        # a plain build (no commit/date, CanvasKit fr
                                    # start: its sw.js removes itself; build/web, web/CNAME holds the domain)
 dart run bin/oci.dart --help       # command line: import, new, set, pack add, design, analyze, check, validate,
                                    # export, bom and schema of .oci.json projects (docs/API.md)
+dart run bin/oci.dart mcp --root &lt;folder&gt;   # the engine as a Model Context Protocol server over stdio (docs/MCP.md)
 dart tool/engine_package.dart build/engine   # the engine as a package without Flutter (needs only the Dart SDK)
 dart run tool/gen_version.dart     # regenerates lib/app/version.dart after changing `version:` in pubspec.yaml
 dart run tool/gen_site.dart        # site pages (English index, /pt/, /es/, /de/, … sitemap, 404, robots, llms.txt)
@@ -193,7 +194,11 @@ error, <code>validate</code> says what reading the file had to repair, <code>exp
 prints the bill of materials and <code>schema</code> the JSON Schema of the project file, in any of the 20
 languages (<code>--lang</code>); <code>import</code>, <code>new</code>, <code>set</code> and <code>pack add</code> make and change projects, and the
 commands that read projects take several files or folders at once, with <code>--out-dir</code>
-(<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md#1-using-the-engine">docs/API.md</a>).</p>
+(<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/API.md#1-using-the-engine">docs/API.md</a>). <code>mcp --root &lt;folder&gt;</code> serves the same
+functions to any AI application that speaks the Model Context Protocol: 21 tools over stdio, every
+file confined to the folder given, <code>--read-only</code> for a server that only looks, nothing online; how
+to configure a client, every tool with an example, the safety rules and the limits are in
+<a href="https://github.com/videjunior/opencadirrigation/blob/main/docs/MCP.md">docs/MCP.md</a>.</p>
 <p>The committed outputs of most generators have guard tests (the site pages, the service worker
 template, the examples, the catalogues, the version and the AI tools table): when one drifts from its
 source, the matching test fails and says which command to run. Rebuild the design worker
@@ -224,7 +229,7 @@ palettes when none fits; <code>test/widget_theme_test.dart</code> checks the con
 tokens (4.5:1 on every light surface).</li>
 </ul>
 <h2 id="tests">Tests</h2>
-<p><code>flutter test</code> runs about 3,000 tests in a few minutes (the number grows with every version). What each
+<p><code>flutter test</code> runs more than 3,000 tests in a few minutes (the number grows with every version). What each
 group guarantees:</p>
 <div class="table"><table>
 <thead>
@@ -360,7 +365,7 @@ group guarantees:</p>
 </tr>
 <tr>
 <td><code>core/ai_agent_test.dart</code>, <code>core/ai_openai_test.dart</code>, <code>core/ai_formats_test.dart</code>, <code>core/ai_context_test.dart</code></td>
-<td>Requests follow each API: Anthropic (endpoint, headers, streaming, adaptive thinking, always on for Fable 5.1, effort, caching, refusal fallback, task budgets, compaction, clearing of old tool results; no browser header on desktop) and OpenAI (Responses API, bearer key, instructions, function tools, reasoning effort, no storage, compaction, older pictures dropped); tool turns, invalid inputs as error results, the four modes and plan approval, confirmed exports, the step limit and the spending cap, messages written while it works, Stop, retries and errors that never show a key, the data-retention refusal of Fable 5.1, refusals and fallbacks priced at the model that answered, list prices with the long-prompt rules; both formats convert to each other without loss; the project context is deterministic, bounded and never holds a key</td>
+<td>Requests follow each API: Anthropic (endpoint, headers, streaming, adaptive thinking, always on for Fable 5.2, effort, caching, refusal fallback, task budgets, compaction, clearing of old tool results; no browser header on desktop) and OpenAI (Responses API, bearer key, instructions, function tools, reasoning effort, no storage, compaction, older pictures dropped); tool turns, invalid inputs as error results, the four modes and plan approval, confirmed exports, the step limit and the spending cap, messages written while it works, Stop, retries and errors that never show a key, the data-retention refusal of Fable 5.2 (a choice of Fable 5.1 goes on with 5.2), refusals and fallbacks priced at the model that answered, list prices with the long-prompt rules; both formats convert to each other without loss; the project context is deterministic, bounded and never holds a key</td>
 </tr>
 <tr>
 <td><code>widget_ai_agent_test.dart</code>, <code>widget_ai_assistant_test.dart</code>, <code>widget_ai_tools_test.dart</code>, <code>widget_ai_vision_test.dart</code></td>
@@ -368,7 +373,7 @@ group guarantees:</p>
 </tr>
 <tr>
 <td><code>widget_ai_coverage_test.dart</code>, <code>widget_ai_manual_test.dart</code>, <code>widget_ai_ops_cad_test.dart</code>, <code>widget_ai_ops_eng_test.dart</code></td>
-<td>Every action, tool, alias, menu item and dialog has a route for the AI and every route exists, and <code>docs/AI_TOOLS.md</code> is the table of the map; every manual topic reads on an empty and on a designed project, every item key, design parameter and message code has its explanation, and the worked example replays; the drawing-side and engineering operations (editing, annotation, blocks, view and history, files, terrain and site, imports; calculators, network analyses, catalogue and packs, exports, automatic design), each with its approvals and undo steps. Scripted fakes of both APIs (<code>test/support/fake_claude.dart</code>, <code>test/support/fake_openai.dart</code>) stand in for the companies: no test reaches the network</td>
+<td>Every action, tool, alias, menu item and dialog has a route for the AI and every route exists, and <code>docs/AI_TOOLS.md</code> is the table of the map; every manual topic reads on an empty and on a designed project, every item key, design parameter and message code has its explanation, and the worked example replays; the drawing-side and engineering operations (editing, annotation, blocks, view and history, files, terrain and site, imports; calculators, network analyses, catalogue and packs, exports, automatic design), each with its approvals and undo steps. Scripted fakes of both APIs (<code>test/support/fake_claude.dart</code>, <code>test/support/fake_openai.dart</code>, and those inside the tests of the four newer clients) stand in for the companies: no test reaches the network</td>
 </tr>
 <tr>
 <td><code>densogram_test.dart</code>, <code>electrical_test.dart</code>, <code>electrical_io_test.dart</code>, <code>management_test.dart</code> (in <code>core/</code>)</td>
@@ -487,8 +492,44 @@ group guarantees:</p>
 <td>One self-crossing detector and one offset, the longest lateral, the item-by-item review of Fix and Optimise, tracing on imagery against synthetic tiles; the costs by step, Apply the rest of this task, the effort by stage, the conversations of a project; the unnamed tab, the command palette, the manual and its chapters, What's new, the report of a problem</td>
 </tr>
 <tr>
-<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code></td>
-<td>The user guide pages (anchors, links, text, metadata, sitemap), the fonts served by the site, the service worker and bootstrap scripts in Node, opening files with the installed app, the credits of third-party data, the map kept for the field, the translation review files, the links and headings of the documentation</td>
+<td><code>site_manual_test.dart</code>, <code>site_fonts_test.dart</code>, <code>web_js_test.dart</code>, <code>launch_actions_test.dart</code>, <code>share_inbox_test.dart</code>, <code>data_credits_test.dart</code>, <code>field_map_test.dart</code>, <code>i18n_review_test.dart</code>, <code>web_docs_test.dart</code></td>
+<td>The user guide pages (anchors, links, text, metadata, sitemap), the fonts served by the site, the service worker and bootstrap scripts and the share links of <code>site.js</code> in Node, opening files and share links with the installed app and in the open app, the credits of third-party data, the map kept for the field, the translation review files, the links and headings of the documentation</td>
+</tr>
+<tr>
+<td><code>core/ai_gemini_test.dart</code>, <code>core/ai_xai_test.dart</code>, <code>core/ai_meta_test.dart</code>, <code>core/ai_openrouter_test.dart</code>, <code>core/ai_openrouter_catalog_test.dart</code>, <code>core/ai_providers_test.dart</code></td>
+<td>The four newer clients against scripted transcripts copying each company's documented formats: the request (endpoint, the only headers, <code>store: false</code>, effort, cache keys), tool turns replaying the reasoning byte for byte, pictures and PDFs, streams, usage and cost (cached tokens, long-prompt and introductory prices), stops and refusals, every documented error and retry; OpenRouter's list of models read into models (prices, tiers, routers, free, tools, pictures) and the user's list kept; every company with its host, key pages and fast and top models</td>
+</tr>
+<tr>
+<td><code>widget_ai_model_catalog_test.dart</code>, <code>widget_ai_more_models_test.dart</code>, <code>widget_ai_second_opinion_test.dart</code></td>
+<td>The browser of OpenRouter's models (search, filters, sort, offline copy, phone layout), a model added and found again at start, a model without tools that only talks, a model without pictures that gets none, a free model under the spending cap, the companies' words in the errors; the second opinion (who gives it, one request without tools, kept out of the conversation until sent on)</td>
+</tr>
+<tr>
+<td><code>core/crop_rows_test.dart</code>, <code>widget_crop_rows_test.dart</code></td>
+<td>Synthetic fields (0° to 178.9°, 2–10 m) read within 1° and 3 %, rows on the canopy, noise, missing plants, holes, coordinates of millions, plant spacing and ground cover, no rows where there are none, the frame and the pixel budget, apply and the row direction in the file; the dialog with fake tiles, its messages, the phone layout and the assistant's two operations</td>
+</tr>
+<tr>
+<td><code>core/climate_risk_test.dart</code>, <code>widget_climate_risk_test.dart</code></td>
+<td>Weibull positions and quantiles, Sen's slope and Mann-Kendall by hand, peak means, dry spells, the irrigation year in both hemispheres, two recorded NASA POWER answers, missing days, the capped balance by hand, a whole gallery pivot simulated by hand, the summary in the file and both report tables; the dialog on phones, sideways, right to left and with large text, the paced download then the kept series, and the operation</td>
+</tr>
+<tr>
+<td><code>core/forecast_online_test.dart</code>, <code>core/irrigation_forecast_test.dart</code>, <code>fct_http_test.dart</code>, <code>widget_fct_forecast_test.dart</code></td>
+<td>The request (four decimals), the recorded MET Norway answer read into solar days and ETo against an independent calculation, Open-Meteo, the reuse window and the expiry rule, failures; the plan by hand (deficit carried, rain skips, start states, both hemispheres, fixed depths), the tables in metric and US units; the desktop GET; the dialog, its exports and the operation</td>
+</tr>
+<tr>
+<td><code>core/programme_playback_test.dart</code>, <code>core/ics_test.dart</code>, <code>core/gif_animation_test.dart</code>, <code>widget_programme_player_test.dart</code></td>
+<td>The period of the programme, its time line and overlaps, the state of a moment against the results, the reservoir level against hand-computed volumes; iCalendar folding, escaping and the calendars of designed examples; GIF frames decoded back; the player (play, pause, seek, next start, a new design, another tab), its exports and the three operations</td>
+</tr>
+<tr>
+<td><code>core/scorecard_test.dart</code>, <code>widget_scorecard_test.dart</code></td>
+<td>Every scoring function at, between and beyond its anchors, grades, means and points to gain, the orchard example scored with figures recomputed by hand, a worse variant scoring lower, the ageing test, alternatives, the report table and the radar; the dialog, comparison, phone layouts and the operation</td>
+</tr>
+<tr>
+<td><code>core/curve_digitiser_test.dart</code>, <code>core/curve_trace_test.dart</code>, <code>core/curve_fits_test.dart</code>, <code>widget_curve_digitiser_test.dart</code></td>
+<td>The affine mapping on straight, rotated, sheared and logarithmic charts, every calibration error, the units; the colour trace on synthetic charts with grids, crossings and anti-aliasing; the pump, emitter and profile fits by hand; the dialog from a dropped picture to the catalogue, its undo, the phone layout and the three operations</td>
+</tr>
+<tr>
+<td><code>core/mcp_protocol_test.dart</code>, <code>core/mcp_session_test.dart</code>, <code>core/mcp_paths_test.dart</code>, <code>core/mcp_process_test.dart</code></td>
+<td>The MCP server: schema validation, both kinds of protocol revision, JSON-RPC errors, cancellation that kills the isolate, the time limit, progress, resources and prompts; a whole session over an example with every result checked against its output schema, a project from scratch, read-only mode, the root folder (traversal, links, absolute paths); the real process over stdio; <code>docs/MCP.md</code> and its translation describe every tool</td>
 </tr>
 </tbody>
 </table></div>
@@ -504,8 +545,9 @@ that build. Dependabot proposes updates of the packages and of the actions.</li>
 <li><strong>End-to-end smoke test</strong> (<code>tool/e2e/smoke.mjs</code>, pinned <code>playwright-core</code>): on a production build
 (<code>sh tool/build_web.sh</code>), the app opens an example and designs it in the Web Worker, prints the
 version of the build, installs its service worker and starts again offline, sends a message of the
-AI assistant with the user's key to a fake of the API (nothing leaves the machine), notices a
-design worker of another build and loads this build's, and shows no page error. <code>--browser chromium,webkit,firefox</code> uses the installed Chrome and the WebKit and Firefox builds the pinned
+AI assistant with the user's key to a fake of the API (nothing leaves the machine), opens share
+links on a first and a returning visit, pasted into the open app and offline with its service
+worker, notices a design worker of another build and loads this build's, and shows no page error. <code>--browser chromium,webkit,firefox</code> uses the installed Chrome and the WebKit and Firefox builds the pinned
 version fixes; a check a browser cannot run is reported as skipped, never as passed.</li>
 <li><strong>Golden images</strong> (<code>test/goldens</code>, tag <code>golden</code>): the drawing board light and dark, dense hairlines
 on a 2× screen, a dialog on a phone and the SVG of a sheet, compared with a tolerance for the
