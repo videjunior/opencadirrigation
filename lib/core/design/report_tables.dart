@@ -24,6 +24,7 @@ import 'report_standards.dart'; // 1.6.0 PRD
 // 1.6.0 MOT: pump stations and the real operation of the zones
 import 'report_tables_mot.dart';
 import 'results.dart';
+import 'scorecard.dart' show LazyReportTable, designScorecard, scorecardHeaders, scorecardTable; // 1.7.0 SCR
 import 'slope_report.dart'; // 1.6.0 PRD
 
 /// Formatted number cell: keeps the raw value for spreadsheets and the number
@@ -1058,6 +1059,17 @@ List<ReportTable> buildReportTables({required Project project, required DesignRe
           for (final rv in revisions) [rv.revision, rv.date, rv.description],
         ],
         ids: [for (final rv in revisions) rv.id],
+      ),
+    );
+  }
+  // 1.7.0 SCR: the design scorecard, computed when it is first read
+  if (r != null) {
+    out.add(
+      LazyReportTable(
+        key: 'scorecard',
+        title: t('scr.title'),
+        headers: scorecardHeaders(t),
+        build: () => scorecardTable(designScorecard(project, r), t: t, units: u, currency: project.params.currency),
       ),
     );
   }

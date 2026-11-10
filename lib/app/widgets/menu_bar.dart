@@ -57,6 +57,7 @@ import 'dialogs/command_palette.dart'; // 1.6.0 UI
 import 'dialogs/feedback_dialog.dart'; // 1.6.0 UI
 import 'dialogs/help_dialog.dart'; // 1.6.0 UI
 import 'dialogs/whats_new_dialog.dart'; // 1.6.0 UI
+import 'dialogs/scorecard_dialog.dart'; // 1.7.0 SCR
 import 'interface_menu.dart'; // 1.6.0 UI
 
 class AppMenuBar extends StatelessWidget {
@@ -610,6 +611,7 @@ class AppMenuBar extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     item(t('design.check'), () => showDesignCheckDialog(context, c), icon: Icons.fact_check_outlined, shortcut: 'CHK ⏎', key: const Key('menu_check')),
+                    item(t('scr.menu'), () => showScorecardDialog(context, c), icon: Icons.grading, key: const Key('menu_scorecard')), // 1.7.0 SCR
                     item(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, shortcut: 'FIX ⏎', key: const Key('menu_autofix')),
                     item('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, shortcut: 'OPT ⏎', key: const Key('menu_optimize')),
                     item(t('ai.menu'), () => showAiAssistantDialog(context, c), icon: Icons.smart_toy_outlined, shortcut: 'AI ⏎', key: const Key('menu_ai')),

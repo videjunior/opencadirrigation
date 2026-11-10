@@ -18,6 +18,7 @@ import '../model/project.dart';
 import '../translate.dart';
 import '../units.dart';
 import 'plot.dart';
+import 'scorecard_chart.dart' show scorecardChart; // 1.7.0 SCR
 
 /// A line of a chart, in chart units (project units already).
 class ChartSeries {
@@ -43,6 +44,10 @@ class ChartMarker {
 
 class PlotChart {
   PlotChart({required this.title, this.xLabel = '', this.yLabel = '', this.series = const [], this.markers = const [], this.notes = const [], this.xFromZero = true, this.yFromZero = false});
+
+  /// 1.7.0 SCR: a chart that lays itself out (the scorecard radar) instead
+  /// of the axes, series and markers.
+  PlotScene Function(double widthMm, double heightMm)? draw;
   final String title;
   final String xLabel, yLabel;
   final List<ChartSeries> series;
@@ -54,7 +59,7 @@ class PlotChart {
   /// Axes that start at zero (stations, flows; heads of a pump curve).
   final bool xFromZero, yFromZero;
 
-  bool get isEmpty => series.every((s) => s.points.length < 2) && markers.isEmpty;
+  bool get isEmpty => draw == null && series.every((s) => s.points.length < 2) && markers.isEmpty;
 }
 
 const _ink = 0xFF1A1A1A;
@@ -91,6 +96,7 @@ int _decimals(List<double> ticks) {
 /// grid, the series, markers and the legend; items in paper millimetres
 /// with the origin at the bottom-left of the frame.
 PlotScene chartScene(PlotChart chart, {required double widthMm, required double heightMm}) {
+  if (chart.draw case final draw?) return draw(widthMm, heightMm); // 1.7.0 SCR
   const layer = 'CHART';
   final items = <PlotItem>[];
   void path(List<Pt> pts, {int color = _ink, double w = 0.25, bool dashed = false, int? fill, bool closed = false}) {
@@ -471,5 +477,7 @@ List<PlotChart> designCharts(Project p, DesignResults? r, {required Translate t,
     if (c != null) out.add(c);
   }
   out.addAll(pumpCharts(p, r, t: t, u: u));
+  // 1.7.0 SCR: the radar of the design scorecard (computed when drawn)
+  if (r != null) out.add(scorecardChart(p, r, t: t));
   return out;
 }

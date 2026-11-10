@@ -372,6 +372,7 @@ const reportTableNotes = <String, String>{
   'scenarios': 'the design alternatives saved for comparison and their figures',
   'comments': 'the review comments of the drawing',
   'revisions': 'the revision clouds: revision, date, description',
+  'scorecard': 'the design scorecard (run_operation design_scorecard explains it): overall score and grade, each category, and each indicator with value, target, source of the target, score 0–100, grade A–E, weight, points to gain, weakest point and how to improve it',
   'messages': 'the design messages, as get_design_messages lists them',
 };
 

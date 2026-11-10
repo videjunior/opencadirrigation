@@ -74,6 +74,7 @@ import 'dialogs/command_palette.dart' show PhoneMenuSearch; // 1.6.0 UI
 import 'dialogs/feedback_dialog.dart'; // 1.6.0 UI
 import 'dialogs/help_dialog.dart'; // 1.6.0 UI
 import 'dialogs/whats_new_dialog.dart'; // 1.6.0 UI
+import 'dialogs/scorecard_dialog.dart'; // 1.7.0 SCR
 import 'interface_menu.dart' show uiScalePercent; // 1.6.0 UI
 
 /// Screens narrower than this use the phone layout.
@@ -492,6 +493,7 @@ class _MobileShellState extends State<MobileShell> {
                 c.commitSettingsEdit(edit);
               }),
             row(t('design.check'), widget.onDesignCheck, icon: Icons.fact_check_outlined, key: const Key('mobile_menu_check')),
+            row(t('scr.menu'), () => showScorecardDialog(context, c), icon: Icons.grading, key: const Key('mobile_menu_scorecard')), // 1.7.0 SCR
             row(t('adv.fixAll'), c.busy ? null : () => showAutoFixDialog(context, c), icon: Icons.auto_fix_high, key: const Key('mobile_menu_autofix')),
             row('${t('adv.optimize')}…', c.busy ? null : () => showOptimizeDialog(context, c), icon: Icons.savings_outlined, key: const Key('mobile_menu_optimize')),
             row(t('ai.menu'), () => showAiAssistantDialog(context, c), icon: Icons.smart_toy_outlined, key: const Key('mobile_menu_ai')),

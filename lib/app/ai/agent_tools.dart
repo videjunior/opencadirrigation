@@ -48,6 +48,7 @@ import 'op_parts/sit.dart';
 import 'op_parts/eng.dart';
 import 'op_parts/prd.dart';
 import 'op_parts/prb.dart';
+import 'op_parts/scr.dart'; // 1.7.0 SCR
 import 'view_snapshot.dart';
 import 'vision_marks.dart' show ChangeTracker;
 
@@ -123,6 +124,7 @@ class AgentToolbox {
     ...opsEng(this),
     ...opsPrd(this),
     ...opsPrb(this),
+    ...opsScr(this), // 1.7.0 SCR
   ];
 
   ContextSource source() => ContextSource(
@@ -541,6 +543,7 @@ const reportTableKeys = [
   'scenarios',
   'comments',
   'revisions',
+  'scorecard', // 1.7.0 SCR
   'messages',
 ];
 

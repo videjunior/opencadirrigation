@@ -253,3 +253,7 @@ export 'model/project_compare.dart';
 
 // 1.6.0 SIT+: the credits of the third-party data in a project
 export 'io/data_credits.dart';
+
+// 1.7.0 SCR: the design scorecard and its radar chart
+export 'design/scorecard.dart';
+export 'io/scorecard_chart.dart';
