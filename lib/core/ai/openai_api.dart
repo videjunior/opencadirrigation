@@ -237,6 +237,16 @@ class OpenAiClient extends AiHttpClient {
     return AiError(kind == AiErrorKind.http ? AiErrorKind.invalidRequest : kind, message: message);
   }
 
+  /// An event of the stream as this client reads it: the event itself, one
+  /// rewritten into the shape of OpenAI's (a provider that names or nests
+  /// something differently), or null to leave it out.
+  Map<String, dynamic>? eventOf(Map<String, dynamic> event) => event;
+
+  /// The output items of an answer as they are kept in the conversation and
+  /// sent back (unchanged for OpenAI; a provider whose items need a field
+  /// added or taken out before they can go back changes them here).
+  List<Map<String, dynamic>> itemsOf(List<Map<String, dynamic>> output) => output;
+
   /// The tokens of a response's `usage` object.
   AiUsage usageOf(Map<String, dynamic> usage) {
     int v(Object? m, String k) => m is Map ? (m[k] as num?)?.toInt() ?? 0 : 0;
@@ -282,8 +292,10 @@ class _Stream {
     if (_status == 'failed') throw _error(resp['error']);
   }
 
-  void event(Map<String, dynamic> e) {
+  void event(Map<String, dynamic> raw) {
     listener.onActivity?.call();
+    final e = client.eventOf(raw);
+    if (e == null) return;
     final i = e['output_index'] is num ? (e['output_index'] as num).toInt() : -1;
     switch (e['type']) {
       case 'response.created' || 'response.in_progress' || 'response.queued':
@@ -341,7 +353,7 @@ class _Stream {
 
   AiReply finish() {
     if (_status == null) throw AiError(AiErrorKind.interrupted, partial: sawText);
-    final items = _output ?? _gathered();
+    final items = client.itemsOf(_output ?? _gathered());
     final calls = OpenAiFormat.calls(items);
     final text = OpenAiFormat.text(items);
     final refusal = OpenAiFormat.refusal(items);
