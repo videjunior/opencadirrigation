@@ -11,6 +11,13 @@
 /// outputs, and after a compaction only the compaction item onward. The key
 /// goes in the authorization header of the request to OpenAI and nowhere
 /// else.
+///
+/// Other providers publish an API of the same shape (xAI, Meta, OpenRouter):
+/// their clients are built on [OpenAiClient] and change what differs — the
+/// address, the headers, fields of the request, the usage and the errors
+/// ([OpenAiClient.url], [OpenAiClient.headers], [OpenAiClient.body],
+/// [OpenAiClient.usageOf], [OpenAiClient.errorOf]). A conversation with any
+/// of them is kept in this same format.
 library;
 
 import 'dart:convert';
@@ -71,31 +78,44 @@ class OpenAiClient extends AiHttpClient {
 
   static final endpoint = Uri.parse('https://api.openai.com/v1/responses');
 
+  /// Where the requests go.
+  Uri get url => endpoint;
+
   @override
   AiProvider get provider => AiProvider.openai;
 
-  bool _compact(AiRequest r) => r.compactAt != null && r.model.compaction && offers(r.model, 'context_management');
+  /// The server summarises the older turns past [AiRequest.compactAt].
+  bool compacts(AiRequest r) => r.compactAt != null && r.model.compaction && offers(r.model, 'context_management');
 
   @override
-  List<String> optionalFields(AiRequest r) => [if (_compact(r)) 'context_management'];
+  List<String> optionalFields(AiRequest r) => [if (compacts(r)) 'context_management'];
 
+  /// The headers of a request (the key in `authorization`, nowhere else).
   Map<String, String> headers() => {'content-type': 'application/json', 'authorization': 'Bearer ${apiKey.trim()}'};
 
-  /// The `reasoning.effort` of [e]: the Responses API's levels end at
-  /// `xhigh`, which "maximum" asks for.
-  static String effortOf(AiEffort e) => e == AiEffort.max ? 'xhigh' : e.name;
+  /// The header that carries the provider's id of a request.
+  String get requestIdHeader => 'x-request-id';
 
+  /// The `reasoning.effort` of [e] for [m]: the effort itself, or the
+  /// nearest one the model takes.
+  String effortOf(AiModel m, AiEffort e) => m.effortFor(e).name;
+
+  /// The `input` of [r]: the conversation from the last compaction on, the
+  /// oldest pictures of tool results replaced by a note.
+  List<Map<String, dynamic>> inputOf(AiRequest r) => pruneToolPictures(sinceCompactionItem(r.history));
+
+  /// The request body.
   Map<String, Object?> body(AiRequest r) => {
     'model': r.model.id,
     'instructions': r.system,
-    'input': pruneToolPictures(sinceCompactionItem(r.history)),
+    'input': inputOf(r),
     if (r.tools.isNotEmpty) 'tools': [for (final s in r.tools) OpenAiFormat.tool(s)],
-    'reasoning': {'effort': effortOf(r.effort)},
+    'reasoning': {'effort': effortOf(r.model, r.effort)},
     'max_output_tokens': r.outputTokens,
     'stream': true,
     'store': false,
     'include': ['reasoning.encrypted_content'],
-    if (_compact(r))
+    if (compacts(r))
       'context_management': [
         {'type': 'compaction', 'compact_threshold': r.compactAt},
       ],
@@ -112,15 +132,15 @@ class OpenAiClient extends AiHttpClient {
     final json = jsonEncode(body(r));
     AiHttpClient.checkSize(json);
     // what the request carries, for the costs by step (the pictures pruned from it left out)
-    final (images, documents) = countMedia(pruneToolPictures(sinceCompactionItem(r.history)));
+    final (images, documents) = countMedia(inputOf(r));
     final reply = await _exchange(r, json, cancel, listener);
     return reply.withRequest(bytes: json.length, images: images, documents: documents);
   }
 
   Future<AiReply> _exchange(AiRequest r, String json, AiCancel cancel, AiStreamListener listener) async {
-    final req = AiHttpRequest(endpoint, headers(), json);
+    final req = AiHttpRequest(url, headers(), json);
     final res = await open(req, r.model, cancel);
-    final id = res.headers['x-request-id'];
+    final id = res.headers[requestIdHeader];
     final idle = idleTimeout(r.model, r.effort);
     if (res.status < 200 || res.status >= 300) {
       final text = await readAll(res.body, r.model, cancel, idle: idle);
@@ -136,13 +156,13 @@ class OpenAiClient extends AiHttpClient {
       }
       if (j is! Map<String, dynamic>) throw AiError(AiErrorKind.http, status: res.status, requestId: id);
       try {
-        final acc = _Stream(listener, clean)..terminal(j);
+        final acc = _Stream(this, listener)..terminal(j);
         return acc.finish();
       } on AiError catch (e) {
         throw e.withRequestId(id);
       }
     }
-    final acc = _Stream(listener, clean);
+    final acc = _Stream(this, listener);
     final sse = SseReader(acc.event);
     try {
       await readLines(res.body, r.model, sse.line, cancel, idle: idle);
@@ -166,6 +186,7 @@ class OpenAiClient extends AiHttpClient {
     if (code == 'invalid_api_key' || type == 'authentication_error') return AiErrorKind.auth;
     return switch (status) {
       401 => AiErrorKind.auth,
+      402 => AiErrorKind.credit,
       403 => AiErrorKind.permission,
       404 => AiErrorKind.notFound,
       413 => AiErrorKind.tooLarge,
@@ -177,6 +198,11 @@ class OpenAiClient extends AiHttpClient {
     };
   }
 
+  /// The kind of an error of this provider (its HTTP [status], or null for
+  /// one inside a stream; the `type`, `code` and `message` of its body).
+  AiErrorKind errorKind(int? status, String type, String code, String message) => kindOf(status, type, code, message);
+
+  /// The error of a response that is not a success.
   AiError httpError(int status, String body, Map<String, String> headers) {
     var type = '', code = '', message = '';
     try {
@@ -186,21 +212,45 @@ class OpenAiClient extends AiHttpClient {
         type = '${e['type'] ?? ''}';
         code = '${e['code'] ?? ''}';
         message = '${e['message'] ?? ''}';
+      } else if (e is String) {
+        message = e;
       } else {
         message = body;
       }
     } catch (_) {
       message = body;
     }
-    return AiError(kindOf(status, type, code, message), status: status, message: clean(message), retryAfter: AiHttpClient.retryAfterOf(headers), requestId: headers['x-request-id']);
+    return AiError(errorKind(status, type, code, message), status: status, message: clean(message), retryAfter: AiHttpClient.retryAfterOf(headers), requestId: headers[requestIdHeader]);
+  }
+
+  /// Policy codes of a failed response: the request was declined.
+  Set<String> get declinedCodes => const {'bio_policy', 'misalignment_policy_violation', 'invalid_prompt', 'image_content_policy_violation'};
+
+  /// The error of a failed response or of an `error` event of the stream
+  /// ([e]: its `error` object, or the event itself).
+  AiError errorOf(Object? e) {
+    final m = e is Map ? e : const {};
+    final code = '${m['code'] ?? ''}';
+    final message = clean('${m['message'] ?? ''}');
+    if (declinedCodes.contains(code)) return AiError(AiErrorKind.refusal, message: message, category: code);
+    final kind = errorKind(null, '${m['type'] ?? ''}', code, message);
+    return AiError(kind == AiErrorKind.http ? AiErrorKind.invalidRequest : kind, message: message);
+  }
+
+  /// The tokens of a response's `usage` object.
+  AiUsage usageOf(Map<String, dynamic> usage) {
+    int v(Object? m, String k) => m is Map ? (m[k] as num?)?.toInt() ?? 0 : 0;
+    final d = usage['input_tokens_details'];
+    final cached = v(d, 'cached_tokens'), written = v(d, 'cache_write_tokens');
+    return AiUsage(input: math.max(0, v(usage, 'input_tokens') - cached - written), cacheRead: cached, cacheWrite: written, output: v(usage, 'output_tokens'));
   }
 }
 
 /// Builds the answer from the streamed events (or a whole response).
 class _Stream {
-  _Stream(this.listener, this.clean);
+  _Stream(this.client, this.listener);
+  final OpenAiClient client;
   final AiStreamListener listener;
-  final String Function(String) clean;
   final Map<int, Map<String, dynamic>> _items = {};
   final Map<int, StringBuffer> _args = {}, _text = {};
   List<Map<String, dynamic>>? _output;
@@ -215,17 +265,7 @@ class _Stream {
         if (x is Map) Map<String, dynamic>.from(x),
   ];
 
-  /// Policy codes of a failed response: the request was declined.
-  static const _declined = {'bio_policy', 'misalignment_policy_violation', 'invalid_prompt', 'image_content_policy_violation'};
-
-  AiError _error(Object? e) {
-    final m = e is Map ? e : const {};
-    final code = '${m['code'] ?? ''}';
-    final message = clean('${m['message'] ?? ''}');
-    if (_declined.contains(code)) return AiError(AiErrorKind.refusal, message: message, category: code);
-    final kind = OpenAiClient.kindOf(null, '${m['type'] ?? ''}', code, message);
-    return AiError(kind == AiErrorKind.http ? AiErrorKind.invalidRequest : kind, message: message);
-  }
+  AiError _error(Object? e) => client.errorOf(e);
 
   static String? _str(Object? o) => o is String ? o : null;
 
@@ -299,13 +339,6 @@ class _Stream {
     ];
   }
 
-  AiUsage _usageOf() {
-    int v(Object? m, String k) => m is Map ? (m[k] as num?)?.toInt() ?? 0 : 0;
-    final d = _usage['input_tokens_details'];
-    final cached = v(d, 'cached_tokens'), written = v(d, 'cache_write_tokens');
-    return AiUsage(input: math.max(0, v(_usage, 'input_tokens') - cached - written), cacheRead: cached, cacheWrite: written, output: v(_usage, 'output_tokens'));
-  }
-
   AiReply finish() {
     if (_status == null) throw AiError(AiErrorKind.interrupted, partial: sawText);
     final items = _output ?? _gathered();
@@ -327,9 +360,9 @@ class _Stream {
       calls: calls,
       stop: stop,
       model: _model,
-      usage: _usageOf(),
+      usage: client.usageOf(_usage),
       category: _status == 'incomplete' && _reason == 'content_filter' ? 'content_filter' : null,
-      explanation: clean(refusal),
+      explanation: client.clean(refusal),
       compacted: compacted,
     );
   }

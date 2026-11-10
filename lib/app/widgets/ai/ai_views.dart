@@ -1432,21 +1432,21 @@ class _AiSettingsViewState extends State<AiSettingsView> {
     if (notes.text != ai.notes) ai.notes = notes.text;
   }
 
-  /// The model a key of [p] starts with: the app's default for its company,
-  /// otherwise that company's intermediate tier (never the dearest by chance).
-  static AiModel _defaultFor(AiProvider p) => AiModel.standard.provider == p
-      ? AiModel.standard
-      : AiModel.all.where((m) => m.provider == p && m.tier == AiTier.intermediate && m.listed && !m.earlier).firstOrNull ?? AiModel.all.firstWhere((m) => m.provider == p);
+  /// The model a key of [p] starts with: the one last chosen of its
+  /// company, else the app's default for it, otherwise that company's
+  /// intermediate tier (never the dearest by chance).
+  AiModel _defaultFor(AiProvider p) =>
+      ai.lastModelOf(p) ??
+      (AiModel.standard.provider == p
+          ? AiModel.standard
+          : AiModel.all.where((m) => m.provider == p && m.tier == AiTier.intermediate && m.listed && !m.earlier).firstOrNull ?? AiModel.all.firstWhere((m) => m.provider == p));
 
   void _saveKey(AiProvider p) {
     final k = keys[p]!.text.trim();
     if (k.isEmpty) return;
-    // a key of the other company in this field
-    final other = switch (p) {
-      AiProvider.openai when k.startsWith('sk-ant-') => AiProvider.anthropic,
-      AiProvider.anthropic when k.startsWith('sk-') && !k.startsWith('sk-ant-') => AiProvider.openai,
-      _ => null,
-    };
+    // a key of another company in this field (told by how its keys start)
+    final starts = AiProvider.ofKey(k);
+    final other = starts != null && starts != p && !(p.keyPrefix.isNotEmpty && k.startsWith(p.keyPrefix) && p.keyPrefix.length >= starts.keyPrefix.length) ? starts : null;
     if (other != null) {
       c.notify(c.t('ai.key.wrongCompany', {'p': other.company}));
       return;
@@ -1461,7 +1461,33 @@ class _AiSettingsViewState extends State<AiSettingsView> {
     }
     setState(() {});
     widget.onSaved?.call();
-    if (!k.startsWith(p.keyPrefix)) c.notify(c.t('ai.key.odd', {'p': p.company, 'x': p.keyPrefix}));
+    if (p.keyPrefix.isNotEmpty && !k.startsWith(p.keyPrefix)) c.notify(c.t('ai.key.odd', {'p': p.company, 'x': p.keyPrefix}));
+  }
+
+  /// The companies, one chip each (a tick on those with a key): choosing one
+  /// chooses its model (the one last used of it).
+  Widget _providerPicker() {
+    final t = c.t;
+    final now = ai.model.provider;
+    return Wrap(
+      spacing: 6,
+      runSpacing: 2,
+      children: [
+        for (final p in AiProvider.values)
+          ChoiceChip(
+            key: Key('ai_provider_${p.name}'),
+            label: Text(p.company, style: const TextStyle(fontSize: 12)),
+            tooltip: ai.hasKeyFor(p) ? t('ai.provider.hasKey', {'p': '${p.company} (${p.family})'}) : (p.family == p.company ? p.company : '${p.company} (${p.family})'),
+            avatar: ai.hasKeyFor(p) ? Icon(Icons.key, size: 14, color: Cad.ok) : null,
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            selected: p == now,
+            onSelected: (_) {
+              if (p != ai.model.provider) setState(() => ai.model = _defaultFor(p));
+            },
+          ),
+      ],
+    );
   }
 
   Widget _keySection(AiProvider p) {
@@ -1609,33 +1635,37 @@ class _AiSettingsViewState extends State<AiSettingsView> {
     );
   }
 
-  /// The model picker: grouped by company, each with its tier and price.
+  /// The name of [x] in the picker (the company is chosen above it).
+  static String _name(AiModel x) => x.label.replaceFirst(' (${x.provider.company})', '');
+
+  /// The model picker: the models of the chosen company, each with its
+  /// tier and price.
   Widget _modelPicker() {
     final t = c.t;
     final m = ai.model;
+    final offered = AiModel.offered(m.provider);
     return DropdownButton<AiModel>(
       key: const Key('ai_model'),
       isExpanded: true,
       value: m,
       items: [
-        for (final p in AiProvider.values) ...[
+        // the chosen one first when it is no longer offered (a conversation's own model)
+        for (final x in [if (!offered.contains(m)) m, ...offered])
           DropdownMenuItem<AiModel>(
-            enabled: false,
+            value: x,
             child: Text(
-              p.company.toUpperCase(),
-              style: TextStyle(fontSize: 10.5, letterSpacing: 1, fontWeight: FontWeight.bold, color: Cad.fg54),
+              [
+                _name(x),
+                _tier(x.tier),
+                if (x.earlier) t('ai.model.earlier'),
+                if (x.priced && (x.input > 0 || x.output > 0)) 'US\$ ${x.priceText}',
+                if (x.freeTier) t('ai.model.freeTier'),
+                if (identical(x, AiModel.standard)) t('ai.model.default'),
+              ].join(' · '),
+              style: const TextStyle(fontSize: 12),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          for (final x in AiModel.all.where((x) => x.provider == p && x.listed))
-            DropdownMenuItem<AiModel>(
-              value: x,
-              child: Text(
-                '${x.label} · ${_tier(x.tier)}${x.earlier ? ' · ${t('ai.model.earlier')}' : ''} · US\$ ${x.priceText}${identical(x, AiModel.standard) ? ' · ${t('ai.model.default')}' : ''}',
-                style: const TextStyle(fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-        ],
       ],
       onChanged: (x) {
         if (x != null) setState(() => ai.model = x);
@@ -1645,14 +1675,20 @@ class _AiSettingsViewState extends State<AiSettingsView> {
 
   String _modelHint(AiModel m) {
     final t = c.t;
-    String usd(double v) => v.toStringAsFixed(v < 0.1 ? 3 : 2);
+    String usd(double v) => v.toStringAsFixed(v > 0 && v < 0.1 ? 3 : 2);
+    final f = m.priceFactor;
+    final ends = m.introEnds;
     return [
-      t('ai.model.price', {'t': _tier(m.tier), 'i': usd(m.input), 'o': usd(m.output), 'r': usd(m.cacheRead), 'w': usd(m.cacheWrite)}),
+      if (!m.priced) t('ai.model.router') else t('ai.model.price', {'t': _tier(m.tier), 'i': usd(m.input * f), 'o': usd(m.output * f), 'r': usd(m.cacheRead * f), 'w': usd(m.cacheWrite * f)}),
+      if (ends != null) t('ai.model.intro', {'d': ends.toIso8601String().substring(0, 10), 'i': usd(m.input), 'o': usd(m.output)}),
+      if (m.freeTier) t('ai.model.freeHint'),
+      if (!m.vision) t('ai.model.noVision'),
       if (m.longAbove > 0) t('ai.model.long', {'n': '${m.longAbove ~/ 1000}', 'a': '${m.longInput}'.replaceFirst('.0', ''), 'b': '${m.longOutput}'.replaceFirst('.0', '')}),
       if (m.longTurns) t('ai.model.longTurns'),
       if (m.needsRetention) t('ai.model.retention'),
       if (m.earlier) t('ai.model.earlierHint'),
       t('ai.model.to', {'p': m.provider.company, 'h': m.provider.host}),
+      if (m.provider == AiProvider.openrouter) t('ai.model.via'),
       if (ai.switchStartsAnew(m)) t('ai.model.newConv'),
       ?ai.switchCostText(m),
     ].join(' ');
@@ -1662,7 +1698,8 @@ class _AiSettingsViewState extends State<AiSettingsView> {
   Widget build(BuildContext context) {
     final t = c.t;
     final m = ai.model;
-    final other = AiProvider.values.where((p) => p != m.provider);
+    // the keys of the other companies stay in reach while they are saved (to replace or forget them)
+    final other = AiProvider.values.where((p) => p != m.provider && ai.hasKeyFor(p));
     final noKey = !AiProvider.values.any(ai.hasKeyFor);
     return ScrollBody(
       child: Padding(
@@ -1670,8 +1707,12 @@ class _AiSettingsViewState extends State<AiSettingsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // without any key, the keys come first: one is enough
-            if (noKey) ...[Text(t('ai.key.oneEnough'), key: const Key('ai_key_one'), style: const TextStyle(fontSize: 12.5)), _keySection(m.provider), for (final p in other) _keySection(p)],
+            // without any key, the settings say first that one is enough
+            if (noKey) Text(t('ai.key.oneEnough'), key: const Key('ai_key_one'), style: const TextStyle(fontSize: 12.5)),
+            SectionTitle(t('ai.provider')),
+            _providerPicker(),
+            // without any key, the key of the chosen company comes before its models
+            if (noKey) _keySection(m.provider),
             SectionTitle(t('ai.model')),
             _modelPicker(),
             Text(

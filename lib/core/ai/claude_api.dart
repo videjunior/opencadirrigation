@@ -4,7 +4,7 @@
 ///
 /// Pure Dart; the HTTP exchange is injected ([AiTransport]). Requests stream
 /// (server-sent events) and carry adaptive thinking (always on on Claude
-/// Fable 5.1) with the model's notes between tool calls returned as text
+/// Fable 5.2) with the model's notes between tool calls returned as text
 /// where it writes them, an explicit effort, prompt caching, the
 /// server-side refusal fallback where the model takes it, a task budget
 /// when one is set, and threshold compaction for long sessions. The history
@@ -303,7 +303,7 @@ class AnthropicClient extends AiHttpClient {
 
   /// The `thinking` setting: adaptive, with the notes between tool calls as
   /// text and the dropping of blocks the conversation no longer matches.
-  /// Thinking is always on for Claude Fable 5.1, so it gets the setting only
+  /// Thinking is always on for Claude Fable 5.2, so it gets the setting only
   /// for one of these.
   Map<String, Object?>? _thinking(AiRequest r) {
     final extra = <String, Object?>{

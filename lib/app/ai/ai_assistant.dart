@@ -31,8 +31,12 @@ import 'package:flutter/services.dart';
 
 import '../../core/ai/agent_loop.dart';
 import '../../core/ai/claude_api.dart';
+import '../../core/ai/gemini_api.dart';
 import '../../core/ai/image_prep.dart';
+import '../../core/ai/meta_api.dart';
 import '../../core/ai/openai_api.dart';
+import '../../core/ai/openrouter_api.dart';
+import '../../core/ai/xai_api.dart';
 import '../../core/ai/project_context.dart';
 import '../../core/io/pdf_reader.dart';
 import '../../core/model/entities.dart';
@@ -635,6 +639,7 @@ class AiAssistant extends ChangeNotifier {
     final from = _convModel;
     final was = model;
     setPref('ai.model', m.id);
+    setPref('ai.model.${m.provider.name}', m.id);
     _stopWarm();
     if (from != null && items.isNotEmpty && needsNewConversation(from, m)) {
       // the earlier one stays in the list of the project's conversations when it can be kept
@@ -653,6 +658,12 @@ class AiAssistant extends ChangeNotifier {
       if (cost != null) items.add(AiItem.notice(cost)..transient = true);
     }
     notifyListeners();
+  }
+
+  /// The model of [p] chosen last (null: none yet, or one no longer offered).
+  AiModel? lastModelOf(AiProvider p) {
+    final m = AiModel.find(getPref('ai.model.${p.name}'));
+    return m != null && m.provider == p ? m : null;
   }
 
   /// Input tokens of the last request (the conversation as the model last
@@ -710,7 +721,11 @@ class AiAssistant extends ChangeNotifier {
   /// [n] tokens for the user (12 300 → "12k").
   static String aiTokensText(int n) => n < 1000 ? '$n' : (n < 100000 ? '${(n / 1000).toStringAsFixed(1).replaceFirst('.0', '')}k' : '${(n / 1000).round()}k');
 
-  static bool needsNewConversation(AiModel from, AiModel to) => from.provider != to.provider || (to.provider == AiProvider.openai && from.id != to.id);
+  /// Whether a conversation of [from] cannot go on with [to]: another
+  /// company's model, or another model of a company whose models keep their
+  /// reasoning in a form only the same model reads (every one but
+  /// Anthropic's, where one Claude model takes over another's conversation).
+  static bool needsNewConversation(AiModel from, AiModel to) => from.provider != to.provider || (to.provider != AiProvider.anthropic && from.id != to.id);
 
   /// Switching from the conversation's model to [m] would start anew.
   bool switchStartsAnew(AiModel m) => _convModel != null && items.isNotEmpty && needsNewConversation(_convModel!, m);
@@ -897,7 +912,14 @@ class AiAssistant extends ChangeNotifier {
 
   /// The model that reads long attachments for a task of [p]'s
   /// (summarize_attachment): its cheapest one.
-  static AiModel readerOf(AiProvider p) => p == AiProvider.anthropic ? AiModel.haiku55 : AiModel.gpt6Luna;
+  static AiModel readerOf(AiProvider p) => switch (p) {
+    AiProvider.anthropic => AiModel.haiku55,
+    AiProvider.openai => AiModel.gpt6Luna,
+    AiProvider.google => AiModel.gemini35FlashLite,
+    AiProvider.xai => AiModel.grok43,
+    AiProvider.meta => AiModel.museEmber,
+    AiProvider.openrouter => AiModel.orHaiku55,
+  };
 
   /// What the reading model is told: it answers from the document alone.
   static const readerSystem =
@@ -1978,10 +2000,17 @@ class AiAssistant extends ChangeNotifier {
 
   // ---------------------------------------------------------------- the turn
 
-  AiHttpClient _client(AiProvider p, String key) => switch (p) {
-    AiProvider.anthropic => AnthropicClient(apiKey: key, transport: debugTransport ?? platformTransport, browser: _browser, sleep: debugSleep),
-    AiProvider.openai => OpenAiClient(apiKey: key, transport: debugTransport ?? platformTransport, sleep: debugSleep),
-  };
+  AiHttpClient _client(AiProvider p, String key) {
+    final transport = debugTransport ?? platformTransport;
+    return switch (p) {
+      AiProvider.anthropic => AnthropicClient(apiKey: key, transport: transport, browser: _browser, sleep: debugSleep),
+      AiProvider.openai => OpenAiClient(apiKey: key, transport: transport, sleep: debugSleep),
+      AiProvider.google => GeminiClient(apiKey: key, transport: transport, sleep: debugSleep),
+      AiProvider.xai => XaiClient(apiKey: key, transport: transport, sleep: debugSleep),
+      AiProvider.meta => MetaClient(apiKey: key, transport: transport, sleep: debugSleep),
+      AiProvider.openrouter => OpenRouterClient(apiKey: key, transport: transport, sleep: debugSleep),
+    };
+  }
 
   /// Sends [question] (with the project data and attachments chosen) and
   /// runs the task to its end. While a task runs, a message is queued for
@@ -2919,7 +2948,7 @@ class AiAssistant extends ChangeNotifier {
       if (id is String) {
         final provider = AiProvider.values.byName(meta['provider'] as String);
         // a model this version no longer offers: another of its company, whose API reads the history
-        model = AiModel.all.where((m) => m.id == id).firstOrNull ?? AiModel.all.firstWhere((m) => m.provider == provider && m.listed);
+        model = AiModel.find(id) ?? AiModel.all.firstWhere((m) => m.provider == provider && m.listed);
       }
       final history = [for (final m in j['history'] as List) m as Map<String, dynamic>];
       if (history.isNotEmpty && model == null) return null;

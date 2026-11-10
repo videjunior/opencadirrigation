@@ -276,7 +276,7 @@ void main() {
       }, res.body);
     }
 
-    final p = await AnthropicClient(apiKey: key, transport: withLimits, browser: true).probe(AiModel.fable51, cancel: AiCancel());
+    final p = await AnthropicClient(apiKey: key, transport: withLimits, browser: true).probe(AiModel.fable52, cancel: AiCancel());
     expect(p.ok, isTrue, reason: '${p.error}');
     expect(p.text, 'OK');
     expect(p.servedBy, 'claude-opus-5-5', reason: 'the scripted reply names its model');
@@ -287,7 +287,7 @@ void main() {
     expect(p.requestId, 'req_probe');
     expect(p.declined, isEmpty);
     final b = f.bodies.single;
-    expect(b['model'], 'claude-fable-5-1');
+    expect(b['model'], 'claude-fable-5-2');
     expect(b['max_tokens'], AiHttpClient.probeTokens);
     expect((b['output_config'] as Map)['effort'], 'low');
     expect(b.containsKey('tools'), isFalse);

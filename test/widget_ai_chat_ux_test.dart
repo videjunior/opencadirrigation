@@ -171,6 +171,8 @@ void main() {
 
   testWidgets('keys: the wrong company is refused, a first OpenAI key starts on the intermediate model, remember moves a saved key', (tester) async {
     await open(tester);
+    await tester.tap(find.byKey(const Key('ai_provider_openai')));
+    await tester.pump();
     await tester.enterText(find.byKey(const Key('ai_key_field_openai')), key);
     await tester.tap(find.byKey(const Key('ai_key_save_openai')));
     await tester.pump();

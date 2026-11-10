@@ -44,11 +44,11 @@ void main() {
   group('the spending cap (IA-07)', () {
     test('each request may write only what is left of the cap buys, at least 16 000 tokens', () async {
       final f = FakeClaude([
-        (_) => FakeReply.tools([('look', <String, dynamic>{})], model: 'claude-fable-5-1'),
-        (_) => FakeReply.text('done', model: 'claude-fable-5-1'),
+        (_) => FakeReply.tools([('look', <String, dynamic>{})], model: 'claude-fable-5-2'),
+        (_) => FakeReply.text('done', model: 'claude-fable-5-2'),
       ]);
-      await AgentLoop(api: api(f.call), tools: [tool('look')]).run(model: AiModel.fable51, system: 's', history: const [], user: user('go'), costCap: 2.0, cancel: AiCancel());
-      expect(f.bodies.first['max_tokens'], 40000, reason: 'US\$ 2 buys 40 000 output tokens of Claude Fable 5.1 at US\$ 50 per million');
+      await AgentLoop(api: api(f.call), tools: [tool('look')]).run(model: AiModel.fable52, system: 's', history: const [], user: user('go'), costCap: 2.0, cancel: AiCancel());
+      expect(f.bodies.first['max_tokens'], 50000, reason: 'US\$ 2 buys 50 000 output tokens of Claude Fable 5.2 at US\$ 40 per million');
       final f2 = FakeClaude([(_) => FakeReply.text('done')]);
       await AgentLoop(api: api(f2.call), tools: const []).run(model: AiModel.opus55, system: 's', history: const [], user: user('go'), costCap: 0.05, cancel: AiCancel());
       expect(f2.bodies.single['max_tokens'], AgentLoop.minCappedOutput, reason: 'never below the floor');
@@ -226,7 +226,7 @@ void main() {
     test('a long step caches for an hour: every breakpoint alike, priced at twice the input', () async {
       final f = FakeClaude([(_) => FakeReply.text('ok')]);
       await api(f.call).send(
-        AiRequest(model: AiModel.fable51, system: 's', history: [user('q')], longCache: true),
+        AiRequest(model: AiModel.fable52, system: 's', history: [user('q')], longCache: true),
         cancel: AiCancel(),
       );
       final b = f.bodies.single;
@@ -237,7 +237,7 @@ void main() {
       const u = AiUsage(input: 100, cacheWrite: 1000, cacheWriteHour: 2000, cacheRead: 5000, output: 10);
       expect(u.totalInput, 8100);
       expect(u.cost(AiModel.opus55), closeTo((100 * 4 + 1000 * 5 + 2000 * 8 + 5000 * 0.2 + 10 * 20) / 1e6, 1e-12));
-      expect(AiModel.fable51.cacheWriteHour, 20, reason: 'Claude Fable 5.1: one-hour writes US\$ 20 per million');
+      expect(AiModel.fable52.cacheWriteHour, 16, reason: 'Claude Fable 5.2: one-hour writes US\$ 16 per million');
     });
 
     test('one-hour cache writes are read from the usage breakdown', () async {
@@ -438,7 +438,7 @@ void main() {
     test('below the price step of a model that has one', () {
       expect(AiModel.haiku55.compactAt, 90000, reason: 'Claude Haiku 5.5 bills 5 × past 100 000 input tokens');
       expect(AiModel.opus55.compactAt, 150000);
-      expect(AiModel.fable51.compactAt, 150000);
+      expect(AiModel.fable52.compactAt, 150000);
       expect(AiModel.gpt61Sol.compactAt, 200000);
     });
 

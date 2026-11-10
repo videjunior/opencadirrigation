@@ -662,11 +662,11 @@ void main() {
 
     testWidgets('a long step caches for an hour, and then needs no keep-alive', (tester) async {
       final ai = AiAssistant.of(c)
-        ..model = AiModel.fable51
+        ..model = AiModel.fable52
         ..keepWarm = true;
       AiAssistant.warmEvery = const Duration(seconds: 5);
       addTearDown(() => AiAssistant.warmEvery = const Duration(seconds: 270));
-      final f = script([(_) => FakeReply.text('Hi.', model: 'claude-fable-5-1')]);
+      final f = script([(_) => FakeReply.text('Hi.', model: 'claude-fable-5-2')]);
       await say(tester, ai, 'Hello');
       expect(f.bodies.first['cache_control'], {'type': 'ephemeral', 'ttl': '1h'});
       await tester.pump(const Duration(seconds: 6));

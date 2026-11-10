@@ -96,9 +96,12 @@ void main() {
 
   testWidgets('each key stays in memory unless remembered on this device, is shown masked, and is forgotten on request', (tester) async {
     await open(tester, size: const Size(1280, 1800));
-    // no key yet: the settings open first, the chosen model's company first
+    // no key yet: the settings open first, with the key of the chosen model's company
     expect(find.byKey(const Key('ai_key_field_anthropic')), findsOneWidget);
-    expect(find.byKey(const Key('ai_key_field_openai')), findsOneWidget);
+    expect(find.byKey(const Key('ai_key_field_openai')), findsNothing, reason: 'the key of another company shows when that company is chosen');
+    for (final p in AiProvider.values) {
+      expect(find.byKey(Key('ai_provider_${p.name}')), findsOneWidget, reason: 'every company can be chosen');
+    }
     await tester.enterText(find.byKey(const Key('ai_key_field_anthropic')), key);
     await tester.tap(find.byKey(const Key('ai_key_save_anthropic')));
     await tester.pump();
@@ -119,8 +122,11 @@ void main() {
     expect(saved.contains(key), isFalse);
     expect(saved, contains('…'));
     expect(find.textContaining(key), findsNothing);
-    // the OpenAI key is a key of its own
+    // the OpenAI key is a key of its own, typed with that company chosen
     const openaiKey = 'sk-proj-TEST-OPENAI-KEY-0000';
+    await tester.tap(find.byKey(const Key('ai_provider_openai')));
+    await tester.pump();
+    expect(find.byKey(const Key('ai_key_field_anthropic')), findsOneWidget, reason: 'a saved key stays in reach');
     await tester.enterText(find.byKey(const Key('ai_key_field_openai')), openaiKey);
     await tester.pump();
     await tester.tap(find.byKey(const Key('ai_key_save_openai')));

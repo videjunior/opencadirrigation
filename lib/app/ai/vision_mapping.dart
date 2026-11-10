@@ -44,16 +44,22 @@ class PictureLimits {
   static const openai = PictureLimits(maxPictureSide, maxPicturePixels, maxShortSide: 768);
 
   /// Claude's high-resolution models: 2576 px and 4784 visual tokens of
-  /// 28 × 28 pixels a picture; 2000 px a side keeps a request with more
-  /// than 20 pictures acceptable (a conversation sends every earlier
-  /// picture again), and 3.6 megapixels stays within the tokens whatever
-  /// the proportions.
-  static const high = PictureLimits(2000, 3600000);
+  /// 28 × 28 pixels a picture (a request with more than 20 pictures takes
+  /// them up to 3000 px a side, and a conversation sends every earlier
+  /// picture again); 3.6 megapixels stays within the tokens whatever the
+  /// proportions.
+  static const high = PictureLimits(2576, 3600000);
+
+  /// The Claude models reached through OpenRouter that read pictures at
+  /// the high resolution (Claude Opus 4.7 and later).
+  static final _routedHigh = RegExp(r'^anthropic/claude-(fable|mythos|opus-(4\.[789]|[5-9])|sonnet-[5-9]|haiku-[5-9])');
 
   static PictureLimits of(AiModel? m) => switch (m) {
     null => standard,
     AiModel(highResVision: true) => high,
     AiModel(provider: AiProvider.openai) => openai,
+    AiModel(provider: AiProvider.openrouter, :final id) when _routedHigh.hasMatch(id) => high,
+    AiModel(provider: AiProvider.openrouter, :final id) when id.startsWith('openai/') => openai,
     _ => standard,
   };
 

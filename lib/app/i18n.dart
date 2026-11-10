@@ -21,6 +21,7 @@ part 'i18n_parts/prd.dart';
 part 'i18n_parts/edt.dart';
 part 'i18n_parts/agb.dart';
 part 'i18n_parts/prb.dart';
+part 'i18n_parts/aip.dart';
 
 /// Languages whose strings are compiled into the app (the `_table` below).
 const baseLanguages = ['pt', 'en', 'es'];
@@ -190,7 +191,7 @@ class I18n {
 }
 
 /// (pt, en, es): the base strings and the parts in lib/app/i18n_parts.
-const _table = <String, (String, String, String)>{..._base, ..._mot, ..._aut, ..._agr, ..._fmt, ..._mod, ..._ia, ..._cad, ..._ui, ..._sit, ..._eng, ..._prd, ..._edt, ..._agb, ..._prb};
+const _table = <String, (String, String, String)>{..._base, ..._mot, ..._aut, ..._agr, ..._fmt, ..._mod, ..._ia, ..._cad, ..._ui, ..._sit, ..._eng, ..._prd, ..._edt, ..._agb, ..._prb, ..._aip};
 
 /// (pt, en, es)
 const _base = <String, (String, String, String)>{
@@ -5999,9 +6000,9 @@ const _base = <String, (String, String, String)>{
   'ai.key.show': ('Mostrar a chave', 'Show the key', 'Mostrar la clave'),
   'ai.key.hide': ('Ocultar a chave', 'Hide the key', 'Ocultar la clave'),
   'ai.key.oneEnough': (
-    'Para começar, basta uma chave de API, da Anthropic (modelos Claude) ou da OpenAI (modelos GPT). O provedor cobra o uso na sua conta, e um teto de gasto por tarefa limita cada pedido.',
-    'One API key is enough to start, from Anthropic (Claude models) or OpenAI (GPT models). The provider bills the use to your account, and a spending cap per task limits each request.',
-    'Para empezar basta una clave de API, de Anthropic (modelos Claude) o de OpenAI (modelos GPT). El proveedor factura el uso en su cuenta, y un tope de gasto por tarea limita cada pedido.',
+    'Para começar, basta uma chave de API: da Anthropic (Claude), da OpenAI (GPT), do Google (Gemini), da xAI (Grok), da Meta (Muse) ou da OpenRouter (uma só chave para os modelos de todas elas e de muitas outras). O provedor cobra o uso na sua conta, e um teto de gasto por tarefa limita cada pedido.',
+    'One API key is enough to start: from Anthropic (Claude), OpenAI (GPT), Google (Gemini), xAI (Grok), Meta (Muse) or OpenRouter (one key for the models of all of them and of many others). The provider bills the use to your account, and a spending cap per task limits each request.',
+    'Para empezar basta una clave de API: de Anthropic (Claude), OpenAI (GPT), Google (Gemini), xAI (Grok), Meta (Muse) u OpenRouter (una sola clave para los modelos de todas ellas y de muchas otras). El proveedor factura el uso en su cuenta, y un tope de gasto por tarea limita cada pedido.',
   ),
   'ai.cmd.busy': (
     'O assistente está trabalhando: use {c} quando ele terminar (ou pare-o antes).',
@@ -6246,9 +6247,9 @@ const _base = <String, (String, String, String)>{
   'ai.key.replace': ('Nova chave da API', 'New API key', 'Nueva clave de la API'),
   'ai.key.save': ('Salvar', 'Save', 'Guardar'),
   'ai.key.privacy': (
-    'Sem “Lembrar”, a chave fica só na memória enquanto a página está aberta. Com “Lembrar”, ela é guardada no armazenamento deste navegador, que qualquer script deste site poderia ler, o das estatísticas de visita (Google Analytics) também. Em qualquer caso, cada chave é enviada só à API da sua empresa (api.anthropic.com ou api.openai.com) e nunca entra em arquivos do projeto, autossalvamento, links de compartilhamento ou exportações.',
-    'Without “Remember”, a key stays only in memory while the page is open. With “Remember”, it is kept in this browser\'s storage, which any script of this site could read, the visit statistics one (Google Analytics) included. Either way each key is sent only to its own company\'s API (api.anthropic.com or api.openai.com) and never goes into project files, autosave, share links or exports.',
-    'Sin “Recordar”, la clave queda solo en la memoria mientras la página está abierta. Con “Recordar”, se guarda en el almacenamiento de este navegador, que cualquier script de este sitio podría leer, incluido el de las estadísticas de visitas (Google Analytics). En cualquier caso, cada clave se envía solo a la API de su empresa (api.anthropic.com o api.openai.com) y nunca entra en archivos del proyecto, autoguardado, enlaces para compartir ni exportaciones.',
+    'Sem “Lembrar”, a chave fica só na memória enquanto a página está aberta. Com “Lembrar”, ela é guardada no armazenamento deste navegador, que qualquer script deste site poderia ler, o das estatísticas de visita (Google Analytics) também. Em qualquer caso, cada chave é enviada só à API da sua empresa (o endereço aparece junto do modelo) e nunca entra em arquivos do projeto, autossalvamento, links de compartilhamento ou exportações.',
+    'Without “Remember”, a key stays only in memory while the page is open. With “Remember”, it is kept in this browser\'s storage, which any script of this site could read, the visit statistics one (Google Analytics) included. Either way each key is sent only to its own company\'s API (the address is shown with the model) and never goes into project files, autosave, share links or exports.',
+    'Sin “Recordar”, la clave queda solo en la memoria mientras la página está abierta. Con “Recordar”, se guarda en el almacenamiento de este navegador, que cualquier script de este sitio podría leer, incluido el de las estadísticas de visitas (Google Analytics). En cualquier caso, cada clave se envía solo a la API de su empresa (la dirección aparece junto al modelo) y nunca entra en archivos del proyecto, autoguardado, enlaces para compartir ni exportaciones.',
   ),
   'ai.key.odd': (
     'Salva. Chaves da {p} costumam começar com {x}: confira a chave se os pedidos falharem.',
@@ -6768,9 +6769,9 @@ const _base = <String, (String, String, String)>{
   'ai.model.to': ('Os dados vão para a {p} ({h}).', 'Data goes to {p} ({h}).', 'Los datos van a {p} ({h}).'),
   'ai.model.newConv': ('Trocar para este modelo começa uma conversa nova.', 'Switching to this model starts a new conversation.', 'Cambiar a este modelo empieza una conversación nueva.'),
   'ai.model.switch': (
-    'Trocar para um modelo de outra empresa, ou entre modelos da OpenAI, começa uma conversa nova (a anterior não é enviada); entre modelos Claude, a conversa continua.',
-    'Switching to a model of another company, or between OpenAI models, starts a new conversation (the earlier one is not sent); between Claude models the conversation goes on.',
-    'Cambiar a un modelo de otra empresa, o entre modelos de OpenAI, empieza una conversación nueva (la anterior no se envía); entre modelos Claude, la conversación sigue.',
+    'Trocar para um modelo de outra empresa, ou entre dois modelos de uma empresa que não a Anthropic, começa uma conversa nova (a anterior não é enviada); entre os modelos Claude da Anthropic, a conversa continua.',
+    'Switching to a model of another company, or between two models of a company other than Anthropic, starts a new conversation (the earlier one is not sent); between Anthropic\'s Claude models the conversation goes on.',
+    'Cambiar a un modelo de otra empresa, o entre dos modelos de una empresa que no sea Anthropic, empieza una conversación nueva (la anterior no se envía); entre los modelos Claude de Anthropic, la conversación sigue.',
   ),
   'ai.newConv': (
     'Conversa nova com {m} ({p}): a conversa anterior não foi enviada à {p}.',

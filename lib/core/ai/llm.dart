@@ -3,7 +3,9 @@
 /// errors, cancellation, the HTTP exchange (injected: fetch in the browser,
 /// HttpClient on the desktop, a scripted fake in tests), the parts of a
 /// message, and the client each provider implements — Anthropic's Messages
-/// API ([AnthropicClient]) and OpenAI's Responses API ([OpenAiClient]).
+/// API ([AnthropicClient]), OpenAI's Responses API ([OpenAiClient]) and the
+/// Responses APIs of xAI, Meta and OpenRouter built on it, and Google's
+/// Gemini API ([GeminiClient]).
 ///
 /// Pure Dart. Each provider gets its own key, sent only to its own host.
 library;
@@ -13,13 +15,21 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 /// The companies whose models the assistant can use, each called directly
-/// with the user's own key.
+/// with the user's own key. [openrouter] is a marketplace: one key reaches
+/// the models of the others, and many more, through its own servers.
 enum AiProvider {
-  anthropic('Anthropic', 'api.anthropic.com', 'https://console.anthropic.com/settings/keys', 'sk-ant-', 'https://platform.claude.com/settings/billing'),
-  openai('OpenAI', 'api.openai.com', 'https://platform.openai.com/api-keys', 'sk-', 'https://platform.openai.com/settings/organization/billing/overview');
+  anthropic('Anthropic', 'Claude', 'api.anthropic.com', 'https://console.anthropic.com/settings/keys', 'sk-ant-', 'https://platform.claude.com/settings/billing'),
+  openai('OpenAI', 'GPT', 'api.openai.com', 'https://platform.openai.com/api-keys', 'sk-', 'https://platform.openai.com/settings/organization/billing/overview'),
+  google('Google', 'Gemini', 'generativelanguage.googleapis.com', 'https://aistudio.google.com/apikey', 'AIza', 'https://aistudio.google.com/usage'),
+  xai('xAI', 'Grok', 'api.x.ai', 'https://console.x.ai/', 'xai-', 'https://console.x.ai/'),
+  meta('Meta', 'Muse', 'api.meta.ai', 'https://dev.meta.ai/', '', 'https://dev.meta.ai/'),
+  openrouter('OpenRouter', 'OpenRouter', 'openrouter.ai', 'https://openrouter.ai/settings/keys', 'sk-or-', 'https://openrouter.ai/settings/credits');
 
-  const AiProvider(this.company, this.host, this.keysUrl, this.keyPrefix, this.billingUrl);
+  const AiProvider(this.company, this.family, this.host, this.keysUrl, this.keyPrefix, this.billingUrl);
   final String company;
+
+  /// The name its models go by (Claude, GPT, Gemini, Grok, Muse).
+  final String family;
 
   /// The only host this provider's key is ever sent to.
   final String host;
@@ -27,19 +37,31 @@ enum AiProvider {
   /// Where the user creates a key.
   final String keysUrl;
 
-  /// How the provider's keys usually start (a hint, never enforced).
+  /// How the provider's keys usually start (a hint, never enforced; empty
+  /// when its keys have no fixed start).
   final String keyPrefix;
 
   /// Where the account's credit and spending limits are managed.
   final String billingUrl;
+
+  /// The provider whose keys start as [key] does, by the longest known start
+  /// (`sk-ant-` and `sk-or-` before `sk-`); null when none does.
+  static AiProvider? ofKey(String key) {
+    AiProvider? best;
+    for (final p in values) {
+      if (p.keyPrefix.isEmpty || !key.startsWith(p.keyPrefix)) continue;
+      if (best == null || p.keyPrefix.length > best.keyPrefix.length) best = p;
+    }
+    return best;
+  }
 }
 
 /// Place of a model in its provider's range.
 enum AiTier { top, intermediate, fast }
 
 /// How much the model reasons before answering (Anthropic
-/// `output_config.effort`, every Claude model taking all five; OpenAI
-/// `reasoning.effort`, whose top value is `xhigh`, so [max] goes as that).
+/// `output_config.effort` and OpenAI `reasoning.effort`, which take all
+/// five; the other providers take some of them, see [AiModel.efforts]).
 enum AiEffort { low, medium, high, xhigh, max }
 
 /// A model the user can choose. Prices are list prices in US$ per million
@@ -69,6 +91,13 @@ class AiModel {
     this.progressUpdates = false,
     this.highResVision = false,
     this.perMessageEffort = false,
+    this.efforts = AiEffort.values,
+    this.freeTier = false,
+    this.introUntil = 0,
+    this.introFactor = 1,
+    this.vision = true,
+    this.tools = true,
+    this.priced = true,
   });
 
   final AiProvider provider;
@@ -76,6 +105,51 @@ class AiModel {
   final String label;
   final AiTier tier;
   final double input, output, cacheRead, cacheWrite;
+
+  /// The efforts the model takes; another one goes as the nearest it does
+  /// ([effortFor]).
+  final List<AiEffort> efforts;
+
+  /// The provider serves it free of charge within limits of its own (the
+  /// prices here are those of its paid use).
+  final bool freeTier;
+
+  /// An introductory price: until the day [introUntil] (a date as the number
+  /// yyyymmdd, UTC; 0: none) every price is [introFactor] × the one here.
+  final int introUntil;
+  final double introFactor;
+
+  /// Reads pictures (the views of the drawing and the map).
+  final bool vision;
+
+  /// Calls tools (without them the assistant can only talk).
+  final bool tools;
+
+  /// The prices are known (false: a router that picks the model, billed at
+  /// that model's prices; the meter then shows no cost for it).
+  final bool priced;
+
+  /// The clock of the introductory prices (tests set it).
+  static DateTime Function() clock = DateTime.now;
+
+  /// What the prices are multiplied by today ([introFactor] while the
+  /// introductory price lasts).
+  double get priceFactor {
+    if (introUntil <= 0) return 1;
+    final d = clock().toUtc();
+    return d.year * 10000 + d.month * 100 + d.day < introUntil ? introFactor : 1;
+  }
+
+  /// The day the introductory price ends, or null when there is none now.
+  DateTime? get introEnds => priceFactor == 1 ? null : DateTime.utc(introUntil ~/ 10000, introUntil ~/ 100 % 100, introUntil % 100);
+
+  /// [e], or the nearest effort the model takes: the highest one below it,
+  /// else the lowest it has.
+  AiEffort effortFor(AiEffort e) {
+    if (efforts.isEmpty || efforts.contains(e)) return e;
+    final below = efforts.where((x) => x.index < e.index);
+    return below.isNotEmpty ? below.reduce((a, b) => a.index > b.index ? a : b) : efforts.reduce((a, b) => a.index < b.index ? a : b);
+  }
 
   /// Prompts above [longAbove] input tokens bill input and cache at
   /// [longInput] × and output at [longOutput] × (0: no such rule).
@@ -144,21 +218,21 @@ class AiModel {
   }
 
   // Anthropic (Claude API list prices; cache writes 1.25 × input for the
-  // five-minute cache, 2 × for the one-hour cache). Task budgets are left off
-  // Claude Fable 5.1 until Anthropic confirms them for it.
-  static const fable51 = AiModel(
+  // five-minute cache, 2 × for the one-hour cache).
+  static const fable52 = AiModel(
     AiProvider.anthropic,
-    'claude-fable-5-1',
-    'Claude Fable 5.1',
+    'claude-fable-5-2',
+    'Claude Fable 5.2',
     AiTier.top,
-    input: 10,
-    output: 50,
-    cacheRead: 0.25,
-    cacheWrite: 12.5,
+    input: 8,
+    output: 40,
+    cacheRead: 0.2,
+    cacheWrite: 10,
     serverFallback: true,
     alwaysThinks: true,
     longTurns: true,
     needsRetention: true,
+    taskBudget: true,
     maxOutput: 128000,
     perMessageEffort: true,
     progressUpdates: true,
@@ -187,7 +261,7 @@ class AiModel {
     AiTier.intermediate,
     input: 2,
     output: 10,
-    cacheRead: 0.2,
+    cacheRead: 0.1,
     cacheWrite: 2.5,
     serverFallback: true,
     taskBudget: true,
@@ -211,9 +285,14 @@ class AiModel {
     taskBudget: true,
     maxOutput: 128000,
     perMessageEffort: true,
+    highResVision: true,
   );
 
-  // Models a refused request may fall back to on the server (priced only).
+  // Claude models that are priced only: the one Claude Fable 5.2 replaced
+  // (a choice or a conversation of it goes on with Claude Fable 5.2, which
+  // reads its thinking) and those a refused request may fall back to on the
+  // server.
+  static const _fable51 = AiModel(AiProvider.anthropic, 'claude-fable-5-1', 'Claude Fable 5.1', AiTier.top, input: 10, output: 50, cacheRead: 0.25, cacheWrite: 12.5, listed: false);
   static const _opus5 = AiModel(AiProvider.anthropic, 'claude-opus-5', 'Claude Opus 5', AiTier.top, input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25, listed: false);
   static const _opus48 = AiModel(AiProvider.anthropic, 'claude-opus-4-8', 'Claude Opus 4.8', AiTier.top, input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25, listed: false);
 
@@ -232,6 +311,7 @@ class AiModel {
     longInput: 2,
     longOutput: 1.5,
     longTurns: true,
+    maxOutput: 128000,
   );
   static const gpt61Sol = AiModel(
     AiProvider.openai,
@@ -245,6 +325,21 @@ class AiModel {
     longAbove: 272000,
     longInput: 2,
     longOutput: 1.5,
+    maxOutput: 128000,
+  );
+  static const gpt61Terra = AiModel(
+    AiProvider.openai,
+    'gpt-6.1-terra',
+    'GPT-6.1 Terra',
+    AiTier.fast,
+    input: 1,
+    output: 5,
+    cacheRead: 0.05,
+    cacheWrite: 1.25,
+    longAbove: 272000,
+    longInput: 2,
+    longOutput: 1.5,
+    maxOutput: 128000,
   );
   static const gpt6Luna = AiModel(
     AiProvider.openai,
@@ -258,6 +353,7 @@ class AiModel {
     longAbove: 272000,
     longInput: 2,
     longOutput: 1.5,
+    maxOutput: 128000,
   );
   static const gpt6Sol = AiModel(
     AiProvider.openai,
@@ -272,6 +368,7 @@ class AiModel {
     longInput: 2,
     longOutput: 1.5,
     earlier: true,
+    maxOutput: 128000,
   );
   static const gpt56Terra = AiModel(
     AiProvider.openai,
@@ -286,18 +383,363 @@ class AiModel {
     longInput: 2,
     longOutput: 1.5,
     earlier: true,
+    maxOutput: 128000,
+  );
+
+  // Google (Gemini API pricing page, paid tier; caching is implicit, so a
+  // prompt written to the cache pays the input price). Gemini 4 Argon and
+  // Gemini 3.8 Flash cost half of these prices until the dates below; the
+  // two Flash models have a free tier with limits, on which Google may use
+  // the content to improve its products.
+  static const gemini4Argon = AiModel(
+    AiProvider.google,
+    'gemini-4-argon',
+    'Gemini 4 Argon',
+    AiTier.top,
+    input: 4,
+    output: 20,
+    cacheRead: 0.2,
+    cacheWrite: 4,
+    introUntil: 20261201,
+    introFactor: 0.5,
+    longTurns: true,
+    maxOutput: 65536,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+  );
+  static const gemini38Flash = AiModel(
+    AiProvider.google,
+    'gemini-3.8-flash',
+    'Gemini 3.8 Flash',
+    AiTier.intermediate,
+    input: 1.5,
+    output: 7.5,
+    cacheRead: 0.15,
+    cacheWrite: 1.5,
+    introUntil: 20270101,
+    introFactor: 0.5,
+    freeTier: true,
+    maxOutput: 65536,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+  );
+  static const gemini35FlashLite = AiModel(
+    AiProvider.google,
+    'gemini-3.5-flash-lite',
+    'Gemini 3.5 Flash-Lite',
+    AiTier.fast,
+    input: 0.3,
+    output: 2.5,
+    cacheRead: 0.03,
+    cacheWrite: 0.3,
+    freeTier: true,
+    maxOutput: 65536,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+  );
+
+  // xAI (docs.x.ai models page; a prompt of 200K tokens or more pays twice
+  // these prices; caching is automatic, with no price for the writing).
+  static const grok47 = AiModel(
+    AiProvider.xai,
+    'grok-4.7',
+    'Grok 4.7',
+    AiTier.top,
+    input: 2,
+    output: 6,
+    cacheRead: 0.5,
+    cacheWrite: 2,
+    longAbove: 200000,
+    longInput: 2,
+    longOutput: 2,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high, AiEffort.xhigh],
+  );
+  static const grok43 = AiModel(
+    AiProvider.xai,
+    'grok-4.3',
+    'Grok 4.3',
+    AiTier.fast,
+    input: 1.25,
+    output: 2.5,
+    cacheRead: 0.2,
+    cacheWrite: 1.25,
+    longAbove: 200000,
+    longInput: 2,
+    longOutput: 2,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+  );
+
+  // Meta (Meta Model API pricing page, Standard mode: the content is not
+  // used to train models; caching is automatic). Muse Ember costs three
+  // times these prices when the request has more than 200K input tokens.
+  static const museWonder = AiModel(AiProvider.meta, 'muse-wonder-1.0', 'Muse Wonder', AiTier.top, input: 4, output: 20, cacheRead: 0.2, cacheWrite: 4, longTurns: true, compaction: false);
+  static const museSpark = AiModel(AiProvider.meta, 'muse-spark-1.3', 'Muse Spark 1.3', AiTier.intermediate, input: 1.25, output: 4.25, cacheRead: 0.15, cacheWrite: 1.25, compaction: false);
+  static const museEmber = AiModel(
+    AiProvider.meta,
+    'muse-ember-1.0',
+    'Muse Ember',
+    AiTier.fast,
+    input: 0.1,
+    output: 0.5,
+    cacheRead: 0.004,
+    cacheWrite: 0.1,
+    longAbove: 200000,
+    longInput: 3,
+    longOutput: 3,
+    compaction: false,
+  );
+
+  // OpenRouter (its models list, `GET /api/v1/models`: the prices of the
+  // models' makers, charged to the OpenRouter account). These are the ones
+  // offered before the list is downloaded; any other model of the list that
+  // calls tools can be added ([register]). The two routers pick a model
+  // themselves and are billed at that model's prices.
+  static const orFable52 = AiModel(
+    AiProvider.openrouter,
+    'anthropic/claude-fable-5.2',
+    'Claude Fable 5.2 (OpenRouter)',
+    AiTier.top,
+    input: 8,
+    output: 40,
+    cacheRead: 0.2,
+    cacheWrite: 10,
+    longTurns: true,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orOpus55 = AiModel(
+    AiProvider.openrouter,
+    'anthropic/claude-opus-5.5',
+    'Claude Opus 5.5 (OpenRouter)',
+    AiTier.top,
+    input: 4,
+    output: 20,
+    cacheRead: 0.2,
+    cacheWrite: 5,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orSonnet55 = AiModel(
+    AiProvider.openrouter,
+    'anthropic/claude-sonnet-5.5',
+    'Claude Sonnet 5.5 (OpenRouter)',
+    AiTier.intermediate,
+    input: 2,
+    output: 10,
+    cacheRead: 0.1,
+    cacheWrite: 2.5,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orHaiku55 = AiModel(
+    AiProvider.openrouter,
+    'anthropic/claude-haiku-5.5',
+    'Claude Haiku 5.5 (OpenRouter)',
+    AiTier.fast,
+    input: 0.1,
+    output: 0.5,
+    cacheRead: 0.01,
+    cacheWrite: 0.125,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orGpt6Astra = AiModel(
+    AiProvider.openrouter,
+    'openai/gpt-6-astra',
+    'GPT-6 Astra (OpenRouter)',
+    AiTier.top,
+    input: 10,
+    output: 50,
+    cacheRead: 1,
+    cacheWrite: 12.5,
+    longTurns: true,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orGpt61Sol = AiModel(
+    AiProvider.openrouter,
+    'openai/gpt-6.1-sol',
+    'GPT-6.1 Sol (OpenRouter)',
+    AiTier.intermediate,
+    input: 2,
+    output: 10,
+    cacheRead: 0.1,
+    cacheWrite: 2.5,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orGpt61Terra = AiModel(
+    AiProvider.openrouter,
+    'openai/gpt-6.1-terra',
+    'GPT-6.1 Terra (OpenRouter)',
+    AiTier.fast,
+    input: 1,
+    output: 5,
+    cacheRead: 0.05,
+    cacheWrite: 1.25,
+    maxOutput: 128000,
+    compaction: false,
+  );
+  static const orGemini4Argon = AiModel(
+    AiProvider.openrouter,
+    'google/gemini-4-argon',
+    'Gemini 4 Argon (OpenRouter)',
+    AiTier.top,
+    input: 4,
+    output: 20,
+    cacheRead: 0.2,
+    cacheWrite: 4,
+    introUntil: 20261201,
+    introFactor: 0.5,
+    longTurns: true,
+    maxOutput: 65536,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+  );
+  static const orGemini38Flash = AiModel(
+    AiProvider.openrouter,
+    'google/gemini-3.8-flash',
+    'Gemini 3.8 Flash (OpenRouter)',
+    AiTier.intermediate,
+    input: 1.65,
+    output: 8.25,
+    cacheRead: 0.165,
+    cacheWrite: 1.65,
+    introUntil: 20270101,
+    introFactor: 0.5,
+    maxOutput: 65536,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high],
+  );
+  static const orGrok47 = AiModel(
+    AiProvider.openrouter,
+    'x-ai/grok-4.7',
+    'Grok 4.7 (OpenRouter)',
+    AiTier.top,
+    input: 2,
+    output: 6,
+    cacheRead: 0.5,
+    cacheWrite: 2,
+    longAbove: 200000,
+    longInput: 2,
+    longOutput: 2,
+    compaction: false,
+    efforts: [AiEffort.low, AiEffort.medium, AiEffort.high, AiEffort.xhigh],
+  );
+  static const orMuseSpark = AiModel(
+    AiProvider.openrouter,
+    'meta/muse-spark-1.3',
+    'Muse Spark 1.3 (OpenRouter)',
+    AiTier.intermediate,
+    input: 1.25,
+    output: 4.25,
+    cacheRead: 0.15,
+    cacheWrite: 1.25,
+    compaction: false,
+  );
+  static const orAuto = AiModel(
+    AiProvider.openrouter,
+    'openrouter/auto',
+    'Auto Router (OpenRouter)',
+    AiTier.intermediate,
+    input: 0,
+    output: 0,
+    cacheRead: 0,
+    cacheWrite: 0,
+    compaction: false,
+    priced: false,
+  );
+  static const orFree = AiModel(
+    AiProvider.openrouter,
+    'openrouter/free',
+    'Free Models Router (OpenRouter)',
+    AiTier.fast,
+    input: 0,
+    output: 0,
+    cacheRead: 0,
+    cacheWrite: 0,
+    compaction: false,
+    freeTier: true,
   );
 
   /// The models offered, by provider and tier.
-  static const all = [fable51, opus55, sonnet55, haiku55, gpt6Astra, gpt61Sol, gpt6Luna, gpt6Sol, gpt56Terra];
+  static const all = [
+    fable52,
+    opus55,
+    sonnet55,
+    haiku55,
+    gpt6Astra,
+    gpt61Sol,
+    gpt61Terra,
+    gpt6Luna,
+    gpt6Sol,
+    gpt56Terra,
+    gemini4Argon,
+    gemini38Flash,
+    gemini35FlashLite,
+    grok47,
+    grok43,
+    museWonder,
+    museSpark,
+    museEmber,
+    orFable52,
+    orOpus55,
+    orSonnet55,
+    orHaiku55,
+    orGpt6Astra,
+    orGpt61Sol,
+    orGpt61Terra,
+    orGemini4Argon,
+    orGemini38Flash,
+    orGrok47,
+    orMuseSpark,
+    orAuto,
+    orFree,
+  ];
 
   /// The model used until the user picks another.
   static const standard = opus55;
 
-  static AiModel byId(String? id) => all.firstWhere((m) => m.id == id, orElse: () => standard);
+  /// Models added while the app runs (those the user picked from a
+  /// provider's own list, OpenRouter's above all): found by [byId] and
+  /// [served], and offered after the provider's fixed ones.
+  static final List<AiModel> _registered = [];
 
-  /// The model a reply says served it (a fallback may), else [requested].
-  static AiModel served(String replyModel, AiModel requested) => [...all, _opus5, _opus48].where((m) => replyModel == m.id || replyModel.startsWith('${m.id}-')).firstOrNull ?? requested;
+  /// The models added with [register], in the order they were.
+  static List<AiModel> get registered => List.unmodifiable(_registered);
+
+  /// Adds [m] to the models offered (replacing an earlier one of the same
+  /// id; a model of the fixed list is left as it is).
+  static void register(AiModel m) {
+    if (all.any((x) => x.id == m.id)) return;
+    _registered
+      ..removeWhere((x) => x.id == m.id)
+      ..add(m);
+  }
+
+  /// Forgets the model [id] added with [register] (every one when null).
+  static void unregister([String? id]) => id == null ? _registered.clear() : _registered.removeWhere((x) => x.id == id);
+
+  /// The models of [p] offered for choosing: the fixed ones, then those
+  /// added with [register].
+  static List<AiModel> offered(AiProvider p) => [...all.where((m) => m.provider == p && m.listed), ..._registered.where((m) => m.provider == p)];
+
+  /// The model a choice of an earlier version stands for now.
+  static const _successors = {'claude-fable-5-1': fable52};
+
+  /// The model of [id] (a fixed one, one added with [register], or the
+  /// successor of one no longer offered); [standard] for an unknown id.
+  static AiModel byId(String? id) => find(id) ?? standard;
+
+  /// As [byId], but null for an unknown id.
+  static AiModel? find(String? id) => all.where((m) => m.id == id).firstOrNull ?? _registered.where((m) => m.id == id).firstOrNull ?? _successors[id];
+
+  /// The model a reply says served it (a fallback may, and a router's
+  /// choice), else [requested].
+  static AiModel served(String replyModel, AiModel requested) =>
+      [...all, ..._registered, _fable51, _opus5, _opus48].where((m) => replyModel == m.id || replyModel.startsWith('${m.id}-')).firstOrNull ?? requested;
 
   /// The task budget (tokens) for a spending cap of [usd] US\$. The model
   /// paces what it writes against the budget (thinking, tool calls, text:
@@ -311,8 +753,8 @@ class AiModel {
   /// minimum (20 000).
   int taskBudgetFor(double usd, {double outputShare = 0.5}) => (usd * outputShare / output * 1e6).round();
 
-  /// Price per million tokens of input and output, for the settings.
-  String get priceText => '${_usd(input)} / ${_usd(output)}';
+  /// Price per million tokens of input and output today, for the settings.
+  String get priceText => '${_usd(input * priceFactor)} / ${_usd(output * priceFactor)}';
   static String _usd(double v) => v < 1 ? v.toStringAsFixed(v < 0.1 ? 3 : 2).replaceFirst(RegExp(r'0$'), '') : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2));
 
   @override
@@ -343,7 +785,7 @@ class AiUsage {
   double cost(AiModel m) {
     final long = m.longAbove > 0 && totalInput > m.longAbove;
     final fi = long ? m.longInput : 1.0, fo = long ? m.longOutput : 1.0;
-    return ((input * m.input + cacheWrite * m.cacheWrite + cacheWriteHour * m.cacheWriteHour + cacheRead * m.cacheRead) * fi + output * m.output * fo) / 1e6;
+    return ((input * m.input + cacheWrite * m.cacheWrite + cacheWriteHour * m.cacheWriteHour + cacheRead * m.cacheRead) * fi + output * m.output * fo) * m.priceFactor / 1e6;
   }
 }
 

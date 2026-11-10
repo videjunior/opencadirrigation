@@ -418,7 +418,7 @@ void main() {
       expect(c.idleTimeout(AiModel.opus55), const Duration(seconds: 180));
       expect(c.idleTimeout(AiModel.opus55, AiEffort.high), const Duration(seconds: 180));
       expect(c.idleTimeout(AiModel.opus55, AiEffort.xhigh), const Duration(seconds: 360));
-      expect(c.idleTimeout(AiModel.fable51, AiEffort.max), const Duration(seconds: 1200));
+      expect(c.idleTimeout(AiModel.fable52, AiEffort.max), const Duration(seconds: 1200));
       expect(AiError(AiErrorKind.timeout).retryable, isTrue);
       expect(AiError(AiErrorKind.interrupted).retryable, isTrue);
       expect(AiError(AiErrorKind.credit).retryable, isFalse);
@@ -446,7 +446,7 @@ void main() {
 
   group('the request', () {
     test('every Claude model asks for its whole output limit (128 000, streamed); OpenAI keeps its own', () async {
-      for (final m in [AiModel.fable51, AiModel.opus55, AiModel.sonnet55, AiModel.haiku55]) {
+      for (final m in [AiModel.fable52, AiModel.opus55, AiModel.sonnet55, AiModel.haiku55]) {
         final s = Script([
           (_, _) => sse(message([textBlock('ok')], model: m.id)),
         ]);
@@ -465,7 +465,7 @@ void main() {
         cancel: AiCancel(),
       );
       expect(asked.bodies.single['max_tokens'], 4096);
-      expect(AiModel.gpt6Astra.maxOutput, 64000);
+      expect(AiModel.gpt6Astra.maxOutput, 128000);
     });
 
     test('UTF-8 size without encoding, and the size check before sending', () {
@@ -479,7 +479,7 @@ void main() {
       );
     });
 
-    test('OpenAI: "maximum" effort goes as xhigh, its top value; the others as they are', () async {
+    test('OpenAI: every effort goes as it is, "maximum" included', () async {
       for (final e in AiEffort.values) {
         final f = FakeOpenAi([(_) => OpenAiReply.text('ok')]);
         await OpenAiClient(apiKey: 'sk-proj-test-0000', transport: f.call).send(
@@ -493,14 +493,14 @@ void main() {
           ),
           cancel: AiCancel(),
         );
-        expect((f.bodies.single['reasoning'] as Map)['effort'], e == AiEffort.max ? 'xhigh' : e.name);
+        expect((f.bodies.single['reasoning'] as Map)['effort'], e.name);
       }
     });
 
     test('the task budget for a spending cap: half the cap at the output price', () {
       expect(AiModel.opus55.taskBudgetFor(2), 50000);
       expect(AiModel.haiku55.taskBudgetFor(1), 1000000);
-      expect(AiModel.fable51.taskBudgetFor(5, outputShare: 1), 100000);
+      expect(AiModel.fable52.taskBudgetFor(5, outputShare: 1), 125000);
     });
   });
 
@@ -722,8 +722,8 @@ void main() {
   });
 
   group('the model\'s notes between tool calls', () {
-    test('Claude Opus 5.5, Sonnet 5.5 and Fable 5.1 ask for them; Haiku 5.5 does not', () async {
-      for (final m in [AiModel.opus55, AiModel.sonnet55, AiModel.fable51, AiModel.haiku55]) {
+    test('Claude Opus 5.5, Sonnet 5.5 and Fable 5.2 ask for them; Haiku 5.5 does not', () async {
+      for (final m in [AiModel.opus55, AiModel.sonnet55, AiModel.fable52, AiModel.haiku55]) {
         final s = Script([
           (_, _) => sse(message([textBlock('ok')], model: m.id)),
         ]);
@@ -741,7 +741,7 @@ void main() {
     test('turned down (the value or the beta), the request goes again without them, as before', () async {
       for (final (m, why) in [
         (AiModel.opus55, "thinking.display: Input should be 'summarized' or 'omitted'"),
-        (AiModel.fable51, 'Unexpected value(s) `thinking-display-updates-2026-08-18` for the `anthropic-beta` header.'),
+        (AiModel.fable52, 'Unexpected value(s) `thinking-display-updates-2026-08-18` for the `anthropic-beta` header.'),
       ]) {
         final s = Script([
           (_, _) => apiError(400, 'invalid_request_error', why),
@@ -756,7 +756,7 @@ void main() {
         expect(s.bodies[1]['thinking'], {
           'type': 'adaptive',
           'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
-        }, reason: 'Claude Fable 5.1 keeps an explicit adaptive setting for the binding only');
+        }, reason: 'Claude Fable 5.2 keeps an explicit adaptive setting for the binding only');
         expect((s.requests[1].headers['anthropic-beta'] ?? '').contains('thinking-display'), isFalse);
         expect(AiHttpClient.declined, contains('${m.id}:display'));
       }

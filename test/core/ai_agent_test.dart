@@ -95,34 +95,38 @@ void main() {
     expect(r.usage.output, 50);
   });
 
-  test('Claude Fable 5.1: adaptive thinking only (always on) with its notes as text, every effort level, the refusal fallback, no task budget', () async {
+  test('Claude Fable 5.2: adaptive thinking only (always on) with its notes as text, every effort level, the refusal fallback, the task budget', () async {
     for (final e in AiEffort.values) {
-      final f = FakeClaude([(_) => FakeReply.text('ok', model: 'claude-fable-5-1')]);
+      final f = FakeClaude([(_) => FakeReply.text('ok', model: 'claude-fable-5-2')]);
       await api(f).send(
-        AiRequest(model: AiModel.fable51, system: 's', history: [user('q')], effort: e, taskBudget: 100000, compactAt: 150000),
+        AiRequest(model: AiModel.fable52, system: 's', history: [user('q')], effort: e, taskBudget: 100000, compactAt: 150000),
         cancel: AiCancel(),
       );
       final b = f.bodies.single;
-      expect(b['model'], 'claude-fable-5-1');
+      expect(b['model'], 'claude-fable-5-2');
       expect(b['thinking'], {
         'type': 'adaptive',
         'display': 'updates',
         'block_binding': {'prefix_mismatch_behavior': 'drop_block'},
-      }, reason: 'adaptive (or nothing) is all Claude Fable 5.1 takes; display "updates" returns its notes');
+      }, reason: 'adaptive (or nothing) is all Claude Fable 5.2 takes; display "updates" returns its notes');
       expect(b['max_tokens'], 128000);
-      expect(b['output_config'], {'effort': e.name});
+      expect(b['output_config'], {
+        'effort': e.name,
+        'task_budget': {'type': 'tokens', 'total': 100000},
+      });
       expect(b['fallbacks'], 'default');
       expect(b.containsKey('tool_choice'), isFalse);
       expect(
         f.requests.single.headers['anthropic-beta'],
-        'server-side-fallback-2026-07-01,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01',
+        'server-side-fallback-2026-07-01,task-budgets-2026-03-13,context-management-2025-06-27,compact-2026-01-12,thinking-display-updates-2026-08-18,thinking-binding-controls-2026-08-01',
       );
     }
-    expect(AiModel.fable51.input, 10);
-    expect(AiModel.fable51.output, 50);
-    expect(AiModel.fable51.cacheRead, 0.25);
-    expect(AiModel.fable51.needsRetention, isTrue);
-    expect(AiModel.fable51.tier, AiTier.top);
+    expect(AiModel.fable52.input, 8);
+    expect(AiModel.fable52.output, 40);
+    expect(AiModel.fable52.cacheRead, 0.2);
+    expect(AiModel.fable52.cacheWrite, 10);
+    expect(AiModel.fable52.needsRetention, isTrue);
+    expect(AiModel.fable52.tier, AiTier.top);
   });
 
   test('a task budget and compaction where the model takes them; Haiku takes no fallback; desktop requests carry no browser header', () async {
@@ -589,12 +593,12 @@ void main() {
     );
   });
 
-  test('Claude Fable 5.1 asked from an organisation without data retention is explained as such', () async {
+  test('Claude Fable 5.2 asked from an organisation without data retention is explained as such', () async {
     const msg = 'In order to access this model, your organization or workspace must have data retention enabled.';
     final f = FakeClaude([(_) => FakeReply.error(400, 'invalid_request_error', msg), (_) => FakeReply.error(400, 'invalid_request_error', msg)]);
     await expectLater(
       api(f).send(
-        AiRequest(model: AiModel.fable51, system: 's', history: [user('q')]),
+        AiRequest(model: AiModel.fable52, system: 's', history: [user('q')]),
         cancel: AiCancel(),
       ),
       throwsA(isA<AiError>().having((e) => e.kind, 'kind', AiErrorKind.retention)),
@@ -630,7 +634,7 @@ void main() {
 
   test('an answer served by a fallback model is priced at that model', () async {
     final f = FakeClaude([(_) => FakeReply.text('ok', model: 'claude-opus-5')]);
-    final turn = await AgentLoop(api: api(f), tools: const []).run(model: AiModel.fable51, system: 's', history: const [], user: user('q'), cancel: AiCancel());
+    final turn = await AgentLoop(api: api(f), tools: const []).run(model: AiModel.fable52, system: 's', history: const [], user: user('q'), cancel: AiCancel());
     // 1000 in, 200 written, 300 read, 50 out at Claude Opus 5 prices
     expect(turn.cost, closeTo((1000 * 5 + 200 * 6.25 + 300 * 0.5 + 50 * 25) / 1e6, 1e-12));
   });
@@ -662,7 +666,15 @@ void main() {
     expect(AiModel.byId('claude-sonnet-5-5'), AiModel.sonnet55);
     expect(AiModel.byId('gone'), AiModel.opus55, reason: 'Claude Opus 5.5 is the default');
     expect(AiModel.all.where((m) => m.provider == AiProvider.anthropic).map((m) => m.tier), [AiTier.top, AiTier.top, AiTier.intermediate, AiTier.fast]);
-    expect(AiModel.all.where((m) => m.provider == AiProvider.openai).map((m) => m.id), ['gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna', 'gpt-6-sol', 'gpt-5.6-terra']);
+    expect(AiModel.all.where((m) => m.provider == AiProvider.openai).map((m) => m.id), ['gpt-6-astra', 'gpt-6.1-sol', 'gpt-6.1-terra', 'gpt-6-luna', 'gpt-6-sol', 'gpt-5.6-terra']);
+    expect(
+      const AiUsage(input: 1000000, output: 1000000, cacheRead: 1000000, cacheWrite: 1000000, cacheWriteHour: 1000000).cost(AiModel.fable52),
+      8 + 40 + 0.2 + 10 + 16,
+      reason: 'Claude Fable 5.2 list prices',
+    );
+    expect(const AiUsage(cacheRead: 1000000).cost(AiModel.sonnet55), closeTo(0.1, 1e-12), reason: 'cache reads of Claude Sonnet 5.5 cost 5 % of the input');
+    expect(AiModel.byId('claude-fable-5-1'), AiModel.fable52, reason: 'a choice of the model it replaced goes on with Claude Fable 5.2');
+    expect(AiModel.served('claude-fable-5-1', AiModel.opus55).input, 10, reason: 'an answer the earlier model served is priced as that model');
   });
 
   test('schemaProblem checks nested items, enums and required fields', () {

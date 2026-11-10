@@ -127,11 +127,16 @@ void main() {
     ]);
   }
 
-  testWidgets('pictures follow the model: up to 2000 px and 3.6 megapixels on Claude\'s high-resolution models, 1568 px otherwise', (tester) async {
+  testWidgets('pictures follow the model: up to 2576 px and 3.6 megapixels on Claude\'s high-resolution models, 1568 px otherwise', (tester) async {
     expect(PictureLimits.of(AiModel.opus55), PictureLimits.high);
     expect(PictureLimits.of(AiModel.sonnet55), PictureLimits.high);
-    expect(PictureLimits.of(AiModel.fable51), PictureLimits.high);
-    expect(PictureLimits.of(AiModel.haiku55), PictureLimits.standard);
+    expect(PictureLimits.of(AiModel.fable52), PictureLimits.high);
+    expect(PictureLimits.of(AiModel.haiku55), PictureLimits.high, reason: 'every Claude model from Opus 4.7 on reads the high resolution');
+    expect(PictureLimits.of(AiModel.orOpus55), PictureLimits.high, reason: 'the same model through OpenRouter');
+    expect(PictureLimits.of(AiModel.orGpt61Sol), PictureLimits.openai);
+    expect(PictureLimits.of(AiModel.gemini38Flash), PictureLimits.standard);
+    expect(PictureLimits.of(AiModel.grok47), PictureLimits.standard);
+    expect(PictureLimits.of(AiModel.museSpark), PictureLimits.standard);
     expect(PictureLimits.of(AiModel.gpt6Astra), PictureLimits.openai);
     expect(PictureLimits.of(AiModel.gpt61Sol), PictureLimits.openai);
     box = AgentToolbox(
@@ -140,7 +145,7 @@ void main() {
       pictures: PictureLimits.high,
     );
     final size = ((tool('view_snapshot').inputSchema['properties'] as Map)['size'] as Map)['description'] as String;
-    expect(size, contains('256–2000'));
+    expect(size, contains('256–2576'));
     final wide = await run(tester, 'view_snapshot', {
       'region': 'bbox',
       'bbox': [0, 0, 200, 100],

@@ -75,7 +75,7 @@ void main() {
     expect(b['stream'], isTrue);
     expect(b['store'], isFalse);
     expect(b['include'], ['reasoning.encrypted_content']);
-    expect(b['max_output_tokens'], 64000);
+    expect(b['max_output_tokens'], 128000);
     expect(b['context_management'], [
       {'type': 'compaction', 'compact_threshold': 200000},
     ]);
@@ -287,6 +287,8 @@ void main() {
     expect(AiModel.gpt6Astra.tier, AiTier.top);
     expect(AiModel.gpt61Sol.tier, AiTier.intermediate);
     expect(AiModel.gpt6Luna.tier, AiTier.fast);
+    expect(AiModel.gpt61Terra.tier, AiTier.fast);
+    expect([AiModel.gpt61Terra.input, AiModel.gpt61Terra.cacheRead, AiModel.gpt61Terra.cacheWrite, AiModel.gpt61Terra.output], [1, 0.05, 1.25, 5]);
     expect([AiModel.gpt6Astra.input, AiModel.gpt6Astra.cacheRead, AiModel.gpt6Astra.cacheWrite, AiModel.gpt6Astra.output], [10, 1, 12.5, 50]);
     expect([AiModel.gpt61Sol.input, AiModel.gpt61Sol.cacheRead, AiModel.gpt61Sol.cacheWrite, AiModel.gpt61Sol.output], [2, 0.1, 2.5, 10]);
     expect([AiModel.gpt6Luna.input, AiModel.gpt6Luna.cacheRead, AiModel.gpt6Luna.cacheWrite, AiModel.gpt6Luna.output], [0.1, 0.01, 0.125, 0.5]);
