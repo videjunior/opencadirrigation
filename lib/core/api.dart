@@ -74,6 +74,8 @@ export 'design/pivot.dart';
 export 'design/pivot_electrical.dart';
 export 'design/pivot_fit.dart';
 export 'design/pivot_package.dart';
+export 'design/programme_calendar.dart'; // 1.7.0 PLY
+export 'design/programme_playback.dart'; // 1.7.0 PLY
 export 'design/proposal.dart';
 export 'design/pump_selection.dart';
 export 'design/region_trace.dart';
@@ -133,8 +135,10 @@ export 'io/geo.dart';
 export 'io/geo_export.dart';
 export 'io/geoimage.dart';
 export 'io/geojson_reader.dart';
+export 'io/gif_animation.dart'; // 1.7.0 PLY
 export 'io/gpx.dart';
 export 'io/icc_srgb.dart';
+export 'io/ics.dart'; // 1.7.0 PLY
 export 'io/ifc.dart';
 export 'io/image_decode.dart';
 export 'io/import_async.dart';

@@ -49,6 +49,7 @@ import 'op_parts/eng.dart';
 import 'op_parts/prd.dart';
 import 'op_parts/prb.dart';
 import 'op_parts/scr.dart'; // 1.7.0 SCR
+import 'op_parts/ply.dart';
 import 'view_snapshot.dart';
 import 'vision_marks.dart' show ChangeTracker;
 
@@ -125,6 +126,7 @@ class AgentToolbox {
     ...opsPrd(this),
     ...opsPrb(this),
     ...opsScr(this), // 1.7.0 SCR
+    ...opsPly(this),
   ];
 
   ContextSource source() => ContextSource(

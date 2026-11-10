@@ -28,6 +28,7 @@ import 'cad_plus_menus.dart';
 import 'command_entry.dart';
 import 'ai/ai_panel.dart';
 import 'dialogs/agronomy_dialogs.dart';
+import 'dialogs/programme_player_dialogs.dart'; // 1.7.0 PLY
 // 1.6.0 AGB
 import 'dialogs/agb_dialogs.dart';
 import 'dialogs/field_machine_dialogs.dart';
@@ -519,6 +520,7 @@ class _MobileShellState extends State<MobileShell> {
             // 1.6.0 AGR
             row(t('swb.menu'), () => showWaterBalanceDialog(context, c), icon: Icons.water_drop_outlined, key: const Key('mobile_menu_water_balance')),
             row(t('prog.menu'), () => showIrrigationProgrammeDialog(context, c), icon: Icons.event_repeat, key: const Key('mobile_menu_programme')),
+            row(t('ply.menu'), () => showProgrammePlayer(context, c), icon: Icons.play_circle_outline, key: const Key('mobile_menu_programme_player')),
             row(t('ro.menu'), () => showRunoffPotentialDialog(context, c), icon: Icons.waves, key: const Key('mobile_menu_runoff')),
             row(t('fst.menu'), () => showFertigationStagesDialog(context, c), icon: Icons.science_outlined, key: const Key('mobile_menu_fert_stages')),
             row(t('ft.menu'), () => showFieldUniformityDialog(context, c), icon: Icons.grid_on, key: const Key('mobile_menu_field_uniformity')),

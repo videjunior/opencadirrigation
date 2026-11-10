@@ -17,6 +17,7 @@ import '../tools/edit_commands.dart';
 import '../tools/tools.dart';
 import 'basemap.dart';
 import 'painter.dart';
+import 'playback_overlay.dart' show ProgrammePlayerOf;
 import 'scene_cache.dart';
 import 'snapping.dart';
 import '../theme.dart';
@@ -70,7 +71,7 @@ class _CadCanvasState extends State<CadCanvas> implements CanvasKeyTarget {
     basemap: basemap,
     scene: _scene,
     // the marks for the AI change without an edit of the project
-    repaint: Listenable.merge([_repaint, c, c.aiMarks]),
+    repaint: Listenable.merge([_repaint, c, c.aiMarks, c.programmePlayer]),
   );
 
   /// Active touch pointers (id → position) for pinch zoom / two-finger pan.

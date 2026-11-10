@@ -21,6 +21,7 @@ import '../tools/tools.dart';
 import 'basemap.dart';
 import 'camera.dart';
 import 'compare_overlay.dart';
+import 'playback_overlay.dart';
 import 'scene_cache.dart';
 import 'snapping.dart';
 
@@ -466,6 +467,8 @@ class CadPainter extends CustomPainter {
   void paintOverlay(Canvas canvas, Size size) {
     _indexLayers();
     _dense = false;
+    // 1.7.0 PLY: the irrigation programme played on the drawing (on screen only)
+    if (scene != null) paintProgrammePlayer(canvas, size, cam, c);
     // the item under the cursor, again in the hover colour (areas, hatches
     // and images keep their look, as in the scene)
     final hid = c.hoverId;
