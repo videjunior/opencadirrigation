@@ -5,7 +5,8 @@
 ///
 /// Pure Dart and free of the app and of the provider: the tools are objects
 /// the app provides, approvals are a callback, the model is any [AiClient]
-/// (Anthropic or OpenAI), whose formats the loop never looks into. What the
+/// (Anthropic, OpenAI, Google, xAI, Meta or OpenRouter), whose formats the
+/// loop never looks into. What the
 /// model may change follows [AgentPermission]; a change the user skips, an
 /// invalid input or a failing tool goes back to the model as an error
 /// result, so it can adapt instead of the turn breaking. What the user types
