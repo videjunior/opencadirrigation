@@ -52,6 +52,73 @@ das fichas técnicas (Δp = (Q/Kv)² bar) e `kcoef` o K de K·v²/2g; um PN sem 
 (bar ou metros de coluna d'água). Um item desativado ou removido que o desenho ainda usa aparece como
 ele mesmo, marcado, nas Propriedades.
 
+## Digitalizar curva de uma imagem
+
+**Projeto → Digitalizar curva de uma imagem…** (logo abaixo de *Catálogo de componentes…*; no celular ☰ → Projeto)
+lê uma curva de uma imagem de gráfico (uma página de catálogo, uma captura de tela, a foto de uma folha de dados) e a
+põe no catálogo do projeto. Nada sai do aparelho. Ela lê três tipos de gráfico:
+
+- **Bomba**: a altura × vazão e, como curvas a mais da mesma imagem, o rendimento, o NPSH requerido e a potência no
+  eixo, compartilhando o eixo horizontal (vazão), cada uma com o seu eixo vertical.
+- **Emissor ou aspersor**: a vazão × pressão (marque *Vazão no eixo horizontal* quando o gráfico for desenhado assim),
+  ajustada a q = k·Hˣ.
+- **Perfil radial de aspersor**: a taxa de aplicação × a distância do aspersor.
+
+**Como usar.**
+
+1. Abra a imagem (*Abrir imagem…*), cole-a (Ctrl+V de uma captura de tela) ou solte o arquivo na janela. Lê PNG, JPEG e
+   WebP; uma foto é desvirada pela etiqueta EXIF, e uma imagem com mais de 3200 pixels é reduzida.
+2. **Eixo horizontal**: clique em duas marcas do eixo bem afastadas e digite os valores delas; escolha a unidade e,
+   numa escala logarítmica, *Logarítmico*. **Eixo vertical**: o mesmo no eixo vertical da curva. A ferramenta passa
+   sozinha à etapa seguinte depois do segundo clique de cada eixo.
+3. **Pontos**: clique ao longo da curva. Arraste um ponto para movê-lo; selecione um e tecle Delete (ou *Excluir
+   ponto*, ou o botão direito) para removê-lo; *Desfazer* volta a última mudança. A roda do mouse ou a pinça dão zoom,
+   arrastar a imagem desloca, e um botão no canto mostra a imagem inteira de novo. Uma lupa acompanha o mouse; na tela
+   de toque, um toque longo mostra a lupa e o ponto vai para onde o dedo sai.
+4. Ou **Traçado automático**: defina os dois limites ao longo do eixo horizontal (*De*, *Até*) e o número de pontos e
+   clique sobre a curva. A cor dela é seguida para os dois lados e os pontos são colocados igualmente espaçados; depois
+   é só corrigir. Aumente a *Tolerância de cor* para uma linha fraca ou borrada e diminua quando o traçado pular para
+   outra coisa.
+5. Confira o **Ajuste**: a curva ajustada aparece sobre a imagem, e a tabela lista cada ponto com o seu resíduo.
+6. Escolha o destino e clique em **Aplicar ao catálogo**: uma etapa de desfazer. *Exportar CSV* e *Copiar pontos* dão os
+   pontos nas unidades dos eixos. A imagem, a calibração e os pontos ficam com a aba enquanto o diálogo está fechado
+   (não no arquivo do projeto).
+
+**Para onde vai.**
+
+- **Bomba**, nova ou existente: os pontos de altura substituem a curva da bomba (o motor de cálculo os ajusta como
+  ajusta uma folha de dados: a parábola de mínimos quadrados quando ela fica a até 3 % da maior altura, a tolerância de
+  altura do grau 1B da ISO 9906, senão a curva monótona pelos pontos), e a faixa de vazões deles passa a ser a vazão
+  mínima e máxima da bomba; os pontos de rendimento substituem a curva de rendimento (o melhor valor vira o rendimento
+  único); os de NPSH substituem a curva de NPSH. Sem curva de rendimento, a potência no eixo dá o rendimento em cada
+  ponto de potência, η = ρ·g·Q·H / P, com H lido na curva de altura ajustada. Uma bomba sem potência nominal recebe a
+  maior potência lida. Uma bomba nova precisa de pelo menos três pontos de altura.
+- **Emissor**: um emissor novo (um bocal, as pressões do gráfico como faixa e a do meio como padrão), um bocal de um
+  emissor do catálogo ou o emissor de uma fita gotejadora. Só k e x mudam: o raio molhado e o início da compensação de
+  pressão ficam.
+- **Perfil**: o perfil medido de um bocal (distância sobre o raio molhado lido, taxa sobre a maior), que o densograma
+  usa com *Usar o perfil medido dos bocais que o têm*.
+
+**Método.** Os dois pontos de cada eixo dão os valores e a direção dele (o valor vertical não muda ao longo do eixo
+horizontal, e vice-versa): o mapeamento afim geral u = a·x + b·y + c, v = d·x + e·y + f, com u e v os valores, ou os
+logaritmos decimais deles num eixo logarítmico, por isso imagens giradas ou inclinadas são lidas corretamente. A
+calibração é recusada, com o motivo, quando os dois pontos de um eixo estão no mesmo lugar, os dois valores dele são
+iguais, um eixo logarítmico tem valor nulo ou negativo, ou os dois eixos foram clicados a menos de 10° um do outro. O
+traçado automático pega a cor clicada (o pixel vizinho que mais difere do fundo) e fica com os pixels cuja cor está
+entre o fundo e essa cor (a borda suavizada de uma linha conta; uma linha de grade clara ou uma curva de outra cor
+não); ele segue a curva pixel a pixel ao longo do eixo horizontal, ficando com o trecho de pixels mais próximo de onde
+os últimos passos levam, atravessa falhas curtas (uma linha de grade desenhada por cima, um rótulo) e para nas longas.
+Os pontos vazão × pressão são ajustados a q = k·Hˣ por mínimos quadrados em escala log–log, e os da bomba como acima.
+O assistente lê um gráfico de uma imagem anexada com a própria visão e faz o mesmo com `fit_curve_points`,
+`apply_curve_points` e `export_curve_points`.
+
+**Limites.** Uma foto tirada de lado (perspectiva) não é afim e é lida só de forma aproximada: fotografe a página de
+frente ou use um escaneamento. O traçado supõe um valor da curva para cada valor horizontal, como nas curvas de
+catálogo; um gráfico com vários diâmetros de rotor é lido um diâmetro por vez. A curva de potência é tomada como
+potência no eixo (P2): de um gráfico da potência absorvida pelo motor (P1) sai o rendimento global, então nesse caso
+ponha o rendimento do motor da bomba em 100 %. A frequência nominal da bomba, o raio molhado de um bocal e os custos
+não são lidos da imagem: ajuste-os no catálogo.
+
 ## Preços e moeda
 
 Todos os preços de um projeto (catálogo, tarifa de energia, máquinas de pivô) estão em uma única

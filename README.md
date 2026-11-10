@@ -8,8 +8,8 @@
 
 Open-source CAD, written in Flutter/Dart, for the design of pressurised irrigation systems: drawing, hydraulic network,
 pipe sizing, reports and plotting, right in the browser, with no installation, no server and no sign-up, plus an
-optional AI assistant (Claude or GPT, with your own key) that draws and designs the project with you. Projects stay on
-your computer. Released under the [MIT licence](LICENSE.md).
+optional AI assistant (Claude, GPT, Gemini, Grok, Muse or the models of OpenRouter, with your own key) that draws and
+designs the project with you. Projects stay on your computer. Released under the [MIT licence](LICENSE.md).
 
 <p align="center"><img src="web/screenshots/design-1440x900.png" width="900" alt="A designed irrigation project with pipe sizes, pressures and results per zone"></p>
 
@@ -31,9 +31,11 @@ More in [the five-minute start](docs/manual/getting-started.md).
 
 A single application covering the whole cycle of a pressurised irrigation design:
 
-- **Optional AI agent**: Claude (Anthropic) or GPT (OpenAI), with your own API key, works on the
-  open project with the program's own tools: it answers questions, asks what is missing, plans,
-  draws, designs, checks and reports, with your approval and an undo for every answer
+- **Optional AI agent**: a model of Anthropic (Claude), OpenAI (GPT), Google (Gemini), xAI (Grok),
+  Meta (Muse) or OpenRouter (hundreds of models through one key, some free), with your own API key,
+  works on the open project with the program's own tools: it answers questions, asks what is
+  missing, plans, draws, designs, checks and reports, with your approval and an undo for every
+  answer, and another company's model can give a second opinion on an answer
   ([AI assistant](docs/manual/ai-assistant.md)); nothing is sent until you press Send.
 - **2D CAD drawing** with layers and layer states, snaps one by one, typed and field coordinates (UTM,
   latitude and longitude, azimuths and bearings), dimensions with a project style, hatches, symbols, user
@@ -59,13 +61,20 @@ A single application covering the whole cycle of a pressurised irrigation design
 - **Automatic design**: landscape head layout with zoning and routing of pipes and valves, field
   subdivision into blocks with the longest lateral computed, orchard drip rings, sports and golf
   templates, pivot fit and several pivots in a property, fields traced on the satellite image,
-  vegetation detected in aerial imagery, and corrections and optimisation reviewed item by item.
+  vegetation detected in aerial imagery, the direction, spacing and number of the planting rows of
+  orchards, coffee, vineyards and citrus read on the satellite image so that the laterals follow
+  them, and corrections and optimisation reviewed item by item.
 - **Agronomy and operation**: site climate (downloaded, typed or from INMET station files), FAO-56
   crops with growth stages and your own crops, soils, effective rain and leaching, requirement
   tables, a daily soil water balance with regulated deficit, the controller programme with an
   irrigation window and cycle and soak, runoff potential, fertigation by stage, uniformity tests in
   the field, valve wiring (conventional or two-wire), time-of-use tariffs, on-demand networks,
-  mechanised machines and surface irrigation.
+  mechanised machines and surface irrigation. The programme plays on the plan (zones watering,
+  pipes by flow and velocity, pumps, reservoir level) and exports as an animated GIF and a phone
+  calendar (.ics); the irrigation forecast turns the weather forecast of the site (MET Norway open
+  data) into the run time of each zone in the next days; the climate risk checks the design against
+  forty real years of NASA POWER daily weather (requirement and peak demand by probability,
+  reliability, dry spells, trend).
 - **Power and water**: pump house electrics (motors, starters, feeders, short circuit, transformer),
   solar pumping in the design, water quality with its filters, chlorination and acid.
 - **Terrain**: contour lines, spot heights, breaklines, digital terrain model by triangulation,
@@ -78,12 +87,18 @@ A single application covering the whole cycle of a pressurised irrigation design
   PDF/A-2b); document packages by reader and technical documents (water permit table, memorial,
   operation and maintenance plan, budget by unit-cost compositions, life-cycle cost); a commercial
   quote; DXF and DWG (R2000, native entities, hydraulic data), SVG, PNG, KML, KMZ, GeoJSON,
-  shapefile, GPX, LandXML, IFC 4, EPANET, stake-out points, Excel, CSV.
+  shapefile, GPX, LandXML, IFC 4, EPANET, stake-out points, Excel, CSV; and a **design scorecard**
+  that grades the designed project A–E in seven categories, every indicator with its target and the
+  standard it comes from, and says what to improve first.
 - **Open catalogues** in JSON, loadable by file or URL: manufacturer packs and generic pipes by
-  standard (ISO 1452, EN 12201, IS 4985, IS 4984, ASTM).
+  standard (ISO 1452, EN 12201, IS 4985, IS 4984, ASTM); pump, emitter and sprinkler-profile curves
+  digitised from a picture of a catalogue chart.
 - **Command line and engine API**: `bin/oci.dart` imports drawings, starts, changes, designs, checks
   and exports projects without a browser, one or many at a time; `lib/core/api.dart` gives the whole
   engine in one import, also as a Dart package without Flutter ([docs/API.md](docs/API.md)).
+- **MCP server**: `bin/oci.dart mcp --root <folder>` lets any AI application that speaks the Model
+  Context Protocol design, check and export projects with the engine on your computer, confined to
+  one folder ([docs/MCP.md](docs/MCP.md)).
 
 ## Who it is for
 
@@ -97,7 +112,7 @@ gallery let you start without reading a manual.
 |---|---|
 | Open | Code, project format (`.oci.json`), catalogues (`.oci.cat`) and examples are readable files, documented in this repository. |
 | In the browser | Chrome, Edge, Firefox and Safari, on desktop, tablet and phone; installable as a PWA that starts without a network after the first visit. It also builds for desktop (macOS, Windows, Linux). Native Android and iOS builds are not made: on phones and tablets use the web app. |
-| No server | There is no server behind the app and no account. Projects live in the browser and in local files. The internet is used for what you ask for (base maps, online elevation and climate, address search, catalogues by URL, and the optional AI assistant, the one feature that sends project data, to the AI provider you choose) and, on the site's pages and in the app, for the visit statistics (Google Analytics, with its cookies; Cookie settings at the foot of the pages turns it off); see [Storage, privacy and network access](docs/manual/privacy-and-network.md). |
+| No server | There is no server behind the app and no account. Projects live in the browser and in local files. The internet is used for what you ask for (base maps, online elevation and climate, the weather forecast, address search, catalogues by URL, and the optional AI assistant, the one feature that sends project data, to the AI provider you choose) and, on the site's pages and in the app, for the visit statistics (Google Analytics, with its cookies; Cookie settings at the foot of the pages turns it off); see [Storage, privacy and network access](docs/manual/privacy-and-network.md). |
 | Transparent engine | Every formula is documented in the code and in the [technical study](docs/TECHNICAL_STUDY.md), with tests comparing it to reference values. |
 | 20 languages | Interface in Portuguese, English, Spanish, Chinese, Hindi, Arabic, French, Bengali, Russian, Urdu, Indonesian, German, Japanese, Marathi, Vietnamese, Telugu, Hausa, Turkish, Punjabi and Swahili; the app opens in the system language, and Arabic and Urdu lay the interface out right to left. |
 
@@ -113,8 +128,8 @@ site as the [user guide](https://opencadirrigation.com/manual/) ([in Portuguese]
 - [Hydraulic network](docs/manual/hydraulic-network.md): hydraulic items, connection rules, generators, automatic design
 - [Component catalogue](docs/manual/catalogue.md): pipes, emitters, valves, pumps, prices and manufacturer packs
 - [Terrain](docs/manual/terrain.md): contours, spot heights, the terrain model, online elevation
-- [Calculation and sizing](docs/manual/calculation.md): parameters, calculation steps, design check and assistant, analyses
-- [Agronomy and irrigation scheduling](docs/manual/agronomy.md): daily water balance, irrigation programme, runoff, fertigation by stage, field uniformity
+- [Calculation and sizing](docs/manual/calculation.md): parameters, calculation steps, design check and assistant, design scorecard, analyses
+- [Agronomy and irrigation scheduling](docs/manual/agronomy.md): daily water balance, irrigation programme and its player, irrigation forecast, climate risk, runoff, fertigation, field uniformity
 - [Power, water and machines](docs/manual/power-water-machines.md): pump house electrics, solar pumping, water quality, two-wire, several pivots
 - [AI assistant](docs/manual/ai-assistant.md): what the optional assistant does, what it sends and how it is controlled
 - [Reports, plotting and export](docs/manual/reports-and-export.md): reports panel, PDF sheets, quote, exports
@@ -130,7 +145,8 @@ site as the [user guide](https://opencadirrigation.com/manual/) ([in Portuguese]
 
 The technical study behind the engine is [docs/TECHNICAL_STUDY.md](docs/TECHNICAL_STUDY.md) (Portuguese:
 [docs/PESQUISA.pt-BR.md](docs/PESQUISA.pt-BR.md)); the engine API is [docs/API.md](docs/API.md)
-([docs/API.pt-BR.md](docs/API.pt-BR.md)); what the AI assistant reaches is [docs/AI_TOOLS.md](docs/AI_TOOLS.md).
+([docs/API.pt-BR.md](docs/API.pt-BR.md)); the MCP server is [docs/MCP.md](docs/MCP.md); what the AI assistant reaches is
+[docs/AI_TOOLS.md](docs/AI_TOOLS.md).
 
 ## Contributing, security and licence
 

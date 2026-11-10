@@ -11,10 +11,11 @@ JSON legível com estas chaves de primeiro nível:
 | `params` | Todos os parâmetros de projeto e as unidades |
 | `catalog` | O catálogo do projeto completo (o arquivo é autossuficiente) |
 | `layers` | Nome, cor ARGB, visível, bloqueada |
-| `entities` | Uma entrada por entidade, com `type`, `id`, `layer`, `name` e os campos próprios (pontos em metros; um pivô guarda os dados da máquina em `mach`) |
+| `entities` | Uma entrada por entidade, com `type`, `id`, `layer`, `name` e os campos próprios (pontos em metros; um pivô guarda os dados da máquina em `mach`; uma área irrigada guarda a direção das fileiras de plantio lida por Fileiras da imagem em `rdir`, em graus no sentido anti-horário a partir do leste dentro de [0, 180), ao lado dos espaçamentos entre fileiras e entre plantas `rsp` e `psp`, gravada só quando definida e girada e espelhada com a área) |
 | `systemFlows` | Turnos: nome, válvulas (e pivôs e estações de aspersores com válvula), hora de início, duração |
 | `proposal`, `scenarios`, `climate`, `labelRules`, `blocks`, `aiNotes` | Opcionais: configurações do orçamento, alternativas do projeto, clima do local (com a série diária de um arquivo de estação ou de um download), rótulos condicionais, blocos do usuário, as notas do assistente de IA sobre o projeto |
 | `agronomy`, `agb`, `deliverables`, `dimStyle`, `layerStates` | Opcionais, gravados só quando diferem de um projeto novo: o plano agronômico (culturas do usuário, programa, balanço hídrico, fertirrigação por estágio, avaliações de campo), as configurações de energia, água e máquinas, as dos documentos técnicos, o estilo de cota e os estados de camadas com nome |
+| `climateRisk` | Opcional: o resumo do último Risco climático ao longo dos anos (a fonte da série e o crédito dela, o local, o primeiro e o último ano, o dia em que foi calculado, a probabilidade e o período de pico escolhidos, alguns números por ano do local e por área e safra, e os valores que o projeto usou), nunca a série diária; um resumo danificado é descartado na leitura |
 | `unreadable` | Itens que esta versão não conseguiu ler (danificados, ou de uma versão mais nova), guardados e gravados de volta para que uma versão posterior os recupere |
 | `nextId`, `currentLayer` | Contador de ids e camada corrente |
 | `results` | Opcional: resultados do último cálculo, para reabrir com relatórios sem recalcular |

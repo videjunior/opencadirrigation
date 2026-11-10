@@ -8,23 +8,23 @@ the release checklist are in [CONTRIBUTING.md](../../CONTRIBUTING.md).
 1. [Design workflow](workflow.md): from the area to the reports, step by step
 1. [Interface](interface.md): layout, menus, compact layout and keyboard shortcuts
 1. [Drawing and editing](drawing.md): entities, snaps, selection, transformations, blocks, layers
-1. [Hydraulic network](hydraulic-network.md): hydraulic items, connection rules, generators, automatic design
-1. [Component catalogue](catalogue.md): pipes, emitters, valves, pumps, prices and manufacturer packs
+1. [Hydraulic network](hydraulic-network.md): hydraulic items, connection rules, generators, automatic design, crop rows from the image
+1. [Component catalogue](catalogue.md): pipes, emitters, valves, pumps, curves digitised from a picture, prices and manufacturer packs
 1. [Terrain](terrain.md): contours, spot heights, the terrain model, online elevation
-1. [Calculation and sizing](calculation.md): parameters, calculation steps, design check and assistant, analyses
-1. [Agronomy and irrigation scheduling](agronomy.md): daily water balance, irrigation programme, runoff, fertigation by stage, field uniformity, user crops
+1. [Calculation and sizing](calculation.md): parameters, calculation steps, design check and assistant, design scorecard, analyses
+1. [Agronomy and irrigation scheduling](agronomy.md): daily water balance, irrigation programme and its player, irrigation forecast, climate risk over the years, runoff, fertigation by stage, field uniformity, user crops
 1. [Power, water and machines](power-water-machines.md): pump house electrics, solar pumping, water quality, two-wire, several pivots, travellers and furrows
-1. [AI assistant](ai-assistant.md): what the optional assistant does, what it sends and how it is controlled
+1. [AI assistant](ai-assistant.md): what the optional assistant does with the models of six companies, what it sends and how it is controlled
 1. [Reports, plotting and export](reports-and-export.md): reports panel, PDF sheets, quote, exports
 1. [Title block and technical documents](technical-documents.md): title block, datum, document packages, permit table, memorial, O&M plan, budget, life-cycle cost
 1. [File formats](file-formats.md): the project file and every import and export format
 1. [Storage, privacy and network access](privacy-and-network.md): what stays in the browser, what goes out and to whom
 1. [Languages and site](languages-and-site.md): the 20 languages, the site, the offline start and the hosting
 1. [Code architecture](architecture.md): the source tree and the design decisions
-1. [Development and tests](development.md): commands, how to extend, what every test guarantees
+1. [Development and tests](development.md): commands, the MCP server, how to extend, what every test guarantees
 1. [Known limitations and roadmap](limitations.md): what the app does not do yet
 1. [References](references.md): standards, books and papers behind the engine
 1. [Licence, third-party components and data](licence.md): MIT licence, the components and the data sources
 
 The technical study behind the engine is [docs/TECHNICAL_STUDY.md](../TECHNICAL_STUDY.md); the engine API is
-[docs/API.md](../API.md).
+[docs/API.md](../API.md), and the MCP server of the engine is [docs/MCP.md](../MCP.md).

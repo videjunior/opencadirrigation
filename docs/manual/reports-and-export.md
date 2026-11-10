@@ -14,7 +14,10 @@ requirement (with the licensing category), pivot package (nozzle chart and timer
 electrical, valve-in-head stations, power, water and machines
 ([Power, water and machines](power-water-machines.md)) and *Irrigation management* with the daily water
 balance, the runoff potential, the capacity against the peak, the programme by station, fertigation
-by stage and the field evaluations ([Agronomy and irrigation scheduling](agronomy.md)). The mainline
+by stage, the field evaluations and the two tables of the climate risk over the years ([Agronomy and
+irrigation scheduling](agronomy.md)). The design scorecard is a report table too (`scorecard`, in
+every export; [Calculation and sizing](calculation.md#design-scorecard)), and its radar goes into the
+chart pages of the sheets. The mainline
 tab also holds the pump stations (the duty of every pump in every system flow) and the real operation
 of the zones; the water requirements tab holds *Slope by irrigated area*, and the crop requirement
 tab the *Data sources and credits*. Under its title every table names the criteria it shows and the standards they follow

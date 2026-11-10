@@ -28,22 +28,39 @@
   new tab. Images, the photos of comments, the logo of the title block and results are left out (the
   receiver designs again); a link longer than about 60 000 characters may be cut by mail and chat
   apps, a project too large for a link is sent as a file, and a link that carries a large project asks
-  before it opens.
+  before it opens. The page takes the link out of the address (and out of the browser's history of the
+  tab) before the app and the visit statistics start, so not even the address they could read carries
+  it; a link pasted into the address bar of the app already open opens in a tab of its own the same way.
 - **Offline**: once the app has run in a browser, its service worker keeps a copy of the app (about
   20 MB, once per version, plus the language pack and the PDF fonts a start uses) and the next start,
   of the installed app or of the site, works without a network. Base maps, online elevation and
-  climate, catalogues loaded by URL and the AI assistant still need one. A new version downloads in
+  climate, the weather forecast, catalogues loaded by URL and the AI assistant still need one. A new version downloads in
   the background; the app then offers to reload into it (unsaved work goes to the autosave), or it
   is used from the next start. The tiles and points of the online elevation and the climate series
   downloaded are kept on the device (IndexedDB in the browser, files on the desktop), up to 200 MB
   with the oldest going first, so making the terrain or the climate again needs no network; File →
-  Saved downloaded data… shows them by kind and clears them.
+  Saved downloaded data… shows them by kind (the weather forecast too) and clears them.
 - **Internet access**, for what you ask: online elevation (Terrain Tiles on AWS, Open-Meteo,
   OpenTopoData in the desktop builds), site climate (NASA POWER by default, Open-Meteo historical
   weather), base maps (OpenStreetMap or the street map server you set, OpenTopoMap, CARTO, Esri,
   Google Maps with your own key, or a custom XYZ or WMS URL; the satellite tiles also for Trace on the
-  image), catalogues loaded by URL and the AI assistant. Elevation and climate requests carry
-  the coordinates of the site, nothing of the project. The Google Maps API key is kept in the
+  image and for Crop rows from the image, from the same hosts: the aerial map on screen, else Google's
+  satellite tiles with your key, else Esri World Imagery), catalogues loaded by URL and the AI
+  assistant. Elevation and climate requests carry the coordinates of the site, nothing of the project.
+  - *Climate risk over the years* downloads the NASA POWER daily series of the site
+    (`power.larc.nasa.gov`, the host of the site climate) when you press Analyse, with the
+    coordinates rounded to 0.01° (about 1 km), and keeps it on this device; nothing goes out when the
+    series is already kept or when the site climate's own series is chosen.
+  - *Irrigation forecast* sends, when you press Get the forecast, the coordinates of the site cut to 4
+    decimals to `api.met.no` (MET Norway) or, if you choose it, to `api.open-meteo.com`; like any web
+    request they also see your IP address, and MET Norway's own terms note that an IP address together
+    with coordinates is personal data (they suggest a proxy for privacy; the app has no server, so it
+    calls the service directly). The desktop builds name the app to MET Norway in a User-Agent with the
+    address of the repository, as its terms ask. The answer is kept on this device (File → Saved
+    downloaded data, Weather forecast) for as long as it is valid and is not fetched again before the
+    service allows.
+  - The PNG and the animated GIF of the programme player download the tiles of the base map on screen
+    when they are drawn with it, like the pictures of the assistant. The Google Maps API key is kept in the
   browser's storage, which any script of the site could read, and sent to Google only (restrict it
   to the site in the Google Cloud console); where a tile server has no imagery at the current zoom the
   app scales the nearest coarser tile instead of showing a "no data" placeholder. The fonts of
@@ -51,8 +68,11 @@
   the site itself, never from a font service (see [Languages and site](languages-and-site.md)).
 - **AI assistant** (optional, [AI assistant](ai-assistant.md)): the one feature that sends project
   data to a third party, and only on your action. Nothing goes out until you send a message; then
-  the requests go only to the company of the model you chose, Anthropic (`api.anthropic.com`) or
-  OpenAI (`api.openai.com`, with `store: false`), with your key for it: your message, the files you
+  the requests go only to the company of the model you chose, with your key for it in that company's
+  own header: Anthropic (`api.anthropic.com`), OpenAI (`api.openai.com`), Google
+  (`generativelanguage.googleapis.com`), xAI (`api.x.ai`), Meta (`api.meta.ai`) or OpenRouter
+  (`openrouter.ai`); every API that lets the app choose is asked to store nothing for later requests
+  (`store: false`: OpenAI, Google, xAI, Meta, OpenRouter). They carry your message, the files you
   attached, the project data you ticked (a compact text built from the report tables and the design
   messages, with the site position rounded to about a kilometre; the *Data sent* view shows the
   exact text of the next message), the earlier messages of the conversation and, while the model
@@ -75,8 +95,38 @@
   project may keep several), and *Keep conversations in this browser* in the assistant's settings
   turns this off and deletes them. A conversation exported to a file leaves the key and the photos
   you attached out. The notice when the app is in the background blinks the title of the tab and, if
-  you allow them, shows system notifications; nothing of it leaves the page. What each company does
-  with the requests is governed by your agreement with it.
+  you allow them, shows system notifications; nothing of it leaves the page. A **second opinion**
+  sends the project data, your question and the answer to the company of the model that reviews it,
+  with its own key; the conversation's own model reads the review only when you send it on. What each
+  company does with the requests is governed by your agreement with it; on 2026-11-10 their terms
+  said:
+  - **Google** (<https://aistudio.google.com/docs/terms>): on the paid tier Google does not use prompts
+    or responses to improve its products and logs them for 55 days, only to detect abuse and for
+    legal disclosures; on the free tier of the Flash models Google uses the content and the responses
+    to improve its products and machine learning, and human reviewers may read them (in the European
+    Economic Area, Switzerland and the United Kingdom the paid-tier terms apply).
+  - **xAI** (<https://docs.x.ai/developers/faq/security>): xAI does not train on API inputs or outputs
+    without explicit permission, and keeps requests and responses, encrypted, for 30 days to audit
+    suspected abuse, unless the team has turned on zero data retention. The app also sends the
+    reasoning back encrypted, which keeps xAI from storing the thinking trace for later requests.
+  - **Meta** (<https://dev.meta.ai/legal/commitments>, <https://dev.meta.ai/legal/terms-of-service>): on the
+    *Standard* models the app offers, Meta does not use the content to train its models; it may process
+    it to detect policy violations and for safety and security, and keeps content and usage data (tool
+    calls, request metadata, logs, token counts) "as needed" to provide the service, for legal
+    compliance, when a possible violation is flagged and for security review, with no fixed period.
+    `store: false` means a response cannot be retrieved later; it is not a promise of zero retention.
+  - **OpenRouter** (<https://openrouter.ai/docs/guides/privacy/data-collection.md>, <https://openrouter.ai/terms>):
+    OpenRouter does not store prompts or responses unless you opt in (private logging, or letting it
+    use them for a discount) or content is flagged as potential child sexual abuse material, and it keeps
+    the metadata of each request (tokens, latency). Each company OpenRouter passes a request to has
+    its own retention and training policy, and some may store or train on what they receive (free
+    models above all); the privacy settings of your OpenRouter account, separate for paid and free
+    models, decide which of them are used. The app names itself to OpenRouter with two headers
+    (`HTTP-Referer: https://opencadirrigation.com`, `X-OpenRouter-Title: OpenCADIrrigation`), which
+    OpenRouter uses to rank apps, and sends a session id made from the system prompt and the first
+    message, nothing about you. *More models…* downloads OpenRouter's public list of models
+    (`openrouter.ai/api/v1/models`) without the key or any header of the app, when the dialog opens,
+    and keeps its last copy on this device.
 - **Visit statistics**: every page of opencadirrigation.com and the app load Google Analytics 4 with
   its cookies `_ga` and `_ga_<id>` (each page viewed, and an `app_start` event when the app starts),
   so the number of visitors and users can be known; advertising is always denied and the address goes

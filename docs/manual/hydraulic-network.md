@@ -96,5 +96,57 @@ pipes stay inside the outline of the lot.
 | Orchard drip rings | `RINGS` | A ring of dripline or drippers round every tree of a planting grid or of surveyed trees, joined to laterals along the rows, a submain and the valve. |
 | Fit a pivot to the field | `PFIT` | The largest full circle clear of the obstacles, or the part-circle pivot that waters the most of the field, with the machine length in standard spans. |
 | Several pivots in the property | | The arrangement of centre pivots of standard spans that irrigates the most of the selected outline, within the flow allowed, with the common mainline ([Power, water and machines](power-water-machines.md#several-pivots-in-the-property)). |
+| Crop rows from the image | | The direction, spacing and number of the planting rows of an orchard, coffee, vineyard, citrus or olive field read on the satellite image or a placed aerial photo, with the plant spacing and the canopy ground cover where the image shows them; they become the defaults of Subdivide a field into blocks, Orchard drip rings and Lateral block over the area ([below](#crop-rows-from-the-image)). |
 | Detect vegetation in the image | `VEG` | Lawns, trees and shrubs found by image processing on this device (no service) in the base map on screen or a selected aerial photo, created as irrigated areas (with presets per class) and exclusions. Check that the imagery's terms of use allow tracing it. |
 | Trace on the image (Draw menu) | `WAND` | Click inside a field, lawn or pond on the map: the outline grows over the pixels of similar colour of the satellite tiles, with a preview of its area and edge; colour tolerance (0 = automatic), colour smoothing (3–6 m in orchards) and the simplification of the outline change it without downloading again; Enter makes an irrigated area or a closed polyline (one undo step), Esc drops it and `V` outlines every field of the view. It needs a georeference and the internet. |
+
+### Crop rows from the image
+
+Drip laterals in an orchard, a coffee field, a vineyard or a citrus or olive grove follow the planting rows already
+in the field. **Design → Automatic design → Crop rows from the image…** (on a phone, ☰ → Design, the same label)
+reads those rows on the aerial image instead of measuring them by hand. Select the irrigated area of the planted
+field (or a closed outline; with a single area in the project nothing needs to be selected) and open the tool. The
+satellite image needs a georeferenced project (File → Georeference); a placed aerial photo over the field can be
+chosen instead under *Image*. The tool downloads the imagery of the field and reads it on this device, with no AI key
+and no other service:
+
+- **Row direction**, in degrees counter-clockwise from east, 0 to 180 (the same *Row direction (°)* as Subdivide a
+  field into blocks and Orchard drip rings);
+- **Row spacing**, **Rows across the field** and the **Confidence** (clear rows from 35 %, uncertain from 15 %, no rows
+  below);
+- the **Plant spacing in the row** (when separate crowns show) and the **Canopy ground cover** (when canopy and ground
+  show apart), else "not visible in the image".
+
+The picture shows the field (cyan) and the rows found (amber), with a detail of its middle at actual pixels, and the
+rows are drawn over the drawing while the dialog is open; **Stop** ends a long reading. If the lines fell on the
+alleys rather than on the plants (a closed canopy with shaded alleys, a cover crop as green as the crop), turn on
+**Rows on the other band**, which moves them half a spacing. *Closest spacing* and *Widest spacing* bound the search
+(1.5 to 12 m by default); the closest also sets the pixel size asked of the imagery. **Apply** writes, in one undo step,
+the row direction (the area's `rdir`) and spacing, and the plant spacing, on the area, which Subdivide a field into
+blocks, Orchard drip rings and Lateral block (and the assistant's layouts) then start from over that area; the
+area's ground cover (used by the Kr of localised irrigation); and, if ticked, the rows as guide lines on the
+`CROP_ROWS` layer. The assistant does the same with `detect_crop_rows` (a reading that changes nothing) and
+`apply_crop_rows`.
+
+**Method.** The colour of the field is high-passed (the mean over a box 1.25 × the widest spacing is subtracted, so
+shading and patches go and the stripes stay), divided by its local RMS so that dark and bright parts weigh alike, and
+projected on its first principal component, signed so that the greener and darker band is positive. For every
+direction (steps of at most 1°) the pixels of square blocks of the field are binned by their distance across that
+direction (a discrete Radon projection), and the share of the variance the bins explain (R²) is averaged over the
+blocks: rows give a sharp maximum at their direction. The spacing is the first peak of the autocorrelation of the
+block profiles; the direction is then refined on the whole field (to about 0.1° over a field a hundred spacings long)
+and the spacing on the Fourier power of the whole-field profile (within ±6 %, by a parabola through the logarithm of
+the power), whose phase places the rows. Confidence = angular prominence (1 − median R² ÷ largest R²) × periodicity
+(the autocorrelation at the spacing). The plant spacing is the first peak of the autocorrelation along the centre of
+the rows; the ground cover is the share of the field above the Otsu threshold of the smoothed signal, given only when
+its histogram has two populations (bimodality coefficient above 5/9). The method and its references are in the
+[technical study](../TECHNICAL_STUDY.md#201-crop-rows).
+
+**Limits.** The rows must be straight over the area (rows that bend along the contours give an average direction and a
+note: draw smaller areas), evenly spaced and visible, about three pixels of the imagery per spacing at least: Esri
+imagery is about 0.3–0.6 m a pixel over most farmland, so rows closer than about 1–2 m are not seen, and the tool
+says so. Which band is the crop is decided by colour (the greener and darker band, or the wider one when both are
+green and the other is clearly wider): check the detail and use *Rows on the other band* when needed. Shadows count
+as canopy in the ground cover. A field larger than the pixel budget (2.5 million pixels) is read on a window in its
+middle and the rows are extended over the whole field. The imagery may be years old: check that it shows the planting
+of today, and that its terms of use allow deriving data from it.

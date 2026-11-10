@@ -5,6 +5,131 @@ Ajuda → Sobre e na barra de status; o `pubspec.yaml` a guarda, e o checklist d
 [CONTRIBUTING.md](CONTRIBUTING.md#releasing) acrescenta aqui a seção de cada versão nova. Inglês (canônico):
 [CHANGELOG.md](CHANGELOG.md).
 
+## 1.7.0 (2026-11-10)
+
+O assistente de IA com os modelos de seis empresas, com uma segunda opinião de outro modelo, e ferramentas novas:
+fileiras de plantio lidas na imagem de satélite, o risco climático ao longo de quarenta anos reais, a previsão de
+irrigação dos próximos dias, o programa reproduzido na planta, um boletim de qualidade do projeto e curvas digitalizadas
+de uma imagem de catálogo; o motor como servidor MCP; links de compartilhamento que voltam a abrir.
+
+### Assistente de IA
+
+- **Modelos atualizados** (a documentação de cada empresa de 2026-11-10): o Claude Fable 5.2 (US$ 8 / 40 por milhão de
+  tokens) toma o lugar do Claude Fable 5.1, e uma escolha ou uma conversa guardada do 5.1 continua com o 5.2; o Claude
+  Sonnet 5.5 lê o cache a US$ 0,10; o GPT-6.1 Terra (US$ 1 / 5) se junta ao GPT-6 Luna como modelo rápido, e todo modelo
+  GPT-6 aceita o esforço *Máximo*; as imagens do desenho vão com até 2576 pixels para os modelos Claude que as leem em
+  alta resolução, o Claude Haiku 5.5 também.
+- **Seis empresas**, cada uma com a sua própria chave e direto do navegador: ao lado da Anthropic e da OpenAI, o
+  **Google** (Gemini 4 Argon, Gemini 3.8 Flash e Gemini 3.5 Flash-Lite pela Interactions API, sem nada guardado no
+  Google; os dois modelos Flash com nível gratuito, no qual o Google pode usar o conteúdo para melhorar seus produtos; o
+  Gemini 4 Argon e o 3.8 Flash pela metade do preço até 1º de dezembro de 2026 e 1º de janeiro de 2027), a **xAI** (Grok
+  4.7 e Grok 4.3 pela Responses API dela; o dobro do preço a partir de 200 000 tokens de prompt; um PDF vai como o seu
+  texto, porque um arquivo anexado ligaria a busca paga da xAI), a **Meta** (Muse Wonder, Muse Spark 1.3 e Muse Ember
+  pela Meta Model API; só os modelos *Standard*, com os quais a Meta não treina; o Muse Ember pelo triplo do preço acima
+  de 200 000 tokens de entrada) e a **OpenRouter** (os modelos Claude, GPT, Gemini, Grok e Muse, o Auto Router e o Free
+  Models Router com uma só chave, cobrados dos créditos dela).
+- **Configurações**: uma fileira de botões das empresas (um ícone de chave nas que têm chave salva) e, depois, os
+  modelos da empresa escolhida com nível, preços e o que é preciso saber (preço de lançamento e o seu fim, nível
+  gratuito, regra de prompt longo, sem imagens, sem ferramentas, roteador). Uma chave basta; o último modelo de cada
+  empresa fica lembrado. Trocar para um modelo de outra empresa, ou entre dois modelos de uma empresa que não a
+  Anthropic, começa uma conversa nova; os modelos Claude continuam as conversas uns dos outros.
+- **Mais modelos…** (OpenRouter): a lista completa da OpenRouter, baixada quando pedida (sem chave; a última cópia
+  funciona sem rede), com busca, os filtros *Só gratuitos*, *Lê imagens* e *Usa ferramentas* e ordem por preço ou por
+  nome; o modelo escolhido entra na sua lista, fica escolhido na hora e volta quando o app abre de novo.
+- **Um modelo que não usa ferramentas** só conversa (nenhuma ferramenta nos pedidos dele, e ele é avisado); **um modelo
+  que não lê imagens** não recebe nenhuma (as suas imagens, as das ferramentas e o desenho depois de uma alteração
+  ficam de fora, e você e o modelo são avisados).
+- **Segunda opinião** (um botão na última resposta, `/second`): outro modelo, de outra empresa quando você tem a chave
+  dela, confere a resposta contra os dados do projeto num só pedido sem ferramentas e diz o que procede, o que não
+  procede e o que conferir; a revisão fica marcada, entra no custo e só é lida pelo primeiro modelo depois de
+  *Responder à revisão*.
+- **Custos**: preços de tabela por milhão de tokens de cada modelo, com a entrada em cache, as regras de prompt longo e
+  os preços de lançamento; a escolha de um roteador que a tabela não precifica custa o que a OpenRouter diz ter
+  cobrado; os modelos mais caros pela OpenRouter respondem no máximo 32 000 ou 64 000 tokens, porque a OpenRouter reserva
+  do saldo o preço da maior resposta enquanto um pedido roda; um modelo gratuito funciona sob o teto de gasto. Anexos
+  longos são lidos pelo modelo mais barato da empresa da conversa.
+- **Erros**: os status e códigos de cada empresa são lidos (sem crédito, cobrança não configurada, limites de gasto,
+  cotas com a espera que a empresa pede, bloqueios de moderação e de segurança com o nome), e as próprias palavras da
+  OpenRouter vêm depois do texto do app.
+- Os quatro clientes novos foram escritos a partir da documentação de cada empresa e testados contra transcrições
+  roteirizadas dos formatos documentados, não contra os serviços reais: nenhuma chave foi usada.
+
+### Ferramentas novas
+
+- **Fileiras da imagem** (Projeto → Projeto automático): lê na imagem de satélite, ou numa foto aérea do desenho, a
+  direção e o espaçamento das fileiras de um pomar, cafezal, vinhedo, citros ou olival, quantas cruzam o campo e quão
+  segura é a leitura, com o espaçamento entre plantas e a cobertura do solo pela copa quando a imagem os mostra, por
+  processamento de imagem no aparelho (sem chave de IA); mostra as fileiras sobre a imagem e sobre o desenho e, num só
+  passo de desfazer, grava na área a direção e o espaçamento das fileiras (o padrão de Dividir talhão em blocos, Anéis
+  de gotejamento em pomar e Bloco de laterais sobre ela), a cobertura do solo e linhas-guia das fileiras. As áreas
+  irrigadas guardam a direção das fileiras (`rdir`), que gira e espelha com elas.
+- **Risco climático ao longo dos anos** (Projeto → Agronomia): o projeto passado por cada ano real da série diária da
+  NASA POWER do local desde 1984 (baixada uma vez, cerca de 2 MB, e guardada no aparelho) ou da série do próprio clima do
+  local: ETo de Penman-Monteith da FAO-56 e o balanço hídrico diário do solo de cada área, sem limite e com o que o
+  sistema projetado aplica por dia; P50/P80/P90/P95 e máximo da necessidade anual, da demanda de pico e da ETo de pico
+  ao lado dos valores do projeto e da capacidade, a confiabilidade, os piores anos, os maiores veranicos, o volume
+  bombeado e a tendência (declive de Sen, Mann-Kendall); gráfico ano a ano, curva de excedência e duas tabelas de
+  relatório em todas as exportações. Só o resumo fica no projeto (`climateRisk`).
+- **Previsão de irrigação** (Projeto → Agronomia): a previsão do tempo do local (MET Norway, livre para o trabalho
+  profissional; Open-Meteo, não comercial) vira, para cada área irrigada e cada um dos próximos dias, irrigar ou não, a
+  lâmina líquida e bruta, o tempo de funcionamento com a taxa de aplicação do projeto e o ajuste (water budget, %) para
+  o controlador; o balanço hídrico diário do solo avança a partir do estado do solo que você informa; ETo pela
+  Penman-Monteith da FAO-56 com a radiação tirada da amplitude térmica (ou a ETo do próprio serviço); as tabelas
+  exportam para CSV, XLSX e PDF; a resposta fica guardada no aparelho enquanto vale e nunca é buscada de novo antes de o
+  serviço permitir. O projeto não é alterado.
+- **Reproduzir o programa na planta** (Projeto → Agronomia, ou *Reproduzir* no diálogo do Programa de rega): um
+  reprodutor sobre o desenho percorre o ciclo do programa com reproduzir, pausar, velocidade e linha do tempo; as zonas
+  que irrigam ficam destacadas, os tubos com a cor da velocidade e a espessura da vazão, as bombas ligadas ou desligadas,
+  com o relógio, a vazão, a pressão na saída da bomba e o nível dos reservatórios. O momento exporta como PNG, o ciclo
+  como GIF animado para mandar por mensagem e o programa como arquivo de calendário (.ics) para o celular do produtor.
+- **Boletim de qualidade do projeto** (menu Projeto): o projeto calculado com nota de 0 a 100 e conceito de A a E em
+  sete categorias (uniformidade, hidráulica, energia, água e solo, economia, robustez, completude), com um radar, o que
+  melhorar primeiro ordenado pelos pontos que cada mudança acrescenta e um botão para a ferramenta que a faz, e cada
+  indicador com valor, alvo, a norma ou o parâmetro de projeto de onde o alvo vem, nota e peso; indicadores sem dados
+  ficam de fora, nunca são estimados; compare com uma nota guardada ou com uma alternativa salva, rode o teste de
+  envelhecimento, exporte em CSV, XLSX ou PDF; a tabela e o radar também vão nas exportações do relatório e nas páginas
+  de gráficos das pranchas.
+- **Digitalizar curva de uma imagem** (menu Projeto): abra, cole ou solte a imagem de um gráfico de catálogo, clique em
+  dois pontos de cada eixo (linear ou logarítmico, em qualquer unidade do app; digitalizações giradas ou inclinadas são
+  lidas corretamente), clique ao longo da curva ou deixe o traçado automático seguir a cor dela, e ponha no catálogo,
+  num passo de desfazer, a curva de altura de uma bomba (com rendimento, NPSH requerido e potência no eixo), a curva
+  vazão × pressão de um emissor (q = k·Hˣ) ou o perfil radial de um aspersor, com o ajuste desenhado sobre a imagem e os
+  resíduos.
+- O assistente de IA alcança todas elas: `detect_crop_rows`, `apply_crop_rows`, `climate_risk`, `irrigation_forecast`,
+  `programme_picture`, `export_programme_animation`, `export_programme_calendar`, `design_scorecard`,
+  `fit_curve_points`, `apply_curve_points` e `export_curve_points` (216 operações ao todo).
+
+### Motor e linha de comando
+
+- **Servidor MCP**: `dart run bin/oci.dart mcp --root <pasta>` deixa qualquer aplicativo de IA que fale o Model Context
+  Protocol projetar sistemas de irrigação com o motor no seu próprio computador: 21 ferramentas para fazer um projeto a
+  partir de um desenho ou de um exemplo, ler e editar os itens e as configurações, dimensioná-lo, ler cada mensagem do
+  assistente de projeto com a explicação, a lista de materiais e qualquer tabela do relatório, e exportar desenhos e
+  relatórios; revisões 2026-07-28, 2025-11-25 e 2025-06-18 do protocolo; todo arquivo fica dentro da pasta indicada,
+  `--read-only` deixa de fora as ferramentas que gravam, nada vai para a internet e uma chamada pode ser cancelada
+  ([docs/MCP.pt-BR.md](docs/MCP.pt-BR.md)).
+- **Linha de comando**: `export --format dxfR12` funciona (o nome do formato só era comparado em minúsculas).
+- O balanço hídrico diário do solo aceita uma capacidade diária e o dia em que começa um ano agrícola (usados pelo risco
+  climático; sem eles dá o mesmo que antes), e a camada padrão de cada tipo de item passou para o motor.
+
+### Correções
+
+- **Links de compartilhamento voltam a abrir o projeto**: o motor web reescrevia o endereço sem o `#p=…` antes de o app
+  lê-lo, e a primeira visita mostrava a página inicial; agora o link é recolhido antes do motor e das estatísticas, a
+  primeira visita vai direto ao app, e um link colado na barra de endereço do app aberto (ou enviado ao app instalado já
+  aberto) abre numa aba própria. O link sai do endereço e do histórico na hora.
+- Um modelo gratuito sob o teto de gasto não divide mais o teto por um preço zero.
+
+### Não feito de propósito
+
+- O modo rápido da Anthropic (o dobro do preço), modelos locais por um endereço compatível com a OpenAI e um pedido
+  maior que os 30 MB do app.
+- Os modelos *Contributor* com desconto da Meta (a Meta treina com o que eles recebem) e o "long decode" do Gemini além
+  de 65 536 tokens de saída; as ferramentas do lado da xAI (busca na web, busca no X, execução de código) nunca são
+  ligadas.
+- As correções automáticas, os cenários, os documentos técnicos e os dados on-line ainda não são ferramentas do servidor
+  MCP.
+
 ## 1.6.1 (2026-11-04)
 
 - **A estatística de visitas volta a contar todo mundo**: o site e o app carregam o Google Analytics com os seus

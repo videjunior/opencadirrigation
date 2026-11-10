@@ -8,8 +8,8 @@
 
 CAD de código aberto, escrito em Flutter/Dart, para projeto de sistemas de irrigação pressurizada: desenho, rede
 hidráulica, dimensionamento de tubulações, relatórios e plotagem, direto no navegador, sem instalação, sem servidor e
-sem cadastro, mais um assistente de IA opcional (Claude ou GPT, com a sua própria chave) que desenha e projeta com
-você. Os projetos ficam no seu computador. Publicado sob a [licença MIT](LICENSE.md). Esta é a tradução do
+sem cadastro, mais um assistente de IA opcional (Claude, GPT, Gemini, Grok, Muse ou os modelos da OpenRouter, com a
+sua própria chave) que desenha e projeta com você. Os projetos ficam no seu computador. Publicado sob a [licença MIT](LICENSE.md). Esta é a tradução do
 [README em inglês](README.md), que é o canônico.
 
 <p align="center"><img src="web/screenshots/design-1440x900.png" width="900" alt="Projeto de irrigação dimensionado com diâmetros, pressões e resultados por zona"></p>
@@ -32,11 +32,14 @@ Mais em [início em cinco minutos](docs/manual/pt-BR/getting-started.md).
 
 Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pressurizada:
 
-- **Agente de IA opcional**: o Claude (Anthropic) ou o GPT (OpenAI), com a sua própria chave de
-  API, trabalha no projeto aberto com as ferramentas do próprio programa: responde perguntas,
-  pergunta o que falta, planeja, desenha, projeta, verifica e escreve o memorial, com a sua
-  aprovação e um desfazer para cada resposta ([Assistente de IA](docs/manual/pt-BR/ai-assistant.md)); nada é
-  enviado antes de você clicar em Enviar.
+- **Agente de IA opcional**: um modelo da Anthropic (Claude), da OpenAI (GPT), do Google (Gemini),
+  da xAI (Grok), da Meta (Muse) ou da OpenRouter (centenas de modelos com uma só chave, alguns
+  gratuitos), com a sua própria chave de API, trabalha no projeto aberto com as ferramentas do
+  próprio programa: responde perguntas, pergunta o que falta, planeja, desenha, projeta, verifica e
+  escreve o memorial, com a sua aprovação e um desfazer para cada resposta, e o modelo de outra
+  empresa pode dar uma segunda opinião sobre uma resposta
+  ([Assistente de IA](docs/manual/pt-BR/ai-assistant.md)); nada é enviado antes de você clicar em
+  Enviar.
 - **Desenho CAD 2D** com camadas e estados de camadas, snaps um a um, coordenadas digitadas e de
   campo (UTM, latitude e longitude, azimutes e rumos), cotas com estilo do projeto, hachuras, símbolos,
   blocos do usuário e referências de bloco com atributos, comentários de revisão, nuvens de revisão e
@@ -64,13 +67,21 @@ Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pre
   válvulas, divisão de talhões em blocos com o comprimento máximo da lateral calculado, anéis de
   gotejamento em pomares, modelos de campos esportivos e golfe, ajuste de pivô ao talhão e vários
   pivôs numa propriedade, talhões contornados na imagem de satélite, vegetação detectada em imagem
-  aérea, e correções e otimização revistas item a item.
+  aérea, a direção, o espaçamento e o número das fileiras de pomares, cafezais, vinhedos e citros
+  lidos na imagem de satélite para as laterais as seguirem, e correções e otimização revistas item a
+  item.
 - **Agronomia e operação**: clima do local (baixado, digitado ou de arquivos de estação do INMET),
   culturas da FAO-56 com fases de desenvolvimento e culturas do usuário, solos, chuva efetiva e
   lixiviação, tabelas de necessidade, balanço hídrico diário do solo com déficit regulado, o programa
   do controlador com janela de rega e ciclo e pausa, escoamento potencial, fertirrigação por
   estágio, avaliações de uniformidade no campo, fiação das válvulas (convencional ou dois fios),
-  tarifa horária, redes sob demanda, máquinas mecanizadas e irrigação por superfície.
+  tarifa horária, redes sob demanda, máquinas mecanizadas e irrigação por superfície. O programa de
+  rega roda na planta (zonas irrigando, tubos por vazão e velocidade, bombas, nível do reservatório)
+  e é exportado como GIF animado e como calendário para o celular (.ics); a previsão de irrigação
+  transforma a previsão do tempo do local (dados abertos do MET Norway) no tempo de funcionamento de
+  cada setor nos próximos dias; o risco climático confere o projeto contra quarenta anos reais de
+  clima diário da NASA POWER (necessidade e demanda de pico por probabilidade, confiabilidade,
+  veranicos, tendência).
 - **Energia e água**: elétrica da casa de bombas (motores, partidas, alimentadores, curto-circuito,
   transformador), bombeamento solar no projeto, qualidade da água com os seus filtros, cloração e
   ácido.
@@ -85,12 +96,18 @@ Um único aplicativo que cobre o ciclo completo de um projeto de irrigação pre
   documentos técnicos (quadro de outorga, memorial, plano de operação e manutenção, orçamento por
   composições, custo do ciclo de vida); orçamento comercial; DXF e DWG (R2000, entidades nativas,
   dados hidráulicos), SVG, PNG, KML, KMZ, GeoJSON, shapefile, GPX, LandXML, IFC 4, EPANET, pontos
-  para locação, Excel, CSV.
+  para locação, Excel, CSV; e um **boletim de qualidade do projeto** que dá ao projeto calculado um
+  conceito de A a E em sete categorias, cada indicador com o alvo e a norma de onde ele vem, e diz o
+  que melhorar primeiro.
 - **Catálogos abertos** em JSON, carregáveis por arquivo ou URL: pacotes de fabricantes e tubos
-  genéricos por norma (ISO 1452, EN 12201, IS 4985, IS 4984, ASTM).
+  genéricos por norma (ISO 1452, EN 12201, IS 4985, IS 4984, ASTM); curvas de bomba, de emissor e
+  perfis de aspersor digitalizados de uma imagem de gráfico de catálogo.
 - **Linha de comando e API do motor**: `bin/oci.dart` importa desenhos, começa, altera, projeta,
   verifica e exporta projetos sem navegador, um ou vários de uma vez; `lib/core/api.dart` traz o motor
   inteiro numa importação, também como pacote Dart sem Flutter ([docs/API.pt-BR.md](docs/API.pt-BR.md)).
+- **Servidor MCP**: `bin/oci.dart mcp --root <pasta>` deixa qualquer aplicativo de IA que fale o Model
+  Context Protocol projetar, verificar e exportar projetos com o motor no seu computador, restrito a
+  uma pasta ([docs/MCP.pt-BR.md](docs/MCP.pt-BR.md)).
 
 ## Para quem
 
@@ -104,7 +121,7 @@ de exemplos permitem começar sem ler manual.
 |---|---|
 | Aberto | Código, formato de projeto (`.oci.json`), catálogos (`.oci.cat`) e exemplos são arquivos legíveis, documentados neste repositório. |
 | No navegador | Chrome, Edge, Firefox e Safari, em computador, tablet e celular; instalável como PWA, que abre sem rede depois da primeira visita. Também compila para desktop (macOS, Windows, Linux). Não há builds nativos para Android e iOS: no celular e no tablet use o app web. |
-| Sem servidor | Não há servidor por trás do app nem cadastro. Projetos ficam no navegador e em arquivos locais. A internet é usada para o que você pede (mapas base, elevação e clima online, busca de endereços, catálogos por URL e o assistente de IA opcional, o único recurso que envia dados do projeto, para o provedor de IA que você escolher) e, nas páginas do site e no app, para as estatísticas de visita (Google Analytics, com os seus cookies; Preferências de cookies, no rodapé das páginas, as desliga); veja a [Armazenamento, privacidade e rede](docs/manual/pt-BR/privacy-and-network.md). |
+| Sem servidor | Não há servidor por trás do app nem cadastro. Projetos ficam no navegador e em arquivos locais. A internet é usada para o que você pede (mapas base, elevação e clima online, a previsão do tempo, busca de endereços, catálogos por URL e o assistente de IA opcional, o único recurso que envia dados do projeto, para o provedor de IA que você escolher) e, nas páginas do site e no app, para as estatísticas de visita (Google Analytics, com os seus cookies; Preferências de cookies, no rodapé das páginas, as desliga); veja a [Armazenamento, privacidade e rede](docs/manual/pt-BR/privacy-and-network.md). |
 | Motor transparente | Cada fórmula está documentada no código e no [estudo técnico](docs/PESQUISA.pt-BR.md), com testes que a comparam a valores de referência. |
 | 20 idiomas | Interface em português, inglês, espanhol, chinês, hindi, árabe, francês, bengali, russo, urdu, indonésio, alemão, japonês, marati, vietnamita, télugo, hauçá, turco, panjabi e suaíli; o app abre no idioma do sistema, e em árabe e urdu a interface é da direita para a esquerda. |
 
@@ -117,11 +134,11 @@ site como o [guia do usuário](https://opencadirrigation.com/pt/manual/) ([em in
 - [Fluxo de projeto](docs/manual/pt-BR/workflow.md): da área aos relatórios, passo a passo
 - [Interface](docs/manual/pt-BR/interface.md): layout, menus, layout compacto e atalhos de teclado
 - [Desenho e edição](docs/manual/pt-BR/drawing.md): entidades, snaps, seleção, transformações, blocos, camadas
-- [Rede hidráulica](docs/manual/pt-BR/hydraulic-network.md): itens hidráulicos, regras de conexão, geradores, projeto automático
+- [Rede hidráulica](docs/manual/pt-BR/hydraulic-network.md): itens hidráulicos, regras de conexão, geradores, projeto automático, fileiras da imagem
 - [Catálogo de componentes](docs/manual/pt-BR/catalogue.md): tubos, emissores, válvulas, bombas, preços e pacotes de fabricantes
 - [Terreno](docs/manual/pt-BR/terrain.md): curvas de nível, cotas, modelo do terreno, elevação online
-- [Cálculo e dimensionamento](docs/manual/pt-BR/calculation.md): parâmetros, etapas do cálculo, verificação e assistente de projeto, análises
-- [Agronomia e manejo da irrigação](docs/manual/pt-BR/agronomy.md): balanço hídrico diário, programa de rega, escoamento, fertirrigação por estágio, uniformidade no campo
+- [Cálculo e dimensionamento](docs/manual/pt-BR/calculation.md): parâmetros, etapas do cálculo, verificação e assistente de projeto, boletim de qualidade, análises
+- [Agronomia e manejo da irrigação](docs/manual/pt-BR/agronomy.md): balanço hídrico diário, programa de rega e o seu reprodutor, previsão de irrigação, risco climático, escoamento, fertirrigação, uniformidade no campo
 - [Energia, água e máquinas](docs/manual/pt-BR/power-water-machines.md): elétrica da casa de bombas, bombeamento solar, qualidade da água, dois fios, vários pivôs
 - [Assistente de IA](docs/manual/pt-BR/ai-assistant.md): o que o assistente opcional faz, o que ele envia e como é controlado
 - [Relatórios, plotagem e exportação](docs/manual/pt-BR/reports-and-export.md): painel de relatórios, pranchas em PDF, orçamento, exportações
@@ -137,7 +154,8 @@ site como o [guia do usuário](https://opencadirrigation.com/pt/manual/) ([em in
 
 O estudo técnico por trás do motor é o [docs/PESQUISA.pt-BR.md](docs/PESQUISA.pt-BR.md) (inglês:
 [docs/TECHNICAL_STUDY.md](docs/TECHNICAL_STUDY.md)); a API do motor é o [docs/API.pt-BR.md](docs/API.pt-BR.md)
-([docs/API.md](docs/API.md)); o que o assistente de IA alcança está em [docs/AI_TOOLS.md](docs/AI_TOOLS.md).
+([docs/API.md](docs/API.md)); o servidor MCP é o [docs/MCP.pt-BR.md](docs/MCP.pt-BR.md); o que o assistente de IA
+alcança está em [docs/AI_TOOLS.md](docs/AI_TOOLS.md).
 
 ## Contribuição, segurança e licença
 

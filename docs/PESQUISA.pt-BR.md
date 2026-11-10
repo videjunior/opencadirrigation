@@ -1728,6 +1728,68 @@ reamostradas (vista como gramado: mova o limite de copa), água verde, grama sin
 verdes (vistos como vegetação); e os contornos só são tão bons quanto as imagens (a sua data, a sua
 resolução e o seu ajuste ao desenho).
 
+### 20.1 Fileiras de plantio
+
+Módulo `crop_rows.dart` (Projeto → Projeto automático → Fileiras da imagem). As laterais de gotejamento de uma cultura
+em fileira seguem as fileiras de plantio que já existem no campo; a ferramenta lê a direção delas, o espaçamento,
+quantas cruzam o campo, quão segura é a leitura e, quando a imagem os mostra, o espaçamento entre plantas ao longo das
+fileiras e a cobertura do solo pela copa, no mapa base de satélite ou numa foto aérea colocada no desenho, renderizados
+com o norte para cima e pixels quadrados sobre o contorno. É processamento de imagem simples no aparelho, linear nos
+pixels para cada direção testada: sem serviço, sem modelo treinado.
+
+1. **Sinal.** Os pixels dentro do contorno e fora dos buracos que têm dados formam a máscara. A cor passa por um filtro
+   passa-alta (subtrai-se a média numa janela de 1,25 × o maior espaçamento buscado, contando só pixels do campo), que
+   tira o sombreamento e as manchas do campo e deixa as listras, é dividida pelo seu RMS na mesma janela (com piso em
+   um quarto do RMS do campo) para que um pomar escuro e uma mancha clara de solo pesem igual, e é projetada na sua
+   primeira componente principal (Pearson 1901), o eixo de cor em que a imagem mais varia depois de tiradas as mudanças
+   na escala do campo: verde contra solo vermelho num campo, copa escura contra uma cobertura mais clara em outro. O
+   sinal deixa a copa positiva (a projeção se correlaciona com o excesso de verde da seção 20, menos metade do brilho
+   padronizado); valores além de quatro desvios-padrão robustos (1,4826 × o desvio absoluto mediano) são cortados, para
+   que uma estrada ou um telhado não dominem o resultado.
+2. **Direção, grosseira.** O campo é cortado em blocos quadrados de cerca de 3,5 × o maior espaçamento; para cada
+   direção θ (passos de no máximo 1°) os pixels de cada bloco são agrupados pela distância medida transversalmente a θ,
+   uma projeção de Radon discreta (Radon 1917), e a parcela da variância que os grupos explicam, R²(θ) = soma de
+   quadrados entre grupos sobre a total, é a média dos blocos. Listras retas ao longo de θ fazem os grupos diferirem;
+   qualquer outra direção as dilui. Os espaçamentos buscados começam em três pixels da imagem, abaixo do que o período é
+   o próprio grão da imagem.
+3. **Espaçamento, grosseiro.** A autocorrelação dos perfis dos blocos nessa direção, média dos blocos; o primeiro pico
+   que chega à metade do maior entre o menor e o maior espaçamento (o primeiro, não o maior: o perfil de fileiras
+   estreitas tem picos em todo múltiplo do espaçamento). Um pico cuja metade ou terça parte do atraso se correlaciona ao
+   menos com metade da força é um múltiplo de fileiras mais próximas que a faixa, e nenhuma fileira é lida.
+4. **Valores finos.** O R² de um só perfil através do campo inteiro numa grade em torno da direção grosseira, com passo
+   de um quarto da largura angular do pico (espaçamento sobre o comprimento das fileiras): cerca de 0,1° num campo de
+   cem espaçamentos de comprimento. O espaçamento é então buscado dentro de ±6 % na potência da transformada discreta
+   de Fourier, com janela de Hann, do perfil do campo inteiro, com o pico refinado por uma parábola no logaritmo da
+   potência (interpolação abaixo de um intervalo; Quinn 1994 para o raciocínio), e a fase dessa harmônica posiciona as
+   fileiras. Quando o perfil do campo inteiro se repete bem menos que os perfis dos blocos, as fileiras curvam: valem os
+   valores grosseiros e o resultado avisa. Qual faixa de um período é a cultura: a mais verde e escura, a não ser
+   quando as duas são vegetação e a outra é claramente a mais larga (uma copa fechada com entrelinhas estreitas na
+   sombra dela): então a mais larga.
+5. **Fileiras, plantas e cobertura.** Linhas no espaçamento e na fase encontrados sobre o contorno inteiro, recortadas
+   por ele e pelos buracos; uma linha conta como fileira quando pelo menos max(1 m, meio espaçamento) dela fica no
+   campo. O espaçamento entre plantas é o primeiro pico, entre max(4 pixels, 0,25 m) e 1,2 × o espaçamento entre
+   fileiras, da autocorrelação do sinal amostrado ao longo do centro das fileiras e com média de no máximo 150 fileiras
+   (independente da fase de cada fileira); cercas vivas de plantas não têm esse pico, e o espaçamento entre plantas fica
+   então desconhecido. A cobertura do solo é a fração do campo acima do limiar de Otsu (1979) do sinal suavizado em 3 ×
+   3 pixels, dada só quando o histograma tem duas populações pelo coeficiente de bimodalidade BC = (assimetria² +
+   1)/(curtose em excesso + 3) > 5/9 (SAS Institute 1990; Pfister, Schwarz, Janczyk, Dale & Freeman 2013; 5/9 é o valor
+   de uma distribuição uniforme): a fração de copa numa imagem vertical, o substituto usual do solo sombreado ao
+   meio-dia da FAO-56 (Allen et al. 1998).
+
+**Confiança** = destaque angular × periodicidade: (1 − R² mediano de todas as direções ÷ o maior R²) vezes a
+autocorrelação do perfil no espaçamento. Não há referência publicada para essa medida: os limites de fileiras claras
+(0,35) e de leitura incerta (0,15) foram definidos nos campos sintéticos do `crop_rows_test.dart` e em imagens reais
+conferidas durante o desenvolvimento (pomares de amêndoa e cafezais lidos com confiança de 0,67 a 0,96, vinhedos e
+olivais em sebe nos seus espaçamentos; uma cidade, uma pastagem, uma floresta, um pivô colhido e uma vista grosseira
+deram confiança 0). Um campo com mais de 2,5 milhões de pixels no tamanho de pixel necessário é lido numa janela no meio
+dele e as fileiras são estendidas ao campo todo.
+
+**Exatidão em campos sintéticos**: nove campos de 0° a 178,9° e de 2 a 10 m são lidos dentro de ±1° e ±3 % (na prática
+dentro de 0,1° e 0,2 %), as linhas nas faixas de copa a menos de 0,08 de espaçamento, o número de fileiras com erro de
+no máximo uma e a cobertura do solo dentro de 0,05, também com ruído forte, 30 % das plantas faltando, um contorno em L
+com um buraco e coordenadas de milhões de metros. O método supõe fileiras retas na área, igualmente espaçadas, visíveis
+com uns três pixels por espaçamento e uma imagem de uma só data; sombras contam como copa.
+
 ---
 
 ## 21. Agronomia
@@ -1923,6 +1985,102 @@ ciclo seguinte começa no mínimo D_a/IR depois do início do anterior (D_a a l�
 protocolo SWAT (seção 4.3), a taxa de infiltração IR e o acúmulo superficial admissível ASA vindo do
 solo e da declividade da seção 21.4 (teste "1.5 in/h sprays on a clay loam with 5 % slope applying
 0.5 in").
+
+### 21.9 Risco climático ao longo dos anos
+
+Módulos `climate_risk.dart` e `climate_risk_stats.dart` (Projeto → Agronomia → Risco climático ao longo dos anos). Um
+sistema é dimensionado para um só valor, a ETo do mês de pico das normais ou uma ETo de pico digitada; a análise faz o
+sistema, tal como projetado, passar por cada ano real de uma série diária do local.
+
+- **Clima**: a série diária pontual da NASA POWER (meteorologia do MERRA-2 e radiação do GEWEX SRB / CERES, todos os
+  parâmetros a partir de 1984, quando começa a radiação solar dela) ou a série diária guardada com o clima do local. A
+  ETo de cada dia é a Penman-Monteith FAO da seção 21.2 (`dailyPenmanMonteith`), com os termos ausentes estimados como
+  manda o capítulo 3 da FAO-56. Um dia sem ETo recebe a ETo média do mês da própria série, e um dia sem chuva conta como
+  seco; uma safra ou ano com mais de um décimo dos dias preenchidos fica de fora.
+- **Balanço**: cada área irrigada com balanço hídrico roda o balanço hídrico diário do solo do capítulo 8 da FAO-56
+  (`soil_water_balance.dart`, as entradas do diálogo de balanço hídrico diário) safra a safra, duas vezes: sem limite, o
+  que dá a necessidade de irrigação, e com a lâmina bruta que o sistema projetado aplica por dia, o que dá o que ele
+  teria aplicado e os dias de déficit (dias de cultura que terminam com o esgotamento acima da RAW, ou acima do déficit
+  controlado do estágio); uma safra sem nenhum é confiável. A capacidade diária é, sob uma máquina, a lâmina por volta
+  sobre as horas de uma volta vezes a janela da programação e, nas demais áreas, a intensidade de aplicação dos
+  emissores sobre a área vezes a parcela da janela do turno dela (parcelas na proporção das horas que cada turno
+  precisa no dia de pico do projeto); um critério de intervalo de n dias pode aplicar n dias dela.
+- **Período de pico**: a maior média, em 7, 10, 15 ou 30 dias seguidos, da ETc,loc menos a chuva retida na zona das
+  raízes (chuva efetiva menos percolação profunda), sobre a relação bruta/líquida do mês; a ETo do período de pico é a
+  maior média da ETo em outros tantos dias.
+- **Anos**: culturas de ciclo a partir da data de plantio (uma safra pode entrar no ano seguinte); culturas o ano todo e
+  os valores do local por ano agrícola, a partir do primeiro dia do mês cuja chuva média mais supera a ETo média, para
+  que o solo possa começar na capacidade de campo e a estação seca de qualquer hemisfério caia dentro de um mesmo ano.
+- **Probabilidades**: não excedência empírica com posições de plotagem de Weibull, F(x₍ᵢ₎) = i/(n + 1) para o i-ésimo
+  menor de n valores (Weibull 1939; Chow, Maidment & Mays 1988, seção 12.5; as posições da chuva provável da seção 21.2),
+  o valor de uma probabilidade interpolado linearmente entre as posições e limitado à amostra: nenhuma distribuição é
+  ajustada, nada é extrapolado além dos anos observados.
+- **Tendência**: o declive de Sen, a mediana dos declives de todos os pares de anos (Sen 1968), e o teste de
+  Mann-Kendall (Mann 1945; Kendall 1975) com S = Σ sinal(xⱼ − xᵢ), a variância corrigida para empates, Var(S) =
+  [n(n−1)(2n+5) − Σ t(t−1)(2t+5)]/18, e o Z com correção de continuidade, bicaudal a 5 % (|Z| > 1,96), como Helsel &
+  Hirsch (2002, capítulo 12) o descrevem; a aproximação normal pede uns dez valores, então séries mais curtas não têm
+  teste, e a autocorrelação não é removida.
+- **Veranico**: o índice CDD do ETCCDI, o maior número de dias seguidos com menos de 1 mm de chuva (Karl, Nicholls &
+  Ghazi 1999; Zhang et al. 2011), um dia sem dados encerrando a sequência.
+
+Dados de reanálise são médias em células de dezenas de quilômetros e suavizam os extremos que uma estação no local
+mostraria. Os testes conferem à mão as estatísticas, as médias de pico, o ano agrícola e o balanço limitado (5 mm/dia de
+capacidade bruta contra uma ETc de 5 mm/dia: 356 eventos, 1780 mm, 351 dias de déficit) e simulam à mão um pivô da
+galeria; duas respostas reais da NASA POWER (uma que atravessa o ano novo, uma anterior a 1984 com o valor sentinela −999
+para a radiação ausente) são lidas. Só um resumo, alguns números por ano do local e por área e safra, fica no projeto.
+
+### 21.10 Previsão de irrigação
+
+Módulos `forecast_online.dart` e `irrigation_forecast.dart` (Projeto → Agronomia → Previsão de irrigação). O balanço
+hídrico diário avança a partir de hoje pelos dias de uma previsão do tempo, para cada área irrigada.
+
+- **Previsão**: o Locationforecast 2.0 do MET Norway (cerca de nove dias e meio, horário nos dois ou três primeiros dias,
+  de seis em seis horas depois) ou a Forecast API do Open-Meteo (16 valores diários com a própria ETo FAO-56, usada como
+  vem). As horas do MET viram dias solares locais (UTC + longitude/15, já que um banco de fusos horários seria uma
+  dependência): as temperaturas extremas, o ponto de orvalho médio, o vento médio a 10 m levado a 2 m (eq. 47 da FAO-56)
+  e a precipitação de cada período de 1 ou 6 horas contada uma vez. Um dia seguinte precisa de 18 horas cobertas; quando
+  a previsão cobre menos de 12 horas de hoje, a ETo de amanhã fica no lugar da de hoje.
+- **ETo**: Penman-Monteith FAO (eq. 6 da FAO-56, seção 21.2) sobre os valores diários. O MET Norway não publica radiação
+  solar, então ela vem da amplitude térmica, Rs = kRs·√(Tmax − Tmin)·Ra (eq. 50 da FAO-56, kRs 0,16, limitada à radiação
+  de céu claro), o procedimento que a FAO-56 dá para radiação ausente. A cobertura de nuvens diurna por Kasten & Czeplak
+  (1980), Rs = Rso·(1 − 0,75·C^3,4), foi testada e descartada: nos cinco dias inteiros da resposta gravada para os testes
+  ela deu uma ETo 19 % acima da que o Open-Meteo publicou para o mesmo lugar e dias, e a eq. 50 −1 % (diferença absoluta
+  média de 0,3 mm/dia). Um local e cinco dias são pouca evidência, e a eq. 50 erra em dias nublados de grande amplitude
+  térmica.
+- **Balanço**: a cultura como a tabela de necessidade e o balanço diário a tomam: a curva de Kc em cada data a partir da
+  data de plantio lida para o hemisfério do local, ETc,loc = Kr·Kc·ETo, TAW = AWC·Zr·Pw, RAW = p·TAW com p ajustado à
+  ETc do dia (Tabela 22 da FAO-56, nota 2), Ks da eq. 84; a chuva abaixo de 0,2·ETo só molha a superfície e a que passa
+  da capacidade de campo percola (eq. 88).
+- **Quando e quanto**: uma área é irrigada no dia em que o esgotamento chegaria ao menor entre o esgotamento permitido
+  do estágio e a lâmina líquida de um evento da programação do projeto, de modo que o intervalo da programação se
+  mantém enquanto o tempo pede a lâmina de projeto; a irrigação repõe o esgotamento (a fração de reposição das
+  configurações do balanço), a lâmina bruta é a líquida sobre a eficiência com a lixiviação do mês, e o tempo de
+  funcionamento é a lâmina bruta sobre a taxa de aplicação da área nos resultados do cálculo.
+- **Ajuste (water budget)**: 100 × (a água que a cultura usa nos dias da previsão − a chuva que a zona das raízes guarda)
+  ÷ (os dias × a lâmina diária que a programação do projeto aplica no mês de projeto), mantido entre 0 e 300 %, o ajuste
+  sazonal que um controlador recebe; o déficit inicial fica de fora (não é a parte do tempo).
+
+Os testes comparam os valores diários e a ETo da resposta gravada do MET com um cálculo independente (em 2026-11-10:
+Tmax 26,3 °C, Tmin 14,9 °C, Torvalho 13,68 °C, u₂ 2,64 m/s, ETo 4,928 mm) e conferem os planos à mão (um déficit
+acumulado até o quinto dia, uma chuva que dispensa uma irrigação, os dois hemisférios em janeiro). A resposta fica
+guardada no aparelho e nunca é buscada de novo antes da hora do `Expires` do serviço (os termos do MET), e fica guardada
+no mínimo três horas para o MET Norway (metade do intervalo de atualização de seis horas fora da região nórdica), uma
+para o Open-Meteo.
+
+### 21.11 O programa na planta
+
+Módulos `programme_playback.dart`, `programme_calendar.dart`, `ics.dart` e `gif_animation.dart` (Projeto → Agronomia →
+Reproduzir o programa na planta). Cada turno roda a cada tantos dias em dias escalonados, então o programa se repete
+depois do mínimo múltiplo comum dos intervalos (um dia quando todos os turnos são diários; no máximo 28 dias são
+reproduzidos); o ciclo é circular, e uma rega que passa da última meia-noite continua no início. Um momento mostra a
+solução em regime permanente do turno que roda nele, mantida durante a rega; dois turnos sobrepostos têm as vazões
+somadas nos tubos comuns e a maior carga na fonte, com aviso. Um reservatório atrás de uma fonte segue a continuidade do
+volume, dV/dt = Q_entrada − ΣQ_retirada, ao longo da linha do tempo, com o nível lido na curva cota–volume do estudo do
+reservatório (invertida) e mantido entre o nível mínimo de operação (seco) e o nível cheio (vertendo); os testes
+conferem os volumes à mão (uma entrada de 7,2 m³/h e uma retirada de 180 m³/h por 2 h numa bacia de 1000 m² de paredes
+verticais: 2500 → 2543,2 → 2197,6 → 2312,8 m³). O calendário segue a RFC 5545: linhas dobradas em 75 octetos sem partir
+um caractere, texto escapado, horas locais flutuantes, um `DURATION`, um `RRULE` a cada ciclo e `UID`s estáveis por um
+hash FNV-1a. O GIF animado tem paleta de até 256 cores por quadro (quantizador octree, sem pontilhado) e se repete.
 
 ---
 
@@ -2663,6 +2821,36 @@ está no manual (docs/manual/pt-BR/file-formats.md) e em `catalogs/README.md`. A
 arquivo autossuficiente e legível; a biblioteca de blocos de usuário também viaja no projeto, e as
 exportações DXF e DWG a gravam como definições de bloco.
 
+### 24.13 Curvas lidas de uma imagem
+
+Módulos `curve_digitiser.dart`, `curve_trace.dart` e `curve_fits.dart` (Projeto → Digitalizar curva de uma imagem).
+
+- **Calibração**: dois pontos clicados em cada eixo dão os valores e a direção dele (o valor vertical não muda ao longo
+  do eixo horizontal, e vice-versa): seis equações para os seis coeficientes do mapeamento afim geral u = a·px + b·py +
+  c, v = d·px + e·py + f, em que u e v são os valores dos eixos ou os logaritmos decimais deles num eixo logarítmico.
+  Imagens giradas e inclinadas são lidas exatamente; uma perspectiva não é afim. A calibração é recusada quando dois
+  pontos de um eixo coincidem, os dois valores dele são iguais, um valor logarítmico é nulo ou negativo, ou os eixos
+  foram clicados a menos de 10° um do outro (um erro dos cliques é amplificado em até 1/sen 10° ≈ 5,8: uma proteção
+  contra um mapeamento mal condicionado, não um limite de engenharia).
+- **Traçado**: a cor clicada é o pixel vizinho que mais difere do fundo; os pixels mantidos ficam entre o fundo e essa
+  cor dentro de uma tolerância (60 unidades RGB por padrão, no máximo metade da distância entre curva e fundo), então a
+  borda suavizada de uma linha conta e uma grade clara ou uma curva de outra cor não. O traçado avança um pixel ao longo
+  do eixo horizontal, fica com o trecho de pixels mais próximo de onde os últimos passos levam, atravessa falhas de até
+  12 pixels e para nas maiores; supõe um valor da curva para cada valor horizontal. São parâmetros do algoritmo,
+  documentados no código.
+- **Ajustes**: os pontos de altura passam pelo `PumpCurve.fit` (seção 12): a parábola de mínimos quadrados quando ela
+  fica a até 3 % da maior altura (a tolerância de altura do grau de aceitação 1B da ISO 9906) sem corcova, senão a
+  cúbica monótona por trechos pelos pontos (Fritsch & Carlson 1980); sem curva de rendimento, a potência no eixo dá
+  η = ρ·g·Q·H / P em cada ponto de potência, com H lido na curva de altura ajustada (P tomada como potência no eixo, P2).
+  Os pontos vazão × pressão são ajustados a q = k·Hˣ por mínimos quadrados em escala log–log (`EmitterCurve.fitTable`,
+  seção 8), e um perfil radial é normalizado pelo raio molhado lido e pela maior taxa (o perfil medido do densograma,
+  seção 9.1).
+
+Os testes recuperam valores exatos em gráficos retos, girados (25°), inclinados (eixos a 78°) e logarítmicos, traçam um
+gráfico sintético de 660 × 440 com grade, uma curva que cruza e uma legenda a menos de 0,15 m de altura (um pixel é
+1/7 m) e conferem os ajustes à mão (uma potência no eixo de 8 353,28 W a 0,02 m³/s, 32 m e η 0,75; um gotejador de
+orifício de 4 L/h a 10 m).
+
 ---
 
 ## 25. Desempenho e arquitetura de software
@@ -2793,6 +2981,43 @@ verificação do projeto).
   só fica quando tem menos erros ou, com os mesmos, menor custo anual (investimento anualizado +
   energia).
 - Depois de um cálculo com erros a aba Mensagens abre sozinha e o seu rótulo conta os problemas.
+
+### 26.1 Boletim de qualidade do projeto
+
+Módulo `scorecard.dart` (Projeto → Boletim de qualidade do projeto). O boletim transforma o que os resultados, a
+verificação do projeto, o assistente de projeto e as análises já calculam num só índice, reproduzível a partir da tabela
+que ele imprime. Cada indicador tem um valor, um alvo, a fonte do alvo e uma nota de 0 a 100 dada por uma função linear
+por trechos entre âncoras declaradas (valor → nota), mantida nas notas das pontas além da primeira e da última:
+
+| Indicador | Âncoras (valor → nota) | De onde vem o alvo |
+|---|---|---|
+| Uniformidade de emissão EU (zonas de gotejo e microaspersão) | 0 → 0, 70 → 60, 80 → 70, 90 → 80, 94 → 90, 100 → 100 | As classes da ASAE da ASABE EP405.1 como a seção 9 as apresenta (acima de 94 % excelente, 90–94 % boa, 80–90 % regular, abaixo de 80 % ruim; Keller & Karmeli 1974); a âncora em 70 % é um degrau do próprio programa dentro da classe ruim |
+| CU de sobreposição (zonas de aspersores) | 0 → 0, 75 → 60, 85 → 80, 100 → 100 | 85 % satisfatório (Keller & Bliesner 1990; ISO 15886-3); 75 % é o limite da verificação do próprio programa (`area_uniformity_low`) |
+| Variação de vazão q_var | 0 → 100, 10 → 90, 20 → 70, 100 → 0 | 10 % desejável e 20 % aceitável como a seção 9 os apresenta; o boletim imprime Keller & Bliesner (1990) ao lado deles, mas a seção 9 não dá referência para esses dois limites, então eles ficam como faixas de trabalho do programa |
+| Um critério que deve valer em toda parte | a parcela que o atende: 0 % → 0, 100 % → 100 | O limite de velocidade de cada uso (parâmetros de projeto; ASAE S376.2), a classe de pressão na temperatura da água (ISO 1452-2, ISO 4427-2, ABNT NBR 14312), a faixa de pressão dos emissores (parâmetros de projeto; ASABE EP405.1, UNE-EN 13742-1), a pressão de que cada zona precisa, a faixa de catálogo das bombas, 70–120 % da vazão de melhor rendimento (seção 12), a infiltração do solo (NRCS NEH 15-11), o escoamento (NRCS NEH 623 cap. 4), a demanda de pico da FAO-56 na janela, o golpe dentro da classe (AWWA M23, M55), a margem de NPSH e a altura de sucção (ANSI/HI 9.6.1), o custo do ciclo de vida contra a alternativa mais barata (NIST Handbook 135), os avisos da verificação, uma lista de materiais com preço |
+| Uma contagem que deve ser zero | 0 → 100, 1 ou mais → 0 | Erros da verificação e do cálculo; pontos altos da linha principal sem ventosa (AWWA M51) |
+
+As notas das âncoras seguem uma convenção, as faixas dos conceitos A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, E abaixo: a melhor
+classe de uma norma termina no limite de A, a seguinte no de B, e assim por diante. Uma parcela é ponderada pelo
+comprimento de tubo, pela água que os emissores entregam, pela vazão (vezes as horas do turno para as bombas), pela área
+ou pela contagem; os indicadores de uniformidade são médias das zonas ponderadas pela vazão. Uma categoria é a média
+ponderada dos seus indicadores avaliados e a nota geral a média ponderada das categorias avaliadas, todos com peso 1 (o
+código aceita outros; o diálogo não os edita). Os pontos que um indicador acrescentaria em 100 são (100 − n)·(p / Σp da
+categoria)·(P / ΣP das categorias avaliadas), e a lista de melhorias é ordenada por eles. Um indicador que não pode ser
+calculado (nenhuma zona daquele tipo, sem preços, uma análise não rodada, uma bomba sem curva de rendimento) fica não
+avaliado e fora de todas as médias; um sem nenhum valor de referência (kWh por m³ e por ha·mm, custo e custo anual
+equivalente por área, parcela da energia no custo do ciclo de vida) é só informado. A parcela da altura da bomba que a
+zona crítica usa (a sobra de carga na fonte sobre o acréscimo da bomba) representa a energia queimada nas válvulas, que
+os resultados definem sem dividir o caminho crítico em desnível, pressão dos emissores e perdas. A uniformidade dos
+pivôs, a análise transitória completa, a simulação de 24 horas e o DU do densograma ficam de fora (os resultados deles
+não ficam com o cálculo, ou são lentos demais para uma tabela refeita depois das edições), e a eficiência de aplicação é
+uma entrada, não um resultado. O teste de envelhecimento roda a análise do projeto ao longo da vida com os padrões dela
+(15 anos, C de Hazen-Williams −0,5 por ano, rugosidade +0,01 mm por ano, 10 % de entupimento, CV +0,05).
+
+Os testes conferem cada função nas âncoras, entre elas e além delas, as médias e os pontos a ganhar (levar um indicador
+a 100 acrescenta exatamente os seus pontos), o exemplo do pomar (conceito A, com EU, uso da altura e energia
+recalculados à mão a partir dos resultados) e uma variante pior de propósito (tubos das zonas no menor diâmetro: nota
+geral menor e mais de 10 pontos a menos na uniformidade).
 
 ---
 
@@ -3421,6 +3646,10 @@ Traçado, roteamento e fiação:
 - IFAB, Regra 1 (o campo de jogo); World Athletics (a pista de 400 m); recomendações de construção de greens da United States Golf Association para o green e o seu colar.
 
 Análise de imagens:
+- Radon (1917). Über die Bestimmung von Funktionen durch ihre Integralwerte längs gewisser Mannigfaltigkeiten.
+- Pearson (1901). On lines and planes of closest fit to systems of points in space. Phil. Mag. 2.
+- Quinn (1994). Estimating frequency by interpolation using Fourier coefficients. IEEE Trans. Signal Process. 42(5).
+- Pfister, Schwarz, Janczyk, Dale & Freeman (2013). Good things peak in pairs: a note on the bimodality coefficient. Front. Psychol. 4; SAS Institute (1990) (o coeficiente de bimodalidade).
 - Woebbecke, Meyer, Von Bargen & Mortensen (1995). Color indices for weed identification under various soil, residue, and lighting conditions. Trans. ASAE 38(1).
 - Otsu (1979). A threshold selection method from gray-level histograms. IEEE Trans. SMC 9(1).
 - Meyer & Neto (2008). Verification of color vegetation indices for automated crop imaging applications. Comput. Electron. Agric. 63(2).
@@ -3429,6 +3658,12 @@ Análise de imagens:
 - Douglas & Peucker (1973). Algorithms for the reduction of the number of points required to represent a digitized line or its caricature. Cartographica 10(2).
 
 Agronomia:
+- Weibull (1939) (posições de plotagem); Chow, Maidment & Mays (1988). Applied Hydrology, seção 12.5.
+- Sen (1968). J. Am. Stat. Assoc. 63: 1379 (o declive de uma tendência); Mann (1945); Kendall (1975); Helsel & Hirsch (2002). Statistical Methods in Water Resources, USGS TWRI 4-A3, capítulo 12.
+- Karl, Nicholls & Ghazi (1999); Zhang et al. (2011) (os índices climáticos do ETCCDI, CDD).
+- Kasten & Czeplak (1980) (radiação solar pela cobertura de nuvens, testada para a previsão de irrigação e não usada).
+- MET Norway Locationforecast 2.0, termos de serviço e licença: https://api.met.no/doc/TermsOfService , https://api.met.no/doc/License
+- RFC 5545 (iCalendar).
 - Ayers & Westcot (1985). FAO Irrigation and Drainage Paper 29 Rev. 1; Maas & Hoffman (1977); Maas (1984).
 - Savva & Frenken (2002). FAO Irrigation Manual, Module 9.
 - Brouwer & Heibloem (1986). FAO Irrigation Water Management Training Manual No. 3.

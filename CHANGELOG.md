@@ -5,6 +5,124 @@ the status bar; `pubspec.yaml` holds it, and the release checklist in [CONTRIBUT
 adds the section of each new version here (a test fails when the current version has none). Portuguese:
 [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md).
 
+## 1.7.0 (2026-11-10)
+
+The AI assistant on the models of six companies, with a second opinion from another model, and new tools: crop rows
+read on the satellite image, the climate risk over forty real years, the irrigation forecast of the coming days, the
+programme played on the plan, a scorecard of the design and curves digitised from a catalogue picture; the engine as
+an MCP server; share links that open again.
+
+### AI assistant
+
+- **Models brought up to date** (each company's documentation of 2026-11-10): Claude Fable 5.2 (US$ 8 / 40 per million
+  tokens) takes the place of Claude Fable 5.1, and a choice or a kept conversation of 5.1 goes on with 5.2; Claude
+  Sonnet 5.5 reads the cache at US$ 0.10; GPT-6.1 Terra (US$ 1 / 5) joins GPT-6 Luna as a fast model, and every GPT-6
+  model takes the *Maximum* effort; pictures of the drawing go at up to 2576 pixels to the Claude models that read them
+  at high resolution, Claude Haiku 5.5 included.
+- **Six companies**, each with your own key and straight from the browser: beside Anthropic and OpenAI, **Google**
+  (Gemini 4 Argon, Gemini 3.8 Flash and Gemini 3.5 Flash-Lite through the Interactions API with nothing stored at
+  Google; the two Flash models with a free tier, on which Google may use the content to improve its products; Gemini 4
+  Argon and 3.8 Flash at half price until 1 December 2026 and 1 January 2027), **xAI** (Grok 4.7 and Grok 4.3 through
+  its Responses API; twice the price from 200 000 prompt tokens; a PDF goes as its text, since an attached file would
+  turn on xAI's paid search), **Meta** (Muse Wonder, Muse Spark 1.3 and Muse Ember through the Meta Model API; only the
+  *Standard* models, on which Meta does not train; Muse Ember three times the price above 200 000 input tokens) and
+  **OpenRouter** (the Claude, GPT, Gemini, Grok and Muse models, the Auto Router and the Free Models Router with one
+  key, billed to its credits).
+- **Settings**: a row of company chips (a key icon on those with a saved key), then the models of the chosen company
+  with their tier, prices and what to know (introductory price and its end, free tier, long-prompt rule, no pictures,
+  no tools, router). One key is enough; the last model of each company is remembered. Switching to another company's
+  model, or between two models of a company other than Anthropic, starts a new conversation; Claude models take over
+  each other's.
+- **More models…** (OpenRouter): OpenRouter's whole list, downloaded when asked (no key needed; the last copy works
+  offline), with search, *Free only*, *Reads pictures* and *Calls tools* filters and sorting by price or name; the model
+  chosen joins your list, is chosen at once and comes back when the app starts again.
+- **A model that calls no tools** only talks (no tools in its requests, and it is told so); **a model that reads no
+  pictures** gets none (your pictures, the tools' pictures and the drawing after a change left out, and both you and the
+  model told).
+- **Second opinion** (a button on the last answer, `/second`): another model, of another company when you have its key,
+  checks the answer against the project data in one request without tools and says what holds, what does not and what
+  to check; the review is marked, counted in the cost and read by the first model only after *Answer the review*.
+- **Costs**: list prices per million tokens of every model with cached input, long-prompt rules and introductory prices;
+  a router's pick that the table does not price costs what OpenRouter says it charged; the dearest models through
+  OpenRouter answer at most 32 000 or 64 000 tokens, since OpenRouter holds the price of the largest answer against the
+  balance while a request runs; a free model works under the spending cap. Long attachments are read by the cheapest
+  model of the conversation's company.
+- **Errors**: each company's own statuses and codes are read (no credit, billing not set up, spending limits, quotas with
+  the wait the company asks for, moderation and safety blocks named), and OpenRouter's own words follow the app's text.
+- The four new clients were written from each company's documentation and tested against scripted transcripts of the
+  documented formats, not against the live services: no key was used.
+
+### New tools
+
+- **Crop rows from the image** (Design → Automatic design): reads on the satellite image, or a placed aerial photo, the
+  direction and spacing of the planting rows of an orchard, coffee, vineyard, citrus or olive grove, how many cross the
+  field and how sure the reading is, with the plant spacing and the canopy ground cover where the image shows them, by
+  image processing on the device (no AI key); previews the rows over the image and the drawing, and in one undo step
+  sets the area's row direction and spacing (the defaults of Subdivide a field into blocks, Orchard drip rings and
+  Lateral block over it), its ground cover and guide lines of the rows. Irrigated areas keep the row direction (`rdir`),
+  turned and mirrored with them.
+- **Climate risk over the years** (Design → Agronomy): the design run through every real year of the NASA POWER daily
+  series of the site from 1984 (downloaded once, about 2 MB, and kept on the device) or of the site climate's own
+  series: FAO-56 Penman-Monteith ETo and the daily soil water balance of every area, without a limit and with what the
+  designed system can apply a day; the P50/P80/P90/P95 and maximum of the yearly requirement, of the peak demand and of
+  the peak ETo beside the design figures and the capacity, the reliability, the worst years, the longest dry spells, the
+  volume pumped and the trend (Sen's slope, Mann-Kendall); a chart per year, an exceedance curve and two report tables in
+  every export. Only the summary is kept in the project (`climateRisk`).
+- **Irrigation forecast** (Design → Agronomy): the weather forecast of the site (MET Norway, free for professional work;
+  Open-Meteo, non-commercial) turned, for each irrigated area and each of the coming days, into irrigate or skip, the
+  net and gross depth, the run time at the design's application rate and the water budget (%) for the controller; the
+  daily soil water balance runs forward from the soil state you give; ETo by FAO-56 Penman-Monteith with the radiation
+  from the temperature range (or the service's own ETo); the tables export to CSV, XLSX and PDF; the answer is kept on
+  the device while it is valid and never fetched again before the service allows. The project is not changed.
+- **Play the programme on the plan** (Design → Agronomy, or *Play* in the Irrigation programme dialog): a player over the
+  drawing runs through the cycle of the programme with play, pause, speed and a time line; the zones that water are
+  tinted, the pipes coloured by velocity and sized by flow, the pumps on or off, with the clock, the flow, the pressure
+  at the pump outlet and the reservoir levels. The moment exports as a PNG, the cycle as an animated GIF for a phone
+  message, and the programme as a calendar file (.ics) for the grower's phone.
+- **Design scorecard** (Design menu): the designed project graded 0–100 and A–E in seven categories (uniformity,
+  hydraulics, energy, water and soil, economy, robustness, completeness), with a radar, what to improve first sorted by
+  the points each change would add and a button to the tool that does it, and every indicator with its value, target,
+  the standard or design parameter the target comes from, score and weight; indicators without data are left out,
+  never guessed; compare with a remembered score or a saved alternative, run the ageing test, export as CSV, XLSX or
+  PDF; the table and the radar also go into the report exports and the chart pages of the sheets.
+- **Digitise a curve from a picture** (Design menu): open, paste or drop a picture of a catalogue chart, click two
+  points on each axis (linear or logarithmic, any unit of the app; rotated or sheared scans read right), click along the
+  curve or let the automatic trace follow its colour, and put a pump's head curve (with its efficiency, NPSH required
+  and shaft power), an outlet's flow–pressure curve (q = k·Hˣ) or a sprinkler's radial profile into the catalogue in one
+  undo step, the fit drawn over the picture with its residuals.
+- The AI assistant reaches every one of them: `detect_crop_rows`, `apply_crop_rows`, `climate_risk`,
+  `irrigation_forecast`, `programme_picture`, `export_programme_animation`, `export_programme_calendar`,
+  `design_scorecard`, `fit_curve_points`, `apply_curve_points` and `export_curve_points` (216 operations in all).
+
+### Engine and command line
+
+- **MCP server**: `dart run bin/oci.dart mcp --root <folder>` lets any AI application that speaks the Model Context
+  Protocol design irrigation systems with the engine on your own computer: 21 tools to make a project of a drawing or an
+  example, read and edit its items and settings, design it, read every message of the design assistant with its
+  explanation, the bill of materials and any report table, and export drawings and reports; protocol revisions
+  2026-07-28, 2025-11-25 and 2025-06-18; every file stays inside the folder given, `--read-only` leaves out the tools
+  that write, nothing goes online, and a call can be cancelled ([docs/MCP.md](docs/MCP.md)).
+- **Command line**: `export --format dxfR12` works (the name of the format was compared in lower case only).
+- The daily soil water balance takes a daily capacity and the day an irrigation year starts (used by the climate risk;
+  without them it gives what it gave before), and the default layer of each kind of item moved into the engine.
+
+### Fixes
+
+- **Share links open the shared project again**: the web engine rewrote the address without the `#p=…` before the app
+  read it, and a first visit showed the landing page; the link is now taken before the engine and the statistics
+  start, a first visit goes straight to the app, and a link pasted into the address bar of the open app (or sent to the
+  installed app already open) opens in a tab of its own. The link leaves the address and the history at once.
+- A free model under the spending cap no longer divides the cap by a price of zero.
+
+### Not done on purpose
+
+- Anthropic's fast mode (twice the price), local models through an OpenAI-compatible address, and a larger request
+  than the app's 30 MB.
+- Meta's discounted *Contributor* models (Meta trains on what they receive) and Gemini's long decode beyond 65 536
+  output tokens; xAI's server-side tools (web search, X search, code execution) are never turned on.
+- The automatic corrections, the scenarios, the technical documents and the online data are not tools of the MCP server
+  yet.
+
 ## 1.6.1 (2026-11-04)
 
 - **Visit statistics count everyone again**: the site and the app load Google Analytics with its cookies, as up to

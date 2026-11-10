@@ -97,5 +97,57 @@ uso de água diferente (hidrozonas), e os tubos ficam dentro do contorno do lote
 | Anéis de gotejamento em pomar | `RINGS` | Um anel de tubo gotejador ou de gotejadores em volta de cada árvore de uma malha de plantio ou de árvores levantadas, ligado a laterais ao longo das fileiras, a uma linha de derivação e à válvula. |
 | Ajustar pivô ao talhão | `PFIT` | O maior círculo completo livre dos obstáculos, ou o pivô setorial que irriga a maior parte do talhão, com o comprimento da máquina em vãos padrão. |
 | Vários pivôs na propriedade | | O arranjo de pivôs centrais de vãos padronizados que irriga a maior parte do contorno selecionado, dentro da vazão permitida, com a linha principal comum ([Energia, água e máquinas](power-water-machines.md#vários-pivôs-na-propriedade)). |
+| Fileiras da imagem | | A direção, o espaçamento e o número das fileiras de plantio de um pomar, cafezal, vinhedo, citros ou olival lidos na imagem de satélite ou numa foto aérea colocada no desenho, com o espaçamento entre plantas e a cobertura do solo pela copa quando a imagem os mostra; viram o padrão de Dividir talhão em blocos, Anéis de gotejamento em pomar e Bloco de laterais sobre a área ([abaixo](#fileiras-da-imagem)). |
 | Detectar vegetação na imagem | `VEG` | Gramados, árvores e arbustos encontrados por processamento de imagem neste aparelho (sem serviço externo) no mapa base da tela ou numa foto aérea selecionada, criados como áreas irrigadas (com predefinições por classe) e exclusões. Confira se os termos de uso das imagens permitem traçar sobre elas. |
 | Contornar pela imagem (menu Desenhar) | `WAND` | Clique dentro de um talhão, gramado ou lago no mapa: o contorno cresce pelos pixels de cor parecida dos blocos de satélite, com uma prévia da área e da borda; a tolerância de cor (0 = automática), a suavização das cores (3–6 m em pomares) e a simplificação do contorno o mudam sem baixar de novo; Enter cria uma área irrigada ou uma polilinha fechada (um passo de desfazer), Esc o descarta e `V` contorna todos os talhões da vista. Precisa de georreferência e de internet. |
+
+### Fileiras da imagem
+
+As laterais de gotejamento num pomar, num cafezal, num vinhedo, em citros ou num olival seguem as fileiras de plantio
+que já existem no campo. **Projeto → Projeto automático → Fileiras da imagem…** (no celular, ☰ → Projeto, com o mesmo
+nome) lê essas fileiras na imagem aérea em vez de medi-las à mão. Selecione a área irrigada do campo plantado (ou um
+contorno fechado; com uma só área no projeto não é preciso selecionar) e abra a ferramenta. A imagem de satélite
+precisa de um projeto georreferenciado (Arquivo → Georreferência); uma foto aérea colocada sobre o campo pode ser
+escolhida em *Imagem*. A ferramenta baixa a imagem do campo e a lê neste aparelho, sem chave de IA e sem outro
+serviço:
+
+- **Direção das fileiras**, em graus no sentido anti-horário a partir do leste, de 0 a 180 (a mesma *Direção das
+  fileiras (°)* de Dividir talhão em blocos e Anéis de gotejamento em pomar);
+- **Espaçamento entre fileiras**, **Fileiras no campo** e a **Confiança** (fileiras claras a partir de 35 %, incerta a
+  partir de 15 %, nenhuma fileira abaixo);
+- o **Espaçamento entre plantas** (quando aparecem copas separadas) e a **Cobertura do solo pela copa** (quando a copa
+  se distingue do solo); senão, "não visível na imagem".
+
+A imagem mostra o campo (ciano) e as fileiras encontradas (âmbar), com um detalhe do meio do campo em tamanho real, e
+as fileiras aparecem sobre o desenho enquanto o diálogo está aberto; **Parar** encerra uma leitura longa. Se as linhas
+caíram nas entrelinhas e não nas plantas (copa fechada com entrelinhas na sombra, cobertura verde tão verde quanto a
+cultura), ligue **Fileiras na outra faixa**, que as move meio espaçamento. *Espaçamento mínimo* e *Espaçamento máximo*
+limitam a busca (1,5 a 12 m por padrão); o mínimo também define o tamanho de pixel pedido à imagem. **Aplicar** grava,
+num só passo de desfazer, a direção das fileiras (o `rdir` da área) e o espaçamento, e o espaçamento entre plantas, na
+área, de onde Dividir talhão em blocos, Anéis de gotejamento em pomar e Bloco de laterais (e os layouts do assistente)
+partem sobre essa área; a cobertura do solo da área (usada no Kr da irrigação localizada); e, se marcado, as fileiras
+como linhas-guia na camada `CROP_ROWS`. O assistente faz o mesmo com `detect_crop_rows` (uma leitura que não muda nada)
+e `apply_crop_rows`.
+
+**Método.** A cor do campo passa por um filtro passa-alta (subtrai-se a média numa janela de 1,25 × o maior
+espaçamento: somem o sombreamento e as manchas, ficam as listras), é dividida pelo seu RMS local para que partes
+escuras e claras pesem igual e é projetada na sua primeira componente principal, com o sinal que deixa positiva a faixa
+mais verde e mais escura. Para cada direção (passos de no máximo 1°) os pixels de blocos quadrados do campo são
+agrupados pela distância medida transversalmente a essa direção (uma projeção de Radon discreta), e a parcela da
+variância que os grupos explicam (R²) é a média dos blocos: as fileiras dão um máximo agudo na sua direção. O
+espaçamento é o primeiro pico da autocorrelação dos perfis dos blocos; a direção é então refinada no campo inteiro
+(até cerca de 0,1° num campo de cem espaçamentos de comprimento) e o espaçamento na potência de Fourier do perfil do
+campo inteiro (dentro de ±6 %, por uma parábola no logaritmo da potência), cuja fase posiciona as fileiras. Confiança =
+destaque angular (1 − R² mediano ÷ maior R²) × periodicidade (a autocorrelação no espaçamento). O espaçamento entre
+plantas é o primeiro pico da autocorrelação ao longo do centro das fileiras; a cobertura do solo é a fração do campo
+acima do limiar de Otsu do sinal suavizado, dada só quando o histograma tem duas populações (coeficiente de
+bimodalidade acima de 5/9). O método e as referências estão no [estudo técnico](../../PESQUISA.pt-BR.md#201-fileiras-de-plantio).
+
+**Limites.** As fileiras precisam ser retas na área (fileiras em nível que curvam dão uma direção média e um aviso:
+desenhe áreas menores), igualmente espaçadas e visíveis, com pelo menos uns três pixels da imagem por espaçamento: a
+imagem Esri tem cerca de 0,3–0,6 m por pixel na maior parte das lavouras, então fileiras a menos de cerca de 1–2 m não
+aparecem, e a ferramenta avisa. Qual faixa é a cultura é decidido pela cor (a mais verde e escura, ou a mais larga
+quando as duas são verdes e a outra é claramente mais larga): confira o detalhe e use *Fileiras na outra faixa* quando
+preciso. Sombras contam como copa na cobertura do solo. Um campo maior que o orçamento de pixels (2,5 milhões de
+pixels) é lido numa janela no meio dele e as fileiras são estendidas ao campo todo. A imagem pode ter anos: confira que
+ela mostra o plantio de hoje e que os termos de uso dela permitem tirar dados dela.

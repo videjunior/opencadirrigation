@@ -70,4 +70,4 @@ mesmo desenho em todas, com nomes, culturas e itens de catálogo no idioma da pa
 | `?tutorial=N` | Abre o tutorial interativo no passo N (de 1 a 90). |
 | `?lang=pt` (qualquer código de [Idiomas e site](languages-and-site.md)) | Idioma desta visita (não altera a preferência salva). |
 | `/pt/`, `/es/`, `/de/`, … | Página de entrada de cada idioma sob o seu código (os 20), com o mesmo efeito de `?lang` (a página raiz é a inglesa). |
-| `#p=…` | Um projeto compartilhado por link (Arquivo → Compartilhar por link…): abre como cópia numa aba nova. A parte depois do `#` nunca é enviada a nenhum servidor. |
+| `#p=…` | Um projeto compartilhado por link (Arquivo → Compartilhar por link…): abre como cópia numa aba nova, também na primeira visita (sem a página inicial antes) e quando colado na barra de endereço do app já aberto. A parte depois do `#` nunca é enviada a nenhum servidor, e a página a tira do endereço e do histórico antes de o app e as estatísticas de visita começarem. |

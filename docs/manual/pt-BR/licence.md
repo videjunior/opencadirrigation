@@ -21,17 +21,22 @@ Esri, Google Maps com a sua chave, ou o servidor XYZ ou WMS que você configurar
 Tiles no AWS Open Data: SRTM/NASA, GMTED, ETOPO1; Open-Meteo sob CC BY 4.0 com o Copernicus DEM
 GLO-90; OpenTopoData: NASA SRTM, ASTER GDEM), clima (API de histórico meteorológico do Open-Meteo
 sob CC BY 4.0, reanálise ERA5 do Copernicus Climate Change Service, gratuita para uso não comercial;
-NASA POWER, com o agradecimento que a NASA pede) e o assistente de IA (as APIs da Anthropic e da
-OpenAI, usadas com a sua própria chave e conta sob os termos dessa empresa, que cobra o uso nessa
-conta; as buscas do local por endereço usam o Nominatim do OpenStreetMap, © colaboradores do
+NASA POWER, com o agradecimento que a NASA pede, também para o risco climático ao longo dos anos), a
+previsão do tempo (Locationforecast do MET Norway sob a Licença Norueguesa de Dados Abertos
+Governamentais 2.0 e a CC BY 4.0, livre para qualquer uso com o crédito "MET Norway"; a Forecast API
+do Open-Meteo sob CC BY 4.0, gratuita para uso não comercial) e o assistente de IA (as APIs da
+Anthropic, da OpenAI, do Google, da xAI, da Meta e da OpenRouter, usadas com a sua própria chave e
+conta sob os termos dessa empresa, que cobra o uso nessa conta; a lista de modelos da OpenRouter,
+creditada no diálogo que a mostra; as buscas do local por endereço usam o Nominatim do OpenStreetMap, © colaboradores do
 OpenStreetMap sob a ODbL, dentro da sua política de uso; as imagens de satélite vêm do Esri World
 Imagery ou, com a sua chave, do Google).
 
 **No trabalho profissional.** Ajuda → Termos dos dados lista os dados de terceiros que o projeto
-leva e, para cada fonte de elevação, clima e busca de endereços, o crédito, o que o uso gratuito
+leva e, para cada fonte de elevação, clima, previsão do tempo e busca de endereços, o crédito, o que o uso gratuito
 permite e um link para os termos (os mapas base têm os seus em Ver → Mapa base → Termos dos mapas).
 Os serviços gratuitos do Open-Meteo são para uso não comercial, então o download do clima começa no
-NASA POWER (livre para qualquer uso) e a elevação online no Terrain Tiles; o Open-Meteo continua
+NASA POWER (livre para qualquer uso), a previsão do tempo no MET Norway e a elevação online no Terrain
+Tiles; o Open-Meteo continua
 disponível, marcado como não comercial. As pranchas (PDF, PNG, SVG) imprimem, uma por linha, o
 crédito do mapa base sob o desenho, das imagens de mapa guardadas para o campo e da elevação online
 que mostram, e o relatório tem a tabela **Fontes de dados e créditos** (no painel de relatórios, no
