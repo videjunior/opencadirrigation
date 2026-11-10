@@ -248,3 +248,9 @@ export 'model/project_compare.dart';
 
 // 1.6.0 SIT+: the credits of the third-party data in a project
 export 'io/data_credits.dart';
+
+// 1.7.0 MCP: the Model Context Protocol server and its tools (docs/MCP.md)
+export 'mcp/json_schema.dart';
+export 'mcp/mcp_server.dart';
+export 'mcp/oci_mcp_tools.dart';
+export 'model/default_layers.dart';
