@@ -5,6 +5,27 @@ the status bar; `pubspec.yaml` holds it, and the release checklist in [CONTRIBUT
 adds the section of each new version here (a test fails when the current version has none). Portuguese:
 [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md).
 
+## 1.7.1 (2026-11-10)
+
+Fixes found by the tests written after 1.7.0, and the continuous integration green on Linux.
+
+- **Operations of the AI assistant** that failed on a wrong argument now refuse it and say what is accepted: an unknown
+  starter of a pump in `set_pump_house`, a row left out of the shares in `fertigation_by_stage`. The warnings of
+  fertigation by stage (water too saline, stage without an irrigation) say which stage they are about.
+- **What the assistant reads back**: the reports of the pump house electrics, solar pumping, water quality and two-wire
+  show every value their `set_…` operations accept (the clearing time of the protection, the short-circuit power
+  upstream, the data of each pump, the soiling of the modules, the prices), so the assistant can check what it stored.
+- **Solar pumping** counts the months of a year of 365 days: in a leap year the yearly yield and the energy cost
+  changed with the date the design was calculated.
+- **Several pivots laid out at once** (the dialog and the assistant): the new pivots are named like every other pivot
+  ("Centre pivot 2"), no longer with the whole label of the tool.
+- **About** says how each release is tested before it goes live.
+- **Continuous integration** is green on Linux: the gallery examples are compared with their files by value (the
+  cosine of another machine differs in the last digit), the golden images accept the edge of a glyph a pixel away and
+  refuse anything else that changed, the double click is timed by a timer instead of the clock, and a test that fails
+  shows on the page of the run with what it said. Line coverage of `lib/app` back above its floor (89.1 %) with tests
+  of 36 operations of the assistant that none reached.
+
 ## 1.7.0 (2026-11-10)
 
 The AI assistant on the models of six companies, with a second opinion from another model, and new tools: crop rows
@@ -113,14 +134,6 @@ an MCP server; share links that open again.
   start, a first visit goes straight to the app, and a link pasted into the address bar of the open app (or sent to the
   installed app already open) opens in a tab of its own. The link leaves the address and the history at once.
 - A free model under the spending cap no longer divides the cap by a price of zero.
-- Operations of the AI assistant that failed on a wrong argument now refuse it and say what is accepted: an unknown
-  starter of a pump in `set_pump_house`, a row left out of the shares in `fertigation_by_stage`. The warnings of
-  fertigation by stage (water too saline, stage without an irrigation) say which stage they are about.
-- Continuous integration is green on Linux: the gallery examples are compared with their files by value (the cosine of
-  another machine differs in the last digit), the golden images accept the edge of a glyph a pixel away and refuse
-  anything else that changed, the double click is timed by a timer, and a test that fails shows on the page of the
-  run with what it said. Line coverage of `lib/app` back above its floor (89.1 %) with tests of 36 operations of the
-  assistant that none reached.
 
 ### Not done on purpose
 

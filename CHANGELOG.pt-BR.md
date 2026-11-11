@@ -5,6 +5,29 @@ Ajuda → Sobre e na barra de status; o `pubspec.yaml` a guarda, e o checklist d
 [CONTRIBUTING.md](CONTRIBUTING.md#releasing) acrescenta aqui a seção de cada versão nova. Inglês (canônico):
 [CHANGELOG.md](CHANGELOG.md).
 
+## 1.7.1 (2026-11-10)
+
+Correções encontradas pelos testes escritos depois da 1.7.0, e a integração contínua verde no Linux.
+
+- **Operações do assistente de IA** que falhavam com um argumento errado agora o recusam e dizem o que é aceito: um
+  tipo de partida desconhecido de uma bomba em `set_pump_house`, uma linha faltando nas parcelas em
+  `fertigation_by_stage`. Os avisos da fertirrigação por estágio (água salina demais, estágio sem irrigação) dizem de
+  qual estágio são.
+- **O que o assistente relê**: os relatórios da elétrica da casa de bombas, do bombeamento solar, da qualidade da água e
+  dos dois fios mostram todos os valores que as operações `set_…` deles aceitam (o tempo de atuação da proteção, a
+  potência de curto-circuito da rede, os dados de cada bomba, a sujidade dos módulos, os preços), e o assistente pode
+  conferir o que gravou.
+- **Bombeamento solar** conta os meses de um ano de 365 dias: num ano bissexto o rendimento anual e o custo de energia
+  mudavam com a data em que o projeto era calculado.
+- **Vários pivôs de uma vez** (o diálogo e o assistente): os pivôs novos recebem o nome como todos os outros pivôs
+  ("Pivô central 2"), não mais com o rótulo inteiro da ferramenta.
+- **Sobre** diz como cada versão é testada antes de ir ao ar.
+- **Integração contínua** verde no Linux: os exemplos da galeria são comparados com seus arquivos por valor (o cosseno
+  de outra máquina difere no último dígito), as imagens golden aceitam a borda de um glifo a um pixel de distância e
+  recusam qualquer outra mudança, o duplo clique é medido por um temporizador em vez do relógio, e um teste que falha
+  aparece na página da execução com o que ele disse. A cobertura de linhas de `lib/app` volta a ficar acima do piso
+  (89,1 %), com testes de 36 operações do assistente que nenhum teste alcançava.
+
 ## 1.7.0 (2026-11-10)
 
 O assistente de IA com os modelos de seis empresas, com uma segunda opinião de outro modelo, e ferramentas novas:
@@ -119,14 +142,6 @@ de uma imagem de catálogo; o motor como servidor MCP; links de compartilhamento
   primeira visita vai direto ao app, e um link colado na barra de endereço do app aberto (ou enviado ao app instalado já
   aberto) abre numa aba própria. O link sai do endereço e do histórico na hora.
 - Um modelo gratuito sob o teto de gasto não divide mais o teto por um preço zero.
-- Operações do assistente de IA que falhavam com um argumento errado agora o recusam e dizem o que é aceito: um tipo de
-  partida desconhecido de uma bomba em `set_pump_house`, uma linha faltando nas parcelas em `fertigation_by_stage`. Os
-  avisos da fertirrigação por estágio (água salina demais, estágio sem irrigação) dizem de qual estágio são.
-- A integração contínua fica verde no Linux: os exemplos da galeria são comparados com seus arquivos por valor (o
-  cosseno de outra máquina difere no último dígito), as imagens golden aceitam a borda de um glifo a um pixel de
-  distância e recusam qualquer outra mudança, o duplo clique é medido por um temporizador, e um teste que falha aparece
-  na página da execução com o que ele disse. A cobertura de linhas de `lib/app` volta a ficar acima do piso (89,1 %),
-  com testes de 36 operações do assistente que nenhum teste alcançava.
 
 ### Não feito de propósito
 
