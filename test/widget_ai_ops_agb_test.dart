@@ -306,7 +306,10 @@ void main() {
     expect([f.lengthM, f.starter, f.motorKw, f.efficiency, f.powerFactor, f.electric], [200, StarterKind.softStarter, 55, 0.95, 0.9, true]);
     expect(s.pumps[diesel.id]!.electric, isFalse);
     expect(text, contains('voltage 400 V, supply lowVoltage, insulation xlpe, method c, ambient_c 35, grouping 0.80, service_factor 1.25, direct_max_kw 7.5'));
-    expect(text, contains('max_running_drop_pct 4.0 (0 = NBR 5410), uk_pct 5.0 (0 = typical), loading_pct 90, other_kva 10.0, include_pivots false.'));
+    expect(text, contains('max_running_drop_pct 4.0 (0 = NBR 5410), uk_pct 5.0 (0 = typical), loading_pct 90, other_kva 10.0, include_pivots false, '));
+    // everything set_pump_house took is read back, the data of each pump included
+    expect(text, contains('include_pivots false, clearing_s 0.20, upstream_mva 250 (0 = infinite), panel_cost 1200.00, transformer_cost 9000.00 (${c.project.params.currency}; 0 = not costed); '));
+    expect(text, contains('pumps {${pump.id} «Well pump»: length_m 200, starter softStarter, motor_kw 55.0, efficiency 0.950, power_factor 0.90; ${diesel.id} «Diesel»: electric false}.'));
     expect(text, isNot(contains('${diesel.id} Diesel')));
     expect(text, isNot(contains(c.t('warn.agb_pump_no_power'))), reason: 'the diesel engine is no longer a motor without power');
     final i2 = 55000 / (math.sqrt(3) * 400 * 0.95 * 0.9);
@@ -454,6 +457,9 @@ void main() {
       [40, 1.25, 0.3, 30, 2027, true, 700, 900, 150],
     );
     expect(text, startsWith('Solar settings changed; design results discarded (run_design again).\nSettings (set_solar_design names): mode gridTied, module_wp 600, module_area_m2 2.70, tilt_deg 20'));
+    // everything set_solar_design took is read back
+    expect(text, contains('oversize 1.10, soiling 0.050, converter_efficiency 0.96, '));
+    expect(text, contains('grandfathered true, module_price 700.00, inverter_price_per_kw 900.00, structure_price 150.00 per module (${c.project.params.currency}; 0 = not costed).'));
     // nothing designed: no pumping energy to offset, so no module; the month table still has the year
     expect(text, contains('gridTied: 0 × 600 Wp = 0.00 kWp, 0 m², inverter 0.0 kW, tilt 20°, head 40.0 m, wire-to-water 0.600'));
     expect(text, contains('Fio B paid 0 %'), reason: 'access asked before 2023: no Fio B');
@@ -570,6 +576,8 @@ void main() {
     );
     expect([w2.shockMgL, w2.shockMinutes, w2.shocksPerMonth, w2.hypochloritePct, w2.acidTargetPh, w2.acid, w2.filterCost, w2.injectorCost], [12, 60, 2, 12, 6, AcidProduct.phosphoric, 500, 300]);
     expect(w2.ph, 7.9, reason: 'what is not given stays');
+    // everything set_water_quality took is read back, the prices included
+    expect(text, contains('acid_target_ph 6.000, acid phosphoric; filter_cost 500.00, injector_cost 300.00 (${c.project.params.currency}; 0 = not costed).'));
     // 1.5 mm over 8 = 187 µm: the 80 mesh of 180 µm
     expect(text, contains('emitter passage 1.50 mm → opening 180 µm (80 mesh)'));
     expect(text, contains('Chlorination intermittent: demand ${fmt(0.64 * 0.8 + 1.3 * 0.05 + 6 * 0.2, 2)} mg/L, dose ${fmt(0.64 * 0.8 + 1.3 * 0.05 + 6 * 0.2 + 12, 2)} mg/L'));
@@ -638,7 +646,12 @@ void main() {
       add(ControlValveEntity(id: id(), position: Pt(x, 0), zoneName: 'Z${x ~/ 200}'));
     }
     text = await run(tester, 'two_wire_system');
-    expect(text, startsWith('Settings (set_two_wire names): enabled false, output_volts 34.0, min_volts 24.0, idle_ma 1.00, solenoid_reach_m 30, ground_every_decoders 12, ground_every_m 150.'));
+    expect(
+      text,
+      startsWith(
+        'Settings (set_two_wire names): enabled false, output_volts 34.0, min_volts 24.0, idle_ma 1.00, solenoid_reach_m 30, ground_every_decoders 12, ground_every_m 150, decoder_prices {}, arrester_price 0.00 (${c.project.params.currency}; 0 = not costed).',
+      ),
+    );
     // the farthest decoder opening with the other four holding: idle 1 mA per decoder + 0.37 / 0.22 A
     // on each 200 m stretch, both conductors, 10 % slack; the 4 mm² pair is the cheapest that keeps 24 V
     const drop = 2 * 200 * 1.1 * (1.255 + 1.034 + 0.813 + 0.592 + 0.371);
@@ -685,6 +698,8 @@ void main() {
     final s = c.project.agb.twoWire;
     expect([s.enabled, s.outputVolts, s.minVolts, s.decoderIdleMa, s.solenoidReachM, s.groundEveryDecoders, s.groundEveryM, s.arresterPrice], [true, 30, 22, 2, 20, 3, 300, 40]);
     expect(s.decoderPrices, {1: 85, 2: 120.5});
+    // the prices read back as set_two_wire takes them
+    expect(text, contains('ground_every_m 300, decoder_prices {"1": 85.00, "2": 120.50}, arrester_price 40.00 (${c.project.params.currency}; 0 = not costed).'));
     expect(text, startsWith('Two-wire settings changed; design results discarded (run_design again).\nSettings (set_two_wire names): enabled true, output_volts 30.0, min_volts 22.0, idle_ma 2.00'));
     final r2 = designTwoWire(c.project, flows: wiringFlows(c.project), spec: twoWireSpecOf(s))!;
     final path = r2.paths.single;
@@ -796,7 +811,8 @@ void main() {
     checkRows(drawn, l1, 10, 20);
     for (var k = 0; k < made.length; k++) {
       final e = made[k];
-      expect(e.name, '${c.t('tool.pivot')} ${k + 2}', reason: 'numbered after the pivot drawn');
+      // named as every other pivot: the first part of the tool's label ("Centre pivot 2")
+      expect(e.name, 'Centre pivot ${k + 2}', reason: 'numbered after the pivot drawn');
       expect(e.center, l1.pivots[k].center);
       expect(e.radiusM, closeTo(l1.pivots[k].machineLength, 1e-9));
       expect(e.grossDepthMm, 10);

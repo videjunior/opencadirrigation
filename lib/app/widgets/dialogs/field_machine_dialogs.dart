@@ -191,7 +191,7 @@ Future<void> showMultiPivotDialog(BuildContext context, ProjectController c) {
             final p = c.project;
             final first = p.entities.whereType<PivotEntity>().length;
             for (var i = 0; i < l.pivots.length; i++) {
-              p.entities.add(l.pivots[i].toEntity(p, name: '${t('tool.pivot')} ${first + i + 1}', grossDepthMm: depth, hoursPerCycle: hours));
+              p.entities.add(l.pivots[i].toEntity(p, name: '${t('tool.pivot').split('/').first.trim()} ${first + i + 1}', grossDepthMm: depth, hoursPerCycle: hours));
             }
             if (mainline) {
               for (final (a, b) in l.mainline) {

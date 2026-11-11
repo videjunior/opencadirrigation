@@ -40,11 +40,27 @@ void _setAgb(AgentToolbox b, String op, void Function(AgbSettings s) edit) {
 /// The pump house design as text.
 String _pumpHouseText(AgentToolbox b, PumpHouseResult r) {
   final s = b.p.agb.pumpHouse;
+  // the data of a pump as set_pump_house "pumps" takes it (only what was set)
+  String feeder(String id, PumpFeeder f) {
+    final name = b.p.byId(id)?.name ?? '';
+    final set = [
+      if (!f.electric) 'electric false',
+      if (f.lengthM != null) 'length_m ${engN(f.lengthM!, 0)}',
+      if (f.starter != StarterKind.auto) 'starter ${f.starter.name}',
+      if (f.motorKw > 0) 'motor_kw ${engN(f.motorKw, 1)}',
+      if (f.efficiency > 0) 'efficiency ${engN(f.efficiency, 3)}',
+      if (f.powerFactor > 0) 'power_factor ${engN(f.powerFactor, 2)}',
+    ];
+    return '$id${name.isEmpty ? '' : ' «$name»'}: ${set.join(', ')}';
+  }
+
   final out = <String>[
     'Settings (set_pump_house names): enabled ${s.enabled}, voltage ${engN(s.voltage, 0)} V, supply ${s.supply.name}, insulation ${s.insulation.name}, method ${s.method.name}, '
         'ambient_c ${s.ambientC == null ? 'reference' : engN(s.ambientC!, 0)}, grouping ${engN(s.groupingFactor)}, service_factor ${engN(s.serviceFactor)}, direct_max_kw ${engN(s.directMaxKw, 1)}, '
         'soft_multiple ${engN(s.softStartMultiple, 1)}, default_length_m ${engN(s.defaultFeederM, 0)}, max_running_drop_pct ${engN(s.maxRunningDropPct, 1)} (0 = NBR 5410), uk_pct ${engN(s.transformerUkPct, 1)} (0 = typical), '
-        'loading_pct ${engN(s.transformerLoadingPct, 0)}, other_kva ${engN(s.otherLoadsKva, 1)}, include_pivots ${s.includePivots}.',
+        'loading_pct ${engN(s.transformerLoadingPct, 0)}, other_kva ${engN(s.otherLoadsKva, 1)}, include_pivots ${s.includePivots}, clearing_s ${engN(s.clearingTimeS, 2)}, '
+        'upstream_mva ${engN(s.upstreamMva, 0)} (0 = infinite), panel_cost ${engN(s.panelCost, 2)}, transformer_cost ${engN(s.transformerCost, 2)} (${b.p.params.currency}; 0 = not costed); '
+        'pumps ${s.pumps.isEmpty ? 'none set (each pump: default_length_m, starter auto, the motor of its data)' : '{${[for (final e in s.pumps.entries) feeder(e.key, e.value)].join('; ')}}'}.',
     if (r.circuits.isNotEmpty)
       engTable(
         ['pump', 'motor kW', 'eff', 'pf', 'In A', 'Ib A', 'starter', 'Istart A', 'length m', 'mm²', 'PE mm²', 'Iz A', 'drop run %', 'limit %', 'drop start %', 'Ik starter kA', 'messages'],
@@ -105,8 +121,9 @@ String _solarText(AgentToolbox b, SolarDesign? r) {
   final s = b.p.agb.solar;
   final head =
       'Settings (set_solar_design names): mode ${s.mode.name}, module_wp ${engN(s.moduleWp, 0)}, module_area_m2 ${engN(s.moduleAreaM2)}, tilt_deg ${s.tiltDeg == null ? 'latitude' : engN(s.tiltDeg!, 0)}, '
-      'azimuth_deg ${engN(s.azimuthFromEquatorDeg, 0)}, oversize ${engN(s.oversize)}, converter_efficiency ${engN(s.converterEfficiency)}, motor_pump_efficiency ${engN(s.motorPumpEfficiency)} (0 = design), '
-      'head_m ${engN(s.headM, 1)} (0 = design), dc_ac_ratio ${engN(s.dcAcRatio)}, simultaneity ${engN(s.simultaneity)}, fio_b_pct ${engN(s.fioBSharePct, 1)}, billing_year ${s.billingYear}, grandfathered ${s.grandfathered}.';
+      'azimuth_deg ${engN(s.azimuthFromEquatorDeg, 0)}, oversize ${engN(s.oversize)}, soiling ${engN(s.soiling, 3)}, converter_efficiency ${engN(s.converterEfficiency)}, motor_pump_efficiency ${engN(s.motorPumpEfficiency)} (0 = design), '
+      'head_m ${engN(s.headM, 1)} (0 = design), dc_ac_ratio ${engN(s.dcAcRatio)}, simultaneity ${engN(s.simultaneity)}, fio_b_pct ${engN(s.fioBSharePct, 1)}, billing_year ${s.billingYear}, grandfathered ${s.grandfathered}, '
+      'module_price ${engN(s.modulePrice, 2)}, inverter_price_per_kw ${engN(s.inverterPricePerKw, 2)}, structure_price ${engN(s.structurePricePerModule, 2)} per module (${b.p.params.currency}; 0 = not costed).';
   if (r == null) return '$head\nSolar pumping is off (mode "off").';
   return [
         head,
@@ -132,7 +149,8 @@ String _waterText(AgentToolbox b, WaterQualityResult? r) {
       'Analysis (set_water_quality names): source ${w.source.name}, ph ${v(w.ph)}, ec_ds_m ${v(w.ecDsM)}, tds_mg_l ${v(w.tdsMgL)}, tss_mg_l ${v(w.tssMgL)}, iron_mg_l ${v(w.ironMgL)}, manganese_mg_l ${v(w.manganeseMgL)}, '
       'sulfide_mg_l ${v(w.sulfideMgL)}, calcium_mg_l ${v(w.calciumMgL)}, bicarbonate_mg_l ${v(w.bicarbonateMgL)}, bacteria_per_ml ${v(w.bacteriaPerMl)}, temperature_c ${engN(w.temperatureC, 0)}; '
       'treatment: emitter_passage_mm ${engN(w.emitterPassageMm)} (0 = by the emitters), mesh_ratio ${engN(w.meshRatio, 0)}, chlorination ${w.chlorination.name}, residual_mg_l ${engN(w.chlorineResidualMgL)}, '
-      'shock_mg_l ${engN(w.shockMgL)}, shock_minutes ${engN(w.shockMinutes, 0)}, shocks_per_month ${engN(w.shocksPerMonth, 0)}, hypochlorite_pct ${engN(w.hypochloritePct, 1)}, acid_target_ph ${v(w.acidTargetPh)}, acid ${w.acid.name}.';
+      'shock_mg_l ${engN(w.shockMgL)}, shock_minutes ${engN(w.shockMinutes, 0)}, shocks_per_month ${engN(w.shocksPerMonth, 0)}, hypochlorite_pct ${engN(w.hypochloritePct, 1)}, acid_target_ph ${v(w.acidTargetPh)}, acid ${w.acid.name}; '
+      'filter_cost ${engN(w.filterCost, 2)}, injector_cost ${engN(w.injectorCost, 2)} (${b.p.params.currency}; 0 = not costed).';
   if (r == null) return '$head\nNo analysis yet: give at least one value with set_water_quality.';
   final safe = b.p.catalog.valve(r.safetyFilterId);
   return [
@@ -159,7 +177,8 @@ String _twoWireText(AgentToolbox b, TwoWireResult? r) {
   final s = b.p.agb.twoWire;
   final head =
       'Settings (set_two_wire names): enabled ${s.enabled}, output_volts ${engN(s.outputVolts, 1)}, min_volts ${engN(s.minVolts, 1)}, idle_ma ${engN(s.decoderIdleMa)}, solenoid_reach_m ${engN(s.solenoidReachM, 0)}, '
-      'ground_every_decoders ${s.groundEveryDecoders}, ground_every_m ${engN(s.groundEveryM, 0)}.';
+      'ground_every_decoders ${s.groundEveryDecoders}, ground_every_m ${engN(s.groundEveryM, 0)}, '
+      'decoder_prices {${[for (final k in s.decoderPrices.keys.toList()..sort()) '"$k": ${engN(s.decoderPrices[k]!, 2)}'].join(', ')}}, arrester_price ${engN(s.arresterPrice, 2)} (${b.p.params.currency}; 0 = not costed).';
   if (r == null) return '$head\nNo controller or no wire route: draw the routes first (route_wires or create_entities type "wire").';
   final caps = <int, int>{};
   for (final d in r.decoders) {
@@ -649,7 +668,7 @@ List<AgentTool> opsAgb(AgentToolbox b) {
           final first = p.entities.whereType<PivotEntity>().length;
           final made = <String>[];
           for (var k = 0; k < l.pivots.length; k++) {
-            final e = l.pivots[k].toEntity(p, name: '${b.t('tool.pivot')} ${first + k + 1}', grossDepthMm: depth, hoursPerCycle: hours);
+            final e = l.pivots[k].toEntity(p, name: '${b.t('tool.pivot').split('/').first.trim()} ${first + k + 1}', grossDepthMm: depth, hoursPerCycle: hours);
             p.entities.add(e);
             made.add(e.id);
           }

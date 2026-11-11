@@ -138,6 +138,10 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('agb_mp_apply')));
     final pivots = c.project.entities.whereType<PivotEntity>().toList();
     expect(pivots.length, greaterThanOrEqualTo(4));
+    // named as every other pivot: the first part of the tool's label, numbered
+    final base = c.t('tool.pivot').split('/').first.trim();
+    expect([for (final x in pivots) x.name], [for (var k = 0; k < pivots.length; k++) '$base ${k + 1}']);
+    expect(base, isNot(contains('/')));
     expect(c.project.entities.whereType<PipeEntity>().where((p) => p.scope == HydraulicScope.mainline), isNotEmpty);
     c.undo();
     await settle(tester);

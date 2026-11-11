@@ -29,6 +29,20 @@ void main() {
       expect(fioBSharePaid(2030, grandfathered: true), 0);
     });
 
+    test('the months are those of a year of 365 days, whatever the year the design runs in', () {
+      final p = buildExample(ExampleId.pivot, t.call, lang: 'pt');
+      p.agb.solar.mode = SolarMode.gridTied;
+      final s = Designer(p, label: t.call).designAll().agb!.solar!;
+      // generation of a month = kWp × sun hours × performance ratio × days: the
+      // ratio of two months leaves the days (February 28, as in 2028 too)
+      final m = s.months;
+      expect(m[1].generationKWh / m[0].generationKWh, closeTo(m[1].peakSunHours * 28 / (m[0].peakSunHours * 31), 1e-12));
+      expect(m[3].generationKWh / m[0].generationKWh, closeTo(m[3].peakSunHours * 30 / (m[0].peakSunHours * 31), 1e-12));
+      // the year is the sum of its months, and the yield per kWp that of 365 days
+      expect(s.generationKWh, closeTo(m.fold(0.0, (a, x) => a + x.generationKWh), 1e-6));
+      expect(s.yieldKWhPerKWp * s.arrayKWp, closeTo(s.generationKWh, 1e-6));
+    });
+
     test('grid-tied: the array of the yearly pumping energy, the bill compensated', () {
       final p = buildExample(ExampleId.pivot, t.call, lang: 'pt');
       final grid = Designer(p, label: t.call).designAll();

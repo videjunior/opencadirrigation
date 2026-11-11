@@ -27,6 +27,7 @@ import '../model/entities.dart';
 import '../model/project.dart';
 import '../units.dart';
 import 'area_requirement.dart';
+import 'climate.dart' show daysInMonth;
 import 'pump_house.dart' show ie3Efficiency, pumpMotorKw;
 import 'pump_selection.dart' show wireToWaterEfficiency;
 import 'results.dart';
@@ -299,8 +300,10 @@ SolarDesign? designSolar(Project p, DesignResults? results, {double? gridCost}) 
   final eta = s.motorPumpEfficiency > 0 ? s.motorPumpEfficiency.clamp(0.05, 1.0).toDouble() : designPumpingEfficiency(p, results);
   final tariff = p.params.powerCostPerKwh;
   final cost = gridCost ?? designGridEnergyCost(results);
-  final year = DateTime.now().year;
-  int days(int m) => DateTime.utc(year, m + 1).difference(DateTime.utc(year, m)).inDays;
+  // the months of a year of 365 days, as the monthly climate is: not the
+  // year of the run (a leap year moved the yield and the cost by a day of
+  // February with the date the design was calculated)
+  int days(int m) => daysInMonth(2001, m);
   // irradiation on the array and the performance ratio of every month
   final ht = [for (var m = 1; m <= 12; m++) tiltedMonthlyIrradiationKWhM2(horizontalKWhM2Day: h[m - 1], latitudeDeg: lat, month: m, tiltDeg: tilt, azimuthFromEquatorDeg: s.azimuthFromEquatorDeg)];
   final pr = pvPerformanceRatio(soiling: s.soiling, wiring: s.wiring, mismatch: s.mismatch);
@@ -333,7 +336,7 @@ SolarDesign? designSolar(Project p, DesignResults? results, {double? gridCost}) 
         modulePowerWp: wp,
         oversize: oversize,
         gridTariffPerKWh: tariff,
-        year: year,
+        // the sizing's own default: the months of a year of 365 days
       ),
     );
     var r = size(math.max(s.oversize, 1));
